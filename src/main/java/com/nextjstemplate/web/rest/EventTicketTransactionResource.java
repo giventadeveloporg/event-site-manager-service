@@ -194,7 +194,7 @@ public class EventTicketTransactionResource {
             Long id = criteria.getId().getEquals();
             Optional<EventTicketTransactionDTO> result = eventTicketTransactionService.findOne(id);
             if (result.isPresent()) {
-                return ResponseEntity.ok().body(List.of(result.get()));
+                return ResponseEntity.ok().body(List.of(result.orElseThrow()));
             } else {
                 return ResponseEntity.ok().body(List.of());
             }

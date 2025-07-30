@@ -82,10 +82,10 @@ public class QRCodeResource {
 
   private QrCodeUsageDTO buildQrCodeUsageDTO(Long eventId, Long transactionId) {
     Optional<EventTicketTransaction> transactionOpt = transactionRepository.findById(transactionId);
-    if (transactionOpt.isEmpty() || !eventId.equals(transactionOpt.get().getEventId())) {
+    if (transactionOpt.isEmpty() || !eventId.equals(transactionOpt.orElseThrow().getEventId())) {
       return null;
     }
-    EventTicketTransactionDTO transactionDTO = eventTicketTransactionMapper.toDto(transactionOpt.get());
+    EventTicketTransactionDTO transactionDTO = eventTicketTransactionMapper.toDto(transactionOpt.orElseThrow());
     List<EventTicketTransactionItemDTO> itemDTOs = eventTicketTransactionItemRepository
         .findByTransactionId(transactionId)
         .stream()
@@ -100,7 +100,7 @@ public class QRCodeResource {
         .stream()
         .map(eventTicketTypeMapper::toDto)
         .collect(Collectors.toList());
-    return new QrCodeUsageDTO(transactionDTO, itemDTOs, eventDetailsDTO.get(), eventTicketTypeDTOs);
+    return new QrCodeUsageDTO(transactionDTO, itemDTOs, eventDetailsDTO.orElseThrow(), eventTicketTypeDTOs);
   }
 
   @GetMapping("/qrcode-scan/tickets/events/{eventId}/transactions/{transactionId}")
@@ -384,7 +384,7 @@ public class QRCodeResource {
 
     for (String email : emails) {
       Optional<UserProfileDTO> userOpt = userProfileService.findByEmailAndTenantId(email, tenantId);
-      if (userOpt.isEmpty() || !Boolean.TRUE.equals(userOpt.get().getIsEmailSubscribed())) {
+      if (userOpt.isEmpty() || !Boolean.TRUE.equals(userOpt.orElseThrow().getIsEmailSubscribed())) {
         continue;
       }
       String token = userProfileService.getUnsubscribeTokenByEmailAndTenantId(email, tenantId);

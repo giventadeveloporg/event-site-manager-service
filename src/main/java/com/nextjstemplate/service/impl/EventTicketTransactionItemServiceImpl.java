@@ -124,7 +124,7 @@ public class EventTicketTransactionItemServiceImpl implements EventTicketTransac
                         Optional<EventTicketTransactionDTO> transactionOpt = eventTicketTransactionService
                                 .findOne(transactionId);
                         if (transactionOpt.isPresent()) {
-                            EventTicketTransactionDTO transaction = transactionOpt.get();
+                            EventTicketTransactionDTO transaction = transactionOpt.orElseThrow();
                             String qrScanUrlContent = qrScanUrlPrefix +
                                 "/qrcode-scan/tickets"+"/events/"+transaction.getEventId()+
                                 "/transactions/"+transaction.getId(); // or any QR

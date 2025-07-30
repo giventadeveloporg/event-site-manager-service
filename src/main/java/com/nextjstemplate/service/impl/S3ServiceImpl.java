@@ -122,7 +122,7 @@ public class S3ServiceImpl implements S3Service {
             S3Object s3Object = amazonS3.getObject(bucketName, fileName);
             try (java.io.InputStream inputStream = s3Object.getObjectContent();
                     java.util.Scanner scanner = new java.util.Scanner(inputStream,
-                            java.nio.charset.StandardCharsets.UTF_8.name())) {
+                            java.nio.charset.StandardCharsets.UTF_8)) {
                 scanner.useDelimiter("\\A");
                 return scanner.hasNext() ? scanner.next() : "";
             }

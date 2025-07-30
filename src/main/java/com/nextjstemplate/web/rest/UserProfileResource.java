@@ -275,7 +275,7 @@ public class UserProfileResource {
             response.put("message", "Email not found.");
             return ResponseEntity.badRequest().body(response);
         }
-        UserProfileDTO user = userOpt.get();
+        UserProfileDTO user = userOpt.orElseThrow();
         try {
             Jwt jwt = jwtDecoder.decode(token);
             String subject = jwt.getSubject();
@@ -314,7 +314,7 @@ public class UserProfileResource {
             response.put("message", "Email not found.");
             return ResponseEntity.badRequest().body(response);
         }
-        UserProfileDTO user = userProfileDTO.get();
+        UserProfileDTO user = userProfileDTO.orElseThrow();
         try {
             JwtClaimsSet claims = JwtClaimsSet.builder()
                     .subject(user.getEmail())
