@@ -33,7 +33,7 @@ spring:
       enabled: false
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://c7s7ncbk19n97r.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/dtl75ccv5mlp7
+    url: jdbc:postgresql://ca8lne8pi75f88.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d221u0ntossr05
     username: u265t7km9qcofb
     password: p396b881fcd4b85e29bf4c35456e8da92267b2333ef6dc4a5cac7c32984ecd185
     hikari:
