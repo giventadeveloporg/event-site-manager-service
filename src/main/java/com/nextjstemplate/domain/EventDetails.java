@@ -41,7 +41,7 @@ public class EventDetails implements Serializable {
     @Column(name = "caption", length = 255)
     private String caption;
 
-    @Size(max = 255)
+    @Size(max = 1000)
     @Column(name = "description", length = 255)
     private String description;
 
@@ -71,7 +71,7 @@ public class EventDetails implements Serializable {
     @Column(name = "location", length = 255)
     private String location;
 
-    @Size(max = 255)
+    @Size(max = 600)
     @Column(name = "directions_to_venue", length = 255)
     private String directionsToVenue;
 

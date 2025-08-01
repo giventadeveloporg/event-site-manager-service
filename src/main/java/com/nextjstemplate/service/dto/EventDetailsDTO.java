@@ -26,7 +26,7 @@ public class EventDetailsDTO implements Serializable {
     @Size(max = 255)
     private String caption;
 
-    @Size(max = 255)
+    @Size(max = 1000)
     private String description;
 
     @NotNull
@@ -49,7 +49,7 @@ public class EventDetailsDTO implements Serializable {
     @Size(max = 255)
     private String location;
 
-    @Size(max = 255)
+    @Size(max = 600)
     private String directionsToVenue;
 
     private Integer capacity;
