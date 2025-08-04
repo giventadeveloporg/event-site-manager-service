@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="20241201-01-add-email-performance-indexes" author="system">
+        <comment>Add indexes for email performance optimization</comment>
+
+        <!-- Index for finding subscribed emails by tenant -->
+        <createIndex tableName="user_profile" indexName="idx_user_profile_tenant_subscribed">
+            <column name="tenant_id"/>
+            <column name="is_email_subscribed"/>
+            <column name="email"/>
+        </createIndex>
+
+        <!-- Index for email and tenant lookup -->
+        <createIndex tableName="user_profile" indexName="idx_user_profile_email_tenant">
+            <column name="email"/>
+            <column name="tenant_id"/>
+        </createIndex>
+
+        <!-- Index for subscription token lookup -->
+        <createIndex tableName="user_profile" indexName="idx_user_profile_subscription_token">
+            <column name="email_subscription_token"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

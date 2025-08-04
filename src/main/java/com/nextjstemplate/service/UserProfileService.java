@@ -84,4 +84,8 @@ public interface UserProfileService {
 
     // New: Find all subscribed emails for a tenant
     List<String> findSubscribedEmailsByTenantId(String tenantId);
+
+    // New: Find subscribed users with pagination (includes all user data needed for
+    // email sending)
+    List<UserProfileDTO> findSubscribedUsersByTenantIdWithPagination(String tenantId, int limit, int offset);
 }

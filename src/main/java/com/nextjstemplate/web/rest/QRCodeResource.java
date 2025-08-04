@@ -28,6 +28,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api")
@@ -44,15 +46,17 @@ public class QRCodeResource {
   private final EmailSenderService emailSenderService;
   private final UserProfileService userProfileService;
   private final JwtEncoder jwtEncoder;
+  private static final Logger log = LoggerFactory.getLogger(QRCodeResource.class);
 
-  /*@Value("${email.host.url-prefix}")
-  private String emailHostUrlPrefix;*/
+  /*
+   * @Value("${email.host.url-prefix}")
+   * private String emailHostUrlPrefix;
+   */
 
-    @Autowired
-    private EmailHostUrlPrefixDecoder decoder;
+  @Autowired
+  private EmailHostUrlPrefixDecoder decoder;
 
-
-    @Autowired
+  @Autowired
   public QRCodeResource(
       EventTicketTransactionRepository transactionRepository,
       S3Service s3Service,
@@ -122,15 +126,15 @@ public class QRCodeResource {
   public ResponseEntity<?> getQRCodeImage(
       @PathVariable Long eventId,
       @PathVariable Long transactionId,
-      @PathVariable String  emailHostUrlPrefix) {
+      @PathVariable String emailHostUrlPrefix) {
     QrCodeUsageDTO dto = buildQrCodeUsageDTO(eventId, transactionId);
     if (dto == null) {
       return ResponseEntity.notFound().build();
     }
-      String decodedEmailHostUrlPrefix = decoder.decodeEmailHostUrlPrefix(emailHostUrlPrefix);
+    String decodedEmailHostUrlPrefix = decoder.decodeEmailHostUrlPrefix(emailHostUrlPrefix);
 
     // You can now extract details from dto as needed
-    sendTicketEmail(eventId, transactionId, dto.getTransaction().getEmail(),decodedEmailHostUrlPrefix);
+    sendTicketEmail(eventId, transactionId, dto.getTransaction().getEmail(), decodedEmailHostUrlPrefix);
     String qrCodeImageUrl = dto.getTransaction().getQrCodeImageUrl();
     return ResponseEntity.ok()
         .contentType(MediaType.parseMediaType("image/png"))
@@ -144,7 +148,7 @@ public class QRCodeResource {
       @PathVariable Long eventId,
       @PathVariable Long transactionId,
       @RequestParam(value = "to", required = false) String to,
-      @PathVariable String  emailHostUrlPrefix) {
+      @PathVariable String emailHostUrlPrefix) {
     QrCodeUsageDTO dto = buildQrCodeUsageDTO(eventId, transactionId);
     if (dto == null) {
       return;
@@ -274,32 +278,32 @@ public class QRCodeResource {
     if (locationAddress != null && !locationAddress.trim().isEmpty()) {
       // URL encode the address for Google Maps
       try {
-        googleMapsUrl = "https://www.google.com/maps/search/" + 
+        googleMapsUrl = "https://www.google.com/maps/search/" +
             java.net.URLEncoder.encode(locationAddress, java.nio.charset.StandardCharsets.UTF_8);
       } catch (Exception e) {
         googleMapsUrl = "https://www.google.com/maps";
       }
-      
+
       locationDisplay = String.format(
           """
-          <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 8px;">
-            <span style="color: #dc2626; font-size: 16px; margin-top: 2px;">%s</span>
-            <div style="flex: 1;">
-              <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; border-left: 3px solid #dc2626; margin: 4px 0;">
-                <span style="color: #374151; line-height: 1.5; font-weight: 500;">%s</span>
+              <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 8px;">
+                <span style="color: #dc2626; font-size: 16px; margin-top: 2px;">%s</span>
+                <div style="flex: 1;">
+                  <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; border-left: 3px solid #dc2626; margin: 4px 0;">
+                    <span style="color: #374151; line-height: 1.5; font-weight: 500;">%s</span>
+                  </div>
+                  <div style="margin-top: 8px;">
+                    <a href="%s" target="_blank"
+                       style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px;
+                              background: #f3f4f6; border-radius: 6px; text-decoration: none;
+                              color: #059669; font-size: 13px; border: 1px solid #d1d5db;">
+                      <span>🗺️</span>
+                      <span>View on Google Maps</span>
+                    </a>
+                  </div>
+                </div>
               </div>
-              <div style="margin-top: 8px;">
-                <a href="%s" target="_blank" 
-                   style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; 
-                          background: #f3f4f6; border-radius: 6px; text-decoration: none; 
-                          color: #059669; font-size: 13px; border: 1px solid #d1d5db;">
-                  <span>🗺️</span>
-                  <span>View on Google Maps</span>
-                </a>
-              </div>
-            </div>
-          </div>
-          """, 
+              """,
           locationEmoji, locationAddress, googleMapsUrl);
     } else {
       locationDisplay = "<span style=\"color: #6b7280;\">Location TBD</span>";
@@ -307,19 +311,19 @@ public class QRCodeResource {
 
     // Build additional table rows for discount and amount paid
     String additionalRows = "";
-    
+
     // Add discount row if applicable
     if (!discountAmount.isEmpty()) {
       additionalRows += String.format(
           "<tr style=\"border-top: 2px solid #e5e7eb;\"><td colspan=\"2\" style=\"padding:8px; text-align:right; font-weight:bold;\">%s Discount Applied:</td><td colspan=\"2\" style=\"padding:8px; text-align:center; color:#dc2626; font-weight:bold;\">-%s</td></tr>",
           discountEmoji, String.format("$%.2f", dto.getTransaction().getDiscountAmount()));
     }
-    
+
     // Add amount paid row
-    String finalAmount = dto.getTransaction().getFinalAmount() != null 
+    String finalAmount = dto.getTransaction().getFinalAmount() != null
         ? String.format("$%.2f", dto.getTransaction().getFinalAmount())
         : String.format("$%.2f", dto.getTransaction().getTotalAmount());
-    
+
     additionalRows += String.format(
         "<tr style=\"border-top: 2px solid #e5e7eb; background:#f0f9ff;\"><td colspan=\"2\" style=\"padding:12px; text-align:right; font-weight:bold; font-size:16px;\">%s Amount Paid:</td><td colspan=\"2\" style=\"padding:12px; text-align:center; color:#059669; font-weight:bold; font-size:16px;\">%s</td></tr>",
         moneyEmoji, finalAmount);
@@ -434,7 +438,7 @@ public class QRCodeResource {
     String bodyHtml = requestDTO.getBodyHtml();
     String headerImagePath = requestDTO.getHeaderImagePath();
     String footerPath = requestDTO.getFooterPath();
-    boolean isTestEmail  = requestDTO.isTestEmail();
+    boolean isTestEmail = requestDTO.isTestEmail();
     String emailHostUrlPrefix = requestDTO.getEmailHostUrlPrefix();
     sendPromoEmails(tenantId, promoCode, footerPath, bodyHtml, recipient, subject, isTestEmail, emailHostUrlPrefix);
 
@@ -443,45 +447,126 @@ public class QRCodeResource {
     return ResponseEntity.ok(response);
   }
 
-  @Async
+  @Async("emailTaskExecutor")
   protected void sendPromoEmails(String tenantId, String promoCode, String footerPath, String bodyHtml,
-                                 String recipient, String subject, boolean isTestEmail, String emailHostUrlPrefix) {
-    List<String> emails;
+      String recipient, String subject, boolean isTestEmail, String emailHostUrlPrefix) {
     if (isTestEmail) {
-      emails = List.of(recipient);
-    } else {
-      emails = userProfileService.findSubscribedEmailsByTenantId(tenantId);
+      sendPromoEmailToSingleRecipient(recipient, tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix);
+      return;
     }
 
-    for (String email : emails) {
-      Optional<UserProfileDTO> userOpt = userProfileService.findByEmailAndTenantId(email, tenantId);
-      if (userOpt.isEmpty()) {
-        continue;
+    // Use batch processing for large email lists
+    int batchSize = 100; // Process 100 emails at a time
+    int offset = 0;
+
+    while (true) {
+      List<UserProfileDTO> userBatch = userProfileService.findSubscribedUsersByTenantIdWithPagination(tenantId,
+          batchSize, offset);
+
+      if (userBatch.isEmpty()) {
+        break; // No more users to process
       }
-      UserProfileDTO user = userOpt.orElseThrow();
-      if (!Boolean.TRUE.equals(user.getIsEmailSubscribed())) {
-        continue;
-      }
-      String token = userProfileService.getUnsubscribeTokenByEmailAndTenantId(email, tenantId);
-      if (token == null || token.isBlank()) {
-        // If no token, skip sending (or handle as needed)
-        continue;
-      }
-      String unsubscribeLink = String.format(emailHostUrlPrefix + "/unsubscribe-email?email=%s&token=%s", email, token);
-      String fullEmailHtml = buildPromotionEmailHtml(subject, tenantId, promoCode, bodyHtml, unsubscribeLink,
-          s3Service);
-      Map<String, String> headers = new HashMap<>();
-      headers.put("List-Unsubscribe", EmailSenderService.buildListUnsubscribeHeader(email, unsubscribeLink));
-      emailSenderService.sendEmail(email, subject, fullEmailHtml, true, headers);
-      if (!isTestEmail) {
+
+      // Process batch in parallel
+      userBatch.parallelStream()
+          .filter(user -> Boolean.TRUE.equals(user.getIsEmailSubscribed()))
+          .filter(user -> user.getEmailSubscriptionToken() != null && !user.getEmailSubscriptionToken().isBlank())
+          .forEach(user -> {
+            try {
+              sendPromoEmailToSingleRecipient(user.getEmail(), tenantId, promoCode, bodyHtml, subject,
+                  emailHostUrlPrefix);
+            } catch (Exception e) {
+              // Log error but continue processing other emails
+              log.error("Failed to send email to {}: {}", user.getEmail(), e.getMessage());
+            }
+          });
+
+      offset += batchSize;
+
+      // Add a small delay between batches to avoid overwhelming the email service
+      if (!userBatch.isEmpty()) {
         try {
-          Thread.sleep(1000);
+          Thread.sleep(2000); // 2 second delay between batches
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           break;
         }
       }
     }
+  }
+
+  // Alternative method using custom thread pool for even better performance
+  @Async("emailTaskExecutor")
+  protected void sendPromoEmailsWithCustomExecutor(String tenantId, String promoCode, String footerPath,
+      String bodyHtml,
+      String recipient, String subject, boolean isTestEmail, String emailHostUrlPrefix) {
+    if (isTestEmail) {
+      sendPromoEmailToSingleRecipient(recipient, tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix);
+      return;
+    }
+
+    // Use larger batches for custom executor
+    int batchSize = 200; // Process 200 emails at a time
+    int offset = 0;
+
+    while (true) {
+      List<UserProfileDTO> userBatch = userProfileService.findSubscribedUsersByTenantIdWithPagination(tenantId,
+          batchSize, offset);
+
+      if (userBatch.isEmpty()) {
+        break;
+      }
+
+      // Process batch with custom executor
+      userBatch.stream()
+          .filter(user -> Boolean.TRUE.equals(user.getIsEmailSubscribed()))
+          .filter(user -> user.getEmailSubscriptionToken() != null && !user.getEmailSubscriptionToken().isBlank())
+          .forEach(user -> {
+            try {
+              sendPromoEmailToSingleRecipient(user.getEmail(), tenantId, promoCode, bodyHtml, subject,
+                  emailHostUrlPrefix);
+            } catch (Exception e) {
+              log.error("Failed to send email to {}: {}", user.getEmail(), e.getMessage());
+            }
+          });
+
+      offset += batchSize;
+
+      // Shorter delay with custom executor
+      if (!userBatch.isEmpty()) {
+        try {
+          Thread.sleep(1000); // 1 second delay between batches
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          break;
+        }
+      }
+    }
+  }
+
+  private void sendPromoEmailToSingleRecipient(String email, String tenantId, String promoCode, String bodyHtml,
+      String subject, String emailHostUrlPrefix) {
+    Optional<UserProfileDTO> userOpt = userProfileService.findByEmailAndTenantId(email, tenantId);
+    if (userOpt.isEmpty()) {
+      return;
+    }
+
+    UserProfileDTO user = userOpt.orElseThrow();
+    if (!Boolean.TRUE.equals(user.getIsEmailSubscribed())) {
+      return;
+    }
+
+    String token = user.getEmailSubscriptionToken();
+    if (token == null || token.isBlank()) {
+      return;
+    }
+
+    String unsubscribeLink = String.format(emailHostUrlPrefix + "/unsubscribe-email?email=%s&token=%s", email, token);
+    String fullEmailHtml = buildPromotionEmailHtml(subject, tenantId, promoCode, bodyHtml, unsubscribeLink, s3Service);
+
+    Map<String, String> headers = new HashMap<>();
+    headers.put("List-Unsubscribe", EmailSenderService.buildListUnsubscribeHeader(email, unsubscribeLink));
+    emailSenderService.sendEmail(email, subject, fullEmailHtml, true, headers);
   }
 
   // Extracted reusable method for building the promotion email HTML

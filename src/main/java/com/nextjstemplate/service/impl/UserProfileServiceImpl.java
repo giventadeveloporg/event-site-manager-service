@@ -15,6 +15,7 @@ import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -150,16 +151,32 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<UserProfileDTO> findSubscribedUsersByTenantIdWithPagination(String tenantId, int limit, int offset) {
+        log.debug("Request to get subscribed users for tenantId {} with limit {} and offset {}", tenantId, limit,
+                offset);
+        Pageable pageable = PageRequest.of(offset / limit, limit);
+        return userProfileRepository.findSubscribedUsersByTenantIdWithPagination(tenantId, pageable)
+                .getContent()
+                .stream()
+                .map(userProfileMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     /**
-     * Used by the excel bulk upload template to insert multiple users at the same time in the user profile table
-     * Also makes sure to insert only users with a combination of the tenant ID and the email
+     * Used by the excel bulk upload template to insert multiple users at the same
+     * time in the user profile table
+     * Also makes sure to insert only users with a combination of the tenant ID and
+     * the email
      * that don't already exist in the table
-     *  column names tenant_id and email.
+     * column names tenant_id and email.
      */
     public List<UserProfileDTO> saveBulkUploadUsers(List<UserProfileDTO> userProfileDTOs) {
         log.debug("Request to save bulk upload users : {}", userProfileDTOs.size());
 
-        // Filter out users with email and tenant ID combination that already exist in the database
+        // Filter out users with email and tenant ID combination that already exist in
+        // the database
         List<UserProfileDTO> filteredUsers = userProfileDTOs.stream()
                 .filter(userProfileDTO -> {
                     if (userProfileDTO.getEmail() == null || userProfileDTO.getEmail().trim().isEmpty()) {
@@ -169,12 +186,13 @@ public class UserProfileServiceImpl implements UserProfileService {
                         return false; // Skip users without tenant ID
                     }
                     Optional<UserProfile> existingUser = userProfileRepository.findByEmailAndTenantId(
-                        userProfileDTO.getEmail(), userProfileDTO.getTenantId());
+                            userProfileDTO.getEmail(), userProfileDTO.getTenantId());
                     return existingUser.isEmpty(); // Only include if email and tenant ID combination doesn't exist
                 })
                 .collect(Collectors.toList());
 
-        log.debug("Filtered {} users to {} after removing existing email and tenant ID combinations", userProfileDTOs.size(), filteredUsers.size());
+        log.debug("Filtered {} users to {} after removing existing email and tenant ID combinations",
+                userProfileDTOs.size(), filteredUsers.size());
 
         // Map each DTO to a domain/entity object
         List<UserProfile> domainList = filteredUsers.stream()
