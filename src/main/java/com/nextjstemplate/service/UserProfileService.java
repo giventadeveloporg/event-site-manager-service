@@ -74,7 +74,7 @@ public interface UserProfileService {
 
     Optional<UserProfileDTO> findByEmail(String email);
 
-    List<UserProfileDTO> saveAll(List<UserProfileDTO> users);
+    List<UserProfileDTO> saveBulkUploadUsers(List<UserProfileDTO> users);
 
     // New: Find by email and tenantId
     Optional<UserProfileDTO> findByEmailAndTenantId(String email, String tenantId);

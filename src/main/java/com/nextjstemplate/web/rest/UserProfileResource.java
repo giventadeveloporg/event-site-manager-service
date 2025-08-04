@@ -95,7 +95,7 @@ public class UserProfileResource {
 
     /**
      * {@code POST  /user-profiles} : Create a new userProfile.
-     *
+     * Used by the excel bulk upload template to insert multiple users at the same time in the user profile table
      * @param users the userProfileDTOs to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
      *         body the new userProfileDTO, or with status {@code 400 (Bad Request)}
@@ -104,7 +104,7 @@ public class UserProfileResource {
      */
     @PostMapping("/bulk")
     public ResponseEntity<List<UserProfileDTO>> createBulk(@RequestBody List<UserProfileDTO> users) {
-        List<UserProfileDTO> created = userProfileService.saveAll(users);
+        List<UserProfileDTO> created = userProfileService.saveBulkUploadUsers(users);
         return ResponseEntity.ok(created);
     }
 

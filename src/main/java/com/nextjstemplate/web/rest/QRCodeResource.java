@@ -260,18 +260,69 @@ public class QRCodeResource {
     String calendarEmoji = "📅";
     String qrEmoji = "🎫";
     String discountEmoji = "🏷️";
+    String locationEmoji = "📍";
     String discountAmount = "";
     if (dto.getTransaction().getDiscountAmount() != null
         && dto.getTransaction().getDiscountAmount().doubleValue() > 0) {
       discountAmount = String.format("%s $%.2f", discountEmoji, dto.getTransaction().getDiscountAmount());
     }
 
-    // Build HTML email body
-    String discountRow = "";
-    if (!discountAmount.isEmpty()) {
-      discountRow = String.format("<tr><td style='font-weight:bold;'>Discount</td><td colspan='3'>%s</td></tr>",
-          discountAmount);
+    // Enhanced location display with Google Maps link
+    String locationAddress = dto.getEventDetails().getLocation();
+    String googleMapsUrl = "";
+    String locationDisplay = "";
+    if (locationAddress != null && !locationAddress.trim().isEmpty()) {
+      // URL encode the address for Google Maps
+      try {
+        googleMapsUrl = "https://www.google.com/maps/search/" + 
+            java.net.URLEncoder.encode(locationAddress, java.nio.charset.StandardCharsets.UTF_8);
+      } catch (Exception e) {
+        googleMapsUrl = "https://www.google.com/maps";
+      }
+      
+      locationDisplay = String.format(
+          """
+          <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 8px;">
+            <span style="color: #dc2626; font-size: 16px; margin-top: 2px;">%s</span>
+            <div style="flex: 1;">
+              <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; border-left: 3px solid #dc2626; margin: 4px 0;">
+                <span style="color: #374151; line-height: 1.5; font-weight: 500;">%s</span>
+              </div>
+              <div style="margin-top: 8px;">
+                <a href="%s" target="_blank" 
+                   style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; 
+                          background: #f3f4f6; border-radius: 6px; text-decoration: none; 
+                          color: #059669; font-size: 13px; border: 1px solid #d1d5db;">
+                  <span>🗺️</span>
+                  <span>View on Google Maps</span>
+                </a>
+              </div>
+            </div>
+          </div>
+          """, 
+          locationEmoji, locationAddress, googleMapsUrl);
+    } else {
+      locationDisplay = "<span style=\"color: #6b7280;\">Location TBD</span>";
     }
+
+    // Build additional table rows for discount and amount paid
+    String additionalRows = "";
+    
+    // Add discount row if applicable
+    if (!discountAmount.isEmpty()) {
+      additionalRows += String.format(
+          "<tr style=\"border-top: 2px solid #e5e7eb;\"><td colspan=\"2\" style=\"padding:8px; text-align:right; font-weight:bold;\">%s Discount Applied:</td><td colspan=\"2\" style=\"padding:8px; text-align:center; color:#dc2626; font-weight:bold;\">-%s</td></tr>",
+          discountEmoji, String.format("$%.2f", dto.getTransaction().getDiscountAmount()));
+    }
+    
+    // Add amount paid row
+    String finalAmount = dto.getTransaction().getFinalAmount() != null 
+        ? String.format("$%.2f", dto.getTransaction().getFinalAmount())
+        : String.format("$%.2f", dto.getTransaction().getTotalAmount());
+    
+    additionalRows += String.format(
+        "<tr style=\"border-top: 2px solid #e5e7eb; background:#f0f9ff;\"><td colspan=\"2\" style=\"padding:12px; text-align:right; font-weight:bold; font-size:16px;\">%s Amount Paid:</td><td colspan=\"2\" style=\"padding:12px; text-align:center; color:#059669; font-weight:bold; font-size:16px;\">%s</td></tr>",
+        moneyEmoji, finalAmount);
     String template = String.format(
         """
             <!DOCTYPE html>
@@ -299,6 +350,7 @@ public class QRCodeResource {
                         <th style=\"padding:8px; text-align:center;\">Total</th>
                       </tr>
                       %s
+                      %s
                     </table>
                   </div>
                   <div style=\"margin-bottom: 32px;\">
@@ -306,8 +358,8 @@ public class QRCodeResource {
                     <p>
                       <strong>%s</strong><br>
                       <span>%s | %s - %s</span><br>
-                      <span>%s</span>
                     </p>
+                    %s
                   </div>
                 </div>
               </div>
@@ -321,12 +373,13 @@ public class QRCodeResource {
         ticketNumber,
         ticketEmoji,
         ticketBreakdownRows.toString(),
+        additionalRows,
         calendarEmoji,
         eventName,
         eventDate,
         eventStart,
         eventEnd,
-        dto.getEventDetails().getLocation());
+        locationDisplay);
 
     // Prepare S3 URLs for footer and logo, replacing tenant_demo_001 with actual
     // tenantId
@@ -349,8 +402,22 @@ public class QRCodeResource {
       footerHtml = "";
     }
 
+    // Build ticket refund policy disclaimer
+    String ticketPolicyHtml = """
+        <div style="margin: 24px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; font-size: 13px; color: #555;">
+          <h4 style="margin: 0 0 12px 0; color: #333; font-size: 14px;">Ticket Sales Policy</h4>
+          <p style="margin: 0 0 12px 0;"><strong>All ticket sales are final and non-refundable, with the following exceptions:</strong></p>
+          <ul style="margin: 0 0 12px 0; padding-left: 20px;">
+            <li style="margin-bottom: 8px;"><strong>Event Cancellation:</strong> If the event is outright canceled, you will be eligible for a full refund.</li>
+            <li style="margin-bottom: 8px;"><strong>Event Postponement/Rescheduling:</strong> In the event of a postponement or rescheduling, you may be offered the option of a refund or the ability to use your ticket for the new date, depending on the specific circumstances. Please refer to further communication regarding postponed or rescheduled events for details.</li>
+            <li style="margin-bottom: 8px;"><strong>Refund Processing:</strong> Approved refunds will typically be processed back to the original method of payment.</li>
+          </ul>
+          <p style="margin: 0; font-weight: bold;"><strong>By purchasing this ticket, you acknowledge and agree to the terms of this Ticket Sales Policy.</strong></p>
+        </div>
+        """;
+
     // ... build the main email HTML as before ...
-    String fullEmailHtml = template + unsubscribeHtml + footerHtml;
+    String fullEmailHtml = template + unsubscribeHtml + footerHtml + ticketPolicyHtml;
     // List-Unsubscribe header
     Map<String, String> headers = new HashMap<>();
     headers.put("List-Unsubscribe", EmailSenderService.buildListUnsubscribeHeader(recipient, unsubscribeLink));
