@@ -134,7 +134,7 @@ public class QRCodeResource {
     String decodedEmailHostUrlPrefix = decoder.decodeEmailHostUrlPrefix(emailHostUrlPrefix);
 
     // You can now extract details from dto as needed
-    sendTicketEmail(eventId, transactionId, dto.getTransaction().getEmail(), decodedEmailHostUrlPrefix);
+//    sendTicketEmail(eventId, transactionId, dto.getTransaction().getEmail(), decodedEmailHostUrlPrefix);
     String qrCodeImageUrl = dto.getTransaction().getQrCodeImageUrl();
     return ResponseEntity.ok()
         .contentType(MediaType.parseMediaType("image/png"))
