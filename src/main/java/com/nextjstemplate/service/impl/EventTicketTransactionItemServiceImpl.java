@@ -135,18 +135,23 @@ public class EventTicketTransactionItemServiceImpl implements EventTicketTransac
                         Optional<EventTicketTransactionDTO> transactionOpt = eventTicketTransactionService
                                 .findOne(transactionId);
                         transactionOpt.ifPresent(transaction -> {
-                            String qrScanUrlContent = qrScanUrlPrefix +
-                                "/qrcode-scan/tickets"+"/events/"+transaction.getEventId()+
-                                "/transactions/"+transaction.getId(); // or any QR
-                                                                                                         // content
-                                                                                                         // logic
-                            String qrCodeImageUrl = qrCodeService.generateAndUploadQRCode(
-                                    qrScanUrlContent,
-                                    transaction.getEventId(),
-                                    String.valueOf(transaction.getId()),
-                                    transaction.getTenantId());
-                            transaction.setQrCodeImageUrl(qrCodeImageUrl);
-                            eventTicketTransactionService.update(transaction);
+                            try {
+                                String qrScanUrlContent = qrScanUrlPrefix +
+                                    "/qrcode-scan/tickets"+"/events/"+transaction.getEventId()+
+                                    "/transactions/"+transaction.getId(); // or any QR
+                                                                                                             // content
+                                                                                                             // logic
+                                String qrCodeImageUrl = qrCodeService.generateAndUploadQRCode(
+                                        qrScanUrlContent,
+                                        transaction.getEventId(),
+                                        String.valueOf(transaction.getId()),
+                                        transaction.getTenantId());
+                                transaction.setQrCodeImageUrl(qrCodeImageUrl);
+                                eventTicketTransactionService.update(transaction);
+                            } catch (Exception e) {
+                                log.error("Failed to generate/upload QR code for transaction {}: {}", transaction.getId(),
+                                        e.getMessage(), e);
+                            }
                         });
                     } catch (Exception e) {
                         log.error("Failed to generate/upload QR code for transactionId {}: {}", transactionId,
