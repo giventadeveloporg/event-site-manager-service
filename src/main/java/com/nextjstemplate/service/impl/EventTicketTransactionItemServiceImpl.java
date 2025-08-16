@@ -1,14 +1,18 @@
 package com.nextjstemplate.service.impl;
 
 import com.nextjstemplate.domain.EventTicketTransactionItem;
+import com.nextjstemplate.domain.EventTicketType;
 import com.nextjstemplate.repository.EventTicketTransactionItemRepository;
+import com.nextjstemplate.repository.EventTicketTypeRepository;
 import com.nextjstemplate.service.EventTicketTransactionItemService;
 import com.nextjstemplate.service.dto.EventTicketTransactionItemDTO;
 import com.nextjstemplate.service.mapper.EventTicketTransactionItemMapper;
 import com.nextjstemplate.service.QRCodeService;
 import com.nextjstemplate.service.EventTicketTransactionService;
 import com.nextjstemplate.service.dto.EventTicketTransactionDTO;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -40,16 +44,19 @@ public class EventTicketTransactionItemServiceImpl implements EventTicketTransac
 
     private final EventTicketTransactionService eventTicketTransactionService;
 
+    private final EventTicketTypeRepository eventTicketTypeRepository;
 
     public EventTicketTransactionItemServiceImpl(
             EventTicketTransactionItemRepository eventTicketTransactionItemRepository,
             EventTicketTransactionItemMapper eventTicketTransactionItemMapper,
             QRCodeService qrCodeService,
-            EventTicketTransactionService eventTicketTransactionService) {
+            EventTicketTransactionService eventTicketTransactionService,
+            EventTicketTypeRepository eventTicketTypeRepository) {
         this.eventTicketTransactionItemRepository = eventTicketTransactionItemRepository;
         this.eventTicketTransactionItemMapper = eventTicketTransactionItemMapper;
         this.qrCodeService = qrCodeService;
         this.eventTicketTransactionService = eventTicketTransactionService;
+        this.eventTicketTypeRepository = eventTicketTypeRepository;
     }
 
     @Override
@@ -115,6 +122,10 @@ public class EventTicketTransactionItemServiceImpl implements EventTicketTransac
                 .map(eventTicketTransactionItemMapper::toEntity)
                 .collect(Collectors.toList());
         List<EventTicketTransactionItem> savedEntities = eventTicketTransactionItemRepository.saveAll(entities);
+        
+        // Update ticket type quantities for COMPLETED transactions only
+        updateTicketTypeQuantities(savedEntities);
+        
         // Generate QR code for each unique transaction
         savedEntities.stream()
                 .map(EventTicketTransactionItem::getTransactionId)
@@ -144,5 +155,72 @@ public class EventTicketTransactionItemServiceImpl implements EventTicketTransac
                     }
                 });
         return savedEntities.stream().map(eventTicketTransactionItemMapper::toDto).collect(Collectors.toList());
+    }
+
+    private void updateTicketTypeQuantities(List<EventTicketTransactionItem> savedEntities) {
+        try {
+            // Get unique ticket type IDs and their associated event IDs from the saved entities
+            Map<Long, Long> ticketTypeToEventMap = savedEntities.stream()
+                .collect(Collectors.groupingBy(EventTicketTransactionItem::getTicketTypeId))
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    entry -> {
+                        // Get event ID from the first transaction in the group
+                        Long transactionId = entry.getValue().get(0).getTransactionId();
+                        Optional<EventTicketTransactionDTO> transactionOpt = eventTicketTransactionService.findOne(transactionId);
+                        return transactionOpt.map(EventTicketTransactionDTO::getEventId).orElse(null);
+                    }
+                ));
+
+            // Update quantities for each ticket type
+            ticketTypeToEventMap.forEach((ticketTypeId, eventId) -> {
+                if (eventId != null) {
+                    updateTicketTypeQuantityForEvent(ticketTypeId, eventId);
+                }
+            });
+
+        } catch (Exception e) {
+            log.error("Failed to update ticket type quantities: {}", e.getMessage(), e);
+        }
+    }
+
+    private void updateTicketTypeQuantityForEvent(Long ticketTypeId, Long eventId) {
+        try {
+            Optional<EventTicketType> ticketTypeOpt = eventTicketTypeRepository.findById(ticketTypeId);
+            if (ticketTypeOpt.isPresent()) {
+                EventTicketType ticketType = ticketTypeOpt.get();
+                
+                // Calculate sold quantity by summing quantities from COMPLETED transactions
+                Integer soldQuantity = eventTicketTransactionItemRepository.findAll().stream()
+                    .filter(item -> item.getTicketTypeId().equals(ticketTypeId))
+                    .filter(item -> {
+                        // Check if the transaction is COMPLETED
+                        Optional<EventTicketTransactionDTO> transactionOpt = eventTicketTransactionService.findOne(item.getTransactionId());
+                        return transactionOpt.map(transaction -> 
+                            "COMPLETED".equals(transaction.getStatus()) && eventId.equals(transaction.getEventId())
+                        ).orElse(false);
+                    })
+                    .mapToInt(EventTicketTransactionItem::getQuantity)
+                    .sum();
+
+                // Calculate remaining quantity
+                Integer availableQuantity = ticketType.getAvailableQuantity();
+                Integer remainingQuantity = availableQuantity != null ? 
+                    Math.max(0, availableQuantity - soldQuantity) : null;
+
+                // Update the ticket type
+                ticketType.setSoldQuantity(soldQuantity);
+                ticketType.setRemainingQuantity(remainingQuantity);
+                ticketType.setUpdatedAt(ZonedDateTime.now());
+
+                eventTicketTypeRepository.save(ticketType);
+                
+                log.debug("Updated ticket type {} quantities: sold={}, remaining={}", 
+                    ticketTypeId, soldQuantity, remainingQuantity);
+            }
+        } catch (Exception e) {
+            log.error("Failed to update quantities for ticket type {}: {}", ticketTypeId, e.getMessage(), e);
+        }
     }
 }

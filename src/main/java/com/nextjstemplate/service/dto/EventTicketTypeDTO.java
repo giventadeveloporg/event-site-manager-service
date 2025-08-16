@@ -39,6 +39,8 @@ public class EventTicketTypeDTO implements Serializable {
 
     private Integer soldQuantity;
 
+    private Integer remainingQuantity;
+
     private Boolean isActive;
 
     @NotNull
@@ -129,6 +131,14 @@ public class EventTicketTypeDTO implements Serializable {
         this.soldQuantity = soldQuantity;
     }
 
+    public Integer getRemainingQuantity() {
+        return remainingQuantity;
+    }
+
+    public void setRemainingQuantity(Integer remainingQuantity) {
+        this.remainingQuantity = remainingQuantity;
+    }
+
     public Boolean getIsActive() {
         return isActive;
     }
@@ -196,6 +206,7 @@ public class EventTicketTypeDTO implements Serializable {
             ", code='" + getCode() + "'" +
             ", availableQuantity=" + getAvailableQuantity() +
             ", soldQuantity=" + getSoldQuantity() +
+            ", remainingQuantity=" + getRemainingQuantity() +
             ", isActive='" + getIsActive() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

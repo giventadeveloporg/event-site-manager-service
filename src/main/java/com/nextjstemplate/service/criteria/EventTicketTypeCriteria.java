@@ -41,6 +41,8 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
 
     private IntegerFilter soldQuantity;
 
+    private IntegerFilter remainingQuantity;
+
     private BooleanFilter isActive;
 
     private ZonedDateTimeFilter createdAt;
@@ -64,6 +66,7 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
         this.code = other.code == null ? null : other.code.copy();
         this.availableQuantity = other.availableQuantity == null ? null : other.availableQuantity.copy();
         this.soldQuantity = other.soldQuantity == null ? null : other.soldQuantity.copy();
+        this.remainingQuantity = other.remainingQuantity == null ? null : other.remainingQuantity.copy();
         this.isActive = other.isActive == null ? null : other.isActive.copy();
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
@@ -226,6 +229,21 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
         this.soldQuantity = soldQuantity;
     }
 
+    public IntegerFilter getRemainingQuantity() {
+        return remainingQuantity;
+    }
+
+    public IntegerFilter remainingQuantity() {
+        if (remainingQuantity == null) {
+            remainingQuantity = new IntegerFilter();
+        }
+        return remainingQuantity;
+    }
+
+    public void setRemainingQuantity(IntegerFilter remainingQuantity) {
+        this.remainingQuantity = remainingQuantity;
+    }
+
     public BooleanFilter getIsActive() {
         return isActive;
     }
@@ -314,6 +332,7 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
             Objects.equals(code, that.code) &&
             Objects.equals(availableQuantity, that.availableQuantity) &&
             Objects.equals(soldQuantity, that.soldQuantity) &&
+            Objects.equals(remainingQuantity, that.remainingQuantity) &&
             Objects.equals(isActive, that.isActive) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
@@ -335,6 +354,7 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
             code,
             availableQuantity,
             soldQuantity,
+            remainingQuantity,
             isActive,
             createdAt,
             updatedAt,
@@ -357,6 +377,7 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
             (code != null ? "code=" + code + ", " : "") +
             (availableQuantity != null ? "availableQuantity=" + availableQuantity + ", " : "") +
             (soldQuantity != null ? "soldQuantity=" + soldQuantity + ", " : "") +
+            (remainingQuantity != null ? "remainingQuantity=" + remainingQuantity + ", " : "") +
             (isActive != null ? "isActive=" + isActive + ", " : "") +
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +

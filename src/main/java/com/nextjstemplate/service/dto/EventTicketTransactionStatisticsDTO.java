@@ -8,6 +8,7 @@ public class EventTicketTransactionStatisticsDTO implements Serializable {
   private Long eventId;
   private int totalTicketsSold;
   private BigDecimal totalAmount;
+  private BigDecimal netAmount;
   private Map<String, Integer> ticketsByStatus;
   private Map<String, BigDecimal> amountByStatus;
 
@@ -33,6 +34,14 @@ public class EventTicketTransactionStatisticsDTO implements Serializable {
 
   public void setTotalAmount(BigDecimal totalAmount) {
     this.totalAmount = totalAmount;
+  }
+
+  public BigDecimal getNetAmount() {
+    return netAmount;
+  }
+
+  public void setNetAmount(BigDecimal netAmount) {
+    this.netAmount = netAmount;
   }
 
   public Map<String, Integer> getTicketsByStatus() {

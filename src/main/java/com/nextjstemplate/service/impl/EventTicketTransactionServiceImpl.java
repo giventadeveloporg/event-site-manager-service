@@ -102,6 +102,16 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
         BigDecimal totalAmount = transactions.stream()
                 .map(t -> t.getFinalAmount() != null ? t.getFinalAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal totalFees = transactions.stream()
+                .map(t -> {
+                    BigDecimal platformFee = t.getPlatformFeeAmount() != null ? t.getPlatformFeeAmount() : BigDecimal.ZERO;
+                    BigDecimal stripeFee = t.getStripeFeeAmount() != null ? t.getStripeFeeAmount() : BigDecimal.ZERO;
+                    return platformFee.add(stripeFee);
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal netAmount = totalAmount.subtract(totalFees);
         Map<String, Integer> ticketsByStatus = transactions.stream().collect(
                 Collectors.groupingBy(
                         t -> t.getStatus() != null ? t.getStatus() : "UNKNOWN",
@@ -116,6 +126,7 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
         stats.setEventId(eventId);
         stats.setTotalTicketsSold(totalTicketsSold);
         stats.setTotalAmount(totalAmount);
+        stats.setNetAmount(netAmount);
         stats.setTicketsByStatus(ticketsByStatus);
         stats.setAmountByStatus(amountByStatus);
         return stats;
