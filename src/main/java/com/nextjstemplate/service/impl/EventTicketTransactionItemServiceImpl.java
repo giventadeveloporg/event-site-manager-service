@@ -134,8 +134,7 @@ public class EventTicketTransactionItemServiceImpl implements EventTicketTransac
                     try {
                         Optional<EventTicketTransactionDTO> transactionOpt = eventTicketTransactionService
                                 .findOne(transactionId);
-                        if (transactionOpt.isPresent()) {
-                            EventTicketTransactionDTO transaction = transactionOpt.get();
+                        transactionOpt.ifPresent(transaction -> {
                             String qrScanUrlContent = qrScanUrlPrefix +
                                 "/qrcode-scan/tickets"+"/events/"+transaction.getEventId()+
                                 "/transactions/"+transaction.getId(); // or any QR
@@ -148,7 +147,7 @@ public class EventTicketTransactionItemServiceImpl implements EventTicketTransac
                                     transaction.getTenantId());
                             transaction.setQrCodeImageUrl(qrCodeImageUrl);
                             eventTicketTransactionService.update(transaction);
-                        }
+                        });
                     } catch (Exception e) {
                         log.error("Failed to generate/upload QR code for transactionId {}: {}", transactionId,
                                 e.getMessage(), e);
@@ -187,10 +186,7 @@ public class EventTicketTransactionItemServiceImpl implements EventTicketTransac
 
     private void updateTicketTypeQuantityForEvent(Long ticketTypeId, Long eventId) {
         try {
-            Optional<EventTicketType> ticketTypeOpt = eventTicketTypeRepository.findById(ticketTypeId);
-            if (ticketTypeOpt.isPresent()) {
-                EventTicketType ticketType = ticketTypeOpt.get();
-                
+            eventTicketTypeRepository.findById(ticketTypeId).ifPresent(ticketType -> {
                 // Calculate sold quantity by summing quantities from COMPLETED transactions
                 Integer soldQuantity = eventTicketTransactionItemRepository.findAll().stream()
                     .filter(item -> item.getTicketTypeId().equals(ticketTypeId))
@@ -218,7 +214,7 @@ public class EventTicketTransactionItemServiceImpl implements EventTicketTransac
                 
                 log.debug("Updated ticket type {} quantities: sold={}, remaining={}", 
                     ticketTypeId, soldQuantity, remainingQuantity);
-            }
+            });
         } catch (Exception e) {
             log.error("Failed to update quantities for ticket type {}: {}", ticketTypeId, e.getMessage(), e);
         }
