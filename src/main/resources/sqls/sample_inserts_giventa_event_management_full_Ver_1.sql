@@ -193,16 +193,27 @@ INSERT INTO public.discount_code VALUES (6, 'FAMILY5', 'Family Picnic 5% off', '
 INSERT INTO public.discount_code VALUES (1, 'SPRING10', '10% off Spring events', 'PERCENTAGE', 10.00, 100, 5, '2025-03-01 00:00:00', '2025-06-01 00:00:00', true, '2025-06-22 11:31:27.135034', '2025-06-22 11:31:27.135034', 1, 'tenant_demo_001');
 INSERT INTO public.discount_code VALUES (3, 'FREERUN', 'Free entry for Charity Run', 'FIXED_AMOUNT', 100.00, 50, 10, '2025-05-01 00:00:00', '2025-06-02 00:00:00', true, '2025-06-22 11:31:27.135034', '2025-06-22 11:31:27.135034', 3, 'tenant_demo_001');
 INSERT INTO public.discount_code VALUES (4851, 'SPRING12', 'xcxcxc', 'FIXED_AMOUNT', 4.00, 100, NULL, NULL, NULL, true, '2025-06-23 05:29:02.585', '2025-06-23 05:29:02.585', 1, 'tenant_demo_001');
-INSERT INTO public.event_ticket_type VALUES (1, 'tenant_demo_001', 'Standard', 'Standard ticket for Spring Gala', 50.00, false, NULL, 'STD', 100, 12, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 11:31:27.363866', 6);
-INSERT INTO public.event_ticket_type VALUES (3, 'tenant_demo_001', 'Runner', 'Runner ticket for Charity Run', 0.00, false, NULL, 'RUN', 300, 103, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 11:31:27.363866', 3);
-INSERT INTO public.event_ticket_type VALUES (4, 'tenant_demo_001', 'Family', 'Family ticket for Picnic', 20.00, false, NULL, 'FAM', 30, 14, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 11:31:27.363866', 4);
-INSERT INTO public.event_ticket_type VALUES (5, 'tenant_demo_001', 'Dinner', 'Dinner ticket for VIP Dinner', 100.00, false, NULL, 'DIN', 20, 9, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 11:31:27.363866', 5);
-INSERT INTO public.event_ticket_type VALUES (6, 'tenant_demo_001', 'Festival', 'Festival ticket for Summer Fest', 30.00, false, NULL, 'FEST', 200, 52, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 11:31:27.363866', 6);
-INSERT INTO public.event_ticket_type VALUES (2, 'tenant_demo_001', 'VIP', 'VIP ticket for Tech Conference', 200.00, false, NULL, 'VIP', 48, 8, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 14:03:04.384515', 2);
-INSERT INTO public.event_ticket_type VALUES (4752, 'tenant_demo_001', 'FAMILY5', 'xzxzxzxz', 10.00, false, 0.00, 'FAMILY5', 83, 6, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 17:50:20.591', '2025-06-22 16:46:15.904713', 1);
-INSERT INTO public.event_ticket_type VALUES (4751, 'tenant_demo_001', 'zxzxz', 'xzxzxzxz', 20.00, false, 0.00, 'DIN', 84, 25, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 17:48:59.275', '2025-06-23 01:17:30.642189', 1);
+
+-- Fixed INSERT statements for event_ticket_type table
+INSERT INTO public.event_ticket_type VALUES (1, 'tenant_demo_001', 'Standard', 'Standard ticket for Spring Gala', 50.00, false, NULL, 'STD', 100, 12, 88, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 11:31:27.363866', 6);
+
+INSERT INTO public.event_ticket_type VALUES (3, 'tenant_demo_001', 'Runner', 'Runner ticket for Charity Run', 0.00, false, NULL, 'RUN', 300, 103, 197, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 11:31:27.363866', 3);
+
+INSERT INTO public.event_ticket_type VALUES (4, 'tenant_demo_001', 'Family', 'Family ticket for Picnic', 20.00, false, NULL, 'FAM', 30, 14, 16, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 11:31:27.363866', 4);
+
+INSERT INTO public.event_ticket_type VALUES (5, 'tenant_demo_001', 'Dinner', 'Dinner ticket for VIP Dinner', 100.00, false, NULL, 'DIN', 20, 9, 11, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 11:31:27.363866', 5);
+
+INSERT INTO public.event_ticket_type VALUES (6, 'tenant_demo_001', 'Festival', 'Festival ticket for Summer Fest', 30.00, false, NULL, 'FEST', 200, 52, 148, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 11:31:27.363866', 6);
+
+INSERT INTO public.event_ticket_type VALUES (2, 'tenant_demo_001', 'VIP', 'VIP ticket for Tech Conference', 200.00, false, NULL, 'VIP', 48, 8, 40, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 11:31:27.305395', '2025-06-22 14:03:04.384515', 2);
+
+INSERT INTO public.event_ticket_type VALUES (4752, 'tenant_demo_001', 'FAMILY5', 'xzxzxzxz', 10.00, false, 0.00, 'FAMILY5', 83, 6, 77, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 17:50:20.591', '2025-06-22 16:46:15.904713', 1);
+
+INSERT INTO public.event_ticket_type VALUES (4751, 'tenant_demo_001', 'zxzxz', 'xzxzxzxz', 20.00, false, 0.00, 'DIN', 84, 25, 59, true, NULL, NULL, 1, 10, false, 0, '2025-06-22 17:48:59.275', '2025-06-23 01:17:30.642189', 1);
+
 
 -- here the column transaction_reference  is omitted since its auto generated in the db sql
+
 
 INSERT INTO public.event_ticket_transaction (
     id, tenant_id,  email, first_name, last_name, phone, quantity, price_per_unit, total_amount, tax_amount, platform_fee_amount, discount_code_id, discount_amount, final_amount, status, payment_method, payment_reference, stripe_checkout_session_id, stripe_payment_intent_id, purchase_date, confirmation_sent_at, refund_amount, refund_date, refund_reason, stripe_customer_id, stripe_payment_status, stripe_customer_email, stripe_payment_currency, stripe_amount_discount, stripe_amount_tax, stripe_fee_amount, qr_code_image_url, event_id, user_id, created_at, updated_at, number_of_guests_checked_in, check_in_status, check_in_time, check_out_time

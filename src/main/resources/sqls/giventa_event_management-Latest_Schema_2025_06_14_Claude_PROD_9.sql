@@ -1531,6 +1531,7 @@ CREATE TABLE public.event_ticket_type (
     code character varying(255) NOT NULL,
     available_quantity integer,
     sold_quantity integer DEFAULT 0,
+    remaining_quantity integer,
     is_active boolean DEFAULT true,
     sale_start_date timestamp without time zone,
     sale_end_date timestamp without time zone,

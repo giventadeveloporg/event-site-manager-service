@@ -250,6 +250,7 @@ entity EventTicketType {
     code String required maxlength(255),
     availableQuantity Integer,
     soldQuantity Integer,
+    remainingQuantity  Integer,
     isActive Boolean,
     createdAt ZonedDateTime required,
     updatedAt ZonedDateTime required
@@ -316,11 +317,10 @@ entity EventMedia {
     id Long,
     tenantId String maxlength(255),
     title String required maxlength(255),
-    description TextBlob, // Use Text for parity with SQL
+    description String maxlength(2048),
     eventMediaType String required maxlength(255),
     storageType String required maxlength(255),
     fileUrl String maxlength(2048),
-    fileData Blob,
     contentType String maxlength(255),
     fileSize Integer,
     isPublic Boolean,
@@ -468,10 +468,10 @@ entity DiscountCode {
     discountType String required maxlength(20), // PERCENT or FIXED
     discountValue BigDecimal required,
     maxUses Integer,
-    usesCount Integer ,
+    usesCount Integer,
     validFrom ZonedDateTime,
     validTo ZonedDateTime,
-    isActive Boolean ,
+    isActive Boolean,
     createdAt ZonedDateTime required,
     updatedAt ZonedDateTime required,
     eventId Long required,

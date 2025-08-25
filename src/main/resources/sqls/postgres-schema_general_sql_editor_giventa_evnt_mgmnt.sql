@@ -147,11 +147,45 @@ SET start_date = '2025-04-20';
    UPDATE public.event_details SET start_date = '2025-09-30', end_date = '2025-09-30' WHERE id = 6;
    
    
-   UPDATE public.user_profile
+  --  public.user_profile
+     -- to enable email for users subscribed = true run/use all the three at once with setting token also--
+   
+    delete from public.user_profile
+		WHERE id=4651;
+   
+   INSERT INTO public.user_profile
+(id, tenant_id, user_id, first_name, last_name, email, phone, address_line_1, address_line_2, city, state, zip_code, country, notes, family_name, city_town, district, educational_institution, profile_image_url, is_email_subscribed, email_subscription_token, is_email_subscription_token_used, user_status, user_role, reviewed_by_admin_at, reviewed_by_admin_id, created_at, updated_at, request_id, request_reason, status, admin_comments,
+submitted_at, reviewed_at, approved_at, rejected_at)
+VALUES(4651, 'tenant_demo_001', 'guest_giventauser_gmail_com_1755451276831', '', '',
+'giventauser@gmail.com', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+true, 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJnaXZlbnRhdXNlckBnbWFpbC5jb20ifQ.gnZmiOIJmHJtrsx3OZtJRB6vcRvfhFUwiRdPU7dtgYrIdrRYsqPC7XiNKrLMSyDojGnnCt9R0Tp3efvtvNKmWQ', NULL, 'ACTIVE', 'MEMBER', NULL, NULL, '2025-08-17 17:21:15.246', '2025-08-17 17:21:15.246',
+NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+   
+     SELECT id, tenant_id, user_id, first_name, last_name, email, phone, address_line_1, address_line_2, city, state, zip_code, country, notes, family_name, city_town, district, educational_institution, profile_image_url, is_email_subscribed, email_subscription_token, is_email_subscription_token_used, user_status, user_role, reviewed_by_admin_at, reviewed_by_admin_id, created_at, updated_at, request_id, request_reason, status, admin_comments, submitted_at, reviewed_at, approved_at, rejected_at
+FROM public.user_profile
+WHERE id=4651;
+
+ SELECT id, tenant_id, user_id, first_name, last_name, email, phone, address_line_1, address_line_2, city, state, zip_code, country, notes, family_name, city_town, district, educational_institution, profile_image_url, is_email_subscribed, email_subscription_token, is_email_subscription_token_used, user_status, user_role, reviewed_by_admin_at, reviewed_by_admin_id, created_at, updated_at, request_id, request_reason, status, admin_comments, submitted_at, reviewed_at, approved_at, rejected_at
+FROM public.user_profile
+WHERE email in ('giventauser@gmail.com','gain@hotmail.com');
+
+--for prod   where WHERE id=10651;
+   
+     UPDATE public.user_profile
+		SET is_email_subscribed = true, is_email_subscription_token_used = false
+		WHERE email in ('giventauser@gmail.com','gain@hotmail.com');
+     
+       UPDATE public.user_profile
 		SET is_email_subscribed = true, is_email_subscription_token_used = false
 		WHERE email = 'giventauser@gmail.com';
+       
+       UPDATE public.user_profile
+		SET email_subscription_token  = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJnYWluQGhvdG1haWwuY29tIn0.hQFTfyU4gHgoKhVAjXajSqvdgCiN3qEYpdSZuhXr-4_NUO69m3VeTEAMzyXceTr8WWRWpGM6qahTk2ZkAaxLzA';
    
-    UPDATE public.user_profile
+   
+     -- to enable email for users unsubscribed = false --
+   
+     UPDATE public.user_profile
 		SET is_email_subscribed = false, is_email_subscription_token_used = true
 		WHERE email = 'giventauser@gmail.com';
    
@@ -159,8 +193,297 @@ SET start_date = '2025-04-20';
 		SET email_subscription_token  = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJnYWluQGhvdG1haWwuY29tIn0.hQFTfyU4gHgoKhVAjXajSqvdgCiN3qEYpdSZuhXr-4_NUO69m3VeTEAMzyXceTr8WWRWpGM6qahTk2ZkAaxLzA';
    
    commit;
+   
+   delete from public.event_media
+		where description is null;
+   
+   
+   -- Add sample media for events that don't have any media
+-- This will give each event a unique image in the home page
+
+INSERT INTO public.event_media (
+    id, tenant_id, title, description, event_media_type, storage_type, 
+    file_url, file_data, file_data_content_type, content_type, file_size, 
+    is_public, event_flyer, is_event_management_official_document, 
+    pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, 
+    download_count, is_featured_video, featured_video_url, is_featured_image, 
+    is_hero_image, is_active_hero_image, created_at, updated_at, event_id, uploaded_by_id
+) VALUES 
+-- Event 3: Family Picnic
+(7001, 'tenant_demo_001', 'family_picnic.jpg', 'Family picnic event flyer', 'image/jpeg', 'S3', 
+'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/3/family_picnic_sample.jpg', 
+NULL, 'image/jpeg', 'image/jpeg', 45000, true, true, false, 
+'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/3/family_picnic_sample.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250101T000000Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=SAMPLE%2F20250101%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=sample', 
+NULL, NULL, NULL, NULL, NULL, false, NULL, false, false, false, 
+'2025-01-01 00:00:00', '2025-01-01 00:00:00', 3, 4651),
+
+-- Event 4: VIP Dinner  
+(7002, 'tenant_demo_001', 'vip_dinner.jpg', 'VIP dinner event flyer', 'image/jpeg', 'S3', 
+'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4/vip_dinner_sample.jpg', 
+NULL, 'image/jpeg', 'image/jpeg', 52000, true, true, false, 
+'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4/vip_dinner_sample.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250101T000000Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=SAMPLE%2F20250101%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=sample', 
+NULL, NULL, NULL, NULL, NULL, false, NULL, false, false, false, 
+'2025-01-01 00:00:00', '2025-01-01 00:00:00', 4, 4651),
+
+-- Event 5: Summer Fest
+(7003, 'tenant_demo_001', 'summer_fest.jpg', 'Summer festival event flyer', 'image/jpeg', 'S3', 
+'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/5/summer_fest_sample.jpg', 
+NULL, 'image/jpeg', 'image/jpeg', 38000, true, true, false, 
+'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/5/summer_fest_sample.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250101T000000Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=SAMPLE%2F20250101%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=sample', 
+NULL, NULL, NULL, NULL, NULL, false, NULL, false, false, false, 
+'2025-01-01 00:00:00', '2025-01-01 00:00:00', 5, 4651),
+
+-- Event 6: Spring Gala
+(7004, 'tenant_demo_001', 'spring_gala.jpg', 'Spring gala event flyer', 'image/jpeg', 'S3', 
+'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/6/spring_gala_sample.jpg', 
+NULL, 'image/jpeg', 'image/jpeg', 41000, true, true, false, 
+'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/6/spring_gala_sample.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250101T000000Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=SAMPLE%2F20250101%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=sample', 
+NULL, NULL, NULL, NULL, NULL, false, NULL, false, false, false, 
+'2025-01-01 00:00:00', '2025-01-01 00:00:00', 6, 4651);
+
+--select e1_0.id,e1_0.alt_text,e1_0.content_type,e1_0.created_at,e1_0.description,e1_0.display_order,e1_0.download_count,e1_0.event_flyer,e1_0.event_id,e1_0.event_media_type,e1_0.featured_video_url,e1_0.file_size,e1_0.file_url,e1_0.is_active_hero_image,e1_0.is_event_management_official_document,e1_0.is_featured_image,e1_0.is_featured_video,e1_0.is_hero_image,e1_0.is_public,e1_0.pre_signed_url,e1_0.pre_signed_url_expires_at,e1_0.storage_type,e1_0.tenant_id,e1_0.title,e1_0.updated_at,e1_0.uploaded_by_id from event_media e1_0 where e1_0.event_flyer=? and e1_0.event_id=? offset ? rows fetch first ? rows only 
+--Hibernate: select e1_0.id,e1_0.alt_text,e1_0.content_type,e1_0.created_at,e1_0.description,e1_0.display_order,e1_0.download_count,e1_0.event_flyer,e1_0.event_id,e1_0.event_media_type,e1_0.featured_video_url,e1_0.file_size,e1_0.file_url,e1_0.is_active_hero_image,e1_0.is_event_management_official_document,e1_0.is_featured_image,e1_0.is_featured_video,e1_0.is_hero_image,e1_0.is_public,e1_0.pre_signed_url,e1_0.pre_signed_url_expires_at,e1_0.storage_type,e1_0.tenant_id,e1_0.title,e1_0.updated_at,e1_0.uploaded_by_id from event_media e1_0 where e1_0.event_flyer=? and e1_0.event_id=?
+
+SELECT 
+    e1_0.id,
+    e1_0.alt_text,
+    e1_0.content_type,
+    e1_0.created_at,
+    e1_0.description,
+    e1_0.display_order,
+    e1_0.download_count,
+    e1_0.event_flyer,
+    e1_0.event_id,
+    e1_0.event_media_type,
+    e1_0.featured_video_url,
+    e1_0.file_size,
+    e1_0.file_url,
+    e1_0.is_active_hero_image,
+    e1_0.is_event_management_official_document,
+    e1_0.is_featured_image,
+    e1_0.is_featured_video,
+    e1_0.is_hero_image,
+    e1_0.is_public,
+    e1_0.pre_signed_url,
+    e1_0.pre_signed_url_expires_at,
+    e1_0.storage_type,
+    e1_0.tenant_id,
+    e1_0.title,
+    e1_0.updated_at,
+    e1_0.uploaded_by_id 
+FROM event_media e1_0 
+WHERE e1_0.event_flyer = true 
+    AND e1_0.event_id in (1,2,3)
+LIMIT 20 OFFSET 0;
+
+
+UPDATE event_media 
+SET 
+    file_url = 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750026380584_8b2bfa97.avif',
+    file_data_content_type = 'image/avif'
+WHERE event_id IN (2, 3);
+
+delete from  event_media 
+WHERE event_id not IN (1, 2, 3);
+
+delete from  event_details 
+WHERE id not IN (1, 2, 3); 
+
+--  test media
+
+-- Step 2: Delete event_attendee_guests records for events not in (1, 2, 3)
+--DELETE FROM public.event_attendee_guest
+--WHERE event_attendee_id IN (
+--    SELECT id FROM event_attendee WHERE event_id NOT IN (1, 2, 3)
+--);
+
+DELETE FROM public.event_attendee 
+WHERE event_id NOT IN (1, 2, 3);
+
+-- Step 3: Delete event_media records for events not in (1, 2, 3)
+DELETE FROM event_media 
+WHERE event_id NOT IN (1, 2, 3);
+
+-- Step 4: Delete event_ticket_transactions records for events not in (1, 2, 3)
+DELETE FROM event_ticket_transaction 
+WHERE event_id NOT IN (1, 2, 3);
+
+-- Step 5: Delete event_ticket_types records for events not in (1, 2, 3)
+DELETE FROM event_ticket_type 
+WHERE event_id NOT IN (1, 2, 3);
+
+-- Step 6: Finally, delete event_details records not in (1, 2, 3)
+
+
+
+DELETE FROM event_attendee WHERE event_id IN (
+    SELECT id FROM event_details 
+    WHERE id NOT IN (1, 2, 3) AND tenant_id = 'tenant_demo_001'
+);
+
+DELETE FROM event_media WHERE event_id IN (
+    SELECT id FROM event_details 
+    WHERE id NOT IN (1, 2, 3) AND tenant_id = 'tenant_demo_001'
+);
+
+-- Then delete the main records
+DELETE FROM event_details 
+WHERE id NOT IN (1, 2, 3) AND tenant_id = 'tenant_demo_001';
+   
   
+
+UPDATE event_media
+SET file_url = 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750026380584_8b2bfa97.avif'
+WHERE event_id = 2 ;
+
+UPDATE event_media
+SET file_url = 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750026380584_8b2bfa97.avif'
+WHERE event_id = 3 ;
+
+-- Update Event 3 media records
+UPDATE event_media
+SET file_url = 'REPLACE(file_url, 'event-id/3/', 'event-id/1/'),
+    pre_signed_url = REPLACE(pre_signed_url, 'event-id/3/', 'event-id/1/')'
+WHERE event_id = 3
+  AND file_url LIKE '%event-id/1/%';
+
+-- Verify the fix
+SELECT id, event_id, title, file_url
+FROM event_media
+WHERE event_id IN (2, 3)
+  AND event_flyer = true
+ORDER BY event_id, id;
+
+
+UPDATE public.event_media
+SET event_flyer = true where id =4601;
+   
+UPDATE public.event_media
+SET event_flyer = false  where id = 4601;
+
+UPDATE public.event_media
+SET event_flyer = false  WHERE event_id IN (1, 2, 3);
+
+
+-- To delete or edit event_ticket_type  run bebelow 2 stmnts
+-- First, delete related transaction items
+DELETE FROM event_ticket_transaction_item 
+WHERE ticket_type_id = 4752;
+
+-- Then delete the ticket type
+DELETE FROM event_ticket_type 
+WHERE id = 4752;
    
    
+   SELECT id, tenant_id, transaction_reference, email, first_name, last_name, phone, quantity, price_per_unit, total_amount, tax_amount, platform_fee_amount, discount_code_id, discount_amount, final_amount, status, payment_method, payment_reference, stripe_checkout_session_id, stripe_payment_intent_id, purchase_date, confirmation_sent_at, refund_amount, refund_date, refund_reason, stripe_customer_id, stripe_payment_status, stripe_customer_email, stripe_payment_currency, stripe_amount_discount, stripe_amount_tax, stripe_fee_amount, qr_code_image_url, event_id, user_id, created_at, updated_at, number_of_guests_checked_in, check_in_status, check_in_time, check_out_time
+FROM public.event_ticket_transaction
+WHERE id=8551;	
 	
+
+SELECT id, tenant_id, transaction_id, ticket_type_id, quantity, price_per_unit, total_amount, created_at,
+updated_at
+FROM public.event_ticket_transaction_item
+WHERE id=8551;
+
+SELECT id, tenant_id, transaction_id, ticket_type_id, quantity, price_per_unit, total_amount, created_at,
+updated_at
+FROM public.event_ticket_transaction_item
+WHERE transaction_id=8551;
+
+	 --You already have ON DELETE CASCADE from items to transactions, so deleting the parent rows will automatically delete related items and fire the inventory trigger.
+	 -- Use one of these:
 	
+	 -- Single event
+	BEGIN;
+	DELETE FROM public.event_ticket_transaction
+	WHERE event_id = 3;
+	COMMIT;
+
+	 
+	   --  ticket types quantity sold available..
+	 SELECT id, tenant_id, "name", description, price, is_service_fee_included, service_fee, code, available_quantity, sold_quantity, is_active, sale_start_date, sale_end_date, min_quantity_per_order, max_quantity_per_order, requires_approval, sort_order, created_at, updated_at, event_id
+FROM public.event_ticket_type
+WHERE id IN (3,4801);
+
+
+   -- Check if triggers exist
+SELECT 
+    trigger_name,
+    event_manipulation,
+    event_object_table,
+    action_statement,
+    action_timing
+FROM information_schema.triggers 
+WHERE trigger_name IN ('manage_ticket_inventory_trigger', 'update_ticket_sold_quantity_trigger');
+
+-- Check trigger function exists
+SELECT routine_name, routine_type 
+FROM information_schema.routines 
+WHERE routine_name IN ('manage_ticket_inventory', 'update_ticket_sold_quantity');
+
+  -- Check current state of ticket types
+SELECT 
+    id,
+    name,
+    available_quantity,
+    sold_quantity,
+    (available_quantity - sold_quantity) as remaining_quantity
+FROM event_ticket_type 
+WHERE event_id = 3;
+
+-- Check if there are any transaction items
+SELECT 
+    tti.id,
+    tti.ticket_type_id,
+    tti.quantity,
+    ett.status,
+    ett.id as transaction_id
+FROM event_ticket_transaction_item tti
+JOIN event_ticket_transaction ett ON tti.transaction_id = ett.id
+WHERE ett.event_id = 3;
+
+
+-- Test if triggers work by manually inserting a test record
+INSERT INTO event_ticket_transaction_item (
+    tenant_id, transaction_id, ticket_type_id, quantity, 
+    price_per_unit, total_amount
+) VALUES (
+    'tenant_demo_001', 
+    (SELECT id FROM event_ticket_transaction WHERE event_id = 3 LIMIT 1),
+    3, -- ticket_type_id
+    1, -- quantity
+    0.74, -- price_per_unit
+    0.74 -- total_amount
+);
+
+-- Check if sold_quantity was updated
+SELECT id, name, available_quantity , sold_quantity , remaining_quantity
+  FROM event_ticket_type WHERE id = 2;
+
+SELECT id, name, available_quantity , sold_quantity , 
+remaining_quantity FROM event_ticket_type WHERE event_id  = 3;
+
+
+SELECT id, name, available_quantity, sold_quantity FROM event_ticket_type WHERE id = 2;
+
+-- Calculate and update sold quantities based on actual transaction data
+UPDATE event_ticket_type 
+SET sold_quantity = (
+    SELECT COALESCE(SUM(tti.quantity), 0)
+    FROM event_ticket_transaction_item tti
+    JOIN event_ticket_transaction ett ON tti.transaction_id = ett.id
+    WHERE ett.status = 'COMPLETED' 
+    AND tti.ticket_type_id = event_ticket_type.id
+    AND ett.event_id = 3
+),
+updated_at = NOW()
+WHERE event_id = 3;
+
+
+  
+  ALTER TABLE public.event_ticket_type
+  ADD COLUMN remaining_quantity integer DEFAULT 0;
+
+  UPDATE public.event_ticket_type
+  SET remaining_quantity = COALESCE(available_quantity, 0) - COALESCE(sold_quantity, 0)
+  WHERE remaining_quantity= 0;
