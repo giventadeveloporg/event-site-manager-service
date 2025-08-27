@@ -33,7 +33,7 @@ import tech.jhipster.web.util.ResponseUtil;
 @RequestMapping("/api/event-admin-audit-logs")
 public class EventAdminAuditLogResource {
 
-    private final Logger log = LoggerFactory.getLogger(EventAdminAuditLogResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventAdminAuditLogResource.class);
 
     private static final String ENTITY_NAME = "eventAdminAuditLog";
 
@@ -66,15 +66,14 @@ public class EventAdminAuditLogResource {
     @PostMapping("")
     public ResponseEntity<EventAdminAuditLogDTO> createEventAdminAuditLog(@Valid @RequestBody EventAdminAuditLogDTO eventAdminAuditLogDTO)
         throws URISyntaxException {
-        log.debug("REST request to save EventAdminAuditLog : {}", eventAdminAuditLogDTO);
+        LOG.debug("REST request to save EventAdminAuditLog : {}", eventAdminAuditLogDTO);
         if (eventAdminAuditLogDTO.getId() != null) {
             throw new BadRequestAlertException("A new eventAdminAuditLog cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        EventAdminAuditLogDTO result = eventAdminAuditLogService.save(eventAdminAuditLogDTO);
-        return ResponseEntity
-            .created(new URI("/api/event-admin-audit-logs/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        eventAdminAuditLogDTO = eventAdminAuditLogService.save(eventAdminAuditLogDTO);
+        return ResponseEntity.created(new URI("/api/event-admin-audit-logs/" + eventAdminAuditLogDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, eventAdminAuditLogDTO.getId().toString()))
+            .body(eventAdminAuditLogDTO);
     }
 
     /**
@@ -92,7 +91,7 @@ public class EventAdminAuditLogResource {
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody EventAdminAuditLogDTO eventAdminAuditLogDTO
     ) throws URISyntaxException {
-        log.debug("REST request to update EventAdminAuditLog : {}, {}", id, eventAdminAuditLogDTO);
+        LOG.debug("REST request to update EventAdminAuditLog : {}, {}", id, eventAdminAuditLogDTO);
         if (eventAdminAuditLogDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -104,11 +103,10 @@ public class EventAdminAuditLogResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        EventAdminAuditLogDTO result = eventAdminAuditLogService.update(eventAdminAuditLogDTO);
-        return ResponseEntity
-            .ok()
+        eventAdminAuditLogDTO = eventAdminAuditLogService.update(eventAdminAuditLogDTO);
+        return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventAdminAuditLogDTO.getId().toString()))
-            .body(result);
+            .body(eventAdminAuditLogDTO);
     }
 
     /**
@@ -127,7 +125,7 @@ public class EventAdminAuditLogResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody EventAdminAuditLogDTO eventAdminAuditLogDTO
     ) throws URISyntaxException {
-        log.debug("REST request to partial update EventAdminAuditLog partially : {}, {}", id, eventAdminAuditLogDTO);
+        LOG.debug("REST request to partial update EventAdminAuditLog partially : {}, {}", id, eventAdminAuditLogDTO);
         if (eventAdminAuditLogDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -159,7 +157,7 @@ public class EventAdminAuditLogResource {
         EventAdminAuditLogCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get EventAdminAuditLogs by criteria: {}", criteria);
+        LOG.debug("REST request to get EventAdminAuditLogs by criteria: {}", criteria);
 
         Page<EventAdminAuditLogDTO> page = eventAdminAuditLogQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -174,7 +172,7 @@ public class EventAdminAuditLogResource {
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countEventAdminAuditLogs(EventAdminAuditLogCriteria criteria) {
-        log.debug("REST request to count EventAdminAuditLogs by criteria: {}", criteria);
+        LOG.debug("REST request to count EventAdminAuditLogs by criteria: {}", criteria);
         return ResponseEntity.ok().body(eventAdminAuditLogQueryService.countByCriteria(criteria));
     }
 
@@ -185,8 +183,8 @@ public class EventAdminAuditLogResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the eventAdminAuditLogDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<EventAdminAuditLogDTO> getEventAdminAuditLog(@PathVariable Long id) {
-        log.debug("REST request to get EventAdminAuditLog : {}", id);
+    public ResponseEntity<EventAdminAuditLogDTO> getEventAdminAuditLog(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get EventAdminAuditLog : {}", id);
         Optional<EventAdminAuditLogDTO> eventAdminAuditLogDTO = eventAdminAuditLogService.findOne(id);
         return ResponseUtil.wrapOrNotFound(eventAdminAuditLogDTO);
     }
@@ -198,11 +196,10 @@ public class EventAdminAuditLogResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEventAdminAuditLog(@PathVariable Long id) {
-        log.debug("REST request to delete EventAdminAuditLog : {}", id);
+    public ResponseEntity<Void> deleteEventAdminAuditLog(@PathVariable("id") Long id) {
+        LOG.debug("REST request to delete EventAdminAuditLog : {}", id);
         eventAdminAuditLogService.delete(id);
-        return ResponseEntity
-            .noContent()
+        return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

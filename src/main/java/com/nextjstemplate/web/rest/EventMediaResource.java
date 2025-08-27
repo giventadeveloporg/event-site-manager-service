@@ -315,6 +315,7 @@ public class EventMediaResource {
     public ResponseEntity<EventMediaDTO> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "eventId", required = false) Long eventId,
+            @RequestParam(value = "executiveTeamMemberID", required = false) Long executiveTeamMemberID,
             @RequestParam("title") String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("tenantId") String tenantId,
@@ -324,6 +325,7 @@ public class EventMediaResource {
             @RequestParam(value = "isEventManagementOfficialDocument", required = false) Boolean isEventManagementOfficialDocument,
             @RequestParam(value = "isHeroImage", required = false) Boolean isHeroImage,
             @RequestParam(value = "isActiveHeroImage", required = false) Boolean isActiveHeroImage,
+            @RequestParam(value = "isTeamMemberProfileImage", required = false) Boolean isTeamMemberProfileImage,
             Authentication authentication) throws URISyntaxException {
         log.debug("REST request to upload EventMedia file: {} for event: {}", file.getOriginalFilename(), eventId);
         if (file.isEmpty()) {
@@ -333,7 +335,7 @@ public class EventMediaResource {
         boolean isPublicValue = isPublic != null ? isPublic : false;
         EventMediaDTO result = eventMediaService.uploadFile(file, eventId, userProfileId, title, description,
                 tenantId, isPublicValue, eventFlyer, isFeaturedImage, isEventManagementOfficialDocument, isHeroImage,
-                isActiveHeroImage);
+                isActiveHeroImage, isTeamMemberProfileImage, executiveTeamMemberID);
         return ResponseEntity
                 .created(new URI("/api/event-medias/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
@@ -349,6 +351,7 @@ public class EventMediaResource {
             @RequestParam("files") List<MultipartFile> files,
             @RequestParam(value = "eventId", required = false) Long eventId,
             @RequestParam(value = "upLoadedById", required = false) Long upLoadedById,
+            @RequestParam(value = "executiveTeamMemberID", required = false) Long executiveTeamMemberID,
             @RequestParam(value = "titles", required = false) List<String> titles,
             @RequestParam(value = "descriptions", required = false) List<String> descriptions,
             @RequestParam("tenantId") String tenantId,
@@ -358,6 +361,7 @@ public class EventMediaResource {
             @RequestParam(value = "isEventManagementOfficialDocument", required = false) Boolean isEventManagementOfficialDocument,
             @RequestParam(value = "isHeroImage", required = false) Boolean isHeroImage,
             @RequestParam(value = "isActiveHeroImage", required = false) Boolean isActiveHeroImage,
+            @RequestParam(value = "isTeamMemberProfileImage", required = false) Boolean isTeamMemberProfileImage,
             Authentication authentication) {
         log.debug("REST request to upload {} EventMedia files for event: {}", files.size(), eventId);
         if (files.isEmpty()) {
@@ -376,7 +380,7 @@ public class EventMediaResource {
         boolean isPublicValue = isPublic != null ? isPublic : false;
         List<EventMediaDTO> results = eventMediaService.uploadMultipleFiles(files, eventId, userProfileId, titles,
                 descriptions, tenantId, isPublicValue, eventFlyer, isFeaturedImage, isEventManagementOfficialDocument,
-                isHeroImage, isActiveHeroImage);
+                isHeroImage, isActiveHeroImage, isTeamMemberProfileImage, executiveTeamMemberID);
         return ResponseEntity.ok()
                 .headers(HeaderUtil.createAlert(applicationName, "eventMedia.uploaded", String.valueOf(results.size())))
                 .body(results);

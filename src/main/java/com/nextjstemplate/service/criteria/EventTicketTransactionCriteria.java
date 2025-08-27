@@ -45,6 +45,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
 
     private BigDecimalFilter platformFeeAmount;
 
+    private BigDecimalFilter serviceFee;
     private LongFilter discountCodeId;
 
     private BigDecimalFilter discountAmount;
@@ -65,6 +66,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
 
     private ZonedDateTimeFilter refundDate;
 
+    private StringFilter refundReason;
     private StringFilter stripeCheckoutSessionId;
 
     private StringFilter stripePaymentIntentId;
@@ -116,6 +118,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
         this.totalAmount = other.totalAmount == null ? null : other.totalAmount.copy();
         this.taxAmount = other.taxAmount == null ? null : other.taxAmount.copy();
         this.platformFeeAmount = other.platformFeeAmount == null ? null : other.platformFeeAmount.copy();
+        this.serviceFee = other.serviceFee  == null ? null : other.serviceFee.copy();
         this.discountCodeId = other.discountCodeId == null ? null : other.discountCodeId.copy();
         this.discountAmount = other.discountAmount == null ? null : other.discountAmount.copy();
         this.finalAmount = other.finalAmount == null ? null : other.finalAmount.copy();
@@ -781,6 +784,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             Objects.equals(totalAmount, that.totalAmount) &&
             Objects.equals(taxAmount, that.taxAmount) &&
             Objects.equals(platformFeeAmount, that.platformFeeAmount) &&
+ 			Objects.equals(serviceFee, that.serviceFee) &&
             Objects.equals(discountCodeId, that.discountCodeId) &&
             Objects.equals(discountAmount, that.discountAmount) &&
             Objects.equals(finalAmount, that.finalAmount) &&
@@ -791,6 +795,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             Objects.equals(confirmationSentAt, that.confirmationSentAt) &&
             Objects.equals(refundAmount, that.refundAmount) &&
             Objects.equals(refundDate, that.refundDate) &&
+			Objects.equals(refundReason, that.refundReason) &&
             Objects.equals(stripeCheckoutSessionId, that.stripeCheckoutSessionId) &&
             Objects.equals(stripePaymentIntentId, that.stripePaymentIntentId) &&
             Objects.equals(stripeCustomerId, that.stripeCustomerId) &&
@@ -830,6 +835,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             totalAmount,
             taxAmount,
             platformFeeAmount,
+ 			serviceFee,
             discountCodeId,
             discountAmount,
             finalAmount,
@@ -840,6 +846,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             confirmationSentAt,
             refundAmount,
             refundDate,
+			refundReason,
             stripeCheckoutSessionId,
             stripePaymentIntentId,
             stripeCustomerId,
@@ -857,7 +864,8 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             checkInStatus,
             numberOfGuestsCheckedIn,
             checkInTime,
-            checkOutTime
+            checkOutTime,
+            distinct
         );
     }
 
@@ -877,6 +885,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             (totalAmount != null ? "totalAmount=" + totalAmount + ", " : "") +
             (taxAmount != null ? "taxAmount=" + taxAmount + ", " : "") +
             (platformFeeAmount != null ? "platformFeeAmount=" + platformFeeAmount + ", " : "") +
+            (serviceFee != null ? "serviceFee=" + serviceFee + ", " : "") +
             (discountCodeId != null ? "discountCodeId=" + discountCodeId + ", " : "") +
             (discountAmount != null ? "discountAmount=" + discountAmount + ", " : "") +
             (finalAmount != null ? "finalAmount=" + finalAmount + ", " : "") +

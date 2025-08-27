@@ -16,7 +16,7 @@ public interface S3Service {
      * @param title   the title of the file.
      * @return the S3 URL of the uploaded file.
      */
-    String uploadFile(MultipartFile file, Long eventId, String title, String tenantId);
+    String uploadFile(MultipartFile file, Long eventId, String title, String tenantId, Boolean isTeamMemberProfileImage);
 
     /**
      * Generate a presigned URL for S3 file access.

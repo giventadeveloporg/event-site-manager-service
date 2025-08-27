@@ -1,0 +1,109 @@
+{
+  "annotations": {
+    "changelogDate": "20250530141138"
+  },
+  "applications": "*",
+  "changelogDate": "20250530141138",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "id",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "tenantId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "unique", "maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "allowUserRegistration",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "requireAdminApproval",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "enableWhatsappIntegration",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "enableEmailMarketing",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "whatsappApiKey",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    },
+    {
+      "fieldName": "emailProviderConfig",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "2048"
+    },
+    {
+      "fieldName": "maxEventsPerMonth",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "maxAttendeesPerEvent",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "enableGuestRegistration",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "maxGuestsPerAttendee",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "defaultEventCapacity",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "platformFeePercentage",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "customCss",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "8192"
+    },
+    {
+      "fieldName": "customJs",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "16384"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "microserviceName": "eventmanagement",
+  "name": "TenantSettings",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "tenantOrganization",
+      "otherEntityRelationshipName": "tenantSettings",
+      "relationshipName": "tenantOrganization",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}

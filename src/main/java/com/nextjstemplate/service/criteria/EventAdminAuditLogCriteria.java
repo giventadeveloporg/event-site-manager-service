@@ -2,6 +2,7 @@ package com.nextjstemplate.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
@@ -31,6 +32,8 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
 
     private StringFilter recordId;
 
+    private StringFilter changes;
+
     private ZonedDateTimeFilter createdAt;
 
     private LongFilter adminId;
@@ -40,13 +43,14 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
     public EventAdminAuditLogCriteria() {}
 
     public EventAdminAuditLogCriteria(EventAdminAuditLogCriteria other) {
-        this.id = other.id == null ? null : other.id.copy();
-        this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
-        this.action = other.action == null ? null : other.action.copy();
-        this.tableName = other.tableName == null ? null : other.tableName.copy();
-        this.recordId = other.recordId == null ? null : other.recordId.copy();
-        this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
-        this.adminId = other.adminId == null ? null : other.adminId.copy();
+        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
+        this.tenantId = other.optionalTenantId().map(StringFilter::copy).orElse(null);
+        this.action = other.optionalAction().map(StringFilter::copy).orElse(null);
+        this.tableName = other.optionalTableName().map(StringFilter::copy).orElse(null);
+        this.recordId = other.optionalRecordId().map(StringFilter::copy).orElse(null);
+        this.changes = other.optionalChanges().map(StringFilter::copy).orElse(null);
+        this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
+        this.adminId = other.optionalAdminId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -59,9 +63,13 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
         return id;
     }
 
+    public Optional<LongFilter> optionalId() {
+        return Optional.ofNullable(id);
+    }
+
     public LongFilter id() {
         if (id == null) {
-            id = new LongFilter();
+            setId(new LongFilter());
         }
         return id;
     }
@@ -74,9 +82,13 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
         return tenantId;
     }
 
+    public Optional<StringFilter> optionalTenantId() {
+        return Optional.ofNullable(tenantId);
+    }
+
     public StringFilter tenantId() {
         if (tenantId == null) {
-            tenantId = new StringFilter();
+            setTenantId(new StringFilter());
         }
         return tenantId;
     }
@@ -89,9 +101,13 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
         return action;
     }
 
+    public Optional<StringFilter> optionalAction() {
+        return Optional.ofNullable(action);
+    }
+
     public StringFilter action() {
         if (action == null) {
-            action = new StringFilter();
+            setAction(new StringFilter());
         }
         return action;
     }
@@ -104,9 +120,13 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
         return tableName;
     }
 
+    public Optional<StringFilter> optionalTableName() {
+        return Optional.ofNullable(tableName);
+    }
+
     public StringFilter tableName() {
         if (tableName == null) {
-            tableName = new StringFilter();
+            setTableName(new StringFilter());
         }
         return tableName;
     }
@@ -119,9 +139,13 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
         return recordId;
     }
 
+    public Optional<StringFilter> optionalRecordId() {
+        return Optional.ofNullable(recordId);
+    }
+
     public StringFilter recordId() {
         if (recordId == null) {
-            recordId = new StringFilter();
+            setRecordId(new StringFilter());
         }
         return recordId;
     }
@@ -130,13 +154,36 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
         this.recordId = recordId;
     }
 
+    public StringFilter getChanges() {
+        return changes;
+    }
+
+    public Optional<StringFilter> optionalChanges() {
+        return Optional.ofNullable(changes);
+    }
+
+    public StringFilter changes() {
+        if (changes == null) {
+            setChanges(new StringFilter());
+        }
+        return changes;
+    }
+
+    public void setChanges(StringFilter changes) {
+        this.changes = changes;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
 
+    public Optional<ZonedDateTimeFilter> optionalCreatedAt() {
+        return Optional.ofNullable(createdAt);
+    }
+
     public ZonedDateTimeFilter createdAt() {
         if (createdAt == null) {
-            createdAt = new ZonedDateTimeFilter();
+            setCreatedAt(new ZonedDateTimeFilter());
         }
         return createdAt;
     }
@@ -149,9 +196,13 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
         return adminId;
     }
 
+    public Optional<LongFilter> optionalAdminId() {
+        return Optional.ofNullable(adminId);
+    }
+
     public LongFilter adminId() {
         if (adminId == null) {
-            adminId = new LongFilter();
+            setAdminId(new LongFilter());
         }
         return adminId;
     }
@@ -161,6 +212,17 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
     }
 
     public Boolean getDistinct() {
+        return distinct;
+    }
+
+    public Optional<Boolean> optionalDistinct() {
+        return Optional.ofNullable(distinct);
+    }
+
+    public Boolean distinct() {
+        if (distinct == null) {
+            setDistinct(true);
+        }
         return distinct;
     }
 
@@ -183,6 +245,7 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
             Objects.equals(action, that.action) &&
             Objects.equals(tableName, that.tableName) &&
             Objects.equals(recordId, that.recordId) &&
+            Objects.equals(changes, that.changes) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(adminId, that.adminId) &&
             Objects.equals(distinct, that.distinct)
@@ -191,21 +254,22 @@ public class EventAdminAuditLogCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, tenantId, action, tableName, recordId, createdAt, adminId, distinct);
+        return Objects.hash(id, tenantId, action, tableName, recordId, changes, createdAt, adminId, distinct);
     }
 
     // prettier-ignore
     @Override
     public String toString() {
         return "EventAdminAuditLogCriteria{" +
-            (id != null ? "id=" + id + ", " : "") +
-            (tenantId != null ? "tenantId=" + tenantId + ", " : "") +
-            (action != null ? "action=" + action + ", " : "") +
-            (tableName != null ? "tableName=" + tableName + ", " : "") +
-            (recordId != null ? "recordId=" + recordId + ", " : "") +
-            (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
-            (adminId != null ? "adminId=" + adminId + ", " : "") +
-            (distinct != null ? "distinct=" + distinct + ", " : "") +
-            "}";
+            optionalId().map(f -> "id=" + f + ", ").orElse("") +
+            optionalTenantId().map(f -> "tenantId=" + f + ", ").orElse("") +
+            optionalAction().map(f -> "action=" + f + ", ").orElse("") +
+            optionalTableName().map(f -> "tableName=" + f + ", ").orElse("") +
+            optionalRecordId().map(f -> "recordId=" + f + ", ").orElse("") +
+            optionalChanges().map(f -> "changes=" + f + ", ").orElse("") +
+            optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
+            optionalAdminId().map(f -> "adminId=" + f + ", ").orElse("") +
+            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
+        "}";
     }
 }

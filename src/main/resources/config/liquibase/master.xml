@@ -18,23 +18,11 @@
     <property name="uuidType" value="uuid" dbms="h2"/>
     <property name="datetimeType" value="timestamp" dbms="h2"/>
 
-    <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
+    <!-- Entity changelogs -->
     <include file="config/liquibase/changelog/20250422195856_added_entity_UserProfile.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250422195956_added_entity_UserSubscription.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250422200056_added_entity_UserTask.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250422200156_added_entity_ProcessedStripeEvent.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250422200256_added_entity_TicketTransaction.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194056_added_entity_EventType.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194156_added_entity_Event.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250506194256_added_entity_EventOrganizer.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194356_added_entity_Media.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194456_added_entity_TicketType.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194556_added_entity_Poll.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194656_added_entity_PollOption.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194756_added_entity_PollResponse.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194856_added_entity_Admin.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194956_added_entity_AdminAuditLog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506195056_added_entity_CalendarEvent.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250511022256_added_entity_EventMedia.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250530135938_added_entity_TenantOrganization.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250530140038_added_entity_EventTypeDetails.xml" relativeToChangelogFile="false"/>
@@ -64,21 +52,13 @@
     <include file="config/liquibase/changelog/20250624034356_added_entity_WhatsAppLog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250624034456_added_entity_CommunicationCampaign.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250625212141_added_entity_EventTicketTransactionItem.xml" relativeToChangelogFile="false"/>
-    <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
+    
+    <!-- Constraints changelogs -->
+    <include file="config/liquibase/changelog/20250422195856_added_entity_constraints_UserProfile.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250422195956_added_entity_constraints_UserSubscription.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250422200256_added_entity_constraints_TicketTransaction.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194156_added_entity_constraints_Event.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194256_added_entity_constraints_EventOrganizer.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194356_added_entity_constraints_Media.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194456_added_entity_constraints_TicketType.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194556_added_entity_constraints_Poll.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194656_added_entity_constraints_PollOption.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194756_added_entity_constraints_PollResponse.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194856_added_entity_constraints_Admin.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506194956_added_entity_constraints_AdminAuditLog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250506195056_added_entity_constraints_CalendarEvent.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250511022256_added_entity_constraints_EventMedia.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250422200056_added_entity_constraints_UserTask.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250506194256_added_entity_constraints_EventOrganizer.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250511022256_added_entity_constraints_EventMedia.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250530140138_added_entity_constraints_EventDetails.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250530140238_added_entity_constraints_EventTicketTransaction.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250530140338_added_entity_constraints_EventTicketType.xml" relativeToChangelogFile="false"/>
@@ -94,7 +74,6 @@
     <include file="config/liquibase/changelog/20250530141338_added_entity_constraints_UserRegistrationRequest.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250530141438_added_entity_constraints_QrCodeUsage.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250530141538_added_entity_constraints_BulkOperationLog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20250422195856_added_entity_constraints_UserProfile.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250603051617_added_entity_constraints_EventAttendeeGuest.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250603051717_added_entity_constraints_EventGuestPricing.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250607220242_added_entity_constraints_EventScoreCard.xml" relativeToChangelogFile="false"/>
@@ -105,6 +84,11 @@
     <include file="config/liquibase/changelog/20250624034356_added_entity_constraints_WhatsAppLog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250624034456_added_entity_constraints_CommunicationCampaign.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250625212141_added_entity_constraints_EventTicketTransactionItem.xml" relativeToChangelogFile="false"/>
+    
+    <!-- Additional changelog -->
+    <include file="config/liquibase/changelog/20241201_add_email_indexes.xml" relativeToChangelogFile="false"/>
+    
+    <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

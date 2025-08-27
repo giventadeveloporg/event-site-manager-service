@@ -33,7 +33,7 @@ import tech.jhipster.web.util.ResponseUtil;
 @RequestMapping("/api/event-live-update-attachments")
 public class EventLiveUpdateAttachmentResource {
 
-    private final Logger log = LoggerFactory.getLogger(EventLiveUpdateAttachmentResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventLiveUpdateAttachmentResource.class);
 
     private static final String ENTITY_NAME = "eventLiveUpdateAttachment";
 
@@ -67,15 +67,16 @@ public class EventLiveUpdateAttachmentResource {
     public ResponseEntity<EventLiveUpdateAttachmentDTO> createEventLiveUpdateAttachment(
         @Valid @RequestBody EventLiveUpdateAttachmentDTO eventLiveUpdateAttachmentDTO
     ) throws URISyntaxException {
-        log.debug("REST request to save EventLiveUpdateAttachment : {}", eventLiveUpdateAttachmentDTO);
+        LOG.debug("REST request to save EventLiveUpdateAttachment : {}", eventLiveUpdateAttachmentDTO);
         if (eventLiveUpdateAttachmentDTO.getId() != null) {
             throw new BadRequestAlertException("A new eventLiveUpdateAttachment cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        EventLiveUpdateAttachmentDTO result = eventLiveUpdateAttachmentService.save(eventLiveUpdateAttachmentDTO);
-        return ResponseEntity
-            .created(new URI("/api/event-live-update-attachments/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        eventLiveUpdateAttachmentDTO = eventLiveUpdateAttachmentService.save(eventLiveUpdateAttachmentDTO);
+        return ResponseEntity.created(new URI("/api/event-live-update-attachments/" + eventLiveUpdateAttachmentDTO.getId()))
+            .headers(
+                HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, eventLiveUpdateAttachmentDTO.getId().toString())
+            )
+            .body(eventLiveUpdateAttachmentDTO);
     }
 
     /**
@@ -93,7 +94,7 @@ public class EventLiveUpdateAttachmentResource {
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody EventLiveUpdateAttachmentDTO eventLiveUpdateAttachmentDTO
     ) throws URISyntaxException {
-        log.debug("REST request to update EventLiveUpdateAttachment : {}, {}", id, eventLiveUpdateAttachmentDTO);
+        LOG.debug("REST request to update EventLiveUpdateAttachment : {}, {}", id, eventLiveUpdateAttachmentDTO);
         if (eventLiveUpdateAttachmentDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -105,13 +106,12 @@ public class EventLiveUpdateAttachmentResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        EventLiveUpdateAttachmentDTO result = eventLiveUpdateAttachmentService.update(eventLiveUpdateAttachmentDTO);
-        return ResponseEntity
-            .ok()
+        eventLiveUpdateAttachmentDTO = eventLiveUpdateAttachmentService.update(eventLiveUpdateAttachmentDTO);
+        return ResponseEntity.ok()
             .headers(
                 HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventLiveUpdateAttachmentDTO.getId().toString())
             )
-            .body(result);
+            .body(eventLiveUpdateAttachmentDTO);
     }
 
     /**
@@ -130,7 +130,7 @@ public class EventLiveUpdateAttachmentResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody EventLiveUpdateAttachmentDTO eventLiveUpdateAttachmentDTO
     ) throws URISyntaxException {
-        log.debug("REST request to partial update EventLiveUpdateAttachment partially : {}, {}", id, eventLiveUpdateAttachmentDTO);
+        LOG.debug("REST request to partial update EventLiveUpdateAttachment partially : {}, {}", id, eventLiveUpdateAttachmentDTO);
         if (eventLiveUpdateAttachmentDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -162,7 +162,7 @@ public class EventLiveUpdateAttachmentResource {
         EventLiveUpdateAttachmentCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get EventLiveUpdateAttachments by criteria: {}", criteria);
+        LOG.debug("REST request to get EventLiveUpdateAttachments by criteria: {}", criteria);
 
         Page<EventLiveUpdateAttachmentDTO> page = eventLiveUpdateAttachmentQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -177,7 +177,7 @@ public class EventLiveUpdateAttachmentResource {
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countEventLiveUpdateAttachments(EventLiveUpdateAttachmentCriteria criteria) {
-        log.debug("REST request to count EventLiveUpdateAttachments by criteria: {}", criteria);
+        LOG.debug("REST request to count EventLiveUpdateAttachments by criteria: {}", criteria);
         return ResponseEntity.ok().body(eventLiveUpdateAttachmentQueryService.countByCriteria(criteria));
     }
 
@@ -188,8 +188,8 @@ public class EventLiveUpdateAttachmentResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the eventLiveUpdateAttachmentDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<EventLiveUpdateAttachmentDTO> getEventLiveUpdateAttachment(@PathVariable Long id) {
-        log.debug("REST request to get EventLiveUpdateAttachment : {}", id);
+    public ResponseEntity<EventLiveUpdateAttachmentDTO> getEventLiveUpdateAttachment(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get EventLiveUpdateAttachment : {}", id);
         Optional<EventLiveUpdateAttachmentDTO> eventLiveUpdateAttachmentDTO = eventLiveUpdateAttachmentService.findOne(id);
         return ResponseUtil.wrapOrNotFound(eventLiveUpdateAttachmentDTO);
     }
@@ -201,11 +201,10 @@ public class EventLiveUpdateAttachmentResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEventLiveUpdateAttachment(@PathVariable Long id) {
-        log.debug("REST request to delete EventLiveUpdateAttachment : {}", id);
+    public ResponseEntity<Void> deleteEventLiveUpdateAttachment(@PathVariable("id") Long id) {
+        LOG.debug("REST request to delete EventLiveUpdateAttachment : {}", id);
         eventLiveUpdateAttachmentService.delete(id);
-        return ResponseEntity
-            .noContent()
+        return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

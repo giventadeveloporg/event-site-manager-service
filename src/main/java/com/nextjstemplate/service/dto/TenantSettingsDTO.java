@@ -1,6 +1,5 @@
 package com.nextjstemplate.service.dto;
 
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -30,7 +29,7 @@ public class TenantSettingsDTO implements Serializable {
     @Size(max = 500)
     private String whatsappApiKey;
 
-    @Lob
+    @Size(max = 2048)
     private String emailProviderConfig;
 
     private Integer maxEventsPerMonth;
@@ -44,10 +43,11 @@ public class TenantSettingsDTO implements Serializable {
     private Integer defaultEventCapacity;
 
     private BigDecimal platformFeePercentage;
-    @Lob
+
+    @Size(max = 8192)
     private String customCss;
 
-    @Lob
+    @Size(max = 16384)
     private String customJs;
 
     @NotNull
@@ -169,6 +169,7 @@ public class TenantSettingsDTO implements Serializable {
     public void setPlatformFeePercentage(BigDecimal platformFeePercentage) {
         this.platformFeePercentage = platformFeePercentage;
     }
+
     public String getCustomCss() {
         return customCss;
     }

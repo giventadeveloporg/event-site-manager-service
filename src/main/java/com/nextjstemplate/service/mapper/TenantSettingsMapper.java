@@ -11,11 +11,11 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface TenantSettingsMapper extends EntityMapper<TenantSettingsDTO, TenantSettings> {
-//    @Mapping(target = "tenantOrganization", source = "tenantOrganization", qualifiedByName = "tenantOrganizationId")
+    @Mapping(target = "tenantOrganization", source = "tenantOrganization", qualifiedByName = "tenantOrganizationId")
     TenantSettingsDTO toDto(TenantSettings s);
 
-   /* @Named("tenantOrganizationId")
+    @Named("tenantOrganizationId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
-    TenantOrganizationDTO toDtoTenantOrganizationId(TenantOrganization tenantOrganization);*/
+    TenantOrganizationDTO toDtoTenantOrganizationId(TenantOrganization tenantOrganization);
 }

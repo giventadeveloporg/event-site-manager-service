@@ -34,8 +34,8 @@ public class UserTask implements Serializable {
     @Column(name = "title", length = 255, nullable = false)
     private String title;
 
-    @Lob
-    @Column(name = "description")
+    @Size(max = 4096)
+    @Column(name = "description", length = 4096)
     private String description;
 
     @NotNull

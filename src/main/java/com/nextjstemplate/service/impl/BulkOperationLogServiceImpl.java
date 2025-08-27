@@ -8,8 +8,6 @@ import com.nextjstemplate.service.mapper.BulkOperationLogMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class BulkOperationLogServiceImpl implements BulkOperationLogService {
 
-    private final Logger log = LoggerFactory.getLogger(BulkOperationLogServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BulkOperationLogServiceImpl.class);
 
     private final BulkOperationLogRepository bulkOperationLogRepository;
 
@@ -36,7 +34,7 @@ public class BulkOperationLogServiceImpl implements BulkOperationLogService {
 
     @Override
     public BulkOperationLogDTO save(BulkOperationLogDTO bulkOperationLogDTO) {
-        log.debug("Request to save BulkOperationLog : {}", bulkOperationLogDTO);
+        LOG.debug("Request to save BulkOperationLog : {}", bulkOperationLogDTO);
         BulkOperationLog bulkOperationLog = bulkOperationLogMapper.toEntity(bulkOperationLogDTO);
         bulkOperationLog = bulkOperationLogRepository.save(bulkOperationLog);
         return bulkOperationLogMapper.toDto(bulkOperationLog);
@@ -44,7 +42,7 @@ public class BulkOperationLogServiceImpl implements BulkOperationLogService {
 
     @Override
     public BulkOperationLogDTO update(BulkOperationLogDTO bulkOperationLogDTO) {
-        log.debug("Request to update BulkOperationLog : {}", bulkOperationLogDTO);
+        LOG.debug("Request to update BulkOperationLog : {}", bulkOperationLogDTO);
         BulkOperationLog bulkOperationLog = bulkOperationLogMapper.toEntity(bulkOperationLogDTO);
         bulkOperationLog = bulkOperationLogRepository.save(bulkOperationLog);
         return bulkOperationLogMapper.toDto(bulkOperationLog);
@@ -52,7 +50,7 @@ public class BulkOperationLogServiceImpl implements BulkOperationLogService {
 
     @Override
     public Optional<BulkOperationLogDTO> partialUpdate(BulkOperationLogDTO bulkOperationLogDTO) {
-        log.debug("Request to partially update BulkOperationLog : {}", bulkOperationLogDTO);
+        LOG.debug("Request to partially update BulkOperationLog : {}", bulkOperationLogDTO);
 
         return bulkOperationLogRepository
             .findById(bulkOperationLogDTO.getId())
@@ -67,21 +65,14 @@ public class BulkOperationLogServiceImpl implements BulkOperationLogService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<BulkOperationLogDTO> findAll(Pageable pageable) {
-        log.debug("Request to get all BulkOperationLogs");
-        return bulkOperationLogRepository.findAll(pageable).map(bulkOperationLogMapper::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Optional<BulkOperationLogDTO> findOne(Long id) {
-        log.debug("Request to get BulkOperationLog : {}", id);
+        LOG.debug("Request to get BulkOperationLog : {}", id);
         return bulkOperationLogRepository.findById(id).map(bulkOperationLogMapper::toDto);
     }
 
     @Override
     public void delete(Long id) {
-        log.debug("Request to delete BulkOperationLog : {}", id);
+        LOG.debug("Request to delete BulkOperationLog : {}", id);
         bulkOperationLogRepository.deleteById(id);
     }
 }

@@ -32,10 +32,10 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public String uploadFile(MultipartFile file, Long eventId, String title, String tenantId) {
+    public String uploadFile(MultipartFile file, Long eventId, String title, String tenantId,  Boolean isTeamMemberProfileImage) {
         try {
             String originalFilename = file.getOriginalFilename();
-            String uniqueFilename = generateUniqueFilename(tenantId, eventId, originalFilename);
+            String uniqueFilename = generateUniqueFilename(tenantId, eventId, originalFilename, isTeamMemberProfileImage);
 
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(file.getContentType());
@@ -134,16 +134,21 @@ public class S3ServiceImpl implements S3Service {
 
     // Private helper methods
 
-    private String generateUniqueFilename(String tenantId, Long eventId, String originalFilename) {
+    private String generateUniqueFilename(String tenantId, Long eventId, String originalFilename, Boolean isTeamMemberProfileImage) {
+
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String extension = getFileExtension(originalFilename);
         String baseName = getBaseFileName(originalFilename);
 
-        if (eventId != null) {
+        if (eventId != null && eventId>0 ) {
             return String.format("events/tenantId/%s/event-id/%d/%s_%s_%s%s", tenantId, eventId, baseName, timestamp,
                     uuid, extension);
         } else {
+            if(isTeamMemberProfileImage){
+                return String.format("media/tenantId/%s/executive-team-members/%s_%s_%s%s", tenantId, baseName, timestamp,
+                    uuid, extension);
+            }
             return String.format("media/%s_%s_%s%s", baseName, timestamp, uuid, extension);
         }
     }

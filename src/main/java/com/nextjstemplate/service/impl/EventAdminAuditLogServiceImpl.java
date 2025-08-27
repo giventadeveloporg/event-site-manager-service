@@ -8,8 +8,6 @@ import com.nextjstemplate.service.mapper.EventAdminAuditLogMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class EventAdminAuditLogServiceImpl implements EventAdminAuditLogService {
 
-    private final Logger log = LoggerFactory.getLogger(EventAdminAuditLogServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventAdminAuditLogServiceImpl.class);
 
     private final EventAdminAuditLogRepository eventAdminAuditLogRepository;
 
@@ -36,7 +34,7 @@ public class EventAdminAuditLogServiceImpl implements EventAdminAuditLogService 
 
     @Override
     public EventAdminAuditLogDTO save(EventAdminAuditLogDTO eventAdminAuditLogDTO) {
-        log.debug("Request to save EventAdminAuditLog : {}", eventAdminAuditLogDTO);
+        LOG.debug("Request to save EventAdminAuditLog : {}", eventAdminAuditLogDTO);
         EventAdminAuditLog eventAdminAuditLog = eventAdminAuditLogMapper.toEntity(eventAdminAuditLogDTO);
         eventAdminAuditLog = eventAdminAuditLogRepository.save(eventAdminAuditLog);
         return eventAdminAuditLogMapper.toDto(eventAdminAuditLog);
@@ -44,7 +42,7 @@ public class EventAdminAuditLogServiceImpl implements EventAdminAuditLogService 
 
     @Override
     public EventAdminAuditLogDTO update(EventAdminAuditLogDTO eventAdminAuditLogDTO) {
-        log.debug("Request to update EventAdminAuditLog : {}", eventAdminAuditLogDTO);
+        LOG.debug("Request to update EventAdminAuditLog : {}", eventAdminAuditLogDTO);
         EventAdminAuditLog eventAdminAuditLog = eventAdminAuditLogMapper.toEntity(eventAdminAuditLogDTO);
         eventAdminAuditLog = eventAdminAuditLogRepository.save(eventAdminAuditLog);
         return eventAdminAuditLogMapper.toDto(eventAdminAuditLog);
@@ -52,7 +50,7 @@ public class EventAdminAuditLogServiceImpl implements EventAdminAuditLogService 
 
     @Override
     public Optional<EventAdminAuditLogDTO> partialUpdate(EventAdminAuditLogDTO eventAdminAuditLogDTO) {
-        log.debug("Request to partially update EventAdminAuditLog : {}", eventAdminAuditLogDTO);
+        LOG.debug("Request to partially update EventAdminAuditLog : {}", eventAdminAuditLogDTO);
 
         return eventAdminAuditLogRepository
             .findById(eventAdminAuditLogDTO.getId())
@@ -67,21 +65,14 @@ public class EventAdminAuditLogServiceImpl implements EventAdminAuditLogService 
 
     @Override
     @Transactional(readOnly = true)
-    public Page<EventAdminAuditLogDTO> findAll(Pageable pageable) {
-        log.debug("Request to get all EventAdminAuditLogs");
-        return eventAdminAuditLogRepository.findAll(pageable).map(eventAdminAuditLogMapper::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Optional<EventAdminAuditLogDTO> findOne(Long id) {
-        log.debug("Request to get EventAdminAuditLog : {}", id);
+        LOG.debug("Request to get EventAdminAuditLog : {}", id);
         return eventAdminAuditLogRepository.findById(id).map(eventAdminAuditLogMapper::toDto);
     }
 
     @Override
     public void delete(Long id) {
-        log.debug("Request to delete EventAdminAuditLog : {}", id);
+        LOG.debug("Request to delete EventAdminAuditLog : {}", id);
         eventAdminAuditLogRepository.deleteById(id);
     }
 }

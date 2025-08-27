@@ -2,8 +2,6 @@ package com.nextjstemplate.service;
 
 import com.nextjstemplate.service.dto.BulkOperationLogDTO;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.nextjstemplate.domain.BulkOperationLog}.
@@ -32,14 +30,6 @@ public interface BulkOperationLogService {
      * @return the persisted entity.
      */
     Optional<BulkOperationLogDTO> partialUpdate(BulkOperationLogDTO bulkOperationLogDTO);
-
-    /**
-     * Get all the bulkOperationLogs.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<BulkOperationLogDTO> findAll(Pageable pageable);
 
     /**
      * Get the "id" bulkOperationLog.

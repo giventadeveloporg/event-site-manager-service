@@ -44,8 +44,8 @@ public class EventAdminAuditLog implements Serializable {
     @Column(name = "record_id", length = 255, nullable = false)
     private String recordId;
 
-    @Lob
-    @Column(name = "changes")
+    @Size(max = 8192)
+    @Column(name = "changes", length = 8192)
     private String changes;
 
     @NotNull

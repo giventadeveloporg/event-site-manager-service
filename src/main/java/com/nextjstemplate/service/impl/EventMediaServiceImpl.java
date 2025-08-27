@@ -2,8 +2,10 @@ package com.nextjstemplate.service.impl;
 
 import com.nextjstemplate.domain.EventDetails;
 import com.nextjstemplate.domain.EventMedia;
+import com.nextjstemplate.domain.ExecutiveCommitteeTeamMember;
 import com.nextjstemplate.repository.EventDetailsRepository;
 import com.nextjstemplate.repository.EventMediaRepository;
+import com.nextjstemplate.repository.ExecutiveCommitteeTeamMemberRepository;
 import com.nextjstemplate.service.EventMediaService;
 import com.nextjstemplate.service.dto.EventMediaDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
@@ -45,13 +47,17 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     private final S3Service s3Service;
 
+    private final ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository;
+
     @Autowired
     public EventMediaServiceImpl(EventMediaRepository eventMediaRepository, EventMediaMapper eventMediaMapper,
-            S3Service s3Service, EventDetailsRepository eventRepository) {
+            S3Service s3Service, EventDetailsRepository eventRepository, 
+            ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
         this.s3Service = s3Service;
         this.eventRepository = eventRepository;
+        this.executiveCommitteeTeamMemberRepository = executiveCommitteeTeamMemberRepository;
     }
 
     @Override
@@ -107,40 +113,56 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     public EventMediaDTO uploadFile(MultipartFile file, Long eventId, Long userProfileId, String title,
             String description, String tenantId, boolean isPublic, Boolean eventFlyer, Boolean isFeaturedImage,
-            Boolean isEventManagementOfficialDocument, Boolean isHeroImage, Boolean isActiveHeroImage) {
+            Boolean isEventManagementOfficialDocument, Boolean isHeroImage,
+            Boolean isActiveHeroImage, Boolean isTeamMemberProfileImage, Long executiveTeamMemberID) {
         // Upload to S3
-        String fileUrl = s3Service.uploadFile(file, eventId, title, tenantId);
+        String fileUrl = s3Service.uploadFile(file, eventId, title, tenantId,isTeamMemberProfileImage);
 
-        EventMedia eventMedia = new EventMedia();
-        EventDetails event = eventRepository.findById(eventId)
+        if(!isTeamMemberProfileImage) {
+            EventMedia eventMedia = new EventMedia();
+            EventDetails event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EntityNotFoundException("Event not found with id " + eventId));
-        // eventMedia.setEvent(event);
-        eventMedia.setTitle(title);
-        eventMedia.setDescription(description);
-        eventMedia.setTenantId(tenantId);
-        eventMedia.setEventMediaType(file.getContentType() != null ? file.getContentType() : "unknown");
-        eventMedia.setStorageType("S3");
-        eventMedia.setFileUrl(fileUrl);
-        log.info("preSignedUrl length: " + s3Service.generatePresignedUrl(fileUrl, 1).length());
-        log.info("preSignedUrl value: " + s3Service.generatePresignedUrl(fileUrl, 1));
-        eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(fileUrl, 1));
+            // eventMedia.setEvent(event);
+            eventMedia.setTitle(title);
+            eventMedia.setDescription(description);
+            eventMedia.setTenantId(tenantId);
+            eventMedia.setEventMediaType(file.getContentType() != null ? file.getContentType() : "unknown");
+            eventMedia.setStorageType("S3");
+            eventMedia.setFileUrl(fileUrl);
+            log.info("preSignedUrl length: " + s3Service.generatePresignedUrl(fileUrl, 1).length());
+            log.info("preSignedUrl value: " + s3Service.generatePresignedUrl(fileUrl, 1));
+            eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(fileUrl, 1));
 //        eventMedia.setFileDataContentType(file.getContentType());
-        eventMedia.setFileSize((int) file.getSize());
-        eventMedia.setIsPublic(isPublic);
-        eventMedia.setCreatedAt(ZonedDateTime.now());
-        eventMedia.setUpdatedAt(ZonedDateTime.now());
-        eventMedia.setEventFlyer(eventFlyer);
-        eventMedia.setIsFeaturedImage(isFeaturedImage);
-        eventMedia.setIsEventManagementOfficialDocument(isEventManagementOfficialDocument);
-        eventMedia.setIsHeroImage(isHeroImage);
-        eventMedia.setIsActiveHeroImage(isActiveHeroImage);
-        eventMedia.setEventId(eventId);
-        eventMedia.setUploadedById(userProfileId);
-        // Optionally set event and uploadedBy if needed (requires fetching entities)
-        // eventMedia.setEvent(...);
-        // eventMedia.setUploadedBy(...);
+            eventMedia.setFileSize((int) file.getSize());
+            eventMedia.setIsPublic(isPublic);
+            eventMedia.setCreatedAt(ZonedDateTime.now());
+            eventMedia.setUpdatedAt(ZonedDateTime.now());
+            eventMedia.setEventFlyer(eventFlyer);
+            eventMedia.setIsFeaturedImage(isFeaturedImage);
+            eventMedia.setIsEventManagementOfficialDocument(isEventManagementOfficialDocument);
+            eventMedia.setIsHeroImage(isHeroImage);
+            eventMedia.setIsActiveHeroImage(isActiveHeroImage);
+            eventMedia.setEventId(eventId);
+            eventMedia.setUploadedById(userProfileId);
+            // Optionally set event and uploadedBy if needed (requires fetching entities)
+            // eventMedia.setEvent(...);
+            // eventMedia.setUploadedBy(...);
 
-        eventMedia = eventMediaRepository.save(eventMedia);
+            eventMedia = eventMediaRepository.save(eventMedia);
+        } else if (executiveTeamMemberID != null) {
+            // Handle ExecutiveCommitteeTeamMember profile image update
+            log.debug("Updating ExecutiveCommitteeTeamMember profile image for ID: {}", executiveTeamMemberID);
+            Optional<ExecutiveCommitteeTeamMember> teamMemberOpt = executiveCommitteeTeamMemberRepository.findById(executiveTeamMemberID);
+            if (teamMemberOpt.isPresent()) {
+                ExecutiveCommitteeTeamMember teamMember = teamMemberOpt.get();
+                teamMember.setProfileImageUrl(fileUrl);
+                executiveCommitteeTeamMemberRepository.save(teamMember);
+                log.debug("Successfully updated profile image URL for ExecutiveCommitteeTeamMember ID: {}", executiveTeamMemberID);
+            } else {
+                log.warn("ExecutiveCommitteeTeamMember not found with ID: {}", executiveTeamMemberID);
+                throw new EntityNotFoundException("ExecutiveCommitteeTeamMember not found with id " + executiveTeamMemberID);
+            }
+        }
         // since eventId field is removed and replaced with mapper we can return null
         // for now.
         return null;
@@ -151,14 +173,14 @@ public class EventMediaServiceImpl implements EventMediaService {
     public List<EventMediaDTO> uploadMultipleFiles(List<MultipartFile> files, Long eventId, Long userProfileId,
             List<String> titles, List<String> descriptions, String tenantId, boolean isPublic, Boolean eventFlyer,
             Boolean isFeaturedImage, Boolean isEventManagementOfficialDocument, Boolean isHeroImage,
-            Boolean isActiveHeroImage) {
+            Boolean isActiveHeroImage, Boolean isTeamMemberProfileImage, Long executiveTeamMemberID) {
         List<EventMediaDTO> result = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
             String title = (titles != null && i < titles.size()) ? titles.get(i) : file.getOriginalFilename();
             String description = (descriptions != null && i < descriptions.size()) ? descriptions.get(i) : null;
             result.add(uploadFile(file, eventId, userProfileId, title, description, tenantId, isPublic, eventFlyer,
-                    isFeaturedImage, isEventManagementOfficialDocument, isHeroImage, isActiveHeroImage));
+                    isFeaturedImage, isEventManagementOfficialDocument, isHeroImage, isActiveHeroImage, isTeamMemberProfileImage, executiveTeamMemberID));
         }
         return result;
     }

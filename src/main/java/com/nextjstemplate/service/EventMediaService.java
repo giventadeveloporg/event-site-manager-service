@@ -69,7 +69,8 @@ public interface EventMediaService {
          */
         EventMediaDTO uploadFile(MultipartFile file, Long eventId, Long userProfileId, String title, String description,
                         String tenantId, boolean isPublic, Boolean eventFlyer, Boolean isFeaturedImage,
-                        Boolean isEventManagementOfficialDocument, Boolean isHeroImage, Boolean isActiveHeroImage);
+                        Boolean isEventManagementOfficialDocument, Boolean isHeroImage, Boolean isActiveHeroImage, 
+                        Boolean isTeamMemberProfileImage, Long executiveTeamMemberID);
 
         /**
          * Upload multiple files and create EventMedia entries.
@@ -78,7 +79,7 @@ public interface EventMediaService {
                         List<String> titles, List<String> descriptions, String tenantId, boolean isPublic,
                         Boolean eventFlyer,
                         Boolean isFeaturedImage, Boolean isEventManagementOfficialDocument, Boolean isHeroImage,
-                        Boolean isActiveHeroImage);
+                        Boolean isActiveHeroImage, Boolean isTeamMemberProfileImage, Long executiveTeamMemberID);
 
         List<EventMediaDTO> getEventMediaWithUrls(Long eventId, Long userProfileId, boolean includePrivate);
 

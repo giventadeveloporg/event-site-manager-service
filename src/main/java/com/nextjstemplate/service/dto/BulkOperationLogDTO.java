@@ -1,6 +1,5 @@
 package com.nextjstemplate.service.dto;
 
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -28,7 +27,7 @@ public class BulkOperationLogDTO implements Serializable {
 
     private Integer errorCount;
 
-    @Lob
+    @Size(max = 16384)
     private String operationDetails;
 
     @NotNull

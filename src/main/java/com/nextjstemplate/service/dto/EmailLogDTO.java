@@ -1,6 +1,5 @@
 package com.nextjstemplate.service.dto;
 
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -25,7 +24,7 @@ public class EmailLogDTO implements Serializable {
     @Size(max = 255)
     private String subject;
 
-    @Lob
+    @Size(max = 32768)
     private String body;
 
     @NotNull
@@ -39,7 +38,7 @@ public class EmailLogDTO implements Serializable {
 
     private Long campaignId;
 
-    @Lob
+    @Size(max = 8192)
     private String metadata;
 
     private CommunicationCampaignDTO campaign;

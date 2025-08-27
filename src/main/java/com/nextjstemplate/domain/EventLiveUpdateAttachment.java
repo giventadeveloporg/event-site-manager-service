@@ -36,8 +36,8 @@ public class EventLiveUpdateAttachment implements Serializable {
     @Column(name = "display_order")
     private Integer displayOrder;
 
-    @Lob
-    @Column(name = "metadata")
+    @Size(max = 4096)
+    @Column(name = "metadata", length = 4096)
     private String metadata;
 
     @NotNull

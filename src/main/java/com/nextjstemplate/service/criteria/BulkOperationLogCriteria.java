@@ -2,6 +2,7 @@ package com.nextjstemplate.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
@@ -33,6 +34,8 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
 
     private IntegerFilter errorCount;
 
+    private StringFilter operationDetails;
+
     private ZonedDateTimeFilter createdAt;
 
     private LongFilter performedById;
@@ -42,14 +45,15 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
     public BulkOperationLogCriteria() {}
 
     public BulkOperationLogCriteria(BulkOperationLogCriteria other) {
-        this.id = other.id == null ? null : other.id.copy();
-        this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
-        this.operationType = other.operationType == null ? null : other.operationType.copy();
-        this.targetCount = other.targetCount == null ? null : other.targetCount.copy();
-        this.successCount = other.successCount == null ? null : other.successCount.copy();
-        this.errorCount = other.errorCount == null ? null : other.errorCount.copy();
-        this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
-        this.performedById = other.performedById == null ? null : other.performedById.copy();
+        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
+        this.tenantId = other.optionalTenantId().map(StringFilter::copy).orElse(null);
+        this.operationType = other.optionalOperationType().map(StringFilter::copy).orElse(null);
+        this.targetCount = other.optionalTargetCount().map(IntegerFilter::copy).orElse(null);
+        this.successCount = other.optionalSuccessCount().map(IntegerFilter::copy).orElse(null);
+        this.errorCount = other.optionalErrorCount().map(IntegerFilter::copy).orElse(null);
+        this.operationDetails = other.optionalOperationDetails().map(StringFilter::copy).orElse(null);
+        this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
+        this.performedById = other.optionalPerformedById().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -62,9 +66,13 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
         return id;
     }
 
+    public Optional<LongFilter> optionalId() {
+        return Optional.ofNullable(id);
+    }
+
     public LongFilter id() {
         if (id == null) {
-            id = new LongFilter();
+            setId(new LongFilter());
         }
         return id;
     }
@@ -77,9 +85,13 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
         return tenantId;
     }
 
+    public Optional<StringFilter> optionalTenantId() {
+        return Optional.ofNullable(tenantId);
+    }
+
     public StringFilter tenantId() {
         if (tenantId == null) {
-            tenantId = new StringFilter();
+            setTenantId(new StringFilter());
         }
         return tenantId;
     }
@@ -92,9 +104,13 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
         return operationType;
     }
 
+    public Optional<StringFilter> optionalOperationType() {
+        return Optional.ofNullable(operationType);
+    }
+
     public StringFilter operationType() {
         if (operationType == null) {
-            operationType = new StringFilter();
+            setOperationType(new StringFilter());
         }
         return operationType;
     }
@@ -107,9 +123,13 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
         return targetCount;
     }
 
+    public Optional<IntegerFilter> optionalTargetCount() {
+        return Optional.ofNullable(targetCount);
+    }
+
     public IntegerFilter targetCount() {
         if (targetCount == null) {
-            targetCount = new IntegerFilter();
+            setTargetCount(new IntegerFilter());
         }
         return targetCount;
     }
@@ -122,9 +142,13 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
         return successCount;
     }
 
+    public Optional<IntegerFilter> optionalSuccessCount() {
+        return Optional.ofNullable(successCount);
+    }
+
     public IntegerFilter successCount() {
         if (successCount == null) {
-            successCount = new IntegerFilter();
+            setSuccessCount(new IntegerFilter());
         }
         return successCount;
     }
@@ -137,9 +161,13 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
         return errorCount;
     }
 
+    public Optional<IntegerFilter> optionalErrorCount() {
+        return Optional.ofNullable(errorCount);
+    }
+
     public IntegerFilter errorCount() {
         if (errorCount == null) {
-            errorCount = new IntegerFilter();
+            setErrorCount(new IntegerFilter());
         }
         return errorCount;
     }
@@ -148,13 +176,36 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
         this.errorCount = errorCount;
     }
 
+    public StringFilter getOperationDetails() {
+        return operationDetails;
+    }
+
+    public Optional<StringFilter> optionalOperationDetails() {
+        return Optional.ofNullable(operationDetails);
+    }
+
+    public StringFilter operationDetails() {
+        if (operationDetails == null) {
+            setOperationDetails(new StringFilter());
+        }
+        return operationDetails;
+    }
+
+    public void setOperationDetails(StringFilter operationDetails) {
+        this.operationDetails = operationDetails;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
 
+    public Optional<ZonedDateTimeFilter> optionalCreatedAt() {
+        return Optional.ofNullable(createdAt);
+    }
+
     public ZonedDateTimeFilter createdAt() {
         if (createdAt == null) {
-            createdAt = new ZonedDateTimeFilter();
+            setCreatedAt(new ZonedDateTimeFilter());
         }
         return createdAt;
     }
@@ -167,9 +218,13 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
         return performedById;
     }
 
+    public Optional<LongFilter> optionalPerformedById() {
+        return Optional.ofNullable(performedById);
+    }
+
     public LongFilter performedById() {
         if (performedById == null) {
-            performedById = new LongFilter();
+            setPerformedById(new LongFilter());
         }
         return performedById;
     }
@@ -179,6 +234,17 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
     }
 
     public Boolean getDistinct() {
+        return distinct;
+    }
+
+    public Optional<Boolean> optionalDistinct() {
+        return Optional.ofNullable(distinct);
+    }
+
+    public Boolean distinct() {
+        if (distinct == null) {
+            setDistinct(true);
+        }
         return distinct;
     }
 
@@ -202,6 +268,7 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
             Objects.equals(targetCount, that.targetCount) &&
             Objects.equals(successCount, that.successCount) &&
             Objects.equals(errorCount, that.errorCount) &&
+            Objects.equals(operationDetails, that.operationDetails) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(performedById, that.performedById) &&
             Objects.equals(distinct, that.distinct)
@@ -210,22 +277,34 @@ public class BulkOperationLogCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, tenantId, operationType, targetCount, successCount, errorCount, createdAt, performedById, distinct);
+        return Objects.hash(
+            id,
+            tenantId,
+            operationType,
+            targetCount,
+            successCount,
+            errorCount,
+            operationDetails,
+            createdAt,
+            performedById,
+            distinct
+        );
     }
 
     // prettier-ignore
     @Override
     public String toString() {
         return "BulkOperationLogCriteria{" +
-            (id != null ? "id=" + id + ", " : "") +
-            (tenantId != null ? "tenantId=" + tenantId + ", " : "") +
-            (operationType != null ? "operationType=" + operationType + ", " : "") +
-            (targetCount != null ? "targetCount=" + targetCount + ", " : "") +
-            (successCount != null ? "successCount=" + successCount + ", " : "") +
-            (errorCount != null ? "errorCount=" + errorCount + ", " : "") +
-            (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
-            (performedById != null ? "performedById=" + performedById + ", " : "") +
-            (distinct != null ? "distinct=" + distinct + ", " : "") +
-            "}";
+            optionalId().map(f -> "id=" + f + ", ").orElse("") +
+            optionalTenantId().map(f -> "tenantId=" + f + ", ").orElse("") +
+            optionalOperationType().map(f -> "operationType=" + f + ", ").orElse("") +
+            optionalTargetCount().map(f -> "targetCount=" + f + ", ").orElse("") +
+            optionalSuccessCount().map(f -> "successCount=" + f + ", ").orElse("") +
+            optionalErrorCount().map(f -> "errorCount=" + f + ", ").orElse("") +
+            optionalOperationDetails().map(f -> "operationDetails=" + f + ", ").orElse("") +
+            optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
+            optionalPerformedById().map(f -> "performedById=" + f + ", ").orElse("") +
+            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
+        "}";
     }
 }

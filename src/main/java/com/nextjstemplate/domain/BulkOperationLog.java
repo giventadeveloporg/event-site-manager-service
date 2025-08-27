@@ -44,8 +44,8 @@ public class BulkOperationLog implements Serializable {
     @Column(name = "error_count")
     private Integer errorCount;
 
-    @Lob
-    @Column(name = "operation_details")
+    @Size(max = 16384)
+    @Column(name = "operation_details", length = 16384)
     private String operationDetails;
 
     @NotNull

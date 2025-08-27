@@ -2,8 +2,6 @@ package com.nextjstemplate.service;
 
 import com.nextjstemplate.service.dto.EventLiveUpdateDTO;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.nextjstemplate.domain.EventLiveUpdate}.
@@ -32,14 +30,6 @@ public interface EventLiveUpdateService {
      * @return the persisted entity.
      */
     Optional<EventLiveUpdateDTO> partialUpdate(EventLiveUpdateDTO eventLiveUpdateDTO);
-
-    /**
-     * Get all the eventLiveUpdates.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<EventLiveUpdateDTO> findAll(Pageable pageable);
 
     /**
      * Get the "id" eventLiveUpdate.

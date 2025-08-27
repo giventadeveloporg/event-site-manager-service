@@ -11,7 +11,7 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface WhatsAppLogMapper extends EntityMapper<WhatsAppLogDTO, WhatsAppLog> {
-//    @Mapping(target = "campaign", source = "campaign", qualifiedByName = "communicationCampaignId")
+    @Mapping(target = "campaign", source = "campaign", qualifiedByName = "communicationCampaignId")
     WhatsAppLogDTO toDto(WhatsAppLog s);
 
     @Named("communicationCampaignId")

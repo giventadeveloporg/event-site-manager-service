@@ -1,6 +1,5 @@
 package com.nextjstemplate.service.dto;
 
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -29,7 +28,7 @@ public class EventLiveUpdateDTO implements Serializable {
     @Size(max = 1024)
     private String contentLinkUrl;
 
-    @Lob
+    @Size(max = 8192)
     private String metadata;
 
     private Integer displayOrder;
@@ -42,6 +41,7 @@ public class EventLiveUpdateDTO implements Serializable {
     @NotNull
     private ZonedDateTime updatedAt;
 
+    @NotNull
     private EventDetailsDTO event;
 
     public Long getId() {
