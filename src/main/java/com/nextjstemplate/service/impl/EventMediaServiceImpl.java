@@ -158,6 +158,16 @@ public class EventMediaServiceImpl implements EventMediaService {
                 teamMember.setProfileImageUrl(fileUrl);
                 executiveCommitteeTeamMemberRepository.save(teamMember);
                 log.debug("Successfully updated profile image URL for ExecutiveCommitteeTeamMember ID: {}", executiveTeamMemberID);
+                
+                // Create a minimal EventMediaDTO for response (since no EventMedia entity was created)
+                EventMediaDTO responseDTO = new EventMediaDTO();
+                responseDTO.setId(-1L); // Use -1 to indicate this is not a real EventMedia record
+                responseDTO.setTitle(title);
+                responseDTO.setFileUrl(fileUrl);
+                responseDTO.setTenantId(tenantId);
+                responseDTO.setEventMediaType(file.getContentType() != null ? file.getContentType() : "unknown");
+                responseDTO.setFileSize((int) file.getSize());
+                return responseDTO;
             } else {
                 log.warn("ExecutiveCommitteeTeamMember not found with ID: {}", executiveTeamMemberID);
                 throw new EntityNotFoundException("ExecutiveCommitteeTeamMember not found with id " + executiveTeamMemberID);
@@ -179,8 +189,12 @@ public class EventMediaServiceImpl implements EventMediaService {
             MultipartFile file = files.get(i);
             String title = (titles != null && i < titles.size()) ? titles.get(i) : file.getOriginalFilename();
             String description = (descriptions != null && i < descriptions.size()) ? descriptions.get(i) : null;
-            result.add(uploadFile(file, eventId, userProfileId, title, description, tenantId, isPublic, eventFlyer,
-                    isFeaturedImage, isEventManagementOfficialDocument, isHeroImage, isActiveHeroImage, isTeamMemberProfileImage, executiveTeamMemberID));
+            EventMediaDTO uploadResult = uploadFile(file, eventId, userProfileId, title, description, tenantId, isPublic, eventFlyer,
+                    isFeaturedImage, isEventManagementOfficialDocument, isHeroImage, isActiveHeroImage, isTeamMemberProfileImage, executiveTeamMemberID);
+            // Only add non-null results to the list
+            if (uploadResult != null) {
+                result.add(uploadResult);
+            }
         }
         return result;
     }

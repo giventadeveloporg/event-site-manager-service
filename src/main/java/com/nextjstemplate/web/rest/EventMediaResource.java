@@ -316,7 +316,7 @@ public class EventMediaResource {
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "eventId", required = false) Long eventId,
             @RequestParam(value = "executiveTeamMemberID", required = false) Long executiveTeamMemberID,
-            @RequestParam("title") String title,
+            @RequestParam("title") @NotNull String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("tenantId") String tenantId,
             @RequestParam(value = "isPublic", required = false) Boolean isPublic,
@@ -331,15 +331,31 @@ public class EventMediaResource {
         if (file.isEmpty()) {
             throw new BadRequestAlertException("File cannot be empty", ENTITY_NAME, "fileempty");
         }
+        if (title == null || title.trim().isEmpty()) {
+            throw new BadRequestAlertException("Title cannot be empty", ENTITY_NAME, "titleempty");
+        }
         Long userProfileId = getCurrentUserProfileId(authentication);
         boolean isPublicValue = isPublic != null ? isPublic : false;
         EventMediaDTO result = eventMediaService.uploadFile(file, eventId, userProfileId, title, description,
                 tenantId, isPublicValue, eventFlyer, isFeaturedImage, isEventManagementOfficialDocument, isHeroImage,
                 isActiveHeroImage, isTeamMemberProfileImage, executiveTeamMemberID);
+
+        // For team member profile images, return OK status instead of CREATED since no EventMedia record is created
+       /* if (result != null && result.getId() != null && result.getId() == -1L) {
+            return ResponseEntity
+                    .ok()
+                    .headers(HeaderUtil.createAlert(applicationName, "Profile image uploaded successfully", file.getOriginalFilename()))
+                    .body(result);
+        }*/
+         /*  It's OK even if the result is null since this method is used by
+      multiple front end urls  This method is used for file upload of any type from the front end so we're trying to
+      make this method general so it is OK for the result variable to be null
+       which may not have the event media DTO object So even if it is null we are planning
+       to return a success and in the front it will check the HTTP status code anything success is
+        */
         return ResponseEntity
-                .created(new URI("/api/event-medias/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
-                        result.getId().toString()))
+                 .ok()
+                .headers(HeaderUtil.createAlert(applicationName, "File uploaded successfully", file.getOriginalFilename()))
                 .body(result);
     }
 
@@ -352,7 +368,7 @@ public class EventMediaResource {
             @RequestParam(value = "eventId", required = false) Long eventId,
             @RequestParam(value = "upLoadedById", required = false) Long upLoadedById,
             @RequestParam(value = "executiveTeamMemberID", required = false) Long executiveTeamMemberID,
-            @RequestParam(value = "titles", required = false) List<String> titles,
+            @RequestParam("titles") List<String> titles,
             @RequestParam(value = "descriptions", required = false) List<String> descriptions,
             @RequestParam("tenantId") String tenantId,
             @RequestParam(value = "isPublic", required = false) Boolean isPublic,
@@ -371,6 +387,22 @@ public class EventMediaResource {
         if (hasEmptyFile) {
             throw new BadRequestAlertException("One or more files are empty", ENTITY_NAME, "fileempty");
         }
+        
+        // Validate that titles are provided and match the number of files
+        if (titles == null || titles.isEmpty()) {
+            throw new BadRequestAlertException("Titles are required for all files", ENTITY_NAME, "titlesmissing");
+        }
+        if (titles.size() != files.size()) {
+            throw new BadRequestAlertException("Number of titles must match number of files", ENTITY_NAME, "titlessizemismatch");
+        }
+        
+        // Validate that titles are not empty or blank
+        for (int i = 0; i < titles.size(); i++) {
+            String title = titles.get(i);
+            if (title == null || title.trim().isEmpty()) {
+                throw new BadRequestAlertException("Title for file " + (i + 1) + " cannot be empty", ENTITY_NAME, "titleempty");
+            }
+        }
         Long userProfileId = null;
         if (upLoadedById == null) {
             userProfileId = getCurrentUserProfileId(authentication);
@@ -381,6 +413,14 @@ public class EventMediaResource {
         List<EventMediaDTO> results = eventMediaService.uploadMultipleFiles(files, eventId, userProfileId, titles,
                 descriptions, tenantId, isPublicValue, eventFlyer, isFeaturedImage, isEventManagementOfficialDocument,
                 isHeroImage, isActiveHeroImage, isTeamMemberProfileImage, executiveTeamMemberID);
+
+         /*  It's OK even if the result is null since this method is used by
+      multiple front end urls  This method is used for file upload of any type from the front end so we're trying to
+      make this method general so it is OK for the result variable to be null
+       which may not have the event media DTO object So even if it is null we are planning
+       to return a success and in the front it will check the HTTP status code anything success is
+        */
+
         return ResponseEntity.ok()
                 .headers(HeaderUtil.createAlert(applicationName, "eventMedia.uploaded", String.valueOf(results.size())))
                 .body(results);
