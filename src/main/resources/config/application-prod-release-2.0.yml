@@ -39,7 +39,7 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
-      maximum-pool-size: 3
+      maximum-pool-size: 2
       # LOB-optimized connection pool settings
       connection-timeout: 30000
       idle-timeout: 600000
