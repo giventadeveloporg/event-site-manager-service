@@ -51,7 +51,7 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     @Autowired
     public EventMediaServiceImpl(EventMediaRepository eventMediaRepository, EventMediaMapper eventMediaMapper,
-            S3Service s3Service, EventDetailsRepository eventRepository, 
+            S3Service s3Service, EventDetailsRepository eventRepository,
             ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
@@ -152,26 +152,21 @@ public class EventMediaServiceImpl implements EventMediaService {
         } else if (executiveTeamMemberID != null) {
             // Handle ExecutiveCommitteeTeamMember profile image update
             log.debug("Updating ExecutiveCommitteeTeamMember profile image for ID: {}", executiveTeamMemberID);
-            Optional<ExecutiveCommitteeTeamMember> teamMemberOpt = executiveCommitteeTeamMemberRepository.findById(executiveTeamMemberID);
-            if (teamMemberOpt.isPresent()) {
-                ExecutiveCommitteeTeamMember teamMember = teamMemberOpt.get();
-                teamMember.setProfileImageUrl(fileUrl);
-                executiveCommitteeTeamMemberRepository.save(teamMember);
-                log.debug("Successfully updated profile image URL for ExecutiveCommitteeTeamMember ID: {}", executiveTeamMemberID);
-                
-                // Create a minimal EventMediaDTO for response (since no EventMedia entity was created)
-                EventMediaDTO responseDTO = new EventMediaDTO();
-                responseDTO.setId(-1L); // Use -1 to indicate this is not a real EventMedia record
-                responseDTO.setTitle(title);
-                responseDTO.setFileUrl(fileUrl);
-                responseDTO.setTenantId(tenantId);
-                responseDTO.setEventMediaType(file.getContentType() != null ? file.getContentType() : "unknown");
-                responseDTO.setFileSize((int) file.getSize());
-                return responseDTO;
-            } else {
-                log.warn("ExecutiveCommitteeTeamMember not found with ID: {}", executiveTeamMemberID);
-                throw new EntityNotFoundException("ExecutiveCommitteeTeamMember not found with id " + executiveTeamMemberID);
-            }
+            ExecutiveCommitteeTeamMember teamMember = executiveCommitteeTeamMemberRepository.findById(executiveTeamMemberID)
+                .orElseThrow(() -> new RuntimeException("ExecutiveCommitteeTeamMember not found with ID: " + executiveTeamMemberID));
+            teamMember.setProfileImageUrl(fileUrl);
+            executiveCommitteeTeamMemberRepository.save(teamMember);
+            log.debug("Successfully updated profile image URL for ExecutiveCommitteeTeamMember ID: {}", executiveTeamMemberID);
+            
+            // Create a minimal EventMediaDTO for response (since no EventMedia entity was created)
+            EventMediaDTO responseDTO = new EventMediaDTO();
+            responseDTO.setId(-1L); // Use -1 to indicate this is not a real EventMedia record
+            responseDTO.setTitle(title);
+            responseDTO.setFileUrl(fileUrl);
+            responseDTO.setTenantId(tenantId);
+            responseDTO.setEventMediaType(file.getContentType() != null ? file.getContentType() : "unknown");
+            responseDTO.setFileSize((int) file.getSize());
+            return responseDTO;
         }
         // since eventId field is removed and replaced with mapper we can return null
         // for now.
@@ -355,3 +350,5 @@ public class EventMediaServiceImpl implements EventMediaService {
                 .collect(Collectors.toList());
     }
 }
+
+

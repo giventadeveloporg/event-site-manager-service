@@ -1,0 +1,40 @@
+# Cursor Rules for malayalees-us-site-boot
+
+## Java Code Style Guidelines
+
+### Modernizer Plugin Compliance
+- Always use `Optional.orElseThrow()` instead of `Optional.isPresent()` + `Optional.get()` pattern
+- Replace legacy patterns with modern Java alternatives as detected by modernizer-maven-plugin
+- Prefer method references over lambda expressions where appropriate
+- Use try-with-resources for AutoCloseable resources
+- Avoid deprecated APIs and use their modern replacements
+
+### Spring Boot Best Practices
+- Use constructor injection instead of field injection
+- Implement service interfaces for better testability
+- Keep controllers thin - business logic belongs in service layer
+- Use DTOs for external API communication
+- Follow REST naming conventions for endpoints
+
+### JHipster Conventions
+- Follow JHipster entity naming patterns
+- Use MapStruct for DTO/Entity mapping
+- Implement criteria-based queries using JHipster's QueryService pattern
+- Maintain consistency with generated code structure
+
+### Error Handling
+- Use proper exception handling with custom exception classes
+- Throw meaningful exceptions with descriptive messages
+- Handle Optional values properly using orElseThrow, orElse, or ifPresent
+
+### Testing
+- Write comprehensive unit tests for service layer
+- Use Testcontainers for integration tests
+- Mock external dependencies in unit tests
+- Maintain test coverage above 80%
+
+### Code Quality
+- Format code with Prettier before committing
+- Follow Checkstyle rules
+- Ensure all modernizer checks pass
+- Keep methods concise and focused on a single responsibility
