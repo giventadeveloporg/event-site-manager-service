@@ -68,6 +68,15 @@ public class EventMediaDTO implements Serializable {
     private Boolean isHeroImage;
 
     private Boolean isActiveHeroImage;
+    
+    @NotNull
+    private Boolean isHomePageHeroImage;
+
+    @NotNull
+    private Boolean isFeaturedEventStripImage;
+
+    @NotNull
+    private Boolean isLiveEventStripImage;
 
     private Long eventId;
 
@@ -261,6 +270,30 @@ public class EventMediaDTO implements Serializable {
     public void setIsActiveHeroImage(Boolean isActiveHeroImage) {
         this.isActiveHeroImage = isActiveHeroImage;
     }
+    
+     public Boolean getIsHomePageHeroImage() {
+        return isHomePageHeroImage;
+    }
+
+    public void setIsHomePageHeroImage(Boolean isHomePageHeroImage) {
+        this.isHomePageHeroImage = isHomePageHeroImage;
+    }
+
+    public Boolean getIsFeaturedEventStripImage() {
+        return isFeaturedEventStripImage;
+    }
+
+    public void setIsFeaturedEventStripImage(Boolean isFeaturedEventStripImage) {
+        this.isFeaturedEventStripImage = isFeaturedEventStripImage;
+    }
+
+    public Boolean getIsLiveEventStripImage() {
+        return isLiveEventStripImage;
+    }
+
+    public void setIsLiveEventStripImage(Boolean isLiveEventStripImage) {
+        this.isLiveEventStripImage = isLiveEventStripImage;
+    }
 
     public Long getEventId() {
         return eventId;
@@ -358,6 +391,9 @@ public class EventMediaDTO implements Serializable {
             ", isFeaturedImage='" + getIsFeaturedImage() + "'" +
             ", isHeroImage='" + getIsHeroImage() + "'" +
             ", isActiveHeroImage='" + getIsActiveHeroImage() + "'" +
+			", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
+            ", isFeaturedEventStripImage='" + getIsFeaturedEventStripImage() + "'" +
+            ", isLiveEventStripImage='" + getIsLiveEventStripImage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
            /* ", event=" + getEvent() +

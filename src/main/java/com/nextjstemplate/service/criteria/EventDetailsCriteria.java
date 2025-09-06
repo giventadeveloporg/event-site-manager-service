@@ -2,6 +2,8 @@ package com.nextjstemplate.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
+
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
@@ -66,6 +68,11 @@ public class EventDetailsCriteria implements Serializable, Criteria {
 
     private BooleanFilter isLive;
 
+    private BooleanFilter isFeaturedEvent;
+
+    private IntegerFilter featuredEventPriority;
+
+    private IntegerFilter liveEventPriority;
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -104,6 +111,9 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.isRegistrationRequired = other.isRegistrationRequired == null ? null : other.isRegistrationRequired.copy();
         this.isSportsEvent = other.isSportsEvent == null ? null : other.isSportsEvent.copy();
         this.isLive = other.isLive == null ? null : other.isLive.copy();
+        this.isFeaturedEvent = other.optionalIsFeaturedEvent().map(BooleanFilter::copy).orElse(null);
+        this.featuredEventPriority = other.optionalFeaturedEventPriority().map(IntegerFilter::copy).orElse(null);
+        this.liveEventPriority = other.optionalLiveEventPriority().map(IntegerFilter::copy).orElse(null);
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.createdById = other.createdById == null ? null : other.createdById.copy();
@@ -461,6 +471,62 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.isLive = isLive;
     }
 
+    public BooleanFilter getIsFeaturedEvent() {
+        return isFeaturedEvent;
+    }
+
+    public Optional<BooleanFilter> optionalIsFeaturedEvent() {
+        return Optional.ofNullable(isFeaturedEvent);
+    }
+
+    public BooleanFilter isFeaturedEvent() {
+        if (isFeaturedEvent == null) {
+            setIsFeaturedEvent(new BooleanFilter());
+        }
+        return isFeaturedEvent;
+    }
+
+    public void setIsFeaturedEvent(BooleanFilter isFeaturedEvent) {
+        this.isFeaturedEvent = isFeaturedEvent;
+    }
+
+    public IntegerFilter getFeaturedEventPriority() {
+        return featuredEventPriority;
+    }
+
+    public Optional<IntegerFilter> optionalFeaturedEventPriority() {
+        return Optional.ofNullable(featuredEventPriority);
+    }
+
+    public IntegerFilter featuredEventPriority() {
+        if (featuredEventPriority == null) {
+            setFeaturedEventPriority(new IntegerFilter());
+        }
+        return featuredEventPriority;
+    }
+
+    public void setFeaturedEventPriority(IntegerFilter featuredEventPriority) {
+        this.featuredEventPriority = featuredEventPriority;
+    }
+
+    public IntegerFilter getLiveEventPriority() {
+        return liveEventPriority;
+    }
+
+    public Optional<IntegerFilter> optionalLiveEventPriority() {
+        return Optional.ofNullable(liveEventPriority);
+    }
+
+    public IntegerFilter liveEventPriority() {
+        if (liveEventPriority == null) {
+            setLiveEventPriority(new IntegerFilter());
+        }
+        return liveEventPriority;
+    }
+
+    public void setLiveEventPriority(IntegerFilter liveEventPriority) {
+        this.liveEventPriority = liveEventPriority;
+    }
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -577,6 +643,9 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             Objects.equals(isRegistrationRequired, that.isRegistrationRequired) &&
             Objects.equals(isSportsEvent, that.isSportsEvent) &&
             Objects.equals(isLive, that.isLive) &&
+            Objects.equals(isFeaturedEvent, that.isFeaturedEvent) &&
+            Objects.equals(featuredEventPriority, that.featuredEventPriority) &&
+            Objects.equals(liveEventPriority, that.liveEventPriority) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(createdById, that.createdById) &&
@@ -612,6 +681,9 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             isRegistrationRequired,
             isSportsEvent,
             isLive,
+ 			isFeaturedEvent,
+            featuredEventPriority,
+            liveEventPriority,
             createdAt,
             updatedAt,
             createdById,
@@ -648,6 +720,9 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             (isRegistrationRequired != null ? "isRegistrationRequired=" + isRegistrationRequired + ", " : "") +
             (isSportsEvent != null ? "isSportsEvent=" + isSportsEvent + ", " : "") +
             (isLive != null ? "isLive=" + isLive + ", " : "") +
+             optionalIsFeaturedEvent().map(f -> "isFeaturedEvent=" + f + ", ").orElse("") +
+            optionalFeaturedEventPriority().map(f -> "featuredEventPriority=" + f + ", ").orElse("") +
+            optionalLiveEventPriority().map(f -> "liveEventPriority=" + f + ", ").orElse("") +
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
             (createdById != null ? "createdById=" + createdById + ", " : "") +

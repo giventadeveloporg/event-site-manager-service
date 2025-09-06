@@ -2,6 +2,8 @@ package com.nextjstemplate.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
+
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
@@ -63,6 +65,11 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     private BooleanFilter isActiveHeroImage;
 
+    private BooleanFilter isHomePageHeroImage;
+
+    private BooleanFilter isFeaturedEventStripImage;
+
+    private BooleanFilter isLiveEventStripImage;
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -98,6 +105,10 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.isFeaturedImage = other.isFeaturedImage == null ? null : other.isFeaturedImage.copy();
         this.isHeroImage = other.isHeroImage == null ? null : other.isHeroImage.copy();
         this.isActiveHeroImage = other.isActiveHeroImage == null ? null : other.isActiveHeroImage.copy();
+        this.isHomePageHeroImage = other.optionalIsHomePageHeroImage().map(BooleanFilter::copy).orElse(null);
+        this.isFeaturedEventStripImage = other.optionalIsFeaturedEventStripImage().map(BooleanFilter::copy).orElse(null);
+        this.isLiveEventStripImage = other.optionalIsLiveEventStripImage().map(BooleanFilter::copy).orElse(null);
+
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.eventId = other.eventId == null ? null : other.eventId.copy();
@@ -427,6 +438,62 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.isActiveHeroImage = isActiveHeroImage;
     }
 
+    public BooleanFilter getIsHomePageHeroImage() {
+        return isHomePageHeroImage;
+    }
+
+    public Optional<BooleanFilter> optionalIsHomePageHeroImage() {
+        return Optional.ofNullable(isHomePageHeroImage);
+    }
+
+    public BooleanFilter isHomePageHeroImage() {
+        if (isHomePageHeroImage == null) {
+            setIsHomePageHeroImage(new BooleanFilter());
+        }
+        return isHomePageHeroImage;
+    }
+
+    public void setIsHomePageHeroImage(BooleanFilter isHomePageHeroImage) {
+        this.isHomePageHeroImage = isHomePageHeroImage;
+    }
+
+    public BooleanFilter getIsFeaturedEventStripImage() {
+        return isFeaturedEventStripImage;
+    }
+
+    public Optional<BooleanFilter> optionalIsFeaturedEventStripImage() {
+        return Optional.ofNullable(isFeaturedEventStripImage);
+    }
+
+    public BooleanFilter isFeaturedEventStripImage() {
+        if (isFeaturedEventStripImage == null) {
+            setIsFeaturedEventStripImage(new BooleanFilter());
+        }
+        return isFeaturedEventStripImage;
+    }
+
+    public void setIsFeaturedEventStripImage(BooleanFilter isFeaturedEventStripImage) {
+        this.isFeaturedEventStripImage = isFeaturedEventStripImage;
+    }
+
+    public BooleanFilter getIsLiveEventStripImage() {
+        return isLiveEventStripImage;
+    }
+
+    public Optional<BooleanFilter> optionalIsLiveEventStripImage() {
+        return Optional.ofNullable(isLiveEventStripImage);
+    }
+
+    public BooleanFilter isLiveEventStripImage() {
+        if (isLiveEventStripImage == null) {
+            setIsLiveEventStripImage(new BooleanFilter());
+        }
+        return isLiveEventStripImage;
+    }
+
+    public void setIsLiveEventStripImage(BooleanFilter isLiveEventStripImage) {
+        this.isLiveEventStripImage = isLiveEventStripImage;
+    }
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -526,6 +593,10 @@ public class EventMediaCriteria implements Serializable, Criteria {
             Objects.equals(isFeaturedImage, that.isFeaturedImage) &&
             Objects.equals(isHeroImage, that.isHeroImage) &&
             Objects.equals(isActiveHeroImage, that.isActiveHeroImage) &&
+			Objects.equals(isHomePageHeroImage, that.isHomePageHeroImage) &&
+            Objects.equals(isFeaturedEventStripImage, that.isFeaturedEventStripImage) &&
+            Objects.equals(isLiveEventStripImage, that.isLiveEventStripImage) &&
+            Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(eventId, that.eventId) &&
@@ -560,6 +631,9 @@ public class EventMediaCriteria implements Serializable, Criteria {
             isFeaturedImage,
             isHeroImage,
             isActiveHeroImage,
+			isHomePageHeroImage,
+            isFeaturedEventStripImage,
+            isLiveEventStripImage,
             createdAt,
             updatedAt,
             eventId,
@@ -595,6 +669,10 @@ public class EventMediaCriteria implements Serializable, Criteria {
             (isFeaturedImage != null ? "isFeaturedImage=" + isFeaturedImage + ", " : "") +
             (isHeroImage != null ? "isHeroImage=" + isHeroImage + ", " : "") +
             (isActiveHeroImage != null ? "isActiveHeroImage=" + isActiveHeroImage + ", " : "") +
+            optionalIsHomePageHeroImage().map(f -> "isHomePageHeroImage=" + f + ", ").orElse("") +
+            optionalIsFeaturedEventStripImage().map(f -> "isFeaturedEventStripImage=" + f + ", ").orElse("") +
+            optionalIsLiveEventStripImage().map(f -> "isLiveEventStripImage=" + f + ", ").orElse("") +
+
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
             (eventId != null ? "eventId=" + eventId + ", " : "") +

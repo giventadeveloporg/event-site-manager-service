@@ -111,6 +111,17 @@ public class EventDetails implements Serializable {
     private Boolean isLive;
 
     @NotNull
+    @Column(name = "is_featured_event", nullable = false)
+    private Boolean isFeaturedEvent;
+
+    @NotNull
+    @Column(name = "featured_event_priority", nullable = false)
+    private Integer featuredEventPriority;
+
+    @NotNull
+    @Column(name = "live_event_priority", nullable = false)
+    private Integer liveEventPriority;
+    @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
 
@@ -435,6 +446,44 @@ public class EventDetails implements Serializable {
         this.isLive = isLive;
     }
 
+    public Boolean getIsFeaturedEvent() {
+        return this.isFeaturedEvent;
+    }
+
+    public EventDetails isFeaturedEvent(Boolean isFeaturedEvent) {
+        this.setIsFeaturedEvent(isFeaturedEvent);
+        return this;
+    }
+
+    public void setIsFeaturedEvent(Boolean isFeaturedEvent) {
+        this.isFeaturedEvent = isFeaturedEvent;
+    }
+
+    public Integer getFeaturedEventPriority() {
+        return this.featuredEventPriority;
+    }
+
+    public EventDetails featuredEventPriority(Integer featuredEventPriority) {
+        this.setFeaturedEventPriority(featuredEventPriority);
+        return this;
+    }
+
+    public void setFeaturedEventPriority(Integer featuredEventPriority) {
+        this.featuredEventPriority = featuredEventPriority;
+    }
+
+    public Integer getLiveEventPriority() {
+        return this.liveEventPriority;
+    }
+
+    public EventDetails liveEventPriority(Integer liveEventPriority) {
+        this.setLiveEventPriority(liveEventPriority);
+        return this;
+    }
+
+    public void setLiveEventPriority(Integer liveEventPriority) {
+        this.liveEventPriority = liveEventPriority;
+    }
     public ZonedDateTime getCreatedAt() {
         return this.createdAt;
     }
@@ -556,6 +605,9 @@ public class EventDetails implements Serializable {
             ", isRegistrationRequired='" + getIsRegistrationRequired() + "'" +
             ", isSportsEvent='" + getIsSportsEvent() + "'" +
             ", isLive='" + getIsLive() + "'" +
+            ", isFeaturedEvent='" + getIsFeaturedEvent() + "'" +
+            ", featuredEventPriority=" + getFeaturedEventPriority() +
+            ", liveEventPriority=" + getLiveEventPriority() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             "}";

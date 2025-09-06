@@ -75,6 +75,15 @@ public class EventDetailsDTO implements Serializable {
 
     private Boolean isLive;
 
+     @NotNull
+    private Boolean isFeaturedEvent;
+
+    @NotNull
+    private Integer featuredEventPriority;
+
+    @NotNull
+    private Integer liveEventPriority;
+
     @NotNull
     private ZonedDateTime createdAt;
 
@@ -270,6 +279,29 @@ public class EventDetailsDTO implements Serializable {
         this.isLive = isLive;
     }
 
+    public Boolean getIsFeaturedEvent() {
+        return isFeaturedEvent;
+    }
+
+    public void setIsFeaturedEvent(Boolean isFeaturedEvent) {
+        this.isFeaturedEvent = isFeaturedEvent;
+    }
+
+    public Integer getFeaturedEventPriority() {
+        return featuredEventPriority;
+    }
+
+    public void setFeaturedEventPriority(Integer featuredEventPriority) {
+        this.featuredEventPriority = featuredEventPriority;
+    }
+
+    public Integer getLiveEventPriority() {
+        return liveEventPriority;
+    }
+
+    public void setLiveEventPriority(Integer liveEventPriority) {
+        this.liveEventPriority = liveEventPriority;
+    }
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
@@ -358,6 +390,9 @@ public class EventDetailsDTO implements Serializable {
             ", isRegistrationRequired='" + getIsRegistrationRequired() + "'" +
             ", isSportsEvent='" + getIsSportsEvent() + "'" +
             ", isLive='" + getIsLive() + "'" +
+            ", isFeaturedEvent='" + getIsFeaturedEvent() + "'" +
+            ", featuredEventPriority=" + getFeaturedEventPriority() +
+            ", liveEventPriority=" + getLiveEventPriority() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", createdBy=" + getCreatedBy() +

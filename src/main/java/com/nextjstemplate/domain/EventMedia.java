@@ -102,6 +102,18 @@ public class EventMedia implements Serializable {
     private Boolean isActiveHeroImage;
 
     @NotNull
+    @Column(name = "is_home_page_hero_image", nullable = false)
+    private Boolean isHomePageHeroImage;
+
+    @NotNull
+    @Column(name = "is_featured_event_strip_image", nullable = false)
+    private Boolean isFeaturedEventStripImage;
+
+    @NotNull
+    @Column(name = "is_live_event_strip_image", nullable = false)
+    private Boolean isLiveEventStripImage;
+
+    @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
 
@@ -417,6 +429,44 @@ public class EventMedia implements Serializable {
         this.isActiveHeroImage = isActiveHeroImage;
     }
 
+    public Boolean getIsHomePageHeroImage() {
+        return this.isHomePageHeroImage;
+    }
+
+    public EventMedia isHomePageHeroImage(Boolean isHomePageHeroImage) {
+        this.setIsHomePageHeroImage(isHomePageHeroImage);
+        return this;
+    }
+
+    public void setIsHomePageHeroImage(Boolean isHomePageHeroImage) {
+        this.isHomePageHeroImage = isHomePageHeroImage;
+    }
+
+    public Boolean getIsFeaturedEventStripImage() {
+        return this.isFeaturedEventStripImage;
+    }
+
+    public EventMedia isFeaturedEventStripImage(Boolean isFeaturedEventStripImage) {
+        this.setIsFeaturedEventStripImage(isFeaturedEventStripImage);
+        return this;
+    }
+
+    public void setIsFeaturedEventStripImage(Boolean isFeaturedEventStripImage) {
+        this.isFeaturedEventStripImage = isFeaturedEventStripImage;
+    }
+
+    public Boolean getIsLiveEventStripImage() {
+        return this.isLiveEventStripImage;
+    }
+
+    public EventMedia isLiveEventStripImage(Boolean isLiveEventStripImage) {
+        this.setIsLiveEventStripImage(isLiveEventStripImage);
+        return this;
+    }
+
+    public void setIsLiveEventStripImage(Boolean isLiveEventStripImage) {
+        this.isLiveEventStripImage = isLiveEventStripImage;
+    }
     public ZonedDateTime getCreatedAt() {
         return this.createdAt;
     }
@@ -544,6 +594,9 @@ public class EventMedia implements Serializable {
             ", isFeaturedImage='" + getIsFeaturedImage() + "'" +
             ", isHeroImage='" + getIsHeroImage() + "'" +
             ", isActiveHeroImage='" + getIsActiveHeroImage() + "'" +
+            ", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
+            ", isFeaturedEventStripImage='" + getIsFeaturedEventStripImage() + "'" +
+            ", isLiveEventStripImage='" + getIsLiveEventStripImage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", eventId=" + getEventId() +
