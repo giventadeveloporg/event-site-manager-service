@@ -121,6 +121,7 @@ public class EventDetails implements Serializable {
     @NotNull
     @Column(name = "live_event_priority", nullable = false)
     private Integer liveEventPriority;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -277,6 +278,7 @@ public class EventDetails implements Serializable {
     public void setTimezone(String timezone) {
         this.timezone = timezone;
     }
+
     public String getLocation() {
         return this.location;
     }
@@ -484,6 +486,7 @@ public class EventDetails implements Serializable {
     public void setLiveEventPriority(Integer liveEventPriority) {
         this.liveEventPriority = liveEventPriority;
     }
+
     public ZonedDateTime getCreatedAt() {
         return this.createdAt;
     }

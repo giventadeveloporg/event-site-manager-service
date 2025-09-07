@@ -75,7 +75,7 @@ public class EventDetailsDTO implements Serializable {
 
     private Boolean isLive;
 
-     @NotNull
+    @NotNull
     private Boolean isFeaturedEvent;
 
     @NotNull
@@ -175,6 +175,7 @@ public class EventDetailsDTO implements Serializable {
     public void setTimezone(String timezone) {
         this.timezone = timezone;
     }
+
     public String getLocation() {
         return location;
     }
@@ -302,6 +303,7 @@ public class EventDetailsDTO implements Serializable {
     public void setLiveEventPriority(Integer liveEventPriority) {
         this.liveEventPriority = liveEventPriority;
     }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }

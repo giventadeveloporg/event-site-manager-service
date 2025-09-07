@@ -3,7 +3,6 @@ package com.nextjstemplate.service.criteria;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
-
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
@@ -426,6 +425,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
     public void setEnableQrCode(BooleanFilter enableQrCode) {
         this.enableQrCode = enableQrCode;
     }
+
     public BooleanFilter getIsRegistrationRequired() {
         return isRegistrationRequired;
     }
@@ -527,6 +527,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
     public void setLiveEventPriority(IntegerFilter liveEventPriority) {
         this.liveEventPriority = liveEventPriority;
     }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -681,7 +682,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             isRegistrationRequired,
             isSportsEvent,
             isLive,
- 			isFeaturedEvent,
+            isFeaturedEvent,
             featuredEventPriority,
             liveEventPriority,
             createdAt,

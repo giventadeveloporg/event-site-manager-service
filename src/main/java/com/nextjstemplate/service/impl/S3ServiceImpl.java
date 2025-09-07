@@ -1,18 +1,17 @@
 package com.nextjstemplate.service.impl;
 
 import com.amazonaws.HttpMethod;
-import com.nextjstemplate.service.S3Service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
+import com.nextjstemplate.service.S3Service;
+import java.net.URL;
+import java.util.Date;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.net.URL;
-import java.util.Date;
-import java.util.UUID;
 
 /**
  * Service Implementation for managing S3 operations.
@@ -32,7 +31,7 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public String uploadFile(MultipartFile file, Long eventId, String title, String tenantId,  Boolean isTeamMemberProfileImage) {
+    public String uploadFile(MultipartFile file, Long eventId, String title, String tenantId, Boolean isTeamMemberProfileImage) {
         try {
             String originalFilename = file.getOriginalFilename();
             String uniqueFilename = generateUniqueFilename(tenantId, eventId, originalFilename, isTeamMemberProfileImage);
@@ -44,17 +43,12 @@ public class S3ServiceImpl implements S3Service {
             metadata.addUserMetadata("event-id", String.valueOf(eventId));
             metadata.addUserMetadata("original-filename", originalFilename);
 
-            PutObjectRequest putRequest = new PutObjectRequest(
-                    bucketName,
-                    uniqueFilename,
-                    file.getInputStream(),
-                    metadata);
+            PutObjectRequest putRequest = new PutObjectRequest(bucketName, uniqueFilename, file.getInputStream(), metadata);
 
             amazonS3.putObject(putRequest);
 
             URL url = amazonS3.getUrl(bucketName, uniqueFilename);
             return url.toString();
-
         } catch (Exception e) {
             log.error("Error uploading file to S3", e);
             throw new RuntimeException("Failed to upload file to S3", e);
@@ -68,10 +62,9 @@ public class S3ServiceImpl implements S3Service {
             Date expiration = new Date();
             expiration.setTime(expiration.getTime() + (expirationHours * 60 * 60 * 1000L));
 
-            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName,
-                    fileName)
-                    .withMethod(HttpMethod.GET)
-                    .withExpiration(expiration);
+            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, fileName)
+                .withMethod(HttpMethod.GET)
+                .withExpiration(expiration);
 
             URL presignedUrl = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
             return presignedUrl.toString();
@@ -120,9 +113,10 @@ public class S3ServiceImpl implements S3Service {
         try {
             String fileName = extractFileNameFromUrl(url);
             S3Object s3Object = amazonS3.getObject(bucketName, fileName);
-            try (java.io.InputStream inputStream = s3Object.getObjectContent();
-                    java.util.Scanner scanner = new java.util.Scanner(inputStream,
-                            java.nio.charset.StandardCharsets.UTF_8)) {
+            try (
+                java.io.InputStream inputStream = s3Object.getObjectContent();
+                java.util.Scanner scanner = new java.util.Scanner(inputStream, java.nio.charset.StandardCharsets.UTF_8)
+            ) {
                 scanner.useDelimiter("\\A");
                 return scanner.hasNext() ? scanner.next() : "";
             }
@@ -135,19 +129,16 @@ public class S3ServiceImpl implements S3Service {
     // Private helper methods
 
     private String generateUniqueFilename(String tenantId, Long eventId, String originalFilename, Boolean isTeamMemberProfileImage) {
-
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String extension = getFileExtension(originalFilename);
         String baseName = getBaseFileName(originalFilename);
 
-        if (eventId != null && eventId>0 ) {
-            return String.format("events/tenantId/%s/event-id/%d/%s_%s_%s%s", tenantId, eventId, baseName, timestamp,
-                    uuid, extension);
+        if (eventId != null && eventId > 0) {
+            return String.format("events/tenantId/%s/event-id/%d/%s_%s_%s%s", tenantId, eventId, baseName, timestamp, uuid, extension);
         } else {
-            if(isTeamMemberProfileImage){
-                return String.format("media/tenantId/%s/executive-team-members/%s_%s_%s%s", tenantId, baseName, timestamp,
-                    uuid, extension);
+            if (isTeamMemberProfileImage) {
+                return String.format("media/tenantId/%s/executive-team-members/%s_%s_%s%s", tenantId, baseName, timestamp, uuid, extension);
             }
             return String.format("media/%s_%s_%s%s", baseName, timestamp, uuid, extension);
         }

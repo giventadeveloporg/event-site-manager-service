@@ -70,7 +70,8 @@ public class EmailLogResource {
             throw new BadRequestAlertException("A new emailLog cannot already have an ID", ENTITY_NAME, "idexists");
         }
         emailLogDTO = emailLogService.save(emailLogDTO);
-        return ResponseEntity.created(new URI("/api/email-logs/" + emailLogDTO.getId()))
+        return ResponseEntity
+            .created(new URI("/api/email-logs/" + emailLogDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, emailLogDTO.getId().toString()))
             .body(emailLogDTO);
     }
@@ -103,7 +104,8 @@ public class EmailLogResource {
         }
 
         emailLogDTO = emailLogService.update(emailLogDTO);
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, emailLogDTO.getId().toString()))
             .body(emailLogDTO);
     }
@@ -198,7 +200,8 @@ public class EmailLogResource {
     public ResponseEntity<Void> deleteEmailLog(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete EmailLog : {}", id);
         emailLogService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

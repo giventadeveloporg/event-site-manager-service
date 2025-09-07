@@ -71,22 +71,24 @@ public class EmailLogQueryService extends QueryService<EmailLog> {
         Specification<EmailLog> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), EmailLog_.id),
-                buildStringSpecification(criteria.getTenantId(), EmailLog_.tenantId),
-                buildStringSpecification(criteria.getRecipientEmail(), EmailLog_.recipientEmail),
-                buildStringSpecification(criteria.getSubject(), EmailLog_.subject),
-                buildStringSpecification(criteria.getBody(), EmailLog_.body),
-                buildRangeSpecification(criteria.getSentAt(), EmailLog_.sentAt),
-                buildStringSpecification(criteria.getStatus(), EmailLog_.status),
-                buildStringSpecification(criteria.getType(), EmailLog_.type),
-                buildRangeSpecification(criteria.getCampaignId(), EmailLog_.campaignId),
-                buildStringSpecification(criteria.getMetadata(), EmailLog_.metadata),
-                buildSpecification(criteria.getCampaignId(), root ->
-                    root.join(EmailLog_.campaign, JoinType.LEFT).get(CommunicationCampaign_.id)
-                )
-            );
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), EmailLog_.id),
+                    buildStringSpecification(criteria.getTenantId(), EmailLog_.tenantId),
+                    buildStringSpecification(criteria.getRecipientEmail(), EmailLog_.recipientEmail),
+                    buildStringSpecification(criteria.getSubject(), EmailLog_.subject),
+                    buildStringSpecification(criteria.getBody(), EmailLog_.body),
+                    buildRangeSpecification(criteria.getSentAt(), EmailLog_.sentAt),
+                    buildStringSpecification(criteria.getStatus(), EmailLog_.status),
+                    buildStringSpecification(criteria.getType(), EmailLog_.type),
+                    buildRangeSpecification(criteria.getCampaignId(), EmailLog_.campaignId),
+                    buildStringSpecification(criteria.getMetadata(), EmailLog_.metadata),
+                    buildSpecification(
+                        criteria.getCampaignId(),
+                        root -> root.join(EmailLog_.campaign, JoinType.LEFT).get(CommunicationCampaign_.id)
+                    )
+                );
         }
         return specification;
     }

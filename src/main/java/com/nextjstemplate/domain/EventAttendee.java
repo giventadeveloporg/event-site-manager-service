@@ -151,6 +151,7 @@ public class EventAttendee implements Serializable {
 
     @Column(name = "priority_score")
     private Integer priorityScore;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -179,7 +180,7 @@ public class EventAttendee implements Serializable {
         this.eventId = eventId;
     }
 
-     public Long getUserId() {
+    public Long getUserId() {
         return this.userId;
     }
 
@@ -191,7 +192,6 @@ public class EventAttendee implements Serializable {
     public void setUserId(Long userId) {
         this.userId = userId;
     }
-
 
     public Long getId() {
         return this.id;
@@ -452,6 +452,7 @@ public class EventAttendee implements Serializable {
     public void setNumberOfGuestsCheckedIn(Integer numberOfGuestsCheckedIn) {
         this.numberOfGuestsCheckedIn = numberOfGuestsCheckedIn;
     }
+
     public String getNotes() {
         return this.notes;
     }
@@ -620,6 +621,7 @@ public class EventAttendee implements Serializable {
     public void setPriorityScore(Integer priorityScore) {
         this.priorityScore = priorityScore;
     }
+
     public ZonedDateTime getCreatedAt() {
         return this.createdAt;
     }
@@ -646,7 +648,7 @@ public class EventAttendee implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-  /*  public EventDetails getEvent() {
+    /*  public EventDetails getEvent() {
         return this.event;
     }
 
@@ -666,7 +668,7 @@ public class EventAttendee implements Serializable {
     public void setAttendee(UserProfile userProfile) {
         this.attendee = userProfile;
     }*/
-/*
+    /*
     public EventAttendee attendee(UserProfile userProfile) {
         this.setAttendee(userProfile);
         return this;

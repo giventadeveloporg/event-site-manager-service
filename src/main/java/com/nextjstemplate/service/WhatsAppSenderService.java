@@ -8,43 +8,40 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class WhatsAppSenderService {
-  private final String accountSid;
-  private final String authToken;
-  private final String whatsappFrom;
 
-  public WhatsAppSenderService(
-      @Value("${twilio.account-sid}") String accountSid,
-      @Value("${twilio.auth-token}") String authToken,
-      @Value("${twilio.whatsapp-from}") String whatsappFrom) {
-    this.accountSid = accountSid;
-    this.authToken = authToken;
-    this.whatsappFrom = whatsappFrom;
-    Twilio.init(accountSid, authToken);
-  }
+    private final String accountSid;
+    private final String authToken;
+    private final String whatsappFrom;
 
-  public String sendMessage(String to, String messageBody) {
-    try {
-      Message message = Message.creator(
-          new PhoneNumber("whatsapp:" + to),
-          new PhoneNumber(whatsappFrom),
-          messageBody).create();
-      return message.getSid();
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to send WhatsApp message", e);
+    public WhatsAppSenderService(
+        @Value("${twilio.account-sid}") String accountSid,
+        @Value("${twilio.auth-token}") String authToken,
+        @Value("${twilio.whatsapp-from}") String whatsappFrom
+    ) {
+        this.accountSid = accountSid;
+        this.authToken = authToken;
+        this.whatsappFrom = whatsappFrom;
+        Twilio.init(accountSid, authToken);
     }
-  }
 
-  public String sendMessageWithImage(String to, String messageBody, String imageUrl) {
-    try {
-      Message message = Message.creator(
-          new PhoneNumber("whatsapp:" + to),
-          new PhoneNumber(whatsappFrom),
-          messageBody)
-          .setMediaUrl(java.util.List.of(new java.net.URI(imageUrl)))
-          .create();
-      return message.getSid();
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to send WhatsApp message with image", e);
+    public String sendMessage(String to, String messageBody) {
+        try {
+            Message message = Message.creator(new PhoneNumber("whatsapp:" + to), new PhoneNumber(whatsappFrom), messageBody).create();
+            return message.getSid();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send WhatsApp message", e);
+        }
     }
-  }
+
+    public String sendMessageWithImage(String to, String messageBody, String imageUrl) {
+        try {
+            Message message = Message
+                .creator(new PhoneNumber("whatsapp:" + to), new PhoneNumber(whatsappFrom), messageBody)
+                .setMediaUrl(java.util.List.of(new java.net.URI(imageUrl)))
+                .create();
+            return message.getSid();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send WhatsApp message with image", e);
+        }
+    }
 }

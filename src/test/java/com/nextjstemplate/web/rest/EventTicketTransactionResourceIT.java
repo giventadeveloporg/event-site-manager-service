@@ -1518,7 +1518,7 @@ class EventTicketTransactionResourceIT {
         defaultEventTicketTransactionShouldBeFound("updatedAt.greaterThan=" + SMALLER_UPDATED_AT);
     }
 
-   /* @Test
+    /* @Test
     @Transactional
     void getAllEventTicketTransactionsByEventIsEqualToSomething() throws Exception {
         EventDetails event;
@@ -1540,7 +1540,7 @@ class EventTicketTransactionResourceIT {
         defaultEventTicketTransactionShouldNotBeFound("eventId.equals=" + (eventId + 1));
     }*/
 
-//    @Test
+    //    @Test
     @Transactional
     void getAllEventTicketTransactionsByTicketTypeIsEqualToSomething() throws Exception {
         EventTicketType ticketType;
@@ -1552,7 +1552,7 @@ class EventTicketTransactionResourceIT {
         }
         em.persist(ticketType);
         em.flush();
-//        eventTicketTransaction.setTicketType(ticketType);
+        //        eventTicketTransaction.setTicketType(ticketType);
         eventTicketTransactionRepository.saveAndFlush(eventTicketTransaction);
         Long ticketTypeId = ticketType.getId();
         // Get all the eventTicketTransactionList where ticketType equals to ticketTypeId
@@ -1562,7 +1562,7 @@ class EventTicketTransactionResourceIT {
         defaultEventTicketTransactionShouldNotBeFound("ticketTypeId.equals=" + (ticketTypeId + 1));
     }
 
-   /* @Test
+    /* @Test
     @Transactional
     void getAllEventTicketTransactionsByUserIsEqualToSomething() throws Exception {
         UserProfile user;

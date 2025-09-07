@@ -154,6 +154,7 @@ public class EventTicketTransaction implements Serializable {
 
     @Column(name = "user_id")
     private Long userId;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -175,7 +176,7 @@ public class EventTicketTransaction implements Serializable {
     @Column(name = "check_out_time")
     private ZonedDateTime checkOutTime;
 
-   /* @ManyToOne(fetch = FetchType.LAZY)
+    /* @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "createdBy", "eventType" }, allowSetters = true)
     private EventDetails event;
 
@@ -329,7 +330,7 @@ public class EventTicketTransaction implements Serializable {
         this.taxAmount = taxAmount;
     }
 
-        public BigDecimal getPlatformFeeAmount() {
+    public BigDecimal getPlatformFeeAmount() {
         return this.platformFeeAmount;
     }
 
@@ -680,7 +681,7 @@ public class EventTicketTransaction implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-     public String getCheckInStatus() {
+    public String getCheckInStatus() {
         return this.checkInStatus;
     }
 
@@ -753,7 +754,7 @@ public class EventTicketTransaction implements Serializable {
         this.user = userProfile;
     }*/
 
-   /* public EventTicketTransaction user(UserProfile userProfile) {
+    /* public EventTicketTransaction user(UserProfile userProfile) {
         this.setUser(userProfile);
         return this;
     }*/

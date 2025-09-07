@@ -783,7 +783,7 @@ class BulkOperationLogResourceIT {
         defaultBulkOperationLogShouldBeFound("createdAt.greaterThan=" + SMALLER_CREATED_AT);
     }
 
-  /*  @Test
+    /*  @Test
     @Transactional
     void getAllBulkOperationLogsByPerformedByIsEqualToSomething() throws Exception {
         UserProfile performedBy;

@@ -1237,7 +1237,7 @@ class DiscountCodeResourceIT {
         defaultDiscountCodeShouldBeFound("updatedAt.greaterThan=" + SMALLER_UPDATED_AT);
     }
 
-  /*  @Test
+    /*  @Test
     @Transactional
     void getAllDiscountCodesByEventsIsEqualToSomething() throws Exception {
         EventDetails events;

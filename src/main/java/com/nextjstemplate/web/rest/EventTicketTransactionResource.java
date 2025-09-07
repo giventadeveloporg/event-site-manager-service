@@ -1,9 +1,9 @@
 package com.nextjstemplate.web.rest;
 
 import com.nextjstemplate.repository.EventTicketTransactionRepository;
+import com.nextjstemplate.service.EmailSenderService;
 import com.nextjstemplate.service.EventTicketTransactionQueryService;
 import com.nextjstemplate.service.EventTicketTransactionService;
-import com.nextjstemplate.service.EmailSenderService;
 import com.nextjstemplate.service.criteria.EventTicketTransactionCriteria;
 import com.nextjstemplate.service.dto.EventTicketTransactionDTO;
 import com.nextjstemplate.service.dto.EventTicketTransactionStatisticsDTO;
@@ -54,10 +54,11 @@ public class EventTicketTransactionResource {
     private final EmailSenderService emailSenderService;
 
     public EventTicketTransactionResource(
-            EventTicketTransactionService eventTicketTransactionService,
-            EventTicketTransactionRepository eventTicketTransactionRepository,
-            EventTicketTransactionQueryService eventTicketTransactionQueryService,
-            EmailSenderService emailSenderService) {
+        EventTicketTransactionService eventTicketTransactionService,
+        EventTicketTransactionRepository eventTicketTransactionRepository,
+        EventTicketTransactionQueryService eventTicketTransactionQueryService,
+        EmailSenderService emailSenderService
+    ) {
         this.eventTicketTransactionService = eventTicketTransactionService;
         this.eventTicketTransactionRepository = eventTicketTransactionRepository;
         this.eventTicketTransactionQueryService = eventTicketTransactionQueryService;
@@ -77,18 +78,17 @@ public class EventTicketTransactionResource {
      */
     @PostMapping("")
     public ResponseEntity<EventTicketTransactionDTO> createEventTicketTransaction(
-            @Valid @RequestBody EventTicketTransactionDTO eventTicketTransactionDTO) throws URISyntaxException {
+        @Valid @RequestBody EventTicketTransactionDTO eventTicketTransactionDTO
+    ) throws URISyntaxException {
         log.debug("REST request to save EventTicketTransaction : {}", eventTicketTransactionDTO);
         if (eventTicketTransactionDTO.getId() != null) {
-            throw new BadRequestAlertException("A new eventTicketTransaction cannot already have an ID", ENTITY_NAME,
-                    "idexists");
+            throw new BadRequestAlertException("A new eventTicketTransaction cannot already have an ID", ENTITY_NAME, "idexists");
         }
         EventTicketTransactionDTO result = eventTicketTransactionService.save(eventTicketTransactionDTO);
         return ResponseEntity
-                .created(new URI("/api/event-ticket-transactions/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
-                        result.getId().toString()))
-                .body(result);
+            .created(new URI("/api/event-ticket-transactions/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -108,8 +108,9 @@ public class EventTicketTransactionResource {
      */
     @PutMapping("/{id}")
     public ResponseEntity<EventTicketTransactionDTO> updateEventTicketTransaction(
-            @PathVariable(value = "id", required = false) final Long id,
-            @Valid @RequestBody EventTicketTransactionDTO eventTicketTransactionDTO) throws URISyntaxException {
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody EventTicketTransactionDTO eventTicketTransactionDTO
+    ) throws URISyntaxException {
         log.debug("REST request to update EventTicketTransaction : {}, {}", id, eventTicketTransactionDTO);
         if (eventTicketTransactionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -124,10 +125,9 @@ public class EventTicketTransactionResource {
 
         EventTicketTransactionDTO result = eventTicketTransactionService.update(eventTicketTransactionDTO);
         return ResponseEntity
-                .ok()
-                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
-                        eventTicketTransactionDTO.getId().toString()))
-                .body(result);
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventTicketTransactionDTO.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -149,10 +149,10 @@ public class EventTicketTransactionResource {
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<EventTicketTransactionDTO> partialUpdateEventTicketTransaction(
-            @PathVariable(value = "id", required = false) final Long id,
-            @NotNull @RequestBody EventTicketTransactionDTO eventTicketTransactionDTO) throws URISyntaxException {
-        log.debug("REST request to partial update EventTicketTransaction partially : {}, {}", id,
-                eventTicketTransactionDTO);
+        @PathVariable(value = "id", required = false) final Long id,
+        @NotNull @RequestBody EventTicketTransactionDTO eventTicketTransactionDTO
+    ) throws URISyntaxException {
+        log.debug("REST request to partial update EventTicketTransaction partially : {}, {}", id, eventTicketTransactionDTO);
         if (eventTicketTransactionDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -164,13 +164,12 @@ public class EventTicketTransactionResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<EventTicketTransactionDTO> result = eventTicketTransactionService
-                .partialUpdate(eventTicketTransactionDTO);
+        Optional<EventTicketTransactionDTO> result = eventTicketTransactionService.partialUpdate(eventTicketTransactionDTO);
 
         return ResponseUtil.wrapOrNotFound(
-                result,
-                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
-                        eventTicketTransactionDTO.getId().toString()));
+            result,
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventTicketTransactionDTO.getId().toString())
+        );
     }
 
     /**
@@ -184,8 +183,9 @@ public class EventTicketTransactionResource {
      */
     @GetMapping("")
     public ResponseEntity<List<EventTicketTransactionDTO>> getAllEventTicketTransactions(
-            EventTicketTransactionCriteria criteria,
-            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+        EventTicketTransactionCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
         log.debug("REST request to get EventTicketTransactions by criteria: {}", criteria);
 
         // Special handling for ID-based searches to avoid pagination issues
@@ -201,8 +201,7 @@ public class EventTicketTransactionResource {
         }
 
         Page<EventTicketTransactionDTO> page = eventTicketTransactionQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil
-                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -248,9 +247,10 @@ public class EventTicketTransactionResource {
      */
     @GetMapping("/search/by-transaction-id")
     public ResponseEntity<List<EventTicketTransactionDTO>> searchByTransactionId(
-            @RequestParam(required = false) Long transactionId,
-            @RequestParam(required = false) String tenantId,
-            @RequestParam(required = false) Long eventId) {
+        @RequestParam(required = false) Long transactionId,
+        @RequestParam(required = false) String tenantId,
+        @RequestParam(required = false) Long eventId
+    ) {
         log.debug("REST request to search EventTicketTransaction by transaction ID: {}", transactionId);
 
         if (transactionId == null) {
@@ -289,10 +289,11 @@ public class EventTicketTransactionResource {
      */
     @GetMapping("/search/by-name")
     public ResponseEntity<List<EventTicketTransactionDTO>> searchByName(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String tenantId,
-            @RequestParam(required = false) Long eventId,
-            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String tenantId,
+        @RequestParam(required = false) Long eventId,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
         log.debug("REST request to search EventTicketTransaction by name: {}", name);
 
         if (name == null || name.trim().isEmpty()) {
@@ -314,8 +315,7 @@ public class EventTicketTransactionResource {
         }
 
         Page<EventTicketTransactionDTO> page = eventTicketTransactionQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil
-                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -331,9 +331,9 @@ public class EventTicketTransactionResource {
         log.debug("REST request to delete EventTicketTransaction : {}", id);
         eventTicketTransactionService.delete(id);
         return ResponseEntity
-                .noContent()
-                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-                .build();
+            .noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .build();
     }
 
     /**

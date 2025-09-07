@@ -70,7 +70,8 @@ public class WhatsAppLogResource {
             throw new BadRequestAlertException("A new whatsAppLog cannot already have an ID", ENTITY_NAME, "idexists");
         }
         whatsAppLogDTO = whatsAppLogService.save(whatsAppLogDTO);
-        return ResponseEntity.created(new URI("/api/whats-app-logs/" + whatsAppLogDTO.getId()))
+        return ResponseEntity
+            .created(new URI("/api/whats-app-logs/" + whatsAppLogDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, whatsAppLogDTO.getId().toString()))
             .body(whatsAppLogDTO);
     }
@@ -103,7 +104,8 @@ public class WhatsAppLogResource {
         }
 
         whatsAppLogDTO = whatsAppLogService.update(whatsAppLogDTO);
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, whatsAppLogDTO.getId().toString()))
             .body(whatsAppLogDTO);
     }
@@ -198,7 +200,8 @@ public class WhatsAppLogResource {
     public ResponseEntity<Void> deleteWhatsAppLog(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete WhatsAppLog : {}", id);
         whatsAppLogService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

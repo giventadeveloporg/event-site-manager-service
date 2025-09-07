@@ -121,7 +121,7 @@ public class EventTicketTransactionItemQueryService extends QueryService<EventTi
             if (criteria.getUpdatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getUpdatedAt(), EventTicketTransactionItem_.updatedAt));
             }
-           /* if (criteria.getTransactionId() != null) {
+            /* if (criteria.getTransactionId() != null) {
                 specification =
                     specification.and(
                         buildSpecification(

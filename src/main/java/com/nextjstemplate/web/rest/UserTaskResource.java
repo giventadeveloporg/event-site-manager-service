@@ -70,7 +70,8 @@ public class UserTaskResource {
             throw new BadRequestAlertException("A new userTask cannot already have an ID", ENTITY_NAME, "idexists");
         }
         userTaskDTO = userTaskService.save(userTaskDTO);
-        return ResponseEntity.created(new URI("/api/user-tasks/" + userTaskDTO.getId()))
+        return ResponseEntity
+            .created(new URI("/api/user-tasks/" + userTaskDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, userTaskDTO.getId().toString()))
             .body(userTaskDTO);
     }
@@ -103,7 +104,8 @@ public class UserTaskResource {
         }
 
         userTaskDTO = userTaskService.update(userTaskDTO);
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, userTaskDTO.getId().toString()))
             .body(userTaskDTO);
     }
@@ -198,7 +200,8 @@ public class UserTaskResource {
     public ResponseEntity<Void> deleteUserTask(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete UserTask : {}", id);
         userTaskService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

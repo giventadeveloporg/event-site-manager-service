@@ -22,8 +22,7 @@ class EmailLogTest {
         emailLog2 = getEmailLogSample2();
         assertThat(emailLog1).isNotEqualTo(emailLog2);
     }
-
-   /* @Test
+    /* @Test
     void campaignTest() throws Exception {
         EmailLog emailLog = getEmailLogRandomSampleGenerator();
         CommunicationCampaign communicationCampaignBack = getCommunicationCampaignRandomSampleGenerator();

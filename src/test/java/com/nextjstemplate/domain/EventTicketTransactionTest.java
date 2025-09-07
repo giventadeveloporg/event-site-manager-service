@@ -25,7 +25,7 @@ class EventTicketTransactionTest {
         assertThat(eventTicketTransaction1).isNotEqualTo(eventTicketTransaction2);
     }
 
-  /*  @Test
+    /*  @Test
     void eventTest() throws Exception {
         EventTicketTransaction eventTicketTransaction = getEventTicketTransactionRandomSampleGenerator();
         EventDetails eventDetailsBack = getEventDetailsRandomSampleGenerator();
@@ -41,15 +41,13 @@ class EventTicketTransactionTest {
     void ticketTypeTest() throws Exception {
         EventTicketTransaction eventTicketTransaction = getEventTicketTransactionRandomSampleGenerator();
         EventTicketType eventTicketTypeBack = getEventTicketTypeRandomSampleGenerator();
-
-       /* eventTicketTransaction.setTicketType(eventTicketTypeBack);
+        /* eventTicketTransaction.setTicketType(eventTicketTypeBack);
         assertThat(eventTicketTransaction.getTicketType()).isEqualTo(eventTicketTypeBack);
 
         eventTicketTransaction.ticketType(null);
         assertThat(eventTicketTransaction.getTicketType()).isNull();*/
     }
-
-   /* @Test
+    /* @Test
     void userTest() throws Exception {
         EventTicketTransaction eventTicketTransaction = getEventTicketTransactionRandomSampleGenerator();
         UserProfile userProfileBack = getUserProfileRandomSampleGenerator();

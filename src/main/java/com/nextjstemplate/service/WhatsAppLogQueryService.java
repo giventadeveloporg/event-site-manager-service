@@ -71,21 +71,23 @@ public class WhatsAppLogQueryService extends QueryService<WhatsAppLog> {
         Specification<WhatsAppLog> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), WhatsAppLog_.id),
-                buildStringSpecification(criteria.getTenantId(), WhatsAppLog_.tenantId),
-                buildStringSpecification(criteria.getRecipientPhone(), WhatsAppLog_.recipientPhone),
-                buildStringSpecification(criteria.getMessageBody(), WhatsAppLog_.messageBody),
-                buildRangeSpecification(criteria.getSentAt(), WhatsAppLog_.sentAt),
-                buildStringSpecification(criteria.getStatus(), WhatsAppLog_.status),
-                buildStringSpecification(criteria.getType(), WhatsAppLog_.type),
-                buildRangeSpecification(criteria.getCampaignId(), WhatsAppLog_.campaignId),
-                buildStringSpecification(criteria.getMetadata(), WhatsAppLog_.metadata),
-                buildSpecification(criteria.getCampaignId(), root ->
-                    root.join(WhatsAppLog_.campaign, JoinType.LEFT).get(CommunicationCampaign_.id)
-                )
-            );
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), WhatsAppLog_.id),
+                    buildStringSpecification(criteria.getTenantId(), WhatsAppLog_.tenantId),
+                    buildStringSpecification(criteria.getRecipientPhone(), WhatsAppLog_.recipientPhone),
+                    buildStringSpecification(criteria.getMessageBody(), WhatsAppLog_.messageBody),
+                    buildRangeSpecification(criteria.getSentAt(), WhatsAppLog_.sentAt),
+                    buildStringSpecification(criteria.getStatus(), WhatsAppLog_.status),
+                    buildStringSpecification(criteria.getType(), WhatsAppLog_.type),
+                    buildRangeSpecification(criteria.getCampaignId(), WhatsAppLog_.campaignId),
+                    buildStringSpecification(criteria.getMetadata(), WhatsAppLog_.metadata),
+                    buildSpecification(
+                        criteria.getCampaignId(),
+                        root -> root.join(WhatsAppLog_.campaign, JoinType.LEFT).get(CommunicationCampaign_.id)
+                    )
+                );
         }
         return specification;
     }

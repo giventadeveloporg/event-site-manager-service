@@ -7,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
  * Service Interface for managing S3 operations.
  */
 public interface S3Service {
-
     /**
      * Upload a file to S3.
      *

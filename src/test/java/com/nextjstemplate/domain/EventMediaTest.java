@@ -23,8 +23,7 @@ class EventMediaTest {
         eventMedia2 = getEventMediaSample2();
         assertThat(eventMedia1).isNotEqualTo(eventMedia2);
     }
-
-   /* @Test
+    /* @Test
     void eventTest() throws Exception {
         EventMedia eventMedia = getEventMediaRandomSampleGenerator();
         EventDetails eventDetailsBack = getEventDetailsRandomSampleGenerator();

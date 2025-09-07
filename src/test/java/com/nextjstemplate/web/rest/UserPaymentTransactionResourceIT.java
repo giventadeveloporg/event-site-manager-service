@@ -98,7 +98,8 @@ class UserPaymentTransactionResourceIT {/*
 
     private UserPaymentTransaction userPaymentTransaction;
 
-    *//**
+    */
+    /**
      * Create an entity for this test.
      *
      * This is a static method, as tests for other entities might also need it,

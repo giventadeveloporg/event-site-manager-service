@@ -20,7 +20,7 @@ public class EventMediaTestSamples {
             .eventMediaType("eventMediaType1")
             .storageType("storageType1")
             .fileUrl("fileUrl1")
-//            .fileDataContentType("fileDataContentType1")
+            //            .fileDataContentType("fileDataContentType1")
             .fileSize(1)
             .preSignedUrl("preSignedUrl1");
     }
@@ -34,7 +34,7 @@ public class EventMediaTestSamples {
             .eventMediaType("eventMediaType2")
             .storageType("storageType2")
             .fileUrl("fileUrl2")
-//            .fileDataContentType("fileDataContentType2")
+            //            .fileDataContentType("fileDataContentType2")
             .fileSize(2)
             .preSignedUrl("preSignedUrl2");
     }
@@ -48,7 +48,7 @@ public class EventMediaTestSamples {
             .eventMediaType(UUID.randomUUID().toString())
             .storageType(UUID.randomUUID().toString())
             .fileUrl(UUID.randomUUID().toString())
-//            .fileDataContentType(UUID.randomUUID().toString())
+            //            .fileDataContentType(UUID.randomUUID().toString())
             .fileSize(intCount.incrementAndGet())
             .preSignedUrl(UUID.randomUUID().toString());
     }

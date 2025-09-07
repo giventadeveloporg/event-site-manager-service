@@ -71,7 +71,8 @@ public class EventLiveUpdateResource {
             throw new BadRequestAlertException("A new eventLiveUpdate cannot already have an ID", ENTITY_NAME, "idexists");
         }
         eventLiveUpdateDTO = eventLiveUpdateService.save(eventLiveUpdateDTO);
-        return ResponseEntity.created(new URI("/api/event-live-updates/" + eventLiveUpdateDTO.getId()))
+        return ResponseEntity
+            .created(new URI("/api/event-live-updates/" + eventLiveUpdateDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, eventLiveUpdateDTO.getId().toString()))
             .body(eventLiveUpdateDTO);
     }
@@ -104,7 +105,8 @@ public class EventLiveUpdateResource {
         }
 
         eventLiveUpdateDTO = eventLiveUpdateService.update(eventLiveUpdateDTO);
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventLiveUpdateDTO.getId().toString()))
             .body(eventLiveUpdateDTO);
     }
@@ -199,7 +201,8 @@ public class EventLiveUpdateResource {
     public ResponseEntity<Void> deleteEventLiveUpdate(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete EventLiveUpdate : {}", id);
         eventLiveUpdateService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

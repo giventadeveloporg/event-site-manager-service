@@ -64,7 +64,7 @@ public class EventTicketTransactionItem implements Serializable {
     @JsonIgnoreProperties(value = { "event", "user" }, allowSetters = true)
     private EventTicketTransaction transaction;*/
 
-   /* @ManyToOne(optional = false)
+    /* @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "event" }, allowSetters = true)
     private EventTicketType ticketType;*/
@@ -188,7 +188,7 @@ public class EventTicketTransactionItem implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-   /* public EventTicketTransaction getTransaction() {
+    /* public EventTicketTransaction getTransaction() {
         return this.transaction;
     }
 
@@ -196,7 +196,7 @@ public class EventTicketTransactionItem implements Serializable {
         this.transaction = eventTicketTransaction;
     }*/
 
-   /* public EventTicketTransactionItem transaction(EventTicketTransaction eventTicketTransaction) {
+    /* public EventTicketTransactionItem transaction(EventTicketTransaction eventTicketTransaction) {
         this.setTransaction(eventTicketTransaction);
         return this;
     }
@@ -209,7 +209,7 @@ public class EventTicketTransactionItem implements Serializable {
         this.ticketType = eventTicketType;
     }*/
 
-   /* public EventTicketTransactionItem ticketType(EventTicketType eventTicketType) {
+    /* public EventTicketTransactionItem ticketType(EventTicketType eventTicketType) {
         this.setTicketType(eventTicketType);
         return this;
     }*/

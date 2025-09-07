@@ -118,7 +118,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
         this.totalAmount = other.totalAmount == null ? null : other.totalAmount.copy();
         this.taxAmount = other.taxAmount == null ? null : other.taxAmount.copy();
         this.platformFeeAmount = other.platformFeeAmount == null ? null : other.platformFeeAmount.copy();
-        this.serviceFee = other.serviceFee  == null ? null : other.serviceFee.copy();
+        this.serviceFee = other.serviceFee == null ? null : other.serviceFee.copy();
         this.discountCodeId = other.discountCodeId == null ? null : other.discountCodeId.copy();
         this.discountAmount = other.discountAmount == null ? null : other.discountAmount.copy();
         this.finalAmount = other.finalAmount == null ? null : other.finalAmount.copy();
@@ -322,7 +322,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
         this.taxAmount = taxAmount;
     }
 
-	public BigDecimalFilter getPlatformFeeAmount() {
+    public BigDecimalFilter getPlatformFeeAmount() {
         return platformFeeAmount;
     }
 
@@ -336,6 +336,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
     public void setPlatformFeeAmount(BigDecimalFilter platformFeeAmount) {
         this.platformFeeAmount = platformFeeAmount;
     }
+
     public LongFilter getDiscountCodeId() {
         return discountCodeId;
     }
@@ -516,7 +517,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
         this.stripePaymentIntentId = stripePaymentIntentId;
     }
 
-        public StringFilter getStripeCustomerId() {
+    public StringFilter getStripeCustomerId() {
         return stripeCustomerId;
     }
 
@@ -635,6 +636,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
     public void setQrCodeImageUrl(StringFilter qrCodeImageUrl) {
         this.qrCodeImageUrl = qrCodeImageUrl;
     }
+
     public LongFilter getEventId() {
         return eventId;
     }
@@ -754,6 +756,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
     public void setCheckOutTime(ZonedDateTimeFilter checkOutTime) {
         this.checkOutTime = checkOutTime;
     }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -784,7 +787,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             Objects.equals(totalAmount, that.totalAmount) &&
             Objects.equals(taxAmount, that.taxAmount) &&
             Objects.equals(platformFeeAmount, that.platformFeeAmount) &&
- 			Objects.equals(serviceFee, that.serviceFee) &&
+            Objects.equals(serviceFee, that.serviceFee) &&
             Objects.equals(discountCodeId, that.discountCodeId) &&
             Objects.equals(discountAmount, that.discountAmount) &&
             Objects.equals(finalAmount, that.finalAmount) &&
@@ -795,7 +798,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             Objects.equals(confirmationSentAt, that.confirmationSentAt) &&
             Objects.equals(refundAmount, that.refundAmount) &&
             Objects.equals(refundDate, that.refundDate) &&
-			Objects.equals(refundReason, that.refundReason) &&
+            Objects.equals(refundReason, that.refundReason) &&
             Objects.equals(stripeCheckoutSessionId, that.stripeCheckoutSessionId) &&
             Objects.equals(stripePaymentIntentId, that.stripePaymentIntentId) &&
             Objects.equals(stripeCustomerId, that.stripeCustomerId) &&
@@ -835,7 +838,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             totalAmount,
             taxAmount,
             platformFeeAmount,
- 			serviceFee,
+            serviceFee,
             discountCodeId,
             discountAmount,
             finalAmount,
@@ -846,7 +849,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             confirmationSentAt,
             refundAmount,
             refundDate,
-			refundReason,
+            refundReason,
             stripeCheckoutSessionId,
             stripePaymentIntentId,
             stripeCustomerId,

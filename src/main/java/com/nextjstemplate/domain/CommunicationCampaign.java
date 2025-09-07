@@ -60,7 +60,7 @@ public class CommunicationCampaign implements Serializable {
     @Column(name = "status", length = 50)
     private String status;
 
-   /* @ManyToOne(fetch = FetchType.LAZY)
+    /* @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "reviewedByAdmin", "userSubscription" }, allowSetters = true)
     private UserProfile createdBy;
 */
@@ -196,7 +196,7 @@ public class CommunicationCampaign implements Serializable {
         this.status = status;
     }
 
-   /* public UserProfile getCreatedBy() {
+    /* public UserProfile getCreatedBy() {
         return this.createdBy;
     }
 
@@ -204,7 +204,7 @@ public class CommunicationCampaign implements Serializable {
         this.createdBy = userProfile;
     }*/
 
- /*   public CommunicationCampaign createdBy(UserProfile userProfile) {
+    /*   public CommunicationCampaign createdBy(UserProfile userProfile) {
         this.setCreatedBy(userProfile);
         return this;
     }

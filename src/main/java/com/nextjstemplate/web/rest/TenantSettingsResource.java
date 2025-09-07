@@ -71,7 +71,8 @@ public class TenantSettingsResource {
             throw new BadRequestAlertException("A new tenantSettings cannot already have an ID", ENTITY_NAME, "idexists");
         }
         tenantSettingsDTO = tenantSettingsService.save(tenantSettingsDTO);
-        return ResponseEntity.created(new URI("/api/tenant-settings/" + tenantSettingsDTO.getId()))
+        return ResponseEntity
+            .created(new URI("/api/tenant-settings/" + tenantSettingsDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, tenantSettingsDTO.getId().toString()))
             .body(tenantSettingsDTO);
     }
@@ -104,7 +105,8 @@ public class TenantSettingsResource {
         }
 
         tenantSettingsDTO = tenantSettingsService.update(tenantSettingsDTO);
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, tenantSettingsDTO.getId().toString()))
             .body(tenantSettingsDTO);
     }
@@ -199,7 +201,8 @@ public class TenantSettingsResource {
     public ResponseEntity<Void> deleteTenantSettings(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete TenantSettings : {}", id);
         tenantSettingsService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

@@ -926,7 +926,7 @@ class EventPollResourceIT {
         defaultEventPollShouldNotBeFound("eventId.equals=" + (eventId + 1));
     }
 
-   /* @Test
+    /* @Test
     @Transactional
     void getAllEventPollsByCreatedByIsEqualToSomething() throws Exception {
         UserProfile createdBy;

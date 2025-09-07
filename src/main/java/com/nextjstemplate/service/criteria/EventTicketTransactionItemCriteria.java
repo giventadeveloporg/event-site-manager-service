@@ -198,8 +198,6 @@ public class EventTicketTransactionItemCriteria implements Serializable, Criteri
         this.updatedAt = updatedAt;
     }
 
-
-
     public Boolean getDistinct() {
         return distinct;
     }

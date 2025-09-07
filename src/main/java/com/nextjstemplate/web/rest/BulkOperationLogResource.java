@@ -71,7 +71,8 @@ public class BulkOperationLogResource {
             throw new BadRequestAlertException("A new bulkOperationLog cannot already have an ID", ENTITY_NAME, "idexists");
         }
         bulkOperationLogDTO = bulkOperationLogService.save(bulkOperationLogDTO);
-        return ResponseEntity.created(new URI("/api/bulk-operation-logs/" + bulkOperationLogDTO.getId()))
+        return ResponseEntity
+            .created(new URI("/api/bulk-operation-logs/" + bulkOperationLogDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, bulkOperationLogDTO.getId().toString()))
             .body(bulkOperationLogDTO);
     }
@@ -104,7 +105,8 @@ public class BulkOperationLogResource {
         }
 
         bulkOperationLogDTO = bulkOperationLogService.update(bulkOperationLogDTO);
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, bulkOperationLogDTO.getId().toString()))
             .body(bulkOperationLogDTO);
     }
@@ -199,7 +201,8 @@ public class BulkOperationLogResource {
     public ResponseEntity<Void> deleteBulkOperationLog(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete BulkOperationLog : {}", id);
         bulkOperationLogService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

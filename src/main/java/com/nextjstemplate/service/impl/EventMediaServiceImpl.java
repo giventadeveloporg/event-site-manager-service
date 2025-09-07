@@ -7,27 +7,23 @@ import com.nextjstemplate.repository.EventDetailsRepository;
 import com.nextjstemplate.repository.EventMediaRepository;
 import com.nextjstemplate.repository.ExecutiveCommitteeTeamMemberRepository;
 import com.nextjstemplate.service.EventMediaService;
+import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.dto.EventMediaDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
-
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
 import jakarta.persistence.EntityNotFoundException;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.nextjstemplate.service.S3Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Service Implementation for managing
@@ -50,9 +46,13 @@ public class EventMediaServiceImpl implements EventMediaService {
     private final ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository;
 
     @Autowired
-    public EventMediaServiceImpl(EventMediaRepository eventMediaRepository, EventMediaMapper eventMediaMapper,
-            S3Service s3Service, EventDetailsRepository eventRepository,
-            ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository) {
+    public EventMediaServiceImpl(
+        EventMediaRepository eventMediaRepository,
+        EventMediaMapper eventMediaMapper,
+        S3Service s3Service,
+        EventDetailsRepository eventRepository,
+        ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository
+    ) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
         this.s3Service = s3Service;
@@ -81,14 +81,14 @@ public class EventMediaServiceImpl implements EventMediaService {
         log.debug("Request to partially update EventMedia : {}", eventMediaDTO);
 
         return eventMediaRepository
-                .findById(eventMediaDTO.getId())
-                .map(existingEventMedia -> {
-                    eventMediaMapper.partialUpdate(existingEventMedia, eventMediaDTO);
+            .findById(eventMediaDTO.getId())
+            .map(existingEventMedia -> {
+                eventMediaMapper.partialUpdate(existingEventMedia, eventMediaDTO);
 
-                    return existingEventMedia;
-                })
-                .map(eventMediaRepository::save)
-                .map(eventMediaMapper::toDto);
+                return existingEventMedia;
+            })
+            .map(eventMediaRepository::save)
+            .map(eventMediaMapper::toDto);
     }
 
     @Override
@@ -111,16 +111,31 @@ public class EventMediaServiceImpl implements EventMediaService {
         eventMediaRepository.deleteById(id);
     }
 
-    public EventMediaDTO uploadFile(MultipartFile file, Long eventId, Long userProfileId, String title,
-            String description, String tenantId, boolean isPublic, Boolean eventFlyer, Boolean isFeaturedImage,
-            Boolean isEventManagementOfficialDocument, Boolean isHeroImage,
-            Boolean isActiveHeroImage, Boolean isTeamMemberProfileImage, Long executiveTeamMemberID) {
+    public EventMediaDTO uploadFile(
+        MultipartFile file,
+        Long eventId,
+        Long userProfileId,
+        String title,
+        String description,
+        String tenantId,
+        boolean isPublic,
+        Boolean eventFlyer,
+        Boolean isEventManagementOfficialDocument,
+        Boolean isHeroImage,
+        Boolean isActiveHeroImage,
+        Boolean isTeamMemberProfileImage,
+        Long executiveTeamMemberID,
+        boolean isHomePageHeroImage,
+        boolean isFeaturedEventImage,
+        boolean isLiveEventImage
+    ) {
         // Upload to S3
-        String fileUrl = s3Service.uploadFile(file, eventId, title, tenantId,isTeamMemberProfileImage);
+        String fileUrl = s3Service.uploadFile(file, eventId, title, tenantId, isTeamMemberProfileImage);
 
-        if(!isTeamMemberProfileImage) {
+        if (!isTeamMemberProfileImage) {
             EventMedia eventMedia = new EventMedia();
-            EventDetails event = eventRepository.findById(eventId)
+            EventDetails event = eventRepository
+                .findById(eventId)
                 .orElseThrow(() -> new EntityNotFoundException("Event not found with id " + eventId));
             // eventMedia.setEvent(event);
             eventMedia.setTitle(title);
@@ -132,16 +147,18 @@ public class EventMediaServiceImpl implements EventMediaService {
             log.info("preSignedUrl length: " + s3Service.generatePresignedUrl(fileUrl, 1).length());
             log.info("preSignedUrl value: " + s3Service.generatePresignedUrl(fileUrl, 1));
             eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(fileUrl, 1));
-//        eventMedia.setFileDataContentType(file.getContentType());
+            //        eventMedia.setFileDataContentType(file.getContentType());
             eventMedia.setFileSize((int) file.getSize());
             eventMedia.setIsPublic(isPublic);
             eventMedia.setCreatedAt(ZonedDateTime.now());
             eventMedia.setUpdatedAt(ZonedDateTime.now());
             eventMedia.setEventFlyer(eventFlyer);
-            eventMedia.setIsFeaturedImage(isFeaturedImage);
             eventMedia.setIsEventManagementOfficialDocument(isEventManagementOfficialDocument);
             eventMedia.setIsHeroImage(isHeroImage);
             eventMedia.setIsActiveHeroImage(isActiveHeroImage);
+            eventMedia.setIsHomePageHeroImage(isHomePageHeroImage);
+            eventMedia.setIsFeaturedEventImage(isFeaturedEventImage);
+            eventMedia.setIsLiveEventImage(isLiveEventImage);
             eventMedia.setEventId(eventId);
             eventMedia.setUploadedById(userProfileId);
             // Optionally set event and uploadedBy if needed (requires fetching entities)
@@ -152,12 +169,13 @@ public class EventMediaServiceImpl implements EventMediaService {
         } else if (executiveTeamMemberID != null) {
             // Handle ExecutiveCommitteeTeamMember profile image update
             log.debug("Updating ExecutiveCommitteeTeamMember profile image for ID: {}", executiveTeamMemberID);
-            ExecutiveCommitteeTeamMember teamMember = executiveCommitteeTeamMemberRepository.findById(executiveTeamMemberID)
+            ExecutiveCommitteeTeamMember teamMember = executiveCommitteeTeamMemberRepository
+                .findById(executiveTeamMemberID)
                 .orElseThrow(() -> new RuntimeException("ExecutiveCommitteeTeamMember not found with ID: " + executiveTeamMemberID));
             teamMember.setProfileImageUrl(fileUrl);
             executiveCommitteeTeamMemberRepository.save(teamMember);
             log.debug("Successfully updated profile image URL for ExecutiveCommitteeTeamMember ID: {}", executiveTeamMemberID);
-            
+
             // Create a minimal EventMediaDTO for response (since no EventMedia entity was created)
             EventMediaDTO responseDTO = new EventMediaDTO();
             responseDTO.setId(-1L); // Use -1 to indicate this is not a real EventMedia record
@@ -175,17 +193,47 @@ public class EventMediaServiceImpl implements EventMediaService {
     }
 
     @Override
-    public List<EventMediaDTO> uploadMultipleFiles(List<MultipartFile> files, Long eventId, Long userProfileId,
-            List<String> titles, List<String> descriptions, String tenantId, boolean isPublic, Boolean eventFlyer,
-            Boolean isFeaturedImage, Boolean isEventManagementOfficialDocument, Boolean isHeroImage,
-            Boolean isActiveHeroImage, Boolean isTeamMemberProfileImage, Long executiveTeamMemberID) {
+    public List<EventMediaDTO> uploadMultipleFiles(
+        List<MultipartFile> files,
+        Long eventId,
+        Long userProfileId,
+        List<String> titles,
+        List<String> descriptions,
+        String tenantId,
+        boolean isPublic,
+        Boolean eventFlyer,
+        Boolean isEventManagementOfficialDocument,
+        Boolean isHeroImage,
+        Boolean isActiveHeroImage,
+        Boolean isTeamMemberProfileImage,
+        Long executiveTeamMemberID,
+        boolean isHomePageHeroImage,
+        boolean isFeaturedEventImage,
+        boolean isLiveEventImage
+    ) {
         List<EventMediaDTO> result = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
             String title = (titles != null && i < titles.size()) ? titles.get(i) : file.getOriginalFilename();
             String description = (descriptions != null && i < descriptions.size()) ? descriptions.get(i) : null;
-            EventMediaDTO uploadResult = uploadFile(file, eventId, userProfileId, title, description, tenantId, isPublic, eventFlyer,
-                    isFeaturedImage, isEventManagementOfficialDocument, isHeroImage, isActiveHeroImage, isTeamMemberProfileImage, executiveTeamMemberID);
+            EventMediaDTO uploadResult = uploadFile(
+                file,
+                eventId,
+                userProfileId,
+                title,
+                description,
+                tenantId,
+                isPublic,
+                eventFlyer,
+                isEventManagementOfficialDocument,
+                isHeroImage,
+                isActiveHeroImage,
+                isTeamMemberProfileImage,
+                executiveTeamMemberID,
+                isHomePageHeroImage,
+                isFeaturedEventImage,
+                isLiveEventImage
+            );
             // Only add non-null results to the list
             if (uploadResult != null) {
                 result.add(uploadResult);
@@ -233,9 +281,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         log.debug("Request to get all EventMedia without LOB fields");
         List<Object[]> rawResults = eventMediaRepository.findAllWithoutLobFieldsRaw();
 
-        return rawResults.stream()
-                .map(this::convertRawToEventMediaDTO)
-                .collect(Collectors.toList());
+        return rawResults.stream().map(this::convertRawToEventMediaDTO).collect(Collectors.toList());
     }
 
     /**
@@ -251,8 +297,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         // is_event_management_official_document,
         // pre_signed_url, pre_signed_url_expires_at, alt_text, display_order,
         // download_count,
-        // is_featured_video, featured_video_url, is_featured_image, is_hero_image,
-        // is_active_hero_image,
+        // is_featured_video, featured_video_url, is_hero_image,
+        // is_active_hero_image, is_home_page_hero_image, is_featured_event_image, is_live_event_image,
         // created_at, updated_at, event_id, uploaded_by_id
 
         dto.setId((Long) raw[0]);
@@ -261,7 +307,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         dto.setEventMediaType((String) raw[3]);
         dto.setStorageType((String) raw[4]);
         dto.setFileUrl((String) raw[5]);
-//        dto.setFileDataContentType((String) raw[6]);
+        //        dto.setFileDataContentType((String) raw[6]);
         dto.setContentType((String) raw[7]);
 
         // Handle Integer fields that might come as Long from database
@@ -281,8 +327,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         // Handle date/time fields that come as java.sql.Timestamp from database
         if (raw[13] != null) {
             if (raw[13] instanceof java.sql.Timestamp) {
-                dto.setPreSignedUrlExpiresAt(
-                        ((java.sql.Timestamp) raw[13]).toInstant().atZone(java.time.ZoneId.systemDefault()));
+                dto.setPreSignedUrlExpiresAt(((java.sql.Timestamp) raw[13]).toInstant().atZone(java.time.ZoneId.systemDefault()));
             } else {
                 dto.setPreSignedUrlExpiresAt((ZonedDateTime) raw[13]);
             }
@@ -309,46 +354,32 @@ public class EventMediaServiceImpl implements EventMediaService {
 
         dto.setIsFeaturedVideo((Boolean) raw[17]);
         dto.setFeaturedVideoUrl((String) raw[18]);
-        dto.setIsFeaturedImage((Boolean) raw[19]);
-        dto.setIsHeroImage((Boolean) raw[20]);
-        dto.setIsActiveHeroImage((Boolean) raw[21]);
+        dto.setIsHeroImage((Boolean) raw[19]);
+        dto.setIsActiveHeroImage((Boolean) raw[20]);
+        dto.setIsHomePageHeroImage((Boolean) raw[21]);
+        dto.setIsFeaturedEventImage((Boolean) raw[22]);
+        dto.setIsLiveEventImage((Boolean) raw[23]);
 
         // Handle date/time fields that come as java.sql.Timestamp from database
-        if (raw[22] != null) {
-            if (raw[22] instanceof java.sql.Timestamp) {
-                dto.setCreatedAt(((java.sql.Timestamp) raw[22]).toInstant().atZone(java.time.ZoneId.systemDefault()));
+        if (raw[24] != null) {
+            if (raw[24] instanceof java.sql.Timestamp) {
+                dto.setCreatedAt(((java.sql.Timestamp) raw[24]).toInstant().atZone(java.time.ZoneId.systemDefault()));
             } else {
-                dto.setCreatedAt((ZonedDateTime) raw[22]);
+                dto.setCreatedAt((ZonedDateTime) raw[24]);
             }
         }
 
-        if (raw[23] != null) {
-            if (raw[23] instanceof java.sql.Timestamp) {
-                dto.setUpdatedAt(((java.sql.Timestamp) raw[23]).toInstant().atZone(java.time.ZoneId.systemDefault()));
+        if (raw[25] != null) {
+            if (raw[25] instanceof java.sql.Timestamp) {
+                dto.setUpdatedAt(((java.sql.Timestamp) raw[25]).toInstant().atZone(java.time.ZoneId.systemDefault()));
             } else {
-                dto.setUpdatedAt((ZonedDateTime) raw[23]);
+                dto.setUpdatedAt((ZonedDateTime) raw[25]);
             }
         }
 
-        dto.setEventId((Long) raw[24]);
-        dto.setUploadedById((Long) raw[25]);
+        dto.setEventId((Long) raw[26]);
+        dto.setUploadedById((Long) raw[27]);
 
         return dto;
     }
-
-    /**
-     * Get EventMedia by criteria without LOB fields
-     */
-
-    @Transactional(readOnly = true)
-    public List<EventMediaDTO> findByIsFeaturedImageAndEventIdWithoutLobFields(Boolean isFeaturedImage, Long eventId) {
-        log.debug("Request to get EventMedia by isFeaturedImage: {} and eventId: {} without LOB fields",
-                isFeaturedImage, eventId);
-        return eventMediaRepository.findByIsFeaturedImageAndEventIdWithoutLobFields(isFeaturedImage, eventId)
-                .stream()
-                .map(eventMediaMapper::toDto)
-                .collect(Collectors.toList());
-    }
 }
-
-

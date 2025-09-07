@@ -74,17 +74,21 @@ public class EventAdminAuditLogQueryService extends QueryService<EventAdminAudit
         Specification<EventAdminAuditLog> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), EventAdminAuditLog_.id),
-                buildStringSpecification(criteria.getTenantId(), EventAdminAuditLog_.tenantId),
-                buildStringSpecification(criteria.getAction(), EventAdminAuditLog_.action),
-                buildStringSpecification(criteria.getTableName(), EventAdminAuditLog_.tableName),
-                buildStringSpecification(criteria.getRecordId(), EventAdminAuditLog_.recordId),
-                buildStringSpecification(criteria.getChanges(), EventAdminAuditLog_.changes),
-                buildRangeSpecification(criteria.getCreatedAt(), EventAdminAuditLog_.createdAt),
-                buildSpecification(criteria.getAdminId(), root -> root.join(EventAdminAuditLog_.admin, JoinType.LEFT).get(UserProfile_.id))
-            );
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), EventAdminAuditLog_.id),
+                    buildStringSpecification(criteria.getTenantId(), EventAdminAuditLog_.tenantId),
+                    buildStringSpecification(criteria.getAction(), EventAdminAuditLog_.action),
+                    buildStringSpecification(criteria.getTableName(), EventAdminAuditLog_.tableName),
+                    buildStringSpecification(criteria.getRecordId(), EventAdminAuditLog_.recordId),
+                    buildStringSpecification(criteria.getChanges(), EventAdminAuditLog_.changes),
+                    buildRangeSpecification(criteria.getCreatedAt(), EventAdminAuditLog_.createdAt),
+                    buildSpecification(
+                        criteria.getAdminId(),
+                        root -> root.join(EventAdminAuditLog_.admin, JoinType.LEFT).get(UserProfile_.id)
+                    )
+                );
         }
         return specification;
     }

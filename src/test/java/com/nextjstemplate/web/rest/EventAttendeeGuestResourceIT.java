@@ -40,8 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @WithMockUser
 class EventAttendeeGuestResourceIT {
-
-   /* private static final String DEFAULT_TENANT_ID = "AAAAAAAAAA";
+    /* private static final String DEFAULT_TENANT_ID = "AAAAAAAAAA";
     private static final String UPDATED_TENANT_ID = "BBBBBBBBBB";
 
     private static final String DEFAULT_GUEST_NAME = "AAAAAAAAAA";
@@ -1366,4 +1365,5 @@ class EventAttendeeGuestResourceIT {
         List<EventAttendeeGuest> eventAttendeeGuestList = eventAttendeeGuestRepository.findAll();
         assertThat(eventAttendeeGuestList).hasSize(databaseSizeBeforeDelete - 1);
     }
-*/}
+*/
+}

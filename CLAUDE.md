@@ -9,6 +9,7 @@ This is a JHipster 8.0.0 application called "nextjs_template_boot" - a Spring Bo
 ## Key Commands
 
 ### Development
+
 ```bash
 # Start application in development mode
 ./mvnw
@@ -23,6 +24,7 @@ npm run backend:debug
 ```
 
 ### Testing
+
 ```bash
 # Run all tests
 ./mvnw verify
@@ -35,6 +37,7 @@ npm run ci:backend:test
 ```
 
 ### Code Quality
+
 ```bash
 # Format code with Prettier
 npm run prettier:format
@@ -47,6 +50,7 @@ npm run backend:nohttp:test
 ```
 
 ### Build & Package
+
 ```bash
 # Build for production (JAR)
 ./mvnw -Pprod clean verify
@@ -62,6 +66,7 @@ npm run java:docker:arm64
 ```
 
 ### Database
+
 ```bash
 # Start PostgreSQL with Docker
 npm run docker:db:up
@@ -73,6 +78,7 @@ npm run docker:db:down
 ## Architecture Overview
 
 ### Core Structure
+
 - **Domain Layer**: JPA entities in `src/main/java/com/nextjstemplate/domain/`
 - **Service Layer**: Business logic with service interfaces and implementations
 - **Repository Layer**: Spring Data JPA repositories with criteria-based querying
@@ -80,6 +86,7 @@ npm run docker:db:down
 - **Configuration**: Spring configuration classes in `src/main/java/com/nextjstemplate/config/`
 
 ### Key Features
+
 - **Event Management**: Complete event lifecycle (EventDetails, EventAttendee, EventTicketType, etc.)
 - **User Management**: User profiles, registration, subscriptions
 - **Communication**: Email (AWS SES) and WhatsApp (Twilio) integration
@@ -88,6 +95,7 @@ npm run docker:db:down
 - **Audit Logging**: Comprehensive audit trails for admin actions
 
 ### Technology Stack
+
 - **Backend**: Spring Boot 3.1.5, JHipster 8.0.0
 - **Database**: PostgreSQL (production), H2 (testing)
 - **Security**: Spring Security with JWT
@@ -97,12 +105,14 @@ npm run docker:db:down
 - **Cloud Services**: AWS S3, AWS SES, Twilio
 
 ### Data Model Patterns
+
 - Uses MapStruct for DTO/Entity mapping
 - Criteria-based dynamic querying with JHipster's query service pattern
 - JPA auditing for created/modified tracking
 - Liquibase for database schema management
 
 ### Development Patterns
+
 - API-first development using OpenAPI specifications (`src/main/resources/swagger/api.yml`)
 - Service layer abstraction with interfaces
 - DTO pattern for API data transfer
@@ -110,18 +120,22 @@ npm run docker:db:down
 - Comprehensive integration tests using Testcontainers
 
 ### Configuration Management
+
 - Multi-profile configuration (dev, prod, test)
 - External configuration via `application-*.yml` files
 - AWS credentials and service configuration
 - Database connection pooling with HikariCP
 
 ### Code Generation
+
 This project heavily uses JHipster entity generation. When modifying entities:
+
 1. Update the `.jhipster/*.json` configuration files
 2. Regenerate entities using JHipster CLI
 3. Review and merge any custom business logic
 
 ### Important Notes
+
 - The application runs on port 8080 by default
 - Uses JWT for authentication with OAuth2 resource server setup
 - All entities follow JHipster naming conventions

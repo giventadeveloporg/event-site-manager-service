@@ -71,7 +71,8 @@ public class EventAdminAuditLogResource {
             throw new BadRequestAlertException("A new eventAdminAuditLog cannot already have an ID", ENTITY_NAME, "idexists");
         }
         eventAdminAuditLogDTO = eventAdminAuditLogService.save(eventAdminAuditLogDTO);
-        return ResponseEntity.created(new URI("/api/event-admin-audit-logs/" + eventAdminAuditLogDTO.getId()))
+        return ResponseEntity
+            .created(new URI("/api/event-admin-audit-logs/" + eventAdminAuditLogDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, eventAdminAuditLogDTO.getId().toString()))
             .body(eventAdminAuditLogDTO);
     }
@@ -104,7 +105,8 @@ public class EventAdminAuditLogResource {
         }
 
         eventAdminAuditLogDTO = eventAdminAuditLogService.update(eventAdminAuditLogDTO);
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventAdminAuditLogDTO.getId().toString()))
             .body(eventAdminAuditLogDTO);
     }
@@ -199,7 +201,8 @@ public class EventAdminAuditLogResource {
     public ResponseEntity<Void> deleteEventAdminAuditLog(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete EventAdminAuditLog : {}", id);
         eventAdminAuditLogService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

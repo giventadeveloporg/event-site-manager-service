@@ -30,6 +30,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
+
 //import org.springframework.util.Base64Utils;
 
 /**
@@ -39,7 +40,7 @@ import org.springframework.util.Base64Utils;
 @AutoConfigureMockMvc
 @WithMockUser
 class EventMediaResourceIT {
-/*
+    /*
     private static final String DEFAULT_TENANT_ID = "AAAAAAAAAA";
     private static final String UPDATED_TENANT_ID = "BBBBBBBBBB";
 

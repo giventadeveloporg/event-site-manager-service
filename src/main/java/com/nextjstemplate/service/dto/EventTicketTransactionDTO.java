@@ -103,9 +103,11 @@ public class EventTicketTransactionDTO implements Serializable {
 
     @Size(max = 2048)
     private String qrCodeImageUrl;
+
     private Long eventId;
 
     private Long userId;
+
     @NotNull
     private ZonedDateTime createdAt;
 
@@ -120,6 +122,7 @@ public class EventTicketTransactionDTO implements Serializable {
     private ZonedDateTime checkInTime;
 
     private ZonedDateTime checkOutTime;
+
     public Long getId() {
         return id;
     }
@@ -455,6 +458,7 @@ public class EventTicketTransactionDTO implements Serializable {
     public void setCheckOutTime(ZonedDateTime checkOutTime) {
         this.checkOutTime = checkOutTime;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

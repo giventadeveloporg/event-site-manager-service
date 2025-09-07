@@ -661,7 +661,7 @@ class EventAdminAuditLogResourceIT {
         defaultEventAdminAuditLogShouldBeFound("createdAt.greaterThan=" + SMALLER_CREATED_AT);
     }
 
-   /* @Test
+    /* @Test
     @Transactional
     void getAllEventAdminAuditLogsByAdminIsEqualToSomething() throws Exception {
         UserProfile admin;

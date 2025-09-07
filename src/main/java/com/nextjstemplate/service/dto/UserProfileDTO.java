@@ -70,10 +70,12 @@ public class UserProfileDTO implements Serializable {
     private String profileImageUrl;
 
     private Boolean isEmailSubscribed;
+
     @Size(max = 255)
     private String emailSubscriptionToken;
 
     private Boolean isEmailSubscriptionTokenUsed;
+
     @Size(max = 50)
     private String userStatus;
 
@@ -269,6 +271,7 @@ public class UserProfileDTO implements Serializable {
     public void setIsEmailSubscribed(Boolean isEmailSubscribed) {
         this.isEmailSubscribed = isEmailSubscribed;
     }
+
     public String getEmailSubscriptionToken() {
         return emailSubscriptionToken;
     }

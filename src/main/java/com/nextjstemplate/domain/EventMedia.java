@@ -92,9 +92,6 @@ public class EventMedia implements Serializable {
     @Column(name = "featured_video_url", length = 2048)
     private String featuredVideoUrl;
 
-    @Column(name = "is_featured_image")
-    private Boolean isFeaturedImage;
-
     @Column(name = "is_hero_image")
     private Boolean isHeroImage;
 
@@ -106,12 +103,12 @@ public class EventMedia implements Serializable {
     private Boolean isHomePageHeroImage;
 
     @NotNull
-    @Column(name = "is_featured_event_strip_image", nullable = false)
-    private Boolean isFeaturedEventStripImage;
+    @Column(name = "is_featured_event_image", nullable = false)
+    private Boolean isFeaturedEventImage;
 
     @NotNull
-    @Column(name = "is_live_event_strip_image", nullable = false)
-    private Boolean isLiveEventStripImage;
+    @Column(name = "is_live_event_image", nullable = false)
+    private Boolean isLiveEventImage;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -390,19 +387,6 @@ public class EventMedia implements Serializable {
         this.featuredVideoUrl = featuredVideoUrl;
     }
 
-    public Boolean getIsFeaturedImage() {
-        return this.isFeaturedImage;
-    }
-
-    public EventMedia isFeaturedImage(Boolean isFeaturedImage) {
-        this.setIsFeaturedImage(isFeaturedImage);
-        return this;
-    }
-
-    public void setIsFeaturedImage(Boolean isFeaturedImage) {
-        this.isFeaturedImage = isFeaturedImage;
-    }
-
     public Boolean getIsHeroImage() {
         return this.isHeroImage;
     }
@@ -442,31 +426,32 @@ public class EventMedia implements Serializable {
         this.isHomePageHeroImage = isHomePageHeroImage;
     }
 
-    public Boolean getIsFeaturedEventStripImage() {
-        return this.isFeaturedEventStripImage;
+    public Boolean getIsFeaturedEventImage() {
+        return this.isFeaturedEventImage;
     }
 
-    public EventMedia isFeaturedEventStripImage(Boolean isFeaturedEventStripImage) {
-        this.setIsFeaturedEventStripImage(isFeaturedEventStripImage);
+    public EventMedia isFeaturedEventImage(Boolean isFeaturedEventImage) {
+        this.setIsFeaturedEventImage(isFeaturedEventImage);
         return this;
     }
 
-    public void setIsFeaturedEventStripImage(Boolean isFeaturedEventStripImage) {
-        this.isFeaturedEventStripImage = isFeaturedEventStripImage;
+    public void setIsFeaturedEventImage(Boolean isFeaturedEventImage) {
+        this.isFeaturedEventImage = isFeaturedEventImage;
     }
 
-    public Boolean getIsLiveEventStripImage() {
-        return this.isLiveEventStripImage;
+    public Boolean getIsLiveEventImage() {
+        return this.isLiveEventImage;
     }
 
-    public EventMedia isLiveEventStripImage(Boolean isLiveEventStripImage) {
-        this.setIsLiveEventStripImage(isLiveEventStripImage);
+    public EventMedia isLiveEventImage(Boolean isLiveEventImage) {
+        this.setIsLiveEventImage(isLiveEventImage);
         return this;
     }
 
-    public void setIsLiveEventStripImage(Boolean isLiveEventStripImage) {
-        this.isLiveEventStripImage = isLiveEventStripImage;
+    public void setIsLiveEventImage(Boolean isLiveEventImage) {
+        this.isLiveEventImage = isLiveEventImage;
     }
+
     public ZonedDateTime getCreatedAt() {
         return this.createdAt;
     }
@@ -591,12 +576,11 @@ public class EventMedia implements Serializable {
             ", downloadCount=" + getDownloadCount() +
             ", isFeaturedVideo='" + getIsFeaturedVideo() + "'" +
             ", featuredVideoUrl='" + getFeaturedVideoUrl() + "'" +
-            ", isFeaturedImage='" + getIsFeaturedImage() + "'" +
             ", isHeroImage='" + getIsHeroImage() + "'" +
             ", isActiveHeroImage='" + getIsActiveHeroImage() + "'" +
             ", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
-            ", isFeaturedEventStripImage='" + getIsFeaturedEventStripImage() + "'" +
-            ", isLiveEventStripImage='" + getIsLiveEventStripImage() + "'" +
+            ", isFeaturedEventImage='" + getIsFeaturedEventImage() + "'" +
+            ", isLiveEventImage='" + getIsLiveEventImage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", eventId=" + getEventId() +

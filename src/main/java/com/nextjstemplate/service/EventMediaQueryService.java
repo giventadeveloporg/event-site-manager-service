@@ -8,6 +8,7 @@ import com.nextjstemplate.service.dto.EventMediaDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
 import jakarta.persistence.criteria.JoinType;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.service.QueryService;
-import java.util.stream.Collectors;
 
 /**
  * Service for executing complex queries for {@link EventMedia} entities in the
@@ -39,8 +39,11 @@ public class EventMediaQueryService extends QueryService<EventMedia> {
 
     private final EventMediaService eventMediaService;
 
-    public EventMediaQueryService(EventMediaRepository eventMediaRepository, EventMediaMapper eventMediaMapper,
-            EventMediaService eventMediaService) {
+    public EventMediaQueryService(
+        EventMediaRepository eventMediaRepository,
+        EventMediaMapper eventMediaMapper,
+        EventMediaService eventMediaService
+    ) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
         this.eventMediaService = eventMediaService;
@@ -152,30 +155,25 @@ public class EventMediaQueryService extends QueryService<EventMedia> {
                 specification = specification.and(buildRangeSpecification(criteria.getId(), EventMedia_.id));
             }
             if (criteria.getTenantId() != null) {
-                specification = specification
-                        .and(buildStringSpecification(criteria.getTenantId(), EventMedia_.tenantId));
+                specification = specification.and(buildStringSpecification(criteria.getTenantId(), EventMedia_.tenantId));
             }
             if (criteria.getTitle() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getTitle(), EventMedia_.title));
             }
             if (criteria.getEventMediaType() != null) {
-                specification = specification
-                        .and(buildStringSpecification(criteria.getEventMediaType(), EventMedia_.eventMediaType));
+                specification = specification.and(buildStringSpecification(criteria.getEventMediaType(), EventMedia_.eventMediaType));
             }
             if (criteria.getStorageType() != null) {
-                specification = specification
-                        .and(buildStringSpecification(criteria.getStorageType(), EventMedia_.storageType));
+                specification = specification.and(buildStringSpecification(criteria.getStorageType(), EventMedia_.storageType));
             }
             if (criteria.getFileUrl() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getFileUrl(), EventMedia_.fileUrl));
             }
             if (criteria.getContentType() != null) {
-                specification = specification
-                        .and(buildStringSpecification(criteria.getContentType(), EventMedia_.contentType));
+                specification = specification.and(buildStringSpecification(criteria.getContentType(), EventMedia_.contentType));
             }
             if (criteria.getFileSize() != null) {
-                specification = specification
-                        .and(buildRangeSpecification(criteria.getFileSize(), EventMedia_.fileSize));
+                specification = specification.and(buildRangeSpecification(criteria.getFileSize(), EventMedia_.fileSize));
             }
             if (criteria.getIsPublic() != null) {
                 specification = specification.and(buildSpecification(criteria.getIsPublic(), EventMedia_.isPublic));
@@ -184,76 +182,60 @@ public class EventMediaQueryService extends QueryService<EventMedia> {
                 specification = specification.and(buildSpecification(criteria.getEventFlyer(), EventMedia_.eventFlyer));
             }
             if (criteria.getIsEventManagementOfficialDocument() != null) {
-                specification = specification.and(
-                        buildSpecification(criteria.getIsEventManagementOfficialDocument(),
-                                EventMedia_.isEventManagementOfficialDocument));
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getIsEventManagementOfficialDocument(), EventMedia_.isEventManagementOfficialDocument)
+                    );
             }
             if (criteria.getPreSignedUrl() != null) {
-                specification = specification
-                        .and(buildStringSpecification(criteria.getPreSignedUrl(), EventMedia_.preSignedUrl));
+                specification = specification.and(buildStringSpecification(criteria.getPreSignedUrl(), EventMedia_.preSignedUrl));
             }
             if (criteria.getPreSignedUrlExpiresAt() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getPreSignedUrlExpiresAt(),
-                        EventMedia_.preSignedUrlExpiresAt));
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getPreSignedUrlExpiresAt(), EventMedia_.preSignedUrlExpiresAt));
             }
             if (criteria.getAltText() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getAltText(), EventMedia_.altText));
             }
             if (criteria.getDisplayOrder() != null) {
-                specification = specification
-                        .and(buildRangeSpecification(criteria.getDisplayOrder(), EventMedia_.displayOrder));
+                specification = specification.and(buildRangeSpecification(criteria.getDisplayOrder(), EventMedia_.displayOrder));
             }
             if (criteria.getDownloadCount() != null) {
-                specification = specification
-                        .and(buildRangeSpecification(criteria.getDownloadCount(), EventMedia_.downloadCount));
+                specification = specification.and(buildRangeSpecification(criteria.getDownloadCount(), EventMedia_.downloadCount));
             }
             if (criteria.getIsFeaturedVideo() != null) {
-                specification = specification
-                        .and(buildSpecification(criteria.getIsFeaturedVideo(), EventMedia_.isFeaturedVideo));
+                specification = specification.and(buildSpecification(criteria.getIsFeaturedVideo(), EventMedia_.isFeaturedVideo));
             }
             if (criteria.getFeaturedVideoUrl() != null) {
-                specification = specification
-                        .and(buildStringSpecification(criteria.getFeaturedVideoUrl(), EventMedia_.featuredVideoUrl));
-            }
-            if (criteria.getIsFeaturedImage() != null) {
-                specification = specification
-                        .and(buildSpecification(criteria.getIsFeaturedImage(), EventMedia_.isFeaturedImage));
+                specification = specification.and(buildStringSpecification(criteria.getFeaturedVideoUrl(), EventMedia_.featuredVideoUrl));
             }
             if (criteria.getIsHeroImage() != null) {
-                specification = specification
-                        .and(buildSpecification(criteria.getIsHeroImage(), EventMedia_.isHeroImage));
+                specification = specification.and(buildSpecification(criteria.getIsHeroImage(), EventMedia_.isHeroImage));
             }
             if (criteria.getIsActiveHeroImage() != null) {
-                specification = specification
-                        .and(buildSpecification(criteria.getIsActiveHeroImage(), EventMedia_.isActiveHeroImage));
+                specification = specification.and(buildSpecification(criteria.getIsActiveHeroImage(), EventMedia_.isActiveHeroImage));
             }
             if (criteria.getIsHomePageHeroImage() != null) {
-                specification = specification
-                        .and(buildSpecification(criteria.getIsHomePageHeroImage(), EventMedia_.isHomePageHeroImage));
+                specification = specification.and(buildSpecification(criteria.getIsHomePageHeroImage(), EventMedia_.isHomePageHeroImage));
             }
-            if (criteria.getIsFeaturedEventStripImage() != null) {
-                specification = specification
-                        .and(buildSpecification(criteria.getIsFeaturedEventStripImage(), EventMedia_.isFeaturedEventStripImage));
+            if (criteria.getIsFeaturedEventImage() != null) {
+                specification = specification.and(buildSpecification(criteria.getIsFeaturedEventImage(), EventMedia_.isFeaturedEventImage));
             }
-            if (criteria.getIsLiveEventStripImage() != null) {
-                specification = specification
-                        .and(buildSpecification(criteria.getIsLiveEventStripImage(), EventMedia_.isLiveEventStripImage));
+            if (criteria.getIsLiveEventImage() != null) {
+                specification = specification.and(buildSpecification(criteria.getIsLiveEventImage(), EventMedia_.isLiveEventImage));
             }
             if (criteria.getCreatedAt() != null) {
-                specification = specification
-                        .and(buildRangeSpecification(criteria.getCreatedAt(), EventMedia_.createdAt));
+                specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), EventMedia_.createdAt));
             }
             if (criteria.getUpdatedAt() != null) {
-                specification = specification
-                        .and(buildRangeSpecification(criteria.getUpdatedAt(), EventMedia_.updatedAt));
+                specification = specification.and(buildRangeSpecification(criteria.getUpdatedAt(), EventMedia_.updatedAt));
             }
 
             if (criteria.getEventId() != null) {
                 specification = specification.and(buildSpecification(criteria.getEventId(), EventMedia_.eventId));
             }
             if (criteria.getUploadedById() != null) {
-                specification = specification
-                        .and(buildSpecification(criteria.getUploadedById(), EventMedia_.uploadedById));
+                specification = specification.and(buildSpecification(criteria.getUploadedById(), EventMedia_.uploadedById));
             }
         }
         return specification;

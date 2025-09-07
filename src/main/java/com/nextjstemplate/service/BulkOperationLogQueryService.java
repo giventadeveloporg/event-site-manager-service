@@ -74,20 +74,22 @@ public class BulkOperationLogQueryService extends QueryService<BulkOperationLog>
         Specification<BulkOperationLog> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), BulkOperationLog_.id),
-                buildStringSpecification(criteria.getTenantId(), BulkOperationLog_.tenantId),
-                buildStringSpecification(criteria.getOperationType(), BulkOperationLog_.operationType),
-                buildRangeSpecification(criteria.getTargetCount(), BulkOperationLog_.targetCount),
-                buildRangeSpecification(criteria.getSuccessCount(), BulkOperationLog_.successCount),
-                buildRangeSpecification(criteria.getErrorCount(), BulkOperationLog_.errorCount),
-                buildStringSpecification(criteria.getOperationDetails(), BulkOperationLog_.operationDetails),
-                buildRangeSpecification(criteria.getCreatedAt(), BulkOperationLog_.createdAt),
-                buildSpecification(criteria.getPerformedById(), root ->
-                    root.join(BulkOperationLog_.performedBy, JoinType.LEFT).get(UserProfile_.id)
-                )
-            );
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), BulkOperationLog_.id),
+                    buildStringSpecification(criteria.getTenantId(), BulkOperationLog_.tenantId),
+                    buildStringSpecification(criteria.getOperationType(), BulkOperationLog_.operationType),
+                    buildRangeSpecification(criteria.getTargetCount(), BulkOperationLog_.targetCount),
+                    buildRangeSpecification(criteria.getSuccessCount(), BulkOperationLog_.successCount),
+                    buildRangeSpecification(criteria.getErrorCount(), BulkOperationLog_.errorCount),
+                    buildStringSpecification(criteria.getOperationDetails(), BulkOperationLog_.operationDetails),
+                    buildRangeSpecification(criteria.getCreatedAt(), BulkOperationLog_.createdAt),
+                    buildSpecification(
+                        criteria.getPerformedById(),
+                        root -> root.join(BulkOperationLog_.performedBy, JoinType.LEFT).get(UserProfile_.id)
+                    )
+                );
         }
         return specification;
     }

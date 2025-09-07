@@ -72,7 +72,8 @@ public class EventLiveUpdateAttachmentResource {
             throw new BadRequestAlertException("A new eventLiveUpdateAttachment cannot already have an ID", ENTITY_NAME, "idexists");
         }
         eventLiveUpdateAttachmentDTO = eventLiveUpdateAttachmentService.save(eventLiveUpdateAttachmentDTO);
-        return ResponseEntity.created(new URI("/api/event-live-update-attachments/" + eventLiveUpdateAttachmentDTO.getId()))
+        return ResponseEntity
+            .created(new URI("/api/event-live-update-attachments/" + eventLiveUpdateAttachmentDTO.getId()))
             .headers(
                 HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, eventLiveUpdateAttachmentDTO.getId().toString())
             )
@@ -107,7 +108,8 @@ public class EventLiveUpdateAttachmentResource {
         }
 
         eventLiveUpdateAttachmentDTO = eventLiveUpdateAttachmentService.update(eventLiveUpdateAttachmentDTO);
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .headers(
                 HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventLiveUpdateAttachmentDTO.getId().toString())
             )
@@ -204,7 +206,8 @@ public class EventLiveUpdateAttachmentResource {
     public ResponseEntity<Void> deleteEventLiveUpdateAttachment(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete EventLiveUpdateAttachment : {}", id);
         eventLiveUpdateAttachmentService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

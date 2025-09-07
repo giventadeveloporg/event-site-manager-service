@@ -22,8 +22,7 @@ class WhatsAppLogTest {
         whatsAppLog2 = getWhatsAppLogSample2();
         assertThat(whatsAppLog1).isNotEqualTo(whatsAppLog2);
     }
-
-   /* @Test
+    /* @Test
     void campaignTest() throws Exception {
         WhatsAppLog whatsAppLog = getWhatsAppLogRandomSampleGenerator();
         CommunicationCampaign communicationCampaignBack = getCommunicationCampaignRandomSampleGenerator();

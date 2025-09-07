@@ -71,24 +71,25 @@ public class UserTaskQueryService extends QueryService<UserTask> {
         Specification<UserTask> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), UserTask_.id),
-                buildStringSpecification(criteria.getTenantId(), UserTask_.tenantId),
-                buildStringSpecification(criteria.getTitle(), UserTask_.title),
-                buildStringSpecification(criteria.getDescription(), UserTask_.description),
-                buildStringSpecification(criteria.getStatus(), UserTask_.status),
-                buildStringSpecification(criteria.getPriority(), UserTask_.priority),
-                buildRangeSpecification(criteria.getDueDate(), UserTask_.dueDate),
-                buildSpecification(criteria.getCompleted(), UserTask_.completed),
-                buildStringSpecification(criteria.getAssigneeName(), UserTask_.assigneeName),
-                buildStringSpecification(criteria.getAssigneeContactPhone(), UserTask_.assigneeContactPhone),
-                buildStringSpecification(criteria.getAssigneeContactEmail(), UserTask_.assigneeContactEmail),
-                buildRangeSpecification(criteria.getCreatedAt(), UserTask_.createdAt),
-                buildRangeSpecification(criteria.getUpdatedAt(), UserTask_.updatedAt),
-                buildSpecification(criteria.getUserId(), root -> root.join(UserTask_.user, JoinType.LEFT).get(UserProfile_.id)),
-                buildSpecification(criteria.getEventId(), root -> root.join(UserTask_.event, JoinType.LEFT).get(EventDetails_.id))
-            );
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), UserTask_.id),
+                    buildStringSpecification(criteria.getTenantId(), UserTask_.tenantId),
+                    buildStringSpecification(criteria.getTitle(), UserTask_.title),
+                    buildStringSpecification(criteria.getDescription(), UserTask_.description),
+                    buildStringSpecification(criteria.getStatus(), UserTask_.status),
+                    buildStringSpecification(criteria.getPriority(), UserTask_.priority),
+                    buildRangeSpecification(criteria.getDueDate(), UserTask_.dueDate),
+                    buildSpecification(criteria.getCompleted(), UserTask_.completed),
+                    buildStringSpecification(criteria.getAssigneeName(), UserTask_.assigneeName),
+                    buildStringSpecification(criteria.getAssigneeContactPhone(), UserTask_.assigneeContactPhone),
+                    buildStringSpecification(criteria.getAssigneeContactEmail(), UserTask_.assigneeContactEmail),
+                    buildRangeSpecification(criteria.getCreatedAt(), UserTask_.createdAt),
+                    buildRangeSpecification(criteria.getUpdatedAt(), UserTask_.updatedAt),
+                    buildSpecification(criteria.getUserId(), root -> root.join(UserTask_.user, JoinType.LEFT).get(UserProfile_.id)),
+                    buildSpecification(criteria.getEventId(), root -> root.join(UserTask_.event, JoinType.LEFT).get(EventDetails_.id))
+                );
         }
         return specification;
     }

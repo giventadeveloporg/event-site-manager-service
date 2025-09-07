@@ -1,14 +1,13 @@
 package com.nextjstemplate.repository;
 
 import com.nextjstemplate.domain.UserProfile;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Spring Data JPA repository for the UserProfile entity.
@@ -29,7 +28,8 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long>,
 
     // New: Find subscribed users with pagination (includes all user data needed for
     // email sending)
-    @Query("SELECT u FROM UserProfile u WHERE u.tenantId = :tenantId AND u.isEmailSubscribed = true AND u.email IS NOT NULL AND u.emailSubscriptionToken IS NOT NULL")
-    Page<UserProfile> findSubscribedUsersByTenantIdWithPagination(@Param("tenantId") String tenantId,
-            Pageable pageable);
+    @Query(
+        "SELECT u FROM UserProfile u WHERE u.tenantId = :tenantId AND u.isEmailSubscribed = true AND u.email IS NOT NULL AND u.emailSubscriptionToken IS NOT NULL"
+    )
+    Page<UserProfile> findSubscribedUsersByTenantIdWithPagination(@Param("tenantId") String tenantId, Pageable pageable);
 }

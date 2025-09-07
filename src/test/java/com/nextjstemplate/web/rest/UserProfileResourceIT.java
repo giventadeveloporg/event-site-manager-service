@@ -107,7 +107,8 @@ class UserProfileResourceIT {/*
 
     private UserProfile userProfile;
 
-    *//**
+    */
+    /**
      * Create an entity for this test.
      *
      * This is a static method, as tests for other entities might also need it,

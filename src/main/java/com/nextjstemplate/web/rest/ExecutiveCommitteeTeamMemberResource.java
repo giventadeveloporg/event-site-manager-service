@@ -72,7 +72,8 @@ public class ExecutiveCommitteeTeamMemberResource {
             throw new BadRequestAlertException("A new executiveCommitteeTeamMember cannot already have an ID", ENTITY_NAME, "idexists");
         }
         executiveCommitteeTeamMemberDTO = executiveCommitteeTeamMemberService.save(executiveCommitteeTeamMemberDTO);
-        return ResponseEntity.created(new URI("/api/executive-committee-team-members/" + executiveCommitteeTeamMemberDTO.getId()))
+        return ResponseEntity
+            .created(new URI("/api/executive-committee-team-members/" + executiveCommitteeTeamMemberDTO.getId()))
             .headers(
                 HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, executiveCommitteeTeamMemberDTO.getId().toString())
             )
@@ -107,7 +108,8 @@ public class ExecutiveCommitteeTeamMemberResource {
         }
 
         executiveCommitteeTeamMemberDTO = executiveCommitteeTeamMemberService.update(executiveCommitteeTeamMemberDTO);
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .headers(
                 HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, executiveCommitteeTeamMemberDTO.getId().toString())
             )
@@ -206,7 +208,8 @@ public class ExecutiveCommitteeTeamMemberResource {
     public ResponseEntity<Void> deleteExecutiveCommitteeTeamMember(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete ExecutiveCommitteeTeamMember : {}", id);
         executiveCommitteeTeamMemberService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

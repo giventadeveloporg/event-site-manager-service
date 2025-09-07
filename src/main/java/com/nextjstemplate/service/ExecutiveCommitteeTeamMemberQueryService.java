@@ -73,27 +73,56 @@ public class ExecutiveCommitteeTeamMemberQueryService extends QueryService<Execu
         Specification<ExecutiveCommitteeTeamMember> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                criteria.getId() != null ? buildRangeSpecification(criteria.getId(), ExecutiveCommitteeTeamMember_.id) : null,
-                criteria.getFirstName() != null ? buildStringSpecification(criteria.getFirstName(), ExecutiveCommitteeTeamMember_.firstName) : null,
-                criteria.getLastName() != null ? buildStringSpecification(criteria.getLastName(), ExecutiveCommitteeTeamMember_.lastName) : null,
-                criteria.getTitle() != null ? buildStringSpecification(criteria.getTitle(), ExecutiveCommitteeTeamMember_.title) : null,
-                criteria.getDesignation() != null ? buildStringSpecification(criteria.getDesignation(), ExecutiveCommitteeTeamMember_.designation) : null,
-                criteria.getBio() != null ? buildStringSpecification(criteria.getBio(), ExecutiveCommitteeTeamMember_.bio) : null,
-                criteria.getEmail() != null ? buildStringSpecification(criteria.getEmail(), ExecutiveCommitteeTeamMember_.email) : null,
-                criteria.getProfileImageUrl() != null ? buildStringSpecification(criteria.getProfileImageUrl(), ExecutiveCommitteeTeamMember_.profileImageUrl) : null,
-                criteria.getExpertise() != null ? buildStringSpecification(criteria.getExpertise(), ExecutiveCommitteeTeamMember_.expertise) : null,
-                criteria.getImageBackground() != null ? buildStringSpecification(criteria.getImageBackground(), ExecutiveCommitteeTeamMember_.imageBackground) : null,
-                criteria.getImageStyle() != null ? buildStringSpecification(criteria.getImageStyle(), ExecutiveCommitteeTeamMember_.imageStyle) : null,
-                criteria.getDepartment() != null ? buildStringSpecification(criteria.getDepartment(), ExecutiveCommitteeTeamMember_.department) : null,
-                criteria.getJoinDate() != null ? buildRangeSpecification(criteria.getJoinDate(), ExecutiveCommitteeTeamMember_.joinDate) : null,
-                criteria.getIsActive() != null ? buildSpecification(criteria.getIsActive(), ExecutiveCommitteeTeamMember_.isActive) : null,
-                criteria.getLinkedinUrl() != null ? buildStringSpecification(criteria.getLinkedinUrl(), ExecutiveCommitteeTeamMember_.linkedinUrl) : null,
-                criteria.getTwitterUrl() != null ? buildStringSpecification(criteria.getTwitterUrl(), ExecutiveCommitteeTeamMember_.twitterUrl) : null,
-                criteria.getPriorityOrder() != null ? buildRangeSpecification(criteria.getPriorityOrder(), ExecutiveCommitteeTeamMember_.priorityOrder) : null,
-                criteria.getWebsiteUrl() != null ? buildStringSpecification(criteria.getWebsiteUrl(), ExecutiveCommitteeTeamMember_.websiteUrl) : null
-            );
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    criteria.getId() != null ? buildRangeSpecification(criteria.getId(), ExecutiveCommitteeTeamMember_.id) : null,
+                    criteria.getFirstName() != null
+                        ? buildStringSpecification(criteria.getFirstName(), ExecutiveCommitteeTeamMember_.firstName)
+                        : null,
+                    criteria.getLastName() != null
+                        ? buildStringSpecification(criteria.getLastName(), ExecutiveCommitteeTeamMember_.lastName)
+                        : null,
+                    criteria.getTitle() != null ? buildStringSpecification(criteria.getTitle(), ExecutiveCommitteeTeamMember_.title) : null,
+                    criteria.getDesignation() != null
+                        ? buildStringSpecification(criteria.getDesignation(), ExecutiveCommitteeTeamMember_.designation)
+                        : null,
+                    criteria.getBio() != null ? buildStringSpecification(criteria.getBio(), ExecutiveCommitteeTeamMember_.bio) : null,
+                    criteria.getEmail() != null ? buildStringSpecification(criteria.getEmail(), ExecutiveCommitteeTeamMember_.email) : null,
+                    criteria.getProfileImageUrl() != null
+                        ? buildStringSpecification(criteria.getProfileImageUrl(), ExecutiveCommitteeTeamMember_.profileImageUrl)
+                        : null,
+                    criteria.getExpertise() != null
+                        ? buildStringSpecification(criteria.getExpertise(), ExecutiveCommitteeTeamMember_.expertise)
+                        : null,
+                    criteria.getImageBackground() != null
+                        ? buildStringSpecification(criteria.getImageBackground(), ExecutiveCommitteeTeamMember_.imageBackground)
+                        : null,
+                    criteria.getImageStyle() != null
+                        ? buildStringSpecification(criteria.getImageStyle(), ExecutiveCommitteeTeamMember_.imageStyle)
+                        : null,
+                    criteria.getDepartment() != null
+                        ? buildStringSpecification(criteria.getDepartment(), ExecutiveCommitteeTeamMember_.department)
+                        : null,
+                    criteria.getJoinDate() != null
+                        ? buildRangeSpecification(criteria.getJoinDate(), ExecutiveCommitteeTeamMember_.joinDate)
+                        : null,
+                    criteria.getIsActive() != null
+                        ? buildSpecification(criteria.getIsActive(), ExecutiveCommitteeTeamMember_.isActive)
+                        : null,
+                    criteria.getLinkedinUrl() != null
+                        ? buildStringSpecification(criteria.getLinkedinUrl(), ExecutiveCommitteeTeamMember_.linkedinUrl)
+                        : null,
+                    criteria.getTwitterUrl() != null
+                        ? buildStringSpecification(criteria.getTwitterUrl(), ExecutiveCommitteeTeamMember_.twitterUrl)
+                        : null,
+                    criteria.getPriorityOrder() != null
+                        ? buildRangeSpecification(criteria.getPriorityOrder(), ExecutiveCommitteeTeamMember_.priorityOrder)
+                        : null,
+                    criteria.getWebsiteUrl() != null
+                        ? buildStringSpecification(criteria.getWebsiteUrl(), ExecutiveCommitteeTeamMember_.websiteUrl)
+                        : null
+                );
         }
         return specification;
     }

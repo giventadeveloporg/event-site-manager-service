@@ -23,8 +23,7 @@ class EventTicketTransactionItemTest {
         eventTicketTransactionItem2 = getEventTicketTransactionItemSample2();
         assertThat(eventTicketTransactionItem1).isNotEqualTo(eventTicketTransactionItem2);
     }
-
-   /* @Test
+    /* @Test
     void transactionTest() throws Exception {
         EventTicketTransactionItem eventTicketTransactionItem = getEventTicketTransactionItemRandomSampleGenerator();
         EventTicketTransaction eventTicketTransactionBack = getEventTicketTransactionRandomSampleGenerator();

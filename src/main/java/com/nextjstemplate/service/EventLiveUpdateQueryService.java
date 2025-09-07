@@ -71,21 +71,25 @@ public class EventLiveUpdateQueryService extends QueryService<EventLiveUpdate> {
         Specification<EventLiveUpdate> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), EventLiveUpdate_.id),
-                buildStringSpecification(criteria.getUpdateType(), EventLiveUpdate_.updateType),
-                buildStringSpecification(criteria.getContentText(), EventLiveUpdate_.contentText),
-                buildStringSpecification(criteria.getContentImageUrl(), EventLiveUpdate_.contentImageUrl),
-                buildStringSpecification(criteria.getContentVideoUrl(), EventLiveUpdate_.contentVideoUrl),
-                buildStringSpecification(criteria.getContentLinkUrl(), EventLiveUpdate_.contentLinkUrl),
-                buildStringSpecification(criteria.getMetadata(), EventLiveUpdate_.metadata),
-                buildRangeSpecification(criteria.getDisplayOrder(), EventLiveUpdate_.displayOrder),
-                buildSpecification(criteria.getIsDefault(), EventLiveUpdate_.isDefault),
-                buildRangeSpecification(criteria.getCreatedAt(), EventLiveUpdate_.createdAt),
-                buildRangeSpecification(criteria.getUpdatedAt(), EventLiveUpdate_.updatedAt),
-                buildSpecification(criteria.getEventId(), root -> root.join(EventLiveUpdate_.event, JoinType.LEFT).get(EventDetails_.id))
-            );
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), EventLiveUpdate_.id),
+                    buildStringSpecification(criteria.getUpdateType(), EventLiveUpdate_.updateType),
+                    buildStringSpecification(criteria.getContentText(), EventLiveUpdate_.contentText),
+                    buildStringSpecification(criteria.getContentImageUrl(), EventLiveUpdate_.contentImageUrl),
+                    buildStringSpecification(criteria.getContentVideoUrl(), EventLiveUpdate_.contentVideoUrl),
+                    buildStringSpecification(criteria.getContentLinkUrl(), EventLiveUpdate_.contentLinkUrl),
+                    buildStringSpecification(criteria.getMetadata(), EventLiveUpdate_.metadata),
+                    buildRangeSpecification(criteria.getDisplayOrder(), EventLiveUpdate_.displayOrder),
+                    buildSpecification(criteria.getIsDefault(), EventLiveUpdate_.isDefault),
+                    buildRangeSpecification(criteria.getCreatedAt(), EventLiveUpdate_.createdAt),
+                    buildRangeSpecification(criteria.getUpdatedAt(), EventLiveUpdate_.updatedAt),
+                    buildSpecification(
+                        criteria.getEventId(),
+                        root -> root.join(EventLiveUpdate_.event, JoinType.LEFT).get(EventDetails_.id)
+                    )
+                );
         }
         return specification;
     }

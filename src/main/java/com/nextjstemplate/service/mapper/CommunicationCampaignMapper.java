@@ -11,7 +11,7 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface CommunicationCampaignMapper extends EntityMapper<CommunicationCampaignDTO, CommunicationCampaign> {
-//    @Mapping(target = "createdBy", source = "createdBy", qualifiedByName = "userProfileId")
+    //    @Mapping(target = "createdBy", source = "createdBy", qualifiedByName = "userProfileId")
     CommunicationCampaignDTO toDto(CommunicationCampaign s);
 
     @Named("userProfileId")

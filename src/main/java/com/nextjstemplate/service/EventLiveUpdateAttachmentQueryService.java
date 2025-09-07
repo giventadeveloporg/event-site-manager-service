@@ -74,19 +74,21 @@ public class EventLiveUpdateAttachmentQueryService extends QueryService<EventLiv
         Specification<EventLiveUpdateAttachment> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), EventLiveUpdateAttachment_.id),
-                buildStringSpecification(criteria.getAttachmentType(), EventLiveUpdateAttachment_.attachmentType),
-                buildStringSpecification(criteria.getAttachmentUrl(), EventLiveUpdateAttachment_.attachmentUrl),
-                buildRangeSpecification(criteria.getDisplayOrder(), EventLiveUpdateAttachment_.displayOrder),
-                buildStringSpecification(criteria.getMetadata(), EventLiveUpdateAttachment_.metadata),
-                buildRangeSpecification(criteria.getCreatedAt(), EventLiveUpdateAttachment_.createdAt),
-                buildRangeSpecification(criteria.getUpdatedAt(), EventLiveUpdateAttachment_.updatedAt),
-                buildSpecification(criteria.getLiveUpdateId(), root ->
-                    root.join(EventLiveUpdateAttachment_.liveUpdate, JoinType.LEFT).get(EventLiveUpdate_.id)
-                )
-            );
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), EventLiveUpdateAttachment_.id),
+                    buildStringSpecification(criteria.getAttachmentType(), EventLiveUpdateAttachment_.attachmentType),
+                    buildStringSpecification(criteria.getAttachmentUrl(), EventLiveUpdateAttachment_.attachmentUrl),
+                    buildRangeSpecification(criteria.getDisplayOrder(), EventLiveUpdateAttachment_.displayOrder),
+                    buildStringSpecification(criteria.getMetadata(), EventLiveUpdateAttachment_.metadata),
+                    buildRangeSpecification(criteria.getCreatedAt(), EventLiveUpdateAttachment_.createdAt),
+                    buildRangeSpecification(criteria.getUpdatedAt(), EventLiveUpdateAttachment_.updatedAt),
+                    buildSpecification(
+                        criteria.getLiveUpdateId(),
+                        root -> root.join(EventLiveUpdateAttachment_.liveUpdate, JoinType.LEFT).get(EventLiveUpdate_.id)
+                    )
+                );
         }
         return specification;
     }

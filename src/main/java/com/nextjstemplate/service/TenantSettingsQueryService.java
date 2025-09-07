@@ -71,30 +71,32 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
         Specification<TenantSettings> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), TenantSettings_.id),
-                buildStringSpecification(criteria.getTenantId(), TenantSettings_.tenantId),
-                buildSpecification(criteria.getAllowUserRegistration(), TenantSettings_.allowUserRegistration),
-                buildSpecification(criteria.getRequireAdminApproval(), TenantSettings_.requireAdminApproval),
-                buildSpecification(criteria.getEnableWhatsappIntegration(), TenantSettings_.enableWhatsappIntegration),
-                buildSpecification(criteria.getEnableEmailMarketing(), TenantSettings_.enableEmailMarketing),
-                buildStringSpecification(criteria.getWhatsappApiKey(), TenantSettings_.whatsappApiKey),
-                buildStringSpecification(criteria.getEmailProviderConfig(), TenantSettings_.emailProviderConfig),
-                buildRangeSpecification(criteria.getMaxEventsPerMonth(), TenantSettings_.maxEventsPerMonth),
-                buildRangeSpecification(criteria.getMaxAttendeesPerEvent(), TenantSettings_.maxAttendeesPerEvent),
-                buildSpecification(criteria.getEnableGuestRegistration(), TenantSettings_.enableGuestRegistration),
-                buildRangeSpecification(criteria.getMaxGuestsPerAttendee(), TenantSettings_.maxGuestsPerAttendee),
-                buildRangeSpecification(criteria.getDefaultEventCapacity(), TenantSettings_.defaultEventCapacity),
-                buildRangeSpecification(criteria.getPlatformFeePercentage(), TenantSettings_.platformFeePercentage),
-                buildStringSpecification(criteria.getCustomCss(), TenantSettings_.customCss),
-                buildStringSpecification(criteria.getCustomJs(), TenantSettings_.customJs),
-                buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt),
-                buildRangeSpecification(criteria.getUpdatedAt(), TenantSettings_.updatedAt),
-                buildSpecification(criteria.getTenantOrganizationId(), root ->
-                    root.join(TenantSettings_.tenantOrganization, JoinType.LEFT).get(TenantOrganization_.id)
-                )
-            );
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), TenantSettings_.id),
+                    buildStringSpecification(criteria.getTenantId(), TenantSettings_.tenantId),
+                    buildSpecification(criteria.getAllowUserRegistration(), TenantSettings_.allowUserRegistration),
+                    buildSpecification(criteria.getRequireAdminApproval(), TenantSettings_.requireAdminApproval),
+                    buildSpecification(criteria.getEnableWhatsappIntegration(), TenantSettings_.enableWhatsappIntegration),
+                    buildSpecification(criteria.getEnableEmailMarketing(), TenantSettings_.enableEmailMarketing),
+                    buildStringSpecification(criteria.getWhatsappApiKey(), TenantSettings_.whatsappApiKey),
+                    buildStringSpecification(criteria.getEmailProviderConfig(), TenantSettings_.emailProviderConfig),
+                    buildRangeSpecification(criteria.getMaxEventsPerMonth(), TenantSettings_.maxEventsPerMonth),
+                    buildRangeSpecification(criteria.getMaxAttendeesPerEvent(), TenantSettings_.maxAttendeesPerEvent),
+                    buildSpecification(criteria.getEnableGuestRegistration(), TenantSettings_.enableGuestRegistration),
+                    buildRangeSpecification(criteria.getMaxGuestsPerAttendee(), TenantSettings_.maxGuestsPerAttendee),
+                    buildRangeSpecification(criteria.getDefaultEventCapacity(), TenantSettings_.defaultEventCapacity),
+                    buildRangeSpecification(criteria.getPlatformFeePercentage(), TenantSettings_.platformFeePercentage),
+                    buildStringSpecification(criteria.getCustomCss(), TenantSettings_.customCss),
+                    buildStringSpecification(criteria.getCustomJs(), TenantSettings_.customJs),
+                    buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt),
+                    buildRangeSpecification(criteria.getUpdatedAt(), TenantSettings_.updatedAt),
+                    buildSpecification(
+                        criteria.getTenantOrganizationId(),
+                        root -> root.join(TenantSettings_.tenantOrganization, JoinType.LEFT).get(TenantOrganization_.id)
+                    )
+                );
         }
         return specification;
     }

@@ -47,7 +47,7 @@ public interface TenantOrganizationService {
      *
      * @return the {@link List} of entities.
      */
-//    List<TenantOrganizationDTO> findAllWhereTenantSettingsIsNull();
+    //    List<TenantOrganizationDTO> findAllWhereTenantSettingsIsNull();
 
     /**
      * Get the "id" tenantOrganization.

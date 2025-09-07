@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface EventTicketTransactionItemRepository
-        extends JpaRepository<EventTicketTransactionItem, Long>, JpaSpecificationExecutor<EventTicketTransactionItem> {
+    extends JpaRepository<EventTicketTransactionItem, Long>, JpaSpecificationExecutor<EventTicketTransactionItem> {
     // Custom method to find items by transactionId
     java.util.List<EventTicketTransactionItem> findByTransactionId(Long transactionId);
 }

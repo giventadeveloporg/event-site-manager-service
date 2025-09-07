@@ -33,8 +33,9 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
     private final EventTicketTransactionMapper eventTicketTransactionMapper;
 
     public EventTicketTransactionServiceImpl(
-            EventTicketTransactionRepository eventTicketTransactionRepository,
-            EventTicketTransactionMapper eventTicketTransactionMapper) {
+        EventTicketTransactionRepository eventTicketTransactionRepository,
+        EventTicketTransactionMapper eventTicketTransactionMapper
+    ) {
         this.eventTicketTransactionRepository = eventTicketTransactionRepository;
         this.eventTicketTransactionMapper = eventTicketTransactionMapper;
     }
@@ -42,8 +43,7 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
     @Override
     public EventTicketTransactionDTO save(EventTicketTransactionDTO eventTicketTransactionDTO) {
         log.debug("Request to save EventTicketTransaction : {}", eventTicketTransactionDTO);
-        EventTicketTransaction eventTicketTransaction = eventTicketTransactionMapper
-                .toEntity(eventTicketTransactionDTO);
+        EventTicketTransaction eventTicketTransaction = eventTicketTransactionMapper.toEntity(eventTicketTransactionDTO);
         eventTicketTransaction = eventTicketTransactionRepository.save(eventTicketTransaction);
         return eventTicketTransactionMapper.toDto(eventTicketTransaction);
     }
@@ -51,8 +51,7 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
     @Override
     public EventTicketTransactionDTO update(EventTicketTransactionDTO eventTicketTransactionDTO) {
         log.debug("Request to update EventTicketTransaction : {}", eventTicketTransactionDTO);
-        EventTicketTransaction eventTicketTransaction = eventTicketTransactionMapper
-                .toEntity(eventTicketTransactionDTO);
+        EventTicketTransaction eventTicketTransaction = eventTicketTransactionMapper.toEntity(eventTicketTransactionDTO);
         eventTicketTransaction = eventTicketTransactionRepository.save(eventTicketTransaction);
         return eventTicketTransactionMapper.toDto(eventTicketTransaction);
     }
@@ -62,15 +61,14 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
         log.debug("Request to partially update EventTicketTransaction : {}", eventTicketTransactionDTO);
 
         return eventTicketTransactionRepository
-                .findById(eventTicketTransactionDTO.getId())
-                .map(existingEventTicketTransaction -> {
-                    eventTicketTransactionMapper.partialUpdate(existingEventTicketTransaction,
-                            eventTicketTransactionDTO);
+            .findById(eventTicketTransactionDTO.getId())
+            .map(existingEventTicketTransaction -> {
+                eventTicketTransactionMapper.partialUpdate(existingEventTicketTransaction, eventTicketTransactionDTO);
 
-                    return existingEventTicketTransaction;
-                })
-                .map(eventTicketTransactionRepository::save)
-                .map(eventTicketTransactionMapper::toDto);
+                return existingEventTicketTransaction;
+            })
+            .map(eventTicketTransactionRepository::save)
+            .map(eventTicketTransactionMapper::toDto);
     }
 
     @Override
@@ -95,33 +93,47 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
 
     @Override
     public EventTicketTransactionStatisticsDTO getEventStatistics(Long eventId) {
-        List<EventTicketTransaction> transactions = eventTicketTransactionRepository.findAll().stream()
-                .filter(t -> t.getEventId() != null && t.getEventId().equals(eventId))
-                .collect(Collectors.toList());
+        List<EventTicketTransaction> transactions = eventTicketTransactionRepository
+            .findAll()
+            .stream()
+            .filter(t -> t.getEventId() != null && t.getEventId().equals(eventId))
+            .collect(Collectors.toList());
         int totalTicketsSold = transactions.stream().mapToInt(t -> t.getQuantity() != null ? t.getQuantity() : 0).sum();
-        BigDecimal totalAmount = transactions.stream()
-                .map(t -> t.getFinalAmount() != null ? t.getFinalAmount() : BigDecimal.ZERO)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        BigDecimal totalFees = transactions.stream()
-                .map(t -> {
-                    BigDecimal platformFee = t.getPlatformFeeAmount() != null ? t.getPlatformFeeAmount() : BigDecimal.ZERO;
-                    BigDecimal stripeFee = t.getStripeFeeAmount() != null ? t.getStripeFeeAmount() : BigDecimal.ZERO;
-                    return platformFee.add(stripeFee);
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
+        BigDecimal totalAmount = transactions
+            .stream()
+            .map(t -> t.getFinalAmount() != null ? t.getFinalAmount() : BigDecimal.ZERO)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalFees = transactions
+            .stream()
+            .map(t -> {
+                BigDecimal platformFee = t.getPlatformFeeAmount() != null ? t.getPlatformFeeAmount() : BigDecimal.ZERO;
+                BigDecimal stripeFee = t.getStripeFeeAmount() != null ? t.getStripeFeeAmount() : BigDecimal.ZERO;
+                return platformFee.add(stripeFee);
+            })
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         BigDecimal netAmount = totalAmount.subtract(totalFees);
-        Map<String, Integer> ticketsByStatus = transactions.stream().collect(
+        Map<String, Integer> ticketsByStatus = transactions
+            .stream()
+            .collect(
                 Collectors.groupingBy(
-                        t -> t.getStatus() != null ? t.getStatus() : "UNKNOWN",
-                        Collectors.summingInt(t -> t.getQuantity() != null ? t.getQuantity() : 0)));
-        Map<String, BigDecimal> amountByStatus = transactions.stream().collect(
+                    t -> t.getStatus() != null ? t.getStatus() : "UNKNOWN",
+                    Collectors.summingInt(t -> t.getQuantity() != null ? t.getQuantity() : 0)
+                )
+            );
+        Map<String, BigDecimal> amountByStatus = transactions
+            .stream()
+            .collect(
                 Collectors.groupingBy(
-                        t -> t.getStatus() != null ? t.getStatus() : "UNKNOWN",
-                        Collectors.reducing(BigDecimal.ZERO,
-                                t -> t.getFinalAmount() != null ? t.getFinalAmount() : BigDecimal.ZERO,
-                                BigDecimal::add)));
+                    t -> t.getStatus() != null ? t.getStatus() : "UNKNOWN",
+                    Collectors.reducing(
+                        BigDecimal.ZERO,
+                        t -> t.getFinalAmount() != null ? t.getFinalAmount() : BigDecimal.ZERO,
+                        BigDecimal::add
+                    )
+                )
+            );
         EventTicketTransactionStatisticsDTO stats = new EventTicketTransactionStatisticsDTO();
         stats.setEventId(eventId);
         stats.setTotalTicketsSold(totalTicketsSold);

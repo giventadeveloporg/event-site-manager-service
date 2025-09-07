@@ -13,12 +13,12 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface EventAttendeeMapper extends EntityMapper<EventAttendeeDTO, EventAttendee> {
-   /* @Mapping(target = "event", source = "event", qualifiedByName = "eventDetailsId")
+    /* @Mapping(target = "event", source = "event", qualifiedByName = "eventDetailsId")
     @Mapping(target = "attendee", source = "attendee", qualifiedByName = "userProfileId")
 */
-//   EventAttendeeDTO toDto(EventAttendee s);
+    //   EventAttendeeDTO toDto(EventAttendee s);
 
-   /* @Override
+    /* @Override
     @Mappings({
         @Mapping(target = "firstName", source = "firstName"),
         @Mapping(target = "lastName", source = "lastName"),

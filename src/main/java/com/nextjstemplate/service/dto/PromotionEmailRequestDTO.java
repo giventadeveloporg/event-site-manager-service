@@ -8,7 +8,6 @@ public class PromotionEmailRequestDTO {
     @NotBlank
     private String tenantId;
 
-
     @Email
     private String to;
 
@@ -24,17 +23,32 @@ public class PromotionEmailRequestDTO {
     private String bodyHtml; // HTML content
 
     private String headerImagePath; // S3 path with {tenantId} placeholder
-    private String footerPath;      // S3 path with {tenantId} placeholder
+    private String footerPath; // S3 path with {tenantId} placeholder
 
     // Getters and setters
-    public String getTenantId() { return tenantId; }
-    public void setTenantId(String tenantId) { this.tenantId = tenantId; }
+    public String getTenantId() {
+        return tenantId;
+    }
 
-    public String getTo() { return to; }
-    public void setTo(String to) { this.to = to; }
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
 
-    public String getSubject() { return subject; }
-    public void setSubject(String subject) { this.subject = subject; }
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
 
     public String getPromoCode() {
         return promoCode;
@@ -44,14 +58,29 @@ public class PromotionEmailRequestDTO {
         this.promoCode = promoCode;
     }
 
-    public String getBodyHtml() { return bodyHtml; }
-    public void setBodyHtml(String bodyHtml) { this.bodyHtml = bodyHtml; }
+    public String getBodyHtml() {
+        return bodyHtml;
+    }
 
-    public String getHeaderImagePath() { return headerImagePath; }
-    public void setHeaderImagePath(String headerImagePath) { this.headerImagePath = headerImagePath; }
+    public void setBodyHtml(String bodyHtml) {
+        this.bodyHtml = bodyHtml;
+    }
 
-    public String getFooterPath() { return footerPath; }
-    public void setFooterPath(String footerPath) { this.footerPath = footerPath; }
+    public String getHeaderImagePath() {
+        return headerImagePath;
+    }
+
+    public void setHeaderImagePath(String headerImagePath) {
+        this.headerImagePath = headerImagePath;
+    }
+
+    public String getFooterPath() {
+        return footerPath;
+    }
+
+    public void setFooterPath(String footerPath) {
+        this.footerPath = footerPath;
+    }
 
     public boolean isTestEmail() {
         return isTestEmail;

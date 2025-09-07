@@ -63,20 +63,18 @@ public class EventMediaDTO implements Serializable {
     @Size(max = 2048)
     private String featuredVideoUrl;
 
-    private Boolean isFeaturedImage;
-
     private Boolean isHeroImage;
 
     private Boolean isActiveHeroImage;
-    
+
     @NotNull
     private Boolean isHomePageHeroImage;
 
     @NotNull
-    private Boolean isFeaturedEventStripImage;
+    private Boolean isFeaturedEventImage;
 
     @NotNull
-    private Boolean isLiveEventStripImage;
+    private Boolean isLiveEventImage;
 
     private Long eventId;
 
@@ -88,9 +86,7 @@ public class EventMediaDTO implements Serializable {
     @NotNull
     private ZonedDateTime updatedAt;
 
-
-
-   /* private EventDetailsDTO event;
+    /* private EventDetailsDTO event;
 
     private UserProfileDTO uploadedBy;*/
 
@@ -246,15 +242,6 @@ public class EventMediaDTO implements Serializable {
         this.featuredVideoUrl = featuredVideoUrl;
     }
 
-    public Boolean getIsFeaturedImage() {
-        return isFeaturedImage;
-    }
-
-    public void setIsFeaturedImage(Boolean isFeaturedImage) {
-        this.isFeaturedImage = isFeaturedImage;
-    }
-
-
     public Boolean getIsHeroImage() {
         return isHeroImage;
     }
@@ -270,8 +257,8 @@ public class EventMediaDTO implements Serializable {
     public void setIsActiveHeroImage(Boolean isActiveHeroImage) {
         this.isActiveHeroImage = isActiveHeroImage;
     }
-    
-     public Boolean getIsHomePageHeroImage() {
+
+    public Boolean getIsHomePageHeroImage() {
         return isHomePageHeroImage;
     }
 
@@ -279,20 +266,20 @@ public class EventMediaDTO implements Serializable {
         this.isHomePageHeroImage = isHomePageHeroImage;
     }
 
-    public Boolean getIsFeaturedEventStripImage() {
-        return isFeaturedEventStripImage;
+    public Boolean getIsFeaturedEventImage() {
+        return isFeaturedEventImage;
     }
 
-    public void setIsFeaturedEventStripImage(Boolean isFeaturedEventStripImage) {
-        this.isFeaturedEventStripImage = isFeaturedEventStripImage;
+    public void setIsFeaturedEventImage(Boolean isFeaturedEventImage) {
+        this.isFeaturedEventImage = isFeaturedEventImage;
     }
 
-    public Boolean getIsLiveEventStripImage() {
-        return isLiveEventStripImage;
+    public Boolean getIsLiveEventImage() {
+        return isLiveEventImage;
     }
 
-    public void setIsLiveEventStripImage(Boolean isLiveEventStripImage) {
-        this.isLiveEventStripImage = isLiveEventStripImage;
+    public void setIsLiveEventImage(Boolean isLiveEventImage) {
+        this.isLiveEventImage = isLiveEventImage;
     }
 
     public Long getEventId() {
@@ -302,6 +289,7 @@ public class EventMediaDTO implements Serializable {
     public void setEventId(Long eventId) {
         this.eventId = eventId;
     }
+
     public Long getUploadedById() {
         return uploadedById;
     }
@@ -325,8 +313,6 @@ public class EventMediaDTO implements Serializable {
     public void setUpdatedAt(ZonedDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-
 
     /*public EventDetailsDTO getEvent() {
         return event;
@@ -388,18 +374,15 @@ public class EventMediaDTO implements Serializable {
             ", downloadCount=" + getDownloadCount() +
             ", isFeaturedVideo='" + getIsFeaturedVideo() + "'" +
             ", featuredVideoUrl='" + getFeaturedVideoUrl() + "'" +
-            ", isFeaturedImage='" + getIsFeaturedImage() + "'" +
             ", isHeroImage='" + getIsHeroImage() + "'" +
             ", isActiveHeroImage='" + getIsActiveHeroImage() + "'" +
 			", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
-            ", isFeaturedEventStripImage='" + getIsFeaturedEventStripImage() + "'" +
-            ", isLiveEventStripImage='" + getIsLiveEventStripImage() + "'" +
+            ", isFeaturedEventImage='" + getIsFeaturedEventImage() + "'" +
+            ", isLiveEventImage='" + getIsLiveEventImage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
            /* ", event=" + getEvent() +
             ", uploadedBy=" + getUploadedBy() +*/
             "}";
     }
-
-
 }
