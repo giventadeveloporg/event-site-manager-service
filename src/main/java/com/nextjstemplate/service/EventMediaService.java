@@ -3,6 +3,8 @@ package com.nextjstemplate.service;
 import com.nextjstemplate.repository.EventMediaRepository;
 import com.nextjstemplate.service.dto.EventMediaDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -83,7 +85,8 @@ public interface EventMediaService {
         Long executiveTeamMemberID,
         boolean isHomePageHeroImage,
         boolean isFeaturedEventImage,
-        boolean isLiveEventImage
+        boolean isLiveEventImage,
+        LocalDate startDisplayingFromDate
     );
 
     /**
@@ -105,7 +108,8 @@ public interface EventMediaService {
         Long executiveTeamMemberID,
         boolean isHomePageHeroImage,
         boolean isFeaturedEventImage,
-        boolean isLiveEventImage
+        boolean isLiveEventImage,
+        LocalDate startDisplayingFromDate
     );
 
     List<EventMediaDTO> getEventMediaWithUrls(Long eventId, Long userProfileId, boolean includePrivate);

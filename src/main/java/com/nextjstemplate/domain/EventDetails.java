@@ -54,6 +54,10 @@ public class EventDetails implements Serializable {
     private LocalDate endDate;
 
     @NotNull
+    @Column(name = "promotion_start_date", nullable = false)
+    private LocalDate promotionStartDate;
+
+    @NotNull
     @Size(max = 100)
     @Column(name = "start_time", length = 100, nullable = false)
     private String startTime;
@@ -115,12 +119,12 @@ public class EventDetails implements Serializable {
     private Boolean isFeaturedEvent;
 
     @NotNull
-    @Column(name = "featured_event_priority", nullable = false)
-    private Integer featuredEventPriority;
+    @Column(name = "featured_event_priority_ranking", nullable = false)
+    private Integer featuredEventPriorityRanking;
 
     @NotNull
-    @Column(name = "live_event_priority", nullable = false)
-    private Integer liveEventPriority;
+    @Column(name = "live_event_priority_ranking", nullable = false)
+    private Integer liveEventPriorityRanking;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -238,6 +242,19 @@ public class EventDetails implements Serializable {
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+    }
+
+    public LocalDate getPromotionStartDate() {
+        return this.promotionStartDate;
+    }
+
+    public EventDetails promotionStartDate(LocalDate promotionStartDate) {
+        this.setPromotionStartDate(promotionStartDate);
+        return this;
+    }
+
+    public void setPromotionStartDate(LocalDate promotionStartDate) {
+        this.promotionStartDate = promotionStartDate;
     }
 
     public String getStartTime() {
@@ -461,30 +478,30 @@ public class EventDetails implements Serializable {
         this.isFeaturedEvent = isFeaturedEvent;
     }
 
-    public Integer getFeaturedEventPriority() {
-        return this.featuredEventPriority;
+    public Integer getFeaturedEventPriorityRanking() {
+        return this.featuredEventPriorityRanking;
     }
 
-    public EventDetails featuredEventPriority(Integer featuredEventPriority) {
-        this.setFeaturedEventPriority(featuredEventPriority);
+    public EventDetails featuredEventPriorityRanking(Integer featuredEventPriorityRanking) {
+        this.setFeaturedEventPriorityRanking(featuredEventPriorityRanking);
         return this;
     }
 
-    public void setFeaturedEventPriority(Integer featuredEventPriority) {
-        this.featuredEventPriority = featuredEventPriority;
+    public void setFeaturedEventPriorityRanking(Integer featuredEventPriorityRanking) {
+        this.featuredEventPriorityRanking = featuredEventPriorityRanking;
     }
 
-    public Integer getLiveEventPriority() {
-        return this.liveEventPriority;
+    public Integer getLiveEventPriorityRanking() {
+        return this.liveEventPriorityRanking;
     }
 
-    public EventDetails liveEventPriority(Integer liveEventPriority) {
-        this.setLiveEventPriority(liveEventPriority);
+    public EventDetails liveEventPriorityRanking(Integer liveEventPriorityRanking) {
+        this.setLiveEventPriorityRanking(liveEventPriorityRanking);
         return this;
     }
 
-    public void setLiveEventPriority(Integer liveEventPriority) {
-        this.liveEventPriority = liveEventPriority;
+    public void setLiveEventPriorityRanking(Integer liveEventPriorityRanking) {
+        this.liveEventPriorityRanking = liveEventPriorityRanking;
     }
 
     public ZonedDateTime getCreatedAt() {
@@ -592,6 +609,7 @@ public class EventDetails implements Serializable {
             ", description='" + getDescription() + "'" +
             ", startDate='" + getStartDate() + "'" +
             ", endDate='" + getEndDate() + "'" +
+            ", promotionStartDate='" + getPromotionStartDate() + "'" +
             ", startTime='" + getStartTime() + "'" +
             ", endTime='" + getEndTime() + "'" +
             ", timezone='" + getTimezone() + "'" +
@@ -609,8 +627,8 @@ public class EventDetails implements Serializable {
             ", isSportsEvent='" + getIsSportsEvent() + "'" +
             ", isLive='" + getIsLive() + "'" +
             ", isFeaturedEvent='" + getIsFeaturedEvent() + "'" +
-            ", featuredEventPriority=" + getFeaturedEventPriority() +
-            ", liveEventPriority=" + getLiveEventPriority() +
+            ", featuredEventPriorityRanking=" + getFeaturedEventPriorityRanking() +
+            ", liveEventPriorityRanking=" + getLiveEventPriorityRanking() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             "}";

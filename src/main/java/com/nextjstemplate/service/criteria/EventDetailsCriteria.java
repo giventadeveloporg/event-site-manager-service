@@ -36,6 +36,8 @@ public class EventDetailsCriteria implements Serializable, Criteria {
 
     private LocalDateFilter endDate;
 
+    private LocalDateFilter promotionStartDate;
+
     private StringFilter startTime;
 
     private StringFilter endTime;
@@ -69,9 +71,9 @@ public class EventDetailsCriteria implements Serializable, Criteria {
 
     private BooleanFilter isFeaturedEvent;
 
-    private IntegerFilter featuredEventPriority;
+    private IntegerFilter featuredEventPriorityRanking;
 
-    private IntegerFilter liveEventPriority;
+    private IntegerFilter liveEventPriorityRanking;
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -94,6 +96,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.description = other.description == null ? null : other.description.copy();
         this.startDate = other.startDate == null ? null : other.startDate.copy();
         this.endDate = other.endDate == null ? null : other.endDate.copy();
+        this.promotionStartDate = other.promotionStartDate == null ? null : other.promotionStartDate.copy();
         this.startTime = other.startTime == null ? null : other.startTime.copy();
         this.endTime = other.endTime == null ? null : other.endTime.copy();
         this.timezone = other.timezone == null ? null : other.timezone.copy();
@@ -111,8 +114,8 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.isSportsEvent = other.isSportsEvent == null ? null : other.isSportsEvent.copy();
         this.isLive = other.isLive == null ? null : other.isLive.copy();
         this.isFeaturedEvent = other.optionalIsFeaturedEvent().map(BooleanFilter::copy).orElse(null);
-        this.featuredEventPriority = other.optionalFeaturedEventPriority().map(IntegerFilter::copy).orElse(null);
-        this.liveEventPriority = other.optionalLiveEventPriority().map(IntegerFilter::copy).orElse(null);
+        this.featuredEventPriorityRanking = other.optionalFeaturedEventPriorityRanking().map(IntegerFilter::copy).orElse(null);
+        this.liveEventPriorityRanking = other.optionalLiveEventPriorityRanking().map(IntegerFilter::copy).orElse(null);
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.createdById = other.createdById == null ? null : other.createdById.copy();
@@ -229,6 +232,21 @@ public class EventDetailsCriteria implements Serializable, Criteria {
 
     public void setEndDate(LocalDateFilter endDate) {
         this.endDate = endDate;
+    }
+
+    public LocalDateFilter getPromotionStartDate() {
+        return promotionStartDate;
+    }
+
+    public LocalDateFilter promotionStartDate() {
+        if (promotionStartDate == null) {
+            promotionStartDate = new LocalDateFilter();
+        }
+        return promotionStartDate;
+    }
+
+    public void setPromotionStartDate(LocalDateFilter promotionStartDate) {
+        this.promotionStartDate = promotionStartDate;
     }
 
     public StringFilter getStartTime() {
@@ -490,42 +508,42 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.isFeaturedEvent = isFeaturedEvent;
     }
 
-    public IntegerFilter getFeaturedEventPriority() {
-        return featuredEventPriority;
+    public IntegerFilter getFeaturedEventPriorityRanking() {
+        return featuredEventPriorityRanking;
     }
 
-    public Optional<IntegerFilter> optionalFeaturedEventPriority() {
-        return Optional.ofNullable(featuredEventPriority);
+    public Optional<IntegerFilter> optionalFeaturedEventPriorityRanking() {
+        return Optional.ofNullable(featuredEventPriorityRanking);
     }
 
-    public IntegerFilter featuredEventPriority() {
-        if (featuredEventPriority == null) {
-            setFeaturedEventPriority(new IntegerFilter());
+    public IntegerFilter featuredEventPriorityRanking() {
+        if (featuredEventPriorityRanking == null) {
+            setFeaturedEventPriorityRanking(new IntegerFilter());
         }
-        return featuredEventPriority;
+        return featuredEventPriorityRanking;
     }
 
-    public void setFeaturedEventPriority(IntegerFilter featuredEventPriority) {
-        this.featuredEventPriority = featuredEventPriority;
+    public void setFeaturedEventPriorityRanking(IntegerFilter featuredEventPriorityRanking) {
+        this.featuredEventPriorityRanking = featuredEventPriorityRanking;
     }
 
-    public IntegerFilter getLiveEventPriority() {
-        return liveEventPriority;
+    public IntegerFilter getLiveEventPriorityRanking() {
+        return liveEventPriorityRanking;
     }
 
-    public Optional<IntegerFilter> optionalLiveEventPriority() {
-        return Optional.ofNullable(liveEventPriority);
+    public Optional<IntegerFilter> optionalLiveEventPriorityRanking() {
+        return Optional.ofNullable(liveEventPriorityRanking);
     }
 
-    public IntegerFilter liveEventPriority() {
-        if (liveEventPriority == null) {
-            setLiveEventPriority(new IntegerFilter());
+    public IntegerFilter liveEventPriorityRanking() {
+        if (liveEventPriorityRanking == null) {
+            setLiveEventPriorityRanking(new IntegerFilter());
         }
-        return liveEventPriority;
+        return liveEventPriorityRanking;
     }
 
-    public void setLiveEventPriority(IntegerFilter liveEventPriority) {
-        this.liveEventPriority = liveEventPriority;
+    public void setLiveEventPriorityRanking(IntegerFilter liveEventPriorityRanking) {
+        this.liveEventPriorityRanking = liveEventPriorityRanking;
     }
 
     public ZonedDateTimeFilter getCreatedAt() {
@@ -628,6 +646,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             Objects.equals(description, that.description) &&
             Objects.equals(startDate, that.startDate) &&
             Objects.equals(endDate, that.endDate) &&
+            Objects.equals(promotionStartDate, that.promotionStartDate) &&
             Objects.equals(startTime, that.startTime) &&
             Objects.equals(endTime, that.endTime) &&
             Objects.equals(timezone, that.timezone) &&
@@ -645,8 +664,8 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             Objects.equals(isSportsEvent, that.isSportsEvent) &&
             Objects.equals(isLive, that.isLive) &&
             Objects.equals(isFeaturedEvent, that.isFeaturedEvent) &&
-            Objects.equals(featuredEventPriority, that.featuredEventPriority) &&
-            Objects.equals(liveEventPriority, that.liveEventPriority) &&
+            Objects.equals(featuredEventPriorityRanking, that.featuredEventPriorityRanking) &&
+            Objects.equals(liveEventPriorityRanking, that.liveEventPriorityRanking) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(createdById, that.createdById) &&
@@ -666,6 +685,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             description,
             startDate,
             endDate,
+            promotionStartDate,
             startTime,
             endTime,
             timezone,
@@ -683,8 +703,8 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             isSportsEvent,
             isLive,
             isFeaturedEvent,
-            featuredEventPriority,
-            liveEventPriority,
+            featuredEventPriorityRanking,
+            liveEventPriorityRanking,
             createdAt,
             updatedAt,
             createdById,
@@ -705,6 +725,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             (description != null ? "description=" + description + ", " : "") +
             (startDate != null ? "startDate=" + startDate + ", " : "") +
             (endDate != null ? "endDate=" + endDate + ", " : "") +
+            (promotionStartDate != null ? "promotionStartDate=" + promotionStartDate + ", " : "") +
             (startTime != null ? "startTime=" + startTime + ", " : "") +
             (endTime != null ? "endTime=" + endTime + ", " : "") +
             (timezone != null ? "timezone=" + timezone + ", " : "") +
@@ -722,8 +743,8 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             (isSportsEvent != null ? "isSportsEvent=" + isSportsEvent + ", " : "") +
             (isLive != null ? "isLive=" + isLive + ", " : "") +
              optionalIsFeaturedEvent().map(f -> "isFeaturedEvent=" + f + ", ").orElse("") +
-            optionalFeaturedEventPriority().map(f -> "featuredEventPriority=" + f + ", ").orElse("") +
-            optionalLiveEventPriority().map(f -> "liveEventPriority=" + f + ", ").orElse("") +
+            optionalFeaturedEventPriorityRanking().map(f -> "featuredEventPriorityRanking=" + f + ", ").orElse("") +
+            optionalLiveEventPriorityRanking().map(f -> "liveEventPriorityRanking=" + f + ", ").orElse("") +
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
             (createdById != null ? "createdById=" + createdById + ", " : "") +

@@ -75,6 +75,8 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     private LongFilter uploadedById;
 
+    private LocalDateFilter startDisplayingFromDate;
+
     private Boolean distinct;
 
     public EventMediaCriteria() {}
@@ -111,6 +113,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.uploadedById = other.uploadedById == null ? null : other.uploadedById.copy();
         this.eventId = other.eventId == null ? null : other.eventId.copy();
         this.uploadedById = other.uploadedById == null ? null : other.uploadedById.copy();
+        this.startDisplayingFromDate = other.startDisplayingFromDate == null ? null : other.startDisplayingFromDate.copy();
         this.distinct = other.distinct;
     }
 
@@ -536,6 +539,21 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.uploadedById = uploadedById;
     }
 
+    public LocalDateFilter getStartDisplayingFromDate() {
+        return startDisplayingFromDate;
+    }
+
+    public LocalDateFilter startDisplayingFromDate() {
+        if (startDisplayingFromDate == null) {
+            startDisplayingFromDate = new LocalDateFilter();
+        }
+        return startDisplayingFromDate;
+    }
+
+    public void setStartDisplayingFromDate(LocalDateFilter startDisplayingFromDate) {
+        this.startDisplayingFromDate = startDisplayingFromDate;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -584,6 +602,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             Objects.equals(uploadedById, that.uploadedById) &&
             Objects.equals(eventId, that.eventId) &&
             Objects.equals(uploadedById, that.uploadedById) &&
+            Objects.equals(startDisplayingFromDate, that.startDisplayingFromDate) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -620,6 +639,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             uploadedById,
             eventId,
             uploadedById,
+            startDisplayingFromDate,
             distinct
         );
     }
@@ -658,6 +678,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             (uploadedById != null ? "uploadedById=" + uploadedById + ", " : "") +
             (eventId != null ? "eventId=" + eventId + ", " : "") +
             (uploadedById != null ? "uploadedById=" + uploadedById + ", " : "") +
+            (startDisplayingFromDate != null ? "startDisplayingFromDate=" + startDisplayingFromDate + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}";
     }

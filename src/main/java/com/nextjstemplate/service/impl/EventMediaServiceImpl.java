@@ -11,6 +11,8 @@ import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.dto.EventMediaDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
 import jakarta.persistence.EntityNotFoundException;
+
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -127,7 +129,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         Long executiveTeamMemberID,
         boolean isHomePageHeroImage,
         boolean isFeaturedEventImage,
-        boolean isLiveEventImage
+        boolean isLiveEventImage,
+        LocalDate startDisplayingFromDate
     ) {
         // Upload to S3
         String fileUrl = s3Service.uploadFile(file, eventId, title, tenantId, isTeamMemberProfileImage);
@@ -159,6 +162,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setIsHomePageHeroImage(isHomePageHeroImage);
             eventMedia.setIsFeaturedEventImage(isFeaturedEventImage);
             eventMedia.setIsLiveEventImage(isLiveEventImage);
+            eventMedia.setStartDisplayingFromDate(startDisplayingFromDate);
             eventMedia.setEventId(eventId);
             eventMedia.setUploadedById(userProfileId);
             // Optionally set event and uploadedBy if needed (requires fetching entities)
@@ -209,7 +213,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         Long executiveTeamMemberID,
         boolean isHomePageHeroImage,
         boolean isFeaturedEventImage,
-        boolean isLiveEventImage
+        boolean isLiveEventImage,
+        LocalDate startDisplayingFromDate
     ) {
         List<EventMediaDTO> result = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
@@ -232,7 +237,8 @@ public class EventMediaServiceImpl implements EventMediaService {
                 executiveTeamMemberID,
                 isHomePageHeroImage,
                 isFeaturedEventImage,
-                isLiveEventImage
+                isLiveEventImage,
+                startDisplayingFromDate
             );
             // Only add non-null results to the list
             if (uploadResult != null) {
@@ -299,7 +305,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         // download_count,
         // is_featured_video, featured_video_url, is_hero_image,
         // is_active_hero_image, is_home_page_hero_image, is_featured_event_image, is_live_event_image,
-        // created_at, updated_at, event_id, uploaded_by_id
+        // created_at, updated_at, event_id, uploaded_by_id, start_displaying_from
 
         dto.setId((Long) raw[0]);
         dto.setTenantId((String) raw[1]);
@@ -379,6 +385,15 @@ public class EventMediaServiceImpl implements EventMediaService {
 
         dto.setEventId((Long) raw[26]);
         dto.setUploadedById((Long) raw[27]);
+
+        // Handle LocalDate field that might come as java.sql.Date from database
+        if (raw[28] != null) {
+            if (raw[28] instanceof java.sql.Date) {
+                dto.setStartDisplayingFromDate(((java.sql.Date) raw[28]).toLocalDate());
+            } else {
+                dto.setStartDisplayingFromDate((java.time.LocalDate) raw[28]);
+            }
+        }
 
         return dto;
     }

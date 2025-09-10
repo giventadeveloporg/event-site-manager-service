@@ -1,9 +1,5 @@
 package com.nextjstemplate.web.rest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nextjstemplate.domain.EventMedia;
 import com.nextjstemplate.repository.EventMediaRepository;
 import com.nextjstemplate.service.EventMediaQueryService;
 import com.nextjstemplate.service.EventMediaService;
@@ -15,16 +11,6 @@ import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +27,13 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * REST controller for managing {@link com.nextjstemplate.domain.EventMedia}.
@@ -324,6 +317,7 @@ public class EventMediaResource {
         @RequestParam(value = "isHomePageHeroImage", required = false) Boolean isHomePageHeroImage,
         @RequestParam(value = "isFeaturedEventImage", required = false) Boolean isFeaturedEventImage,
         @RequestParam(value = "isLiveEventImage", required = false) Boolean isLiveEventImage,
+        @RequestParam(value = "startDisplayingFromDate", required = false) String startDisplayingFromDate,
         Authentication authentication
     ) throws URISyntaxException {
         log.debug("REST request to upload EventMedia file: {} for event: {}", file.getOriginalFilename(), eventId);
@@ -338,6 +332,17 @@ public class EventMediaResource {
         boolean isHomePageHeroImageValue = isHomePageHeroImage != null ? isHomePageHeroImage : false;
         boolean isFeaturedEventImageValue = isFeaturedEventImage != null ? isFeaturedEventImage : false;
         boolean isLiveEventImageValue = isLiveEventImage != null ? isLiveEventImage : false;
+
+        // Convert date string from ISO format (YYYY-MM-DD) to LocalDate
+        LocalDate startDisplayingFromDateIn = null;
+        if (startDisplayingFromDate != null && !startDisplayingFromDate.trim().isEmpty()) {
+            try {
+                startDisplayingFromDateIn = LocalDate.parse(startDisplayingFromDate);
+            } catch (Exception e) {
+                throw new BadRequestAlertException("Invalid date format for startDisplayingFromDate. Expected format: YYYY-MM-DD", ENTITY_NAME, "invalidDateFormat");
+            }
+        }
+
         EventMediaDTO result = eventMediaService.uploadFile(
             file,
             eventId,
@@ -354,7 +359,8 @@ public class EventMediaResource {
             executiveTeamMemberID,
             isHomePageHeroImageValue,
             isFeaturedEventImageValue,
-            isLiveEventImageValue
+            isLiveEventImageValue,
+            startDisplayingFromDateIn
         );
 
         // For team member profile images, return OK status instead of CREATED since no EventMedia record is created
@@ -397,6 +403,7 @@ public class EventMediaResource {
         @RequestParam(value = "isHomePageHeroImage", required = false) Boolean isHomePageHeroImage,
         @RequestParam(value = "isFeaturedEventImage", required = false) Boolean isFeaturedEventImage,
         @RequestParam(value = "isLiveEventImage", required = false) Boolean isLiveEventImage,
+        @RequestParam(value = "startDisplayingFromDate", required = false) String startDisplayingFromDate,
         Authentication authentication
     ) {
         log.debug("REST request to upload {} EventMedia files for event: {}", files.size(), eventId);
@@ -433,6 +440,16 @@ public class EventMediaResource {
         boolean isHomePageHeroImageValue = isHomePageHeroImage != null ? isHomePageHeroImage : false;
         boolean isFeaturedEventImageValue = isFeaturedEventImage != null ? isFeaturedEventImage : false;
         boolean isLiveEventImageValue = isLiveEventImage != null ? isLiveEventImage : false;
+
+        // Convert date string from ISO format (YYYY-MM-DD) to LocalDate
+        LocalDate startDisplayingFromDateIn = null;
+        if (startDisplayingFromDate != null && !startDisplayingFromDate.trim().isEmpty()) {
+            try {
+                startDisplayingFromDateIn = LocalDate.parse(startDisplayingFromDate);
+            } catch (Exception e) {
+                throw new BadRequestAlertException("Invalid date format for startDisplayingFromDate. Expected format: YYYY-MM-DD", ENTITY_NAME, "invalidDateFormat");
+            }
+        }
         List<EventMediaDTO> results = eventMediaService.uploadMultipleFiles(
             files,
             eventId,
@@ -449,7 +466,8 @@ public class EventMediaResource {
             executiveTeamMemberID,
             isHomePageHeroImageValue,
             isFeaturedEventImageValue,
-            isLiveEventImageValue
+            isLiveEventImageValue,
+            startDisplayingFromDateIn
         );
 
         /*  It's OK even if the result is null since this method is used by

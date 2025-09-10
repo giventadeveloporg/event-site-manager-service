@@ -165,8 +165,8 @@ entity EventDetails {
     isSportsEvent Boolean,
     isLive Boolean,
     isFeaturedEvent Boolean required,
-    featuredEventPriority Integer required,
-    liveEventPriority Integer required,
+    featuredEventPriorityRanking Integer required,
+    liveEventPriorityRanking Integer required,
     createdAt ZonedDateTime required,
     updatedAt ZonedDateTime required
 }

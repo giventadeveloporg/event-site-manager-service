@@ -3,6 +3,7 @@ package com.nextjstemplate.service.dto;
 import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -85,6 +86,8 @@ public class EventMediaDTO implements Serializable {
 
     @NotNull
     private ZonedDateTime updatedAt;
+
+    private LocalDate startDisplayingFromDate;
 
     /* private EventDetailsDTO event;
 
@@ -314,6 +317,14 @@ public class EventMediaDTO implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public LocalDate getStartDisplayingFromDate() {
+        return startDisplayingFromDate;
+    }
+
+    public void setStartDisplayingFromDate(LocalDate startDisplayingFromDate) {
+        this.startDisplayingFromDate = startDisplayingFromDate;
+    }
+
     /*public EventDetailsDTO getEvent() {
         return event;
     }
@@ -381,6 +392,7 @@ public class EventMediaDTO implements Serializable {
             ", isLiveEventImage='" + getIsLiveEventImage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
+            ", startDisplayingFromDate='" + getStartDisplayingFromDate() + "'" +
            /* ", event=" + getEvent() +
             ", uploadedBy=" + getUploadedBy() +*/
             "}";

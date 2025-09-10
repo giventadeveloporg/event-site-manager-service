@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -123,6 +124,9 @@ public class EventMedia implements Serializable {
 
     @Column(name = "uploaded_by_id")
     private Long uploadedById;
+
+    @Column(name = "start_displaying_from_date")
+    private LocalDate startDisplayingFromDate;
 
     /*
      * @ManyToOne(fetch = FetchType.LAZY)
@@ -504,6 +508,19 @@ public class EventMedia implements Serializable {
         this.uploadedById = uploadedById;
     }
 
+    public LocalDate getStartDisplayingFromDate() {
+        return this.startDisplayingFromDate;
+    }
+
+    public EventMedia startDisplayingFromDate(LocalDate startDisplayingFromDate) {
+        this.setStartDisplayingFromDate(startDisplayingFromDate);
+        return this;
+    }
+
+    public void setStartDisplayingFromDate(LocalDate startDisplayingFromDate) {
+        this.startDisplayingFromDate = startDisplayingFromDate;
+    }
+
     /*
      * public EventDetails getEvent() {
      * return this.event;
@@ -585,6 +602,7 @@ public class EventMedia implements Serializable {
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", eventId=" + getEventId() +
             ", uploadedById=" + getUploadedById() +
+            ", startDisplayingFromDate='" + getStartDisplayingFromDate() + "'" +
             "}";
     }
 }

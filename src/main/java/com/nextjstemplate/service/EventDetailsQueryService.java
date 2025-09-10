@@ -163,13 +163,13 @@ public class EventDetailsQueryService extends QueryService<EventDetails> {
             if (criteria.getIsFeaturedEvent() != null) {
                 specification = specification.and(buildSpecification(criteria.getIsFeaturedEvent(), EventDetails_.isFeaturedEvent));
             }
-            if (criteria.getFeaturedEventPriority() != null) {
+            if (criteria.getFeaturedEventPriorityRanking() != null) {
                 specification =
-                    specification.and(buildRangeSpecification(criteria.getFeaturedEventPriority(), EventDetails_.featuredEventPriority));
+                    specification.and(buildRangeSpecification(criteria.getFeaturedEventPriorityRanking(), EventDetails_.featuredEventPriorityRanking));
             }
-            if (criteria.getLiveEventPriority() != null) {
+            if (criteria.getLiveEventPriorityRanking() != null) {
                 specification =
-                    specification.and(buildRangeSpecification(criteria.getLiveEventPriority(), EventDetails_.liveEventPriority));
+                    specification.and(buildRangeSpecification(criteria.getLiveEventPriorityRanking(), EventDetails_.liveEventPriorityRanking));
             }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), EventDetails_.createdAt));
