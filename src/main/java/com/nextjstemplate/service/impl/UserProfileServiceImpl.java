@@ -68,14 +68,14 @@ public class UserProfileServiceImpl implements UserProfileService {
         log.debug("Request to partially update UserProfile : {}", userProfileDTO);
 
         return userProfileRepository
-            .findById(userProfileDTO.getId())
-            .map(existingUserProfile -> {
-                userProfileMapper.partialUpdate(existingUserProfile, userProfileDTO);
+                .findById(userProfileDTO.getId())
+                .map(existingUserProfile -> {
+                    userProfileMapper.partialUpdate(existingUserProfile, userProfileDTO);
 
-                return existingUserProfile;
-            })
-            .map(userProfileRepository::save)
-            .map(userProfileMapper::toDto);
+                    return existingUserProfile;
+                })
+                .map(userProfileRepository::save)
+                .map(userProfileMapper::toDto);
     }
 
     @Override
@@ -94,10 +94,10 @@ public class UserProfileServiceImpl implements UserProfileService {
     public List<UserProfileDTO> findAllWhereUserSubscriptionIsNull() {
         log.debug("Request to get all userProfiles where UserSubscription is null");
         return StreamSupport
-            .stream(userProfileRepository.findAll().spliterator(), false)
-            .filter(userProfile -> userProfile.getUserSubscription() == null)
-            .map(userProfileMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
+                .stream(userProfileRepository.findAll().spliterator(), false)
+                .filter(userProfile -> userProfile.getUserSubscription() == null)
+                .map(userProfileMapper::toDto)
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
@@ -138,7 +138,9 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Transactional(readOnly = true)
     public String getUnsubscribeTokenByEmailAndTenantId(String email, String tenantId) {
         log.debug("Request to get unsubscribe token by email {} and tenantId {}", email, tenantId);
-        return userProfileRepository.findByEmailAndTenantId(email, tenantId).map(UserProfile::getEmailSubscriptionToken).orElse(null);
+        return userProfileRepository.findByEmailAndTenantId(email, tenantId)
+                .map(UserProfile::getEmailSubscriptionToken)
+                .orElse(null);
     }
 
     @Override
@@ -151,14 +153,13 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Override
     @Transactional(readOnly = true)
     public List<UserProfileDTO> findSubscribedUsersByTenantIdWithPagination(String tenantId, int limit, int offset) {
-        log.debug("Request to get subscribed users for tenantId {} with limit {} and offset {}", tenantId, limit, offset);
+        log.debug("Request to get subscribed users for tenantId {} with limit {} and offset {}", tenantId, limit,
+                offset);
         Pageable pageable = PageRequest.of(offset / limit, limit);
-        return userProfileRepository
-            .findSubscribedUsersByTenantIdWithPagination(tenantId, pageable)
-            .getContent()
-            .stream()
-            .map(userProfileMapper::toDto)
-            .collect(Collectors.toList());
+        Page<UserProfile> page = userProfileRepository.findSubscribedUsersByTenantIdWithPagination(tenantId, pageable);
+        return page.getContent().stream()
+                .map(userProfileMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -175,47 +176,42 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         // Filter out users with email and tenant ID combination that already exist in
         // the database
-        List<UserProfileDTO> filteredUsers = userProfileDTOs
-            .stream()
-            .filter(userProfileDTO -> {
-                if (userProfileDTO.getEmail() == null || userProfileDTO.getEmail().trim().isEmpty()) {
-                    return false; // Skip users without email
-                }
-                if (userProfileDTO.getTenantId() == null || userProfileDTO.getTenantId().trim().isEmpty()) {
-                    return false; // Skip users without tenant ID
-                }
-                Optional<UserProfile> existingUser = userProfileRepository.findByEmailAndTenantId(
-                    userProfileDTO.getEmail(),
-                    userProfileDTO.getTenantId()
-                );
-                return existingUser.isEmpty(); // Only include if email and tenant ID combination doesn't exist
-            })
-            .collect(Collectors.toList());
+        List<UserProfileDTO> filteredUsers = userProfileDTOs.stream()
+                .filter(userProfileDTO -> {
+                    if (userProfileDTO.getEmail() == null || userProfileDTO.getEmail().trim().isEmpty()) {
+                        return false; // Skip users without email
+                    }
+                    if (userProfileDTO.getTenantId() == null || userProfileDTO.getTenantId().trim().isEmpty()) {
+                        return false; // Skip users without tenant ID
+                    }
+                    Optional<UserProfile> existingUser = userProfileRepository.findByEmailAndTenantId(
+                            userProfileDTO.getEmail(), userProfileDTO.getTenantId());
+                    return existingUser.isEmpty(); // Only include if email and tenant ID combination doesn't exist
+                })
+                .collect(Collectors.toList());
 
-        log.debug(
-            "Filtered {} users to {} after removing existing email and tenant ID combinations",
-            userProfileDTOs.size(),
-            filteredUsers.size()
-        );
+        log.debug("Filtered {} users to {} after removing existing email and tenant ID combinations",
+                userProfileDTOs.size(), filteredUsers.size());
 
         // Map each DTO to a domain/entity object
-        List<UserProfile> domainList = filteredUsers
-            .stream()
-            .map(userProfileMapper::toEntity)
-            .peek(userProfile -> {
-                if (userProfile.getUserRole() == null) {
-                    userProfile.setUserRole(UserRoleType.MEMBER.name()); // Set a default role
-                }
-                if (userProfile.getUserStatus() == null) {
-                    userProfile.setUserStatus(UserStatusType.PENDING_APPROVAL.name()); // Set a default status
-                }
-            })
-            .collect(Collectors.toList());
+        List<UserProfile> domainList = filteredUsers.stream()
+                .map(userProfileMapper::toEntity)
+                .peek(userProfile -> {
+                    if (userProfile.getUserRole() == null) {
+                        userProfile.setUserRole(UserRoleType.MEMBER.name()); // Set a default role
+                    }
+                    if (userProfile.getUserStatus() == null) {
+                        userProfile.setUserStatus(UserStatusType.PENDING_APPROVAL.name()); // Set a default status
+                    }
+                })
+                .collect(Collectors.toList());
 
         // Save all domain objects in the repository
         List<UserProfile> saved = userProfileRepository.saveAll(domainList);
 
         // Map saved entities back to DTOs
-        return saved.stream().map(userProfileMapper::toDto).collect(Collectors.toList());
+        return saved.stream()
+                .map(userProfileMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

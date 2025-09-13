@@ -1722,6 +1722,7 @@ COMMENT ON TABLE public.tenant_organization IS 'Multi-tenant organization config
 CREATE TABLE public.tenant_settings (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
     tenant_id character varying(255) NOT NULL,
+    tenant_organization_id bigint,
     allow_user_registration boolean DEFAULT true,
     require_admin_approval boolean DEFAULT false,
     enable_whatsapp_integration boolean DEFAULT false,
@@ -1744,11 +1745,15 @@ CREATE TABLE public.tenant_settings (
     CONSTRAINT check_max_guests_positive CHECK (((max_guests_per_attendee IS NULL) OR (max_guests_per_attendee >= 0))),
     CONSTRAINT tenant_settings_pkey PRIMARY KEY (id),
     CONSTRAINT tenant_settings_tenant_id_key UNIQUE (tenant_id),
-    CONSTRAINT fk_tenant_settings__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE
+    CONSTRAINT fk_tenant_settings__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE,
+    CONSTRAINT fk_tenant_settings_organization_id FOREIGN KEY (tenant_organization_id) REFERENCES public.tenant_organization(id) ON DELETE CASCADE
 );
 
 
 -- ALTER TABLE public.tenant_settings OWNER TO giventa_event_management;
+
+-- Index for tenant_organization_id foreign key for better query performance
+CREATE INDEX idx_tenant_settings_organization_id ON public.tenant_settings(tenant_organization_id);
 
 --
 -- TOC entry 3988 (class 0 OID 0)
@@ -1757,6 +1762,8 @@ CREATE TABLE public.tenant_settings (
 --
 
 COMMENT ON TABLE public.tenant_settings IS 'Tenant-specific configuration settings with enhanced options';
+
+COMMENT ON COLUMN public.tenant_settings.tenant_organization_id IS 'Foreign key reference to tenant_organization.id for standard Long->Long relationship';
 
 
 

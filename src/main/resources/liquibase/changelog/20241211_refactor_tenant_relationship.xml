@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="20241211-01-add-tenant-organization-id-column" author="claude">
+        <comment>Add tenant_organization_id column to tenant_settings table for standard Long->Long relationship</comment>
+
+        <addColumn tableName="tenant_settings">
+            <column name="tenant_organization_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20241211-02-create-foreign-key-constraint" author="claude">
+        <comment>Create foreign key constraint between tenant_settings and tenant_organization using Long IDs</comment>
+
+        <addForeignKeyConstraint
+            baseTableName="tenant_settings"
+            baseColumnNames="tenant_organization_id"
+            constraintName="fk_tenant_settings_organization_id"
+            referencedTableName="tenant_organization"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="20241211-03-migrate-existing-data" author="claude">
+        <comment>Migrate existing data to populate tenant_organization_id by matching tenant_id values</comment>
+
+        <sql>
+            UPDATE tenant_settings ts
+            SET tenant_organization_id = to.id
+            FROM tenant_organization to
+            WHERE ts.tenant_id = to.tenant_id;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20241211-04-make-tenant-org-id-not-null" author="claude">
+        <comment>Make tenant_organization_id NOT NULL after data migration</comment>
+
+        <addNotNullConstraint
+            tableName="tenant_settings"
+            columnName="tenant_organization_id"
+            columnDataType="bigint"/>
+    </changeSet>
+
+    <changeSet id="20241211-05-add-index-for-performance" author="claude">
+        <comment>Add index on tenant_organization_id for better query performance</comment>
+
+        <createIndex
+            tableName="tenant_settings"
+            indexName="idx_tenant_settings_organization_id">
+            <column name="tenant_organization_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
+
+

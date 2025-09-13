@@ -52,7 +52,7 @@
     <include file="config/liquibase/changelog/20250624034356_added_entity_WhatsAppLog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250624034456_added_entity_CommunicationCampaign.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250625212141_added_entity_EventTicketTransactionItem.xml" relativeToChangelogFile="false"/>
-    
+
     <!-- Constraints changelogs -->
     <include file="config/liquibase/changelog/20250422195856_added_entity_constraints_UserProfile.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250422195956_added_entity_constraints_UserSubscription.xml" relativeToChangelogFile="false"/>
@@ -84,10 +84,11 @@
     <include file="config/liquibase/changelog/20250624034356_added_entity_constraints_WhatsAppLog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250624034456_added_entity_constraints_CommunicationCampaign.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250625212141_added_entity_constraints_EventTicketTransactionItem.xml" relativeToChangelogFile="false"/>
-    
+
     <!-- Additional changelog -->
     <include file="config/liquibase/changelog/20241201_add_email_indexes.xml" relativeToChangelogFile="false"/>
-    
+    <include file="config/liquibase/changelog/20241211_refactor_tenant_relationship.xml" relativeToChangelogFile="false"/>
+
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
