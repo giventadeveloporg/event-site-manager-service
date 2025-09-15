@@ -9,47 +9,47 @@ INSERT INTO public.event_type_details VALUES (5, 'tenant_demo_001', 'Dinner', 'V
 INSERT INTO public.event_type_details VALUES (6, 'tenant_demo_001', 'Festival', 'Summer festival', '#3B82F6', NULL, true, 0, '2025-06-22 11:31:26.181502', '2025-06-22 11:31:26.181502');
 
 INSERT INTO public.user_profile VALUES (
-                                           1, 'tenant_demo_001', 'user001', 'Alice', 'Johnson', 'alice.johnson@example.com', '555-1001', '123 Main St', NULL, 'Springfield', 'IL', '62701', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
-                                           false, NULL, false, -- is_email_subscribed, email_subscription_token, is_email_subscription_token_used
-                                           'ACTIVE', 'MEMBER', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-                                       );
+  1, 'tenant_demo_001', 'user001', 'Alice', 'Johnson', 'alice.johnson@example.com', '555-1001', '123 Main St', NULL, 'Springfield', 'IL', '62701', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
+  false, NULL, false, -- is_email_subscribed, email_subscription_token, is_email_subscription_token_used
+  'ACTIVE', 'MEMBER', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+);
 
 INSERT INTO public.user_profile VALUES (
-                                           2, 'tenant_demo_001', 'user002', 'Bob', 'Smith', 'bob.smith@example.com', '555-1002', '456 Oak Ave', NULL, 'Springfield', 'IL', '62702', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
-                                           false, NULL, false,
-                                           'ACTIVE', 'ADMIN', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-                                       );
+  2, 'tenant_demo_001', 'user002', 'Bob', 'Smith', 'bob.smith@example.com', '555-1002', '456 Oak Ave', NULL, 'Springfield', 'IL', '62702', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
+  false, NULL, false,
+  'ACTIVE', 'ADMIN', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+);
 
 INSERT INTO public.user_profile VALUES (
-                                           3, 'tenant_demo_001', 'user003', 'Carol', 'Williams', 'carol.williams@example.com', '555-1003', '789 Pine Rd', NULL, 'Springfield', 'IL', '62703', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
-                                           false, NULL, false,
-                                           'INACTIVE', 'VOLUNTEER', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-                                       );
+  3, 'tenant_demo_001', 'user003', 'Carol', 'Williams', 'carol.williams@example.com', '555-1003', '789 Pine Rd', NULL, 'Springfield', 'IL', '62703', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
+  false, NULL, false,
+  'INACTIVE', 'VOLUNTEER', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+);
 
 INSERT INTO public.user_profile VALUES (
-                                           4, 'tenant_demo_001', 'user004', 'David', 'Brown', 'david.brown@example.com', '555-1004', '321 Maple St', NULL, 'Springfield', 'IL', '62704', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
-                                           false, NULL, false,
-                                           'PENDING_APPROVAL', 'ORGANIZER', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-                                       );
+  4, 'tenant_demo_001', 'user004', 'David', 'Brown', 'david.brown@example.com', '555-1004', '321 Maple St', NULL, 'Springfield', 'IL', '62704', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
+  false, NULL, false,
+  'PENDING_APPROVAL', 'ORGANIZER', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+);
 
 INSERT INTO public.user_profile VALUES (
-                                           5, 'tenant_demo_001', 'user005', 'Eve', 'Davis', 'eve.davis@example.com', '555-1005', '654 Cedar Ave', NULL, 'Springfield', 'IL', '62705', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
-                                           false, NULL, false,
-                                           'SUSPENDED', 'SUPER_ADMIN', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-                                       );
+  5, 'tenant_demo_001', 'user005', 'Eve', 'Davis', 'eve.davis@example.com', '555-1005', '654 Cedar Ave', NULL, 'Springfield', 'IL', '62705', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
+  false, NULL, false,
+  'SUSPENDED', 'SUPER_ADMIN', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+);
 
 INSERT INTO public.user_profile VALUES (
-                                           6, 'tenant_demo_001', 'user006', 'Frank', 'Miller', 'frank.miller@example.com', '555-1006', '987 Birch Blvd', NULL, 'Springfield', 'IL', '62706', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
-                                           false, NULL, false,
-                                           'BANNED', 'MEMBER', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-                                       );
+  6, 'tenant_demo_001', 'user006', 'Frank', 'Miller', 'frank.miller@example.com', '555-1006', '987 Birch Blvd', NULL, 'Springfield', 'IL', '62706', 'USA', NULL, NULL, NULL, NULL, NULL, NULL,
+  false, NULL, false,
+  'BANNED', 'MEMBER', NULL, NULL, '2025-06-22 11:31:26.252573', '2025-06-22 11:31:26.252573', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+);
 
 INSERT INTO public.user_profile VALUES (
-                                           4651, 'tenant_demo_001', 'user_2vVLxhPnsIPGYf6qpfozk383Slr', 'Gain Joseph', 'Joseph', 'giventauser@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                                           'https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18ydlZMeGVDUnFWTnpkTDBLUXMySXNWekFBVG8ifQ',
-                                           false, NULL, false,
-                                           'PENDING_APPROVAL', 'MEMBER', NULL, NULL, '2025-06-22 16:44:08.782', '2025-06-22 23:01:49.434045', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-                                       );
+  4651, 'tenant_demo_001', 'user_2vVLxhPnsIPGYf6qpfozk383Slr', 'Gain Joseph', 'Joseph', 'giventauser@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+  'https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18ydlZMeGVDUnFWTnpkTDBLUXMySXNWekFBVG8ifQ',
+  false, NULL, false,
+  'PENDING_APPROVAL', 'MEMBER', NULL, NULL, '2025-06-22 16:44:08.782', '2025-06-22 23:01:49.434045', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+);
 
 INSERT INTO public.event_details
 (id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
@@ -108,12 +108,12 @@ INSERT INTO public.event_admin_audit_log VALUES (6, 'tenant_demo_001', 'DELETE',
 INSERT INTO public.event_attendee (
     id, tenant_id, event_id, user_id, registration_status, registration_date, confirmation_date, cancellation_date, cancellation_reason, attendee_type, special_requirements, dietary_restrictions, accessibility_needs, emergency_contact_name, emergency_contact_phone, emergency_contact_relationship, total_number_of_guests, number_of_guests_checked_in, check_in_status, check_in_time, check_out_time, attendance_rating, feedback, notes, qr_code_data, qr_code_generated, qr_code_generated_at, registration_source, waitlist_position, priority_score, created_at, updated_at, first_name, last_name, email, phone, is_member
 ) VALUES
-      (1, 'tenant_demo_001', 1, 1, 'CONFIRMED', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'MEMBER', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CHECKED_IN', NULL, NULL, NULL, NULL, NULL, 'ATTENDEE:1|EVENT:1|TENANT:tenant_demo_001|NAME:Alice Johnson|EVENT_TITLE:Tech Conference|TIMESTAMP:1750606286.559053|TYPE:MEMBER', true, '2025-06-22 11:31:26.559053', 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'Alice', 'Johnson', 'alice.johnson@example.com', '555-1001', true),
-      (2, 'tenant_demo_001', 1, 2, 'CONFIRMED', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'ADMIN', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NOT_CHECKED_IN', NULL, NULL, NULL, NULL, NULL, 'ATTENDEE:2|EVENT:1|TENANT:tenant_demo_001|NAME:Bob Smith|EVENT_TITLE:Tech Conference|TIMESTAMP:1750606286.559053|TYPE:ADMIN', true, '2025-06-22 11:31:26.559053', 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'Bob', 'Smith', 'bob.smith@example.com', '555-1002', true),
-      (3, 'tenant_demo_001', 2, 3, 'PENDING', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'VOLUNTEER', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NOT_CHECKED_IN', NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'Carol', 'Williams', 'carol.williams@example.com', '555-1003', false),
-      (4, 'tenant_demo_001', 3, 4, 'WAITLISTED', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'ORGANIZER', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NOT_CHECKED_IN', NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'David', 'Brown', 'david.brown@example.com', '555-1004', true),
-      (5, 'tenant_demo_001', 4, 5, 'CANCELLED', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'SUPER_ADMIN', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NO_SHOW', NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'Eve', 'Davis', 'eve.davis@example.com', '555-1005', false),
-      (6, 'tenant_demo_001', 5, 6, 'CONFIRMED', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'MEMBER', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CHECKED_IN', NULL, NULL, NULL, NULL, NULL, 'ATTENDEE:6|EVENT:5|TENANT:tenant_demo_001|NAME:Frank Miller|EVENT_TITLE:Summer Fest|TIMESTAMP:1750606286.559053|TYPE:MEMBER', true, '2025-06-22 11:31:26.559053', 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'Frank', 'Miller', 'frank.miller@example.com', '555-1006', true);
+(1, 'tenant_demo_001', 1, 1, 'CONFIRMED', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'MEMBER', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CHECKED_IN', NULL, NULL, NULL, NULL, NULL, 'ATTENDEE:1|EVENT:1|TENANT:tenant_demo_001|NAME:Alice Johnson|EVENT_TITLE:Tech Conference|TIMESTAMP:1750606286.559053|TYPE:MEMBER', true, '2025-06-22 11:31:26.559053', 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'Alice', 'Johnson', 'alice.johnson@example.com', '555-1001', true),
+(2, 'tenant_demo_001', 1, 2, 'CONFIRMED', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'ADMIN', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NOT_CHECKED_IN', NULL, NULL, NULL, NULL, NULL, 'ATTENDEE:2|EVENT:1|TENANT:tenant_demo_001|NAME:Bob Smith|EVENT_TITLE:Tech Conference|TIMESTAMP:1750606286.559053|TYPE:ADMIN', true, '2025-06-22 11:31:26.559053', 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'Bob', 'Smith', 'bob.smith@example.com', '555-1002', true),
+(3, 'tenant_demo_001', 2, 3, 'PENDING', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'VOLUNTEER', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NOT_CHECKED_IN', NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'Carol', 'Williams', 'carol.williams@example.com', '555-1003', false),
+(4, 'tenant_demo_001', 3, 4, 'WAITLISTED', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'ORGANIZER', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NOT_CHECKED_IN', NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'David', 'Brown', 'david.brown@example.com', '555-1004', true),
+(5, 'tenant_demo_001', 4, 5, 'CANCELLED', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'SUPER_ADMIN', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NO_SHOW', NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'Eve', 'Davis', 'eve.davis@example.com', '555-1005', false),
+(6, 'tenant_demo_001', 5, 6, 'CONFIRMED', '2025-06-22 11:31:26.559053', NULL, NULL, NULL, 'MEMBER', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'CHECKED_IN', NULL, NULL, NULL, NULL, NULL, 'ATTENDEE:6|EVENT:5|TENANT:tenant_demo_001|NAME:Frank Miller|EVENT_TITLE:Summer Fest|TIMESTAMP:1750606286.559053|TYPE:MEMBER', true, '2025-06-22 11:31:26.559053', 'DIRECT', NULL, 0, '2025-06-22 11:31:26.559053', '2025-06-22 11:31:26.559053', 'Frank', 'Miller', 'frank.miller@example.com', '555-1006', true);
 
 
 INSERT INTO public.event_attendee_guest VALUES (1, 'tenant_demo_001', 1, 'CHILD', 'CHILD', NULL, NULL, NULL, 'CONFIRMED', 'CHECKED_IN', NULL, NULL, 'PENDING', NULL, NULL, NULL, NULL, 0.00, 'PENDING', NULL, '2025-06-22 11:31:26.631934', '2025-06-22 11:31:26.631934', 'Sally', 'Guest', 'sally.guest@example.com', '555-2001');
@@ -228,7 +228,7 @@ INSERT INTO public.event_media
 VALUES(5402, 'tenant_demo_001', 'khnk', NULL, 'image/png', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/khnj_onam_2025_1920px_with_bgc_1757362420545_1f202d92.png', NULL, NULL, 610808, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/khnj_onam_2025_1920px_with_bgc_1757362420545_1f202d92.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250908T201341Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250908%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=26e42a666e09bc9746d8d70b17835b513d1030ab54d5c27afcf3be9261bc3025', NULL, NULL, NULL, NULL, false, '', false, false, '2025-09-08', '2025-09-08 20:13:41.173', '2025-09-09 18:30:53.715', 1, 4651, true, false, false);
 INSERT INTO public.event_media
 (id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
-VALUES(5451, 'tenant_demo_001', 'khnj live and feature', '', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/khnj_onam_2025_1920px_1757429409289_4693cd88.jpg', NULL, NULL, 246487, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/khnj_onam_2025_1920px_1757429409289_4693cd88.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250909T145010Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250909%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=4ee19c1217837ca7002149666f76c23868cad2d68902614eb2e24d647a693437', NULL, '', NULL, NULL, false, '', true, false, '2025-09-09', '2025-09-09 14:50:10.906', '2025-09-09 20:06:20.229', 1, 4651, true, true, true);
+VALUES(5451, 'tenant_demo_001', 'khnj live and feature', '', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/khnj_onam_2025_1920px_1757429409289_4693cd88.jpg', NULL, NULL, 246487, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/khnj_onam_2025_1920px_1757429409289_4693cd88.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250909T145010Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250909%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=4ee19c1217837ca7002149666f76c23868cad2d68902614eb2e24d647a693437', NULL, '', NULL, NULL, false, '', true, false, '2025-09-09', '2025-09-09 14:50:10.906', '2025-09-09 20:06:20.229', 1, 4651, true, true, true);	 
 
 INSERT INTO public.event_organizer VALUES (1, 'tenant_demo_001', 'Lead Organizer', 'Manager', 'lead1@example.com', '555-3001', true, 1, 'Lead for Spring Gala', 'https://example.com/lead1.jpg', '2025-06-22 11:31:26.928238', '2025-06-22 11:31:26.928238', 1, 1);
 INSERT INTO public.event_organizer VALUES (2, 'tenant_demo_001', 'Co-Organizer', 'Assistant', 'co2@example.com', '555-3002', false, 2, 'Co-lead for Tech Conference', 'https://example.com/co2.jpg', '2025-06-22 11:31:26.928238', '2025-06-22 11:31:26.928238', 2, 2);
@@ -298,12 +298,12 @@ INSERT INTO public.event_ticket_type VALUES (4751, 'tenant_demo_001', 'zxzxz', '
 INSERT INTO public.event_ticket_transaction (
     id, tenant_id,  email, first_name, last_name, phone, quantity, price_per_unit, total_amount, tax_amount, platform_fee_amount, discount_code_id, discount_amount, final_amount, status, payment_method, payment_reference, stripe_checkout_session_id, stripe_payment_intent_id, purchase_date, confirmation_sent_at, refund_amount, refund_date, refund_reason, stripe_customer_id, stripe_payment_status, stripe_customer_email, stripe_payment_currency, stripe_amount_discount, stripe_amount_tax, stripe_fee_amount, qr_code_image_url, event_id, user_id, created_at, updated_at, number_of_guests_checked_in, check_in_status, check_in_time, check_out_time
 ) VALUES
-      (1, 'tenant_demo_001',  'alice.johnson@example.com', 'Alice', 'Johnson', '555-1001', 2, 50.00, 100.00, 5.00, 2.00, 1, 10.00, 87.00, 'COMPLETED', 'CARD', 'REF001', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL),
-      (2, 'tenant_demo_001',  'bob.smith@example.com', 'Bob', 'Smith', '555-1002', 1, 200.00, 200.00, 10.00, 5.00, 2, 20.00, 185.00, 'COMPLETED', 'CARD', 'REF002', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2, 2, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL),
-      (3, 'tenant_demo_001',  'carol.williams@example.com', 'Carol', 'Williams', '555-1003', 3, 0.00, 0.00, 0.00, 0.00, 3, 0.00, 0.00, 'COMPLETED', 'CASH', 'REF003', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3, 3, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL),
-      (4, 'tenant_demo_001',  'david.brown@example.com', 'David', 'Brown', '555-1004', 4, 20.00, 80.00, 4.00, 1.00, 4, 5.00, 70.00, 'COMPLETED', 'CARD', 'REF004', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 4, 4, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL),
-      (5, 'tenant_demo_001',  'eve.davis@example.com', 'Eve', 'Davis', '555-1005', 1, 100.00, 100.00, 5.00, 2.00, 5, 10.00, 87.00, 'COMPLETED', 'CARD', 'REF005', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 5, 5, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL),
-      (6, 'tenant_demo_001',  'frank.miller@example.com', 'Frank', 'Miller', '555-1006', 2, 30.00, 60.00, 3.00, 1.00, 6, 2.00, 54.00, 'COMPLETED', 'CARD', 'REF006', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 6, 6, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL);
+(1, 'tenant_demo_001',  'alice.johnson@example.com', 'Alice', 'Johnson', '555-1001', 2, 50.00, 100.00, 5.00, 2.00, 1, 10.00, 87.00, 'COMPLETED', 'CARD', 'REF001', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL),
+(2, 'tenant_demo_001',  'bob.smith@example.com', 'Bob', 'Smith', '555-1002', 1, 200.00, 200.00, 10.00, 5.00, 2, 20.00, 185.00, 'COMPLETED', 'CARD', 'REF002', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2, 2, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL),
+(3, 'tenant_demo_001',  'carol.williams@example.com', 'Carol', 'Williams', '555-1003', 3, 0.00, 0.00, 0.00, 0.00, 3, 0.00, 0.00, 'COMPLETED', 'CASH', 'REF003', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3, 3, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL),
+(4, 'tenant_demo_001',  'david.brown@example.com', 'David', 'Brown', '555-1004', 4, 20.00, 80.00, 4.00, 1.00, 4, 5.00, 70.00, 'COMPLETED', 'CARD', 'REF004', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 4, 4, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL),
+(5, 'tenant_demo_001',  'eve.davis@example.com', 'Eve', 'Davis', '555-1005', 1, 100.00, 100.00, 5.00, 2.00, 5, 10.00, 87.00, 'COMPLETED', 'CARD', 'REF005', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 5, 5, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL),
+(6, 'tenant_demo_001',  'frank.miller@example.com', 'Frank', 'Miller', '555-1006', 2, 30.00, 60.00, 3.00, 1.00, 6, 2.00, 54.00, 'COMPLETED', 'CARD', 'REF006', NULL, NULL, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 6, 6, '2025-06-22 11:31:27.363866', '2025-06-22 11:31:27.363866', NULL, NULL, NULL, NULL);
 
 
 INSERT INTO public.qr_code_usage VALUES (1, 'tenant_demo_001', 1, 'QR1', 'CHECK_IN', '2025-06-22 11:31:27.426132', NULL, NULL, 0, 1, NULL, NULL, NULL, NULL, true, NULL, NULL, '2025-06-22 11:31:27.426132');
@@ -319,24 +319,24 @@ INSERT INTO public.tenant_organization VALUES (4, 'tenant_demo_004', 'Family Org
 INSERT INTO public.tenant_organization VALUES (5, 'tenant_demo_005', 'VIP Org', NULL, NULL, NULL, NULL, 'contact5@example.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, true, '2025-06-22 11:31:27.518852', '2025-06-22 11:31:27.518852');
 INSERT INTO public.tenant_organization VALUES (6, 'tenant_demo_006', 'Summer Org', NULL, NULL, NULL, NULL, 'contact6@example.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, true, '2025-06-22 11:31:27.518852', '2025-06-22 11:31:27.518852');
 
-INSERT INTO public.tenant_settings
-(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
-VALUES(1, 'tenant_demo_001', true, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 5, 100, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 1);
-INSERT INTO public.tenant_settings
-(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
-VALUES(2, 'tenant_demo_002', true, true, true, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 10, 200, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 2);
-INSERT INTO public.tenant_settings
-(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
-VALUES(3, 'tenant_demo_003', false, false, false, true, NULL, NULL, NULL, NULL, NULL, NULL, false, 3, 50, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 3);
-INSERT INTO public.tenant_settings
-(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
-VALUES(4, 'tenant_demo_004', true, false, true, true, NULL, NULL, NULL, NULL, NULL, NULL, true, 8, 150, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 4);
-INSERT INTO public.tenant_settings
-(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
-VALUES(5, 'tenant_demo_005', true, true, false, true, NULL, NULL, NULL, NULL, NULL, NULL, false, 2, 75, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 5);
-INSERT INTO public.tenant_settings
-(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
-VALUES(6, 'tenant_demo_006', false, true, true, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 6, 120, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 6);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(1, 'tenant_demo_001', true, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 5, 100, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 1);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(2, 'tenant_demo_002', true, true, true, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 10, 200, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 2);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(3, 'tenant_demo_003', false, false, false, true, NULL, NULL, NULL, NULL, NULL, NULL, false, 3, 50, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 3);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(4, 'tenant_demo_004', true, false, true, true, NULL, NULL, NULL, NULL, NULL, NULL, true, 8, 150, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 4);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(5, 'tenant_demo_005', true, true, false, true, NULL, NULL, NULL, NULL, NULL, NULL, false, 2, 75, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 5);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(6, 'tenant_demo_006', false, true, true, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 6, 120, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 6);
 
 INSERT INTO public.user_payment_transaction VALUES (1, 'tenant_demo_001', 'TICKET_SALE', 100.00, 'USD', NULL, NULL, 0.00, 0.00, 'COMPLETED', 0.00, NULL, NULL, 'CARD', NULL, NULL, 1, 1, '2025-06-22 11:31:27.614757', '2025-06-22 11:31:27.614757');
 INSERT INTO public.user_payment_transaction VALUES (2, 'tenant_demo_001', 'SUBSCRIPTION', 200.00, 'USD', NULL, NULL, 0.00, 0.00, 'COMPLETED', 0.00, NULL, NULL, 'CARD', NULL, NULL, 2, NULL, '2025-06-22 11:31:27.614757', '2025-06-22 11:31:27.614757');
@@ -365,9 +365,9 @@ INSERT INTO public.user_task VALUES (6, 'tenant_demo_001', 'Setup Stage', 'Setup
 --INSERT INTO public.event_discount_code VALUES (6, 6);
 
 INSERT INTO public.executive_committee_team_members (first_name,last_name,title,designation,bio,email,priority_order,profile_image_url,expertise,image_background,image_style,department,join_date,is_active,linkedin_url,twitter_url,website_url,created_at,updated_at) VALUES
-                                                                                                                                                                                                                                                                             ('Gain','Joseph','bnbnbbnb','','bnbnbbnb','giventauser@gmail.com',0,'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/media/tenantId/tenant_demo_001/executive-team-members/arun_sadasivan_1757093414753_3e098d44.jpeg',NULL,'','','',NULL,true,'','','','2025-09-05 13:30:12.146626-04','2025-09-05 13:30:12.146626-04'),
-                                                                                                                                                                                                                                                                             ('ddddddd','Joseph','nbnbnbnbnbbnb','','bvbvbvbv','giventauser@gmail.com',0,'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/media/tenantId/tenant_demo_001/executive-team-members/latha_krishnan_1757093444035_7cfd3510.jpeg',NULL,'','','',NULL,true,'','','','2025-09-05 13:30:43.745627-04','2025-09-05 13:30:43.745627-04'),
-                                                                                                                                                                                                                                                                             ('Manaoj','Joseph','nnnbnbbnbnbnbnbb','','','giventauser@gmail.com',0,'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/media/tenantId/tenant_demo_001/executive-team-members/Manoj_Kizhakkoot_1757093467818_a471c9c7.png',NULL,'','','',NULL,true,'','','','2025-09-05 13:31:07.135061-04','2025-09-05 13:31:07.135061-04');
+	 ('Gain','Joseph','bnbnbbnb','','bnbnbbnb','giventauser@gmail.com',0,'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/media/tenantId/tenant_demo_001/executive-team-members/arun_sadasivan_1757093414753_3e098d44.jpeg',NULL,'','','',NULL,true,'','','','2025-09-05 13:30:12.146626-04','2025-09-05 13:30:12.146626-04'),
+	 ('ddddddd','Joseph','nbnbnbnbnbbnb','','bvbvbvbv','giventauser@gmail.com',0,'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/media/tenantId/tenant_demo_001/executive-team-members/latha_krishnan_1757093444035_7cfd3510.jpeg',NULL,'','','',NULL,true,'','','','2025-09-05 13:30:43.745627-04','2025-09-05 13:30:43.745627-04'),
+	 ('Manaoj','Joseph','nnnbnbbnbnbnbnbb','','','giventauser@gmail.com',0,'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/media/tenantId/tenant_demo_001/executive-team-members/Manoj_Kizhakkoot_1757093467818_a471c9c7.png',NULL,'','','',NULL,true,'','','','2025-09-05 13:31:07.135061-04','2025-09-05 13:31:07.135061-04');
 
 
 
@@ -395,3 +395,308 @@ INSERT INTO public.databasechangeloglock VALUES (3, false, '2025-06-22 11:31:27.
 INSERT INTO public.databasechangeloglock VALUES (4, false, '2025-06-22 11:31:27.859976', 'admin4');
 INSERT INTO public.databasechangeloglock VALUES (5, false, '2025-06-22 11:31:27.859976', 'admin5');
 INSERT INTO public.databasechangeloglock VALUES (6, false, '2025-06-22 11:31:27.859976', 'admin6');
+
+
+-- Event Management New Tables - Sample Insert Statements
+-- Generated: January 2025
+-- Purpose: Sample data for testing and development
+-- Note: All backend development is complete - this is for reference only
+
+-- =====================================================
+-- DELETE STATEMENTS - CLEAR EXISTING DATA
+-- =====================================================
+
+-- Clear all data from new event management tables (in correct order due to foreign key constraints)
+DELETE FROM public.event_sponsors_join;
+DELETE FROM public.event_featured_performers;
+DELETE FROM public.event_contacts;
+DELETE FROM public.event_emails;
+DELETE FROM public.event_program_directors;
+DELETE FROM public.event_sponsors;
+
+-- Note: Delete from join table first, then dependent tables, then parent tables
+-- This ensures foreign key constraints are satisfied
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT FEATURED PERFORMERS
+-- =====================================================
+
+INSERT INTO public.event_featured_performers VALUES (
+  1, 1, 'K.J. Yesudas', 'Yesudas', 'Vocalist',
+  'Renowned Malayalam classical singer with over 50 years of experience in the music industry. Known for his melodious voice and classical renditions.',
+  'Indian', '1940-01-10', 'yesudas@example.com', '+91-9847012345', 'https://yesudas.com',
+  'https://s3.amazonaws.com/bucket/performers/1/portrait/yesudas_portrait.jpg',
+  'https://s3.amazonaws.com/bucket/performers/1/performance/yesudas_performance.jpg',
+  '["https://s3.amazonaws.com/bucket/performers/1/gallery/img1.jpg", "https://s3.amazonaws.com/bucket/performers/1/gallery/img2.jpg"]',
+  45, 1, true, 'https://facebook.com/yesudas', 'https://twitter.com/yesudas', 'https://instagram.com/yesudas',
+  'https://youtube.com/yesudas', 'https://linkedin.com/in/yesudas', 'https://tiktok.com/@yesudas',
+  true, 100, '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_featured_performers VALUES (
+  2, 1, 'Kalamandalam Gopi', 'Gopi Asan', 'Kathakali Performer',
+  'Legendary Kathakali artist known for his exceptional performances and traditional Kerala dance form mastery.',
+  'Indian', '1937-05-15', 'gopi@example.com', '+91-9847012346', 'https://gopiasan.com',
+  'https://s3.amazonaws.com/bucket/performers/2/portrait/gopi_portrait.jpg',
+  'https://s3.amazonaws.com/bucket/performers/2/performance/gopi_performance.jpg',
+  '["https://s3.amazonaws.com/bucket/performers/2/gallery/img1.jpg"]',
+  60, 2, false, 'https://facebook.com/gopiasan', NULL, 'https://instagram.com/gopiasan',
+  'https://youtube.com/gopiasan', NULL, NULL,
+  true, 90, '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+); 
+
+INSERT INTO public.event_featured_performers VALUES (
+  3, 2, 'Zakir Hussain', 'Zakir Hussain', 'Percussionist',
+  'World-renowned tabla player and percussionist with international acclaim.',
+  'Indian', '1951-03-09', 'zakir@example.com', '+91-9847012347', 'https://zakirhussain.com',
+  'https://s3.amazonaws.com/bucket/performers/3/portrait/zakir_portrait.jpg',
+  'https://s3.amazonaws.com/bucket/performers/3/performance/zakir_performance.jpg',
+  '["https://s3.amazonaws.com/bucket/performers/3/gallery/img1.jpg", "https://s3.amazonaws.com/bucket/performers/3/gallery/img2.jpg", "https://s3.amazonaws.com/bucket/performers/3/gallery/img3.jpg"]',
+  30, 3, false, 'https://facebook.com/zakirhussain', 'https://twitter.com/zakirhussain', 'https://instagram.com/zakirhussain',
+  'https://youtube.com/zakirhussain', 'https://linkedin.com/in/zakirhussain', NULL,
+  true, 80, '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT CONTACTS
+-- =====================================================
+
+INSERT INTO public.event_contacts VALUES (
+  1, 1, 'Sarah Johnson', '+1-555-0101', 'sarah.johnson@example.com',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_contacts VALUES (
+  2, 1, 'Michael Chen', '+1-555-0102', 'michael.chen@example.com',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_contacts VALUES (
+  3, 2, 'Emily Rodriguez', '+1-555-0103', 'emily.rodriguez@example.com',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_contacts VALUES (
+  4, 2, 'David Kim', '+1-555-0104', 'david.kim@example.com',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_contacts VALUES (
+  5, 3, 'Lisa Wang', '+1-555-0105', 'lisa.wang@example.com',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT SPONSORS
+-- =====================================================
+
+INSERT INTO public.event_sponsors VALUES (
+  1, 'Kerala Tourism Development Corporation', 'Title Sponsor', 'KTDC', 'Explore Gods Own Country',
+  'Official tourism partner promoting Keralass rich cultural heritage and natural beauty.',
+  'https://www.ktdc.com', 'contact@ktdc.com', '+91-471-2321132',
+  'https://s3.amazonaws.com/bucket/sponsors/1/logo/ktdc_logo.png',
+  'https://s3.amazonaws.com/bucket/sponsors/1/hero/ktdc_hero.jpg',
+  'https://s3.amazonaws.com/bucket/sponsors/1/banner/ktdc_banner.jpg',
+  true, 100, 'https://facebook.com/keralatourism', 'https://twitter.com/keralatourism',
+  'https://linkedin.com/company/kerala-tourism', 'https://instagram.com/keralatourism',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors VALUES (
+  2, 'Tata Consultancy Services', 'Platinum Sponsor', 'TCS', 'Building on Belief',
+  'Leading IT services and consulting company supporting cultural events and community development.',
+  'https://www.tcs.com', 'sponsorship@tcs.com', '+91-22-67789999',
+  'https://s3.amazonaws.com/bucket/sponsors/2/logo/tcs_logo.png',
+  'https://s3.amazonaws.com/bucket/sponsors/2/hero/tcs_hero.jpg',
+  'https://s3.amazonaws.com/bucket/sponsors/2/banner/tcs_banner.jpg',
+  true, 90, 'https://facebook.com/tcs', 'https://twitter.com/tcs',
+  'https://linkedin.com/company/tcs', 'https://instagram.com/tcs',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors VALUES (
+  3, 'Federal Bank', 'Gold Sponsor', 'Federal Bank', 'Your Perfect Banking Partner',
+  'Premier private sector bank committed to supporting cultural and community events.',
+  'https://www.federalbank.co.in', 'events@federalbank.co.in', '+91-484-2630606',
+  'https://s3.amazonaws.com/bucket/sponsors/3/logo/federal_logo.png',
+  'https://s3.amazonaws.com/bucket/sponsors/3/hero/federal_hero.jpg',
+  'https://s3.amazonaws.com/bucket/sponsors/3/banner/federal_banner.jpg',
+  true, 80, 'https://facebook.com/federalbank', 'https://twitter.com/federalbank',
+  'https://linkedin.com/company/federal-bank', 'https://instagram.com/federalbank',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors VALUES (
+  4, 'Kerala State Beverages Corporation', 'Silver Sponsor', 'KSBC', 'Quality in Every Drop',
+  'Government corporation supporting cultural events and promoting responsible consumption.',
+  'https://www.ksbc.kerala.gov.in', 'info@ksbc.kerala.gov.in', '+91-471-2321234',
+  'https://s3.amazonaws.com/bucket/sponsors/4/logo/ksbc_logo.png',
+  'https://s3.amazonaws.com/bucket/sponsors/4/hero/ksbc_hero.jpg',
+  'https://s3.amazonaws.com/bucket/sponsors/4/banner/ksbc_banner.jpg',
+  true, 70, 'https://facebook.com/ksbc', NULL,
+  'https://linkedin.com/company/ksbc', 'https://instagram.com/ksbc',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors VALUES (
+  5, 'Malayalam Manorama', 'Media Partner', 'Manorama', 'Truth Above All',
+  'Leading Malayalam newspaper and media group promoting cultural events and community engagement.',
+  'https://www.manoramaonline.com', 'events@manoramaonline.com', '+91-471-2518000',
+  'https://s3.amazonaws.com/bucket/sponsors/5/logo/manorama_logo.png',
+  'https://s3.amazonaws.com/bucket/sponsors/5/hero/manorama_hero.jpg',
+  'https://s3.amazonaws.com/bucket/sponsors/5/banner/manorama_banner.jpg',
+  true, 60, 'https://facebook.com/manoramaonline', 'https://twitter.com/manoramaonline',
+  'https://linkedin.com/company/manorama', 'https://instagram.com/manoramaonline',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT SPONSORS JOIN (Many-to-Many)
+-- =====================================================
+
+INSERT INTO public.event_sponsors_join VALUES (
+  1, 1, 1, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  2, 1, 2, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  3, 1, 3, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  4, 2, 2, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  5, 2, 4, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  6, 3, 1, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  7, 3, 5, '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT EMAILS
+-- =====================================================
+
+INSERT INTO public.event_emails VALUES (
+  1, 1, 'info@malayaleesfestival.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_emails VALUES (
+  2, 1, 'tickets@malayaleesfestival.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_emails VALUES (
+  3, 1, 'sponsorship@malayaleesfestival.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_emails VALUES (
+  4, 2, 'contact@culturalnight.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_emails VALUES (
+  5, 2, 'media@culturalnight.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_emails VALUES (
+  6, 3, 'admin@musicconcert.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT PROGRAM DIRECTORS
+-- =====================================================
+
+INSERT INTO public.event_program_directors VALUES (
+  1, 1, 'Dr. Rajesh Kumar', 'https://s3.amazonaws.com/bucket/directors/1/photo/rajesh_photo.jpg',
+  'Dr. Rajesh Kumar is a distinguished cultural director with over 25 years of experience in organizing large-scale cultural events. He has been instrumental in promoting Malayalam arts and culture across the globe.',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_program_directors VALUES (
+  2, 1, 'Ms. Priya Menon', 'https://s3.amazonaws.com/bucket/directors/2/photo/priya_photo.jpg',
+  'Ms. Priya Menon is an accomplished event director specializing in traditional Kerala cultural programs. She has successfully organized numerous festivals and cultural events with a focus on authentic representation of Malayalam traditions.',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_program_directors VALUES (
+  3, 2, 'Mr. Suresh Nair', 'https://s3.amazonaws.com/bucket/directors/3/photo/suresh_photo.jpg',
+  'Mr. Suresh Nair brings extensive experience in cultural event management and has been associated with several prestigious cultural organizations. His expertise lies in coordinating diverse artistic performances and managing large audiences.',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_program_directors VALUES (
+  4, 3, 'Dr. Anitha Pillai', 'https://s3.amazonaws.com/bucket/directors/4/photo/anitha_photo.jpg',
+  'Dr. Anitha Pillai is a renowned music director and cultural consultant with deep knowledge of classical and contemporary music. She has curated numerous musical events and has been recognized for her contributions to promoting Indian classical music.',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- NOTES FOR FRONTEND DEVELOPERS
+-- =====================================================
+
+/*
+IMPORTANT NOTES FOR FRONTEND INTEGRATION:
+
+1. BACKEND STATUS: All backend development is complete and ready for frontend integration
+2. DATABASE: All tables are created with proper relationships and constraints
+3. API ENDPOINTS: 50+ REST endpoints are implemented and documented
+4. AUTHENTICATION: JWT-based security is configured
+5. IMAGE UPLOAD: AWS S3 integration with dynamic path construction is ready
+6. VALIDATION: Comprehensive input validation and error handling is implemented
+
+FRONTEND DEVELOPERS ONLY NEED TO:
+- Create UI components for entity management
+- Integrate with existing REST API endpoints
+- Implement image upload UI using documented endpoints
+- Handle frontend validation to complement backend validation
+- Design user experience workflows
+
+NO BACKEND DEVELOPMENT, DATABASE SETUP, OR INFRASTRUCTURE CONFIGURATION IS REQUIRED.
+
+SAMPLE DATA REFERENCE:
+- Event IDs 1, 2, 3 correspond to existing events in the event_details table
+- All image URLs are placeholder S3 URLs - backend handles actual URL generation
+- Phone numbers follow international format
+- Email addresses are example domains
+- All timestamps are in ISO format
+- Priority rankings are used for sorting and display order
+- Boolean flags control visibility and active status
+
+RELATIONSHIPS:
+- EventFeaturedPerformers → EventDetails (Many-to-One)
+- EventContacts → EventDetails (Many-to-One)
+- EventEmails → EventDetails (Many-to-One)
+- EventProgramDirectors → EventDetails (Many-to-One)
+- EventSponsorsJoin → EventDetails (Many-to-One)
+- EventSponsorsJoin → EventSponsors (Many-to-One)
+- EventDetails ↔ EventSponsors (Many-to-Many via EventSponsorsJoin)
+
+API ENDPOINTS AVAILABLE:
+- GET /api/event-featured-performers
+- POST /api/event-featured-performers
+- GET /api/event-contacts
+- POST /api/event-contacts
+- GET /api/event-sponsors
+- POST /api/event-sponsors
+- GET /api/event-sponsors-join
+- POST /api/event-sponsors-join
+- GET /api/event-emails
+- POST /api/event-emails
+- GET /api/event-program-directors
+- POST /api/event-program-directors
+
+IMAGE UPLOAD ENDPOINTS:
+- POST /api/event-medias/upload/featured-performer/{entityId}/{imageType}
+- POST /api/event-medias/upload/sponsor/{entityId}/{imageType}
+- POST /api/event-medias/upload/contact/{entityId}/photo
+- POST /api/event-medias/upload/program-director/{entityId}/photo
+- POST /api/event-medias/upload (enhanced general endpoint)
+*/

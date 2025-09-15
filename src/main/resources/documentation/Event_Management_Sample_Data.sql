@@ -44,7 +44,7 @@ INSERT INTO public.event_featured_performers VALUES (
   60, 2, false, 'https://facebook.com/gopiasan', NULL, 'https://instagram.com/gopiasan',
   'https://youtube.com/gopiasan', NULL, NULL,
   true, 90, '2025-01-10 10:00:00', '2025-01-10 10:00:00'
-);
+); 
 
 INSERT INTO public.event_featured_performers VALUES (
   3, 2, 'Zakir Hussain', 'Zakir Hussain', 'Percussionist',
