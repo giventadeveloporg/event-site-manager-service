@@ -49,12 +49,11 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     @Autowired
     public EventMediaServiceImpl(
-        EventMediaRepository eventMediaRepository,
-        EventMediaMapper eventMediaMapper,
-        S3Service s3Service,
-        EventDetailsRepository eventRepository,
-        ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository
-    ) {
+            EventMediaRepository eventMediaRepository,
+            EventMediaMapper eventMediaMapper,
+            S3Service s3Service,
+            EventDetailsRepository eventRepository,
+            ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
         this.s3Service = s3Service;
@@ -83,14 +82,14 @@ public class EventMediaServiceImpl implements EventMediaService {
         log.debug("Request to partially update EventMedia : {}", eventMediaDTO);
 
         return eventMediaRepository
-            .findById(eventMediaDTO.getId())
-            .map(existingEventMedia -> {
-                eventMediaMapper.partialUpdate(existingEventMedia, eventMediaDTO);
+                .findById(eventMediaDTO.getId())
+                .map(existingEventMedia -> {
+                    eventMediaMapper.partialUpdate(existingEventMedia, eventMediaDTO);
 
-                return existingEventMedia;
-            })
-            .map(eventMediaRepository::save)
-            .map(eventMediaMapper::toDto);
+                    return existingEventMedia;
+                })
+                .map(eventMediaRepository::save)
+                .map(eventMediaMapper::toDto);
     }
 
     @Override
@@ -114,33 +113,49 @@ public class EventMediaServiceImpl implements EventMediaService {
     }
 
     public EventMediaDTO uploadFile(
-        MultipartFile file,
-        Long eventId,
-        Long userProfileId,
-        String title,
-        String description,
-        String tenantId,
-        boolean isPublic,
-        Boolean eventFlyer,
-        Boolean isEventManagementOfficialDocument,
-        Boolean isHeroImage,
-        Boolean isActiveHeroImage,
-        Boolean isTeamMemberProfileImage,
-        Long executiveTeamMemberID,
-        boolean isHomePageHeroImage,
-        boolean isFeaturedEventImage,
-        boolean isLiveEventImage,
-        LocalDate startDisplayingFromDate
-    ) {
-        // Upload to S3
-        String fileUrl = s3Service.uploadFile(file, eventId, title, tenantId, isTeamMemberProfileImage);
+            MultipartFile file,
+            Long eventId,
+            Long userProfileId,
+            String title,
+            String description,
+            String tenantId,
+            boolean isPublic,
+            Boolean eventFlyer,
+            Boolean isEventManagementOfficialDocument,
+            Boolean isHeroImage,
+            Boolean isActiveHeroImage,
+            Boolean isTeamMemberProfileImage,
+            Long executiveTeamMemberID,
+            boolean isHomePageHeroImage,
+            boolean isFeaturedEventImage,
+            boolean isLiveEventImage,
+            LocalDate startDisplayingFromDate,
+            // New entity-specific parameters
+            Boolean isFeaturedPerformerPortrait,
+            Boolean isFeaturedPerformerPerformance,
+            Boolean isFeaturedPerformerGallery,
+            Boolean isSponsorLogo,
+            Boolean isSponsorHero,
+            Boolean isSponsorBanner,
+            Boolean isContactPhoto,
+            Boolean isProgramDirectorPhoto,
+            Long entityId,
+            String entityType,
+            String imageType) {
+        // Upload to S3 - use entity-specific path if entity parameters are provided
+        String fileUrl;
+        if (entityId != null && entityType != null && imageType != null) {
+            // Use entity-specific upload with dynamic path construction
+            fileUrl = s3Service.uploadFileWithEntityPath(file, eventId, entityId, entityType, imageType, title,
+                    tenantId);
+        } else {
+            // Use existing upload method for backward compatibility
+            fileUrl = s3Service.uploadFile(file, eventId, title, tenantId, isTeamMemberProfileImage);
+        }
 
         if (!isTeamMemberProfileImage) {
             EventMedia eventMedia = new EventMedia();
-            EventDetails event = eventRepository
-                .findById(eventId)
-                .orElseThrow(() -> new EntityNotFoundException("Event not found with id " + eventId));
-            // eventMedia.setEvent(event);
+            // eventMedia.setEvent(event); // Event relationship handled by mapper
             eventMedia.setTitle(title);
             eventMedia.setDescription(description);
             eventMedia.setTenantId(tenantId);
@@ -150,7 +165,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             log.info("preSignedUrl length: " + s3Service.generatePresignedUrl(fileUrl, 1).length());
             log.info("preSignedUrl value: " + s3Service.generatePresignedUrl(fileUrl, 1));
             eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(fileUrl, 1));
-            //        eventMedia.setFileDataContentType(file.getContentType());
+            // eventMedia.setFileDataContentType(file.getContentType());
             eventMedia.setFileSize((int) file.getSize());
             eventMedia.setIsPublic(isPublic);
             eventMedia.setCreatedAt(ZonedDateTime.now());
@@ -174,13 +189,16 @@ public class EventMediaServiceImpl implements EventMediaService {
             // Handle ExecutiveCommitteeTeamMember profile image update
             log.debug("Updating ExecutiveCommitteeTeamMember profile image for ID: {}", executiveTeamMemberID);
             ExecutiveCommitteeTeamMember teamMember = executiveCommitteeTeamMemberRepository
-                .findById(executiveTeamMemberID)
-                .orElseThrow(() -> new RuntimeException("ExecutiveCommitteeTeamMember not found with ID: " + executiveTeamMemberID));
+                    .findById(executiveTeamMemberID)
+                    .orElseThrow(() -> new RuntimeException(
+                            "ExecutiveCommitteeTeamMember not found with ID: " + executiveTeamMemberID));
             teamMember.setProfileImageUrl(fileUrl);
             executiveCommitteeTeamMemberRepository.save(teamMember);
-            log.debug("Successfully updated profile image URL for ExecutiveCommitteeTeamMember ID: {}", executiveTeamMemberID);
+            log.debug("Successfully updated profile image URL for ExecutiveCommitteeTeamMember ID: {}",
+                    executiveTeamMemberID);
 
-            // Create a minimal EventMediaDTO for response (since no EventMedia entity was created)
+            // Create a minimal EventMediaDTO for response (since no EventMedia entity was
+            // created)
             EventMediaDTO responseDTO = new EventMediaDTO();
             responseDTO.setId(-1L); // Use -1 to indicate this is not a real EventMedia record
             responseDTO.setTitle(title);
@@ -198,48 +216,48 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     @Override
     public List<EventMediaDTO> uploadMultipleFiles(
-        List<MultipartFile> files,
-        Long eventId,
-        Long userProfileId,
-        List<String> titles,
-        List<String> descriptions,
-        String tenantId,
-        boolean isPublic,
-        Boolean eventFlyer,
-        Boolean isEventManagementOfficialDocument,
-        Boolean isHeroImage,
-        Boolean isActiveHeroImage,
-        Boolean isTeamMemberProfileImage,
-        Long executiveTeamMemberID,
-        boolean isHomePageHeroImage,
-        boolean isFeaturedEventImage,
-        boolean isLiveEventImage,
-        LocalDate startDisplayingFromDate
-    ) {
+            List<MultipartFile> files,
+            Long eventId,
+            Long userProfileId,
+            List<String> titles,
+            List<String> descriptions,
+            String tenantId,
+            boolean isPublic,
+            Boolean eventFlyer,
+            Boolean isEventManagementOfficialDocument,
+            Boolean isHeroImage,
+            Boolean isActiveHeroImage,
+            Boolean isTeamMemberProfileImage,
+            Long executiveTeamMemberID,
+            boolean isHomePageHeroImage,
+            boolean isFeaturedEventImage,
+            boolean isLiveEventImage,
+            LocalDate startDisplayingFromDate) {
         List<EventMediaDTO> result = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
             String title = (titles != null && i < titles.size()) ? titles.get(i) : file.getOriginalFilename();
             String description = (descriptions != null && i < descriptions.size()) ? descriptions.get(i) : null;
             EventMediaDTO uploadResult = uploadFile(
-                file,
-                eventId,
-                userProfileId,
-                title,
-                description,
-                tenantId,
-                isPublic,
-                eventFlyer,
-                isEventManagementOfficialDocument,
-                isHeroImage,
-                isActiveHeroImage,
-                isTeamMemberProfileImage,
-                executiveTeamMemberID,
-                isHomePageHeroImage,
-                isFeaturedEventImage,
-                isLiveEventImage,
-                startDisplayingFromDate
-            );
+                    file,
+                    eventId,
+                    userProfileId,
+                    title,
+                    description,
+                    tenantId,
+                    isPublic,
+                    eventFlyer,
+                    isEventManagementOfficialDocument,
+                    isHeroImage,
+                    isActiveHeroImage,
+                    isTeamMemberProfileImage,
+                    executiveTeamMemberID,
+                    isHomePageHeroImage,
+                    isFeaturedEventImage,
+                    isLiveEventImage,
+                    startDisplayingFromDate,
+                    // New entity-specific parameters - all null for multiple files upload
+                    null, null, null, null, null, null, null, null, null, null, null);
             // Only add non-null results to the list
             if (uploadResult != null) {
                 result.add(uploadResult);
@@ -304,7 +322,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         // pre_signed_url, pre_signed_url_expires_at, alt_text, display_order,
         // download_count,
         // is_featured_video, featured_video_url, is_hero_image,
-        // is_active_hero_image, is_home_page_hero_image, is_featured_event_image, is_live_event_image,
+        // is_active_hero_image, is_home_page_hero_image, is_featured_event_image,
+        // is_live_event_image,
         // created_at, updated_at, event_id, uploaded_by_id, start_displaying_from
 
         dto.setId((Long) raw[0]);
@@ -313,7 +332,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         dto.setEventMediaType((String) raw[3]);
         dto.setStorageType((String) raw[4]);
         dto.setFileUrl((String) raw[5]);
-        //        dto.setFileDataContentType((String) raw[6]);
+        // dto.setFileDataContentType((String) raw[6]);
         dto.setContentType((String) raw[7]);
 
         // Handle Integer fields that might come as Long from database
@@ -333,7 +352,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         // Handle date/time fields that come as java.sql.Timestamp from database
         if (raw[13] != null) {
             if (raw[13] instanceof java.sql.Timestamp) {
-                dto.setPreSignedUrlExpiresAt(((java.sql.Timestamp) raw[13]).toInstant().atZone(java.time.ZoneId.systemDefault()));
+                dto.setPreSignedUrlExpiresAt(
+                        ((java.sql.Timestamp) raw[13]).toInstant().atZone(java.time.ZoneId.systemDefault()));
             } else {
                 dto.setPreSignedUrlExpiresAt((ZonedDateTime) raw[13]);
             }

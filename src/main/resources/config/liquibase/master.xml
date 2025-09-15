@@ -87,7 +87,7 @@
 
     <!-- Additional changelog -->
     <include file="config/liquibase/changelog/20241201_add_email_indexes.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20241211_refactor_tenant_relationship.xml" relativeToChangelogFile="false"/>
+    <!-- <include file="config/liquibase/changelog/20241211_refactor_tenant_relationship.xml" relativeToChangelogFile="false"/> -->
 
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->

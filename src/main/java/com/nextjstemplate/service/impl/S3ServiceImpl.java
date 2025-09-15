@@ -31,10 +31,12 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public String uploadFile(MultipartFile file, Long eventId, String title, String tenantId, Boolean isTeamMemberProfileImage) {
+    public String uploadFile(MultipartFile file, Long eventId, String title, String tenantId,
+            Boolean isTeamMemberProfileImage) {
         try {
             String originalFilename = file.getOriginalFilename();
-            String uniqueFilename = generateUniqueFilename(tenantId, eventId, originalFilename, isTeamMemberProfileImage);
+            String uniqueFilename = generateUniqueFilename(tenantId, eventId, originalFilename,
+                    isTeamMemberProfileImage);
 
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(file.getContentType());
@@ -43,7 +45,8 @@ public class S3ServiceImpl implements S3Service {
             metadata.addUserMetadata("event-id", String.valueOf(eventId));
             metadata.addUserMetadata("original-filename", originalFilename);
 
-            PutObjectRequest putRequest = new PutObjectRequest(bucketName, uniqueFilename, file.getInputStream(), metadata);
+            PutObjectRequest putRequest = new PutObjectRequest(bucketName, uniqueFilename, file.getInputStream(),
+                    metadata);
 
             amazonS3.putObject(putRequest);
 
@@ -56,15 +59,47 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
+    public String uploadFileWithEntityPath(MultipartFile file, Long eventId, Long entityId, String entityType,
+            String imageType, String title, String tenantId) {
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String uniqueFilename = generateEntitySpecificFilename(tenantId, eventId, entityId, entityType, imageType,
+                    originalFilename);
+
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType(file.getContentType());
+            metadata.setContentLength(file.getSize());
+            metadata.addUserMetadata("title", title);
+            metadata.addUserMetadata("event-id", String.valueOf(eventId));
+            metadata.addUserMetadata("entity-id", String.valueOf(entityId));
+            metadata.addUserMetadata("entity-type", entityType);
+            metadata.addUserMetadata("image-type", imageType);
+            metadata.addUserMetadata("original-filename", originalFilename);
+
+            PutObjectRequest putRequest = new PutObjectRequest(bucketName, uniqueFilename, file.getInputStream(),
+                    metadata);
+
+            amazonS3.putObject(putRequest);
+
+            URL url = amazonS3.getUrl(bucketName, uniqueFilename);
+            return url.toString();
+        } catch (Exception e) {
+            log.error("Error uploading file to S3 with entity path", e);
+            throw new RuntimeException("Failed to upload file to S3 with entity path", e);
+        }
+    }
+
+    @Override
     public String generatePresignedUrl(String fileUrl, int expirationHours) {
         try {
             String fileName = extractFileNameFromUrl(fileUrl);
             Date expiration = new Date();
             expiration.setTime(expiration.getTime() + (expirationHours * 60 * 60 * 1000L));
 
-            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, fileName)
-                .withMethod(HttpMethod.GET)
-                .withExpiration(expiration);
+            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName,
+                    fileName)
+                    .withMethod(HttpMethod.GET)
+                    .withExpiration(expiration);
 
             URL presignedUrl = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
             return presignedUrl.toString();
@@ -114,9 +149,9 @@ public class S3ServiceImpl implements S3Service {
             String fileName = extractFileNameFromUrl(url);
             S3Object s3Object = amazonS3.getObject(bucketName, fileName);
             try (
-                java.io.InputStream inputStream = s3Object.getObjectContent();
-                java.util.Scanner scanner = new java.util.Scanner(inputStream, java.nio.charset.StandardCharsets.UTF_8)
-            ) {
+                    java.io.InputStream inputStream = s3Object.getObjectContent();
+                    java.util.Scanner scanner = new java.util.Scanner(inputStream,
+                            java.nio.charset.StandardCharsets.UTF_8)) {
                 scanner.useDelimiter("\\A");
                 return scanner.hasNext() ? scanner.next() : "";
             }
@@ -128,20 +163,36 @@ public class S3ServiceImpl implements S3Service {
 
     // Private helper methods
 
-    private String generateUniqueFilename(String tenantId, Long eventId, String originalFilename, Boolean isTeamMemberProfileImage) {
+    private String generateUniqueFilename(String tenantId, Long eventId, String originalFilename,
+            Boolean isTeamMemberProfileImage) {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String extension = getFileExtension(originalFilename);
         String baseName = getBaseFileName(originalFilename);
 
         if (eventId != null && eventId > 0) {
-            return String.format("events/tenantId/%s/event-id/%d/%s_%s_%s%s", tenantId, eventId, baseName, timestamp, uuid, extension);
+            return String.format("events/tenantId/%s/event-id/%d/%s_%s_%s%s", tenantId, eventId, baseName, timestamp,
+                    uuid, extension);
         } else {
             if (isTeamMemberProfileImage) {
-                return String.format("media/tenantId/%s/executive-team-members/%s_%s_%s%s", tenantId, baseName, timestamp, uuid, extension);
+                return String.format("media/tenantId/%s/executive-team-members/%s_%s_%s%s", tenantId, baseName,
+                        timestamp, uuid, extension);
             }
             return String.format("media/%s_%s_%s%s", baseName, timestamp, uuid, extension);
         }
+    }
+
+    private String generateEntitySpecificFilename(String tenantId, Long eventId, Long entityId, String entityType,
+            String imageType, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        String baseName = getBaseFileName(originalFilename);
+
+        // Build the path structure:
+        // events/tenantId/{tenantId}/event-id/{eventId}/{entityType}/{entityId}/{imageType}/{filename}
+        return String.format("events/tenantId/%s/event-id/%d/%s/%d/%s/%s_%s_%s%s",
+                tenantId, eventId, entityType, entityId, imageType, baseName, timestamp, uuid, extension);
     }
 
     private String getFileExtension(String filename) {

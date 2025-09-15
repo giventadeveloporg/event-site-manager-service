@@ -142,14 +142,35 @@ public class EventDetails implements Serializable {
     private EventTypeDetails eventType;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "rel_event_details__discount_codes",
-        joinColumns = @JoinColumn(name = "event_details_id"),
-        inverseJoinColumns = @JoinColumn(name = "discount_codes_id")
-    )
+    @JoinTable(name = "rel_event_details__discount_codes", joinColumns = @JoinColumn(name = "event_details_id"), inverseJoinColumns = @JoinColumn(name = "discount_codes_id"))
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "events" }, allowSetters = true)
     private Set<DiscountCode> discountCodes = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "event")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "event" }, allowSetters = true)
+    private Set<EventFeaturedPerformers> eventFeaturedPerformers = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "event")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "event" }, allowSetters = true)
+    private Set<EventContacts> eventContacts = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "event")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "event" }, allowSetters = true)
+    private Set<EventEmails> eventEmails = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "event")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "event" }, allowSetters = true)
+    private Set<EventProgramDirectors> eventProgramDirectors = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "event")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "event" }, allowSetters = true)
+    private Set<EventSponsorsJoin> eventSponsorsJoins = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -579,7 +600,163 @@ public class EventDetails implements Serializable {
         return this;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    public Set<EventFeaturedPerformers> getEventFeaturedPerformers() {
+        return this.eventFeaturedPerformers;
+    }
+
+    public void setEventFeaturedPerformers(Set<EventFeaturedPerformers> eventFeaturedPerformers) {
+        if (this.eventFeaturedPerformers != null) {
+            this.eventFeaturedPerformers.forEach(i -> i.setEvent(null));
+        }
+        if (eventFeaturedPerformers != null) {
+            eventFeaturedPerformers.forEach(i -> i.setEvent(this));
+        }
+        this.eventFeaturedPerformers = eventFeaturedPerformers;
+    }
+
+    public EventDetails eventFeaturedPerformers(Set<EventFeaturedPerformers> eventFeaturedPerformers) {
+        this.setEventFeaturedPerformers(eventFeaturedPerformers);
+        return this;
+    }
+
+    public EventDetails addEventFeaturedPerformers(EventFeaturedPerformers eventFeaturedPerformers) {
+        this.eventFeaturedPerformers.add(eventFeaturedPerformers);
+        eventFeaturedPerformers.setEvent(this);
+        return this;
+    }
+
+    public EventDetails removeEventFeaturedPerformers(EventFeaturedPerformers eventFeaturedPerformers) {
+        this.eventFeaturedPerformers.remove(eventFeaturedPerformers);
+        eventFeaturedPerformers.setEvent(null);
+        return this;
+    }
+
+    public Set<EventContacts> getEventContacts() {
+        return this.eventContacts;
+    }
+
+    public void setEventContacts(Set<EventContacts> eventContacts) {
+        if (this.eventContacts != null) {
+            this.eventContacts.forEach(i -> i.setEvent(null));
+        }
+        if (eventContacts != null) {
+            eventContacts.forEach(i -> i.setEvent(this));
+        }
+        this.eventContacts = eventContacts;
+    }
+
+    public EventDetails eventContacts(Set<EventContacts> eventContacts) {
+        this.setEventContacts(eventContacts);
+        return this;
+    }
+
+    public EventDetails addEventContacts(EventContacts eventContacts) {
+        this.eventContacts.add(eventContacts);
+        eventContacts.setEvent(this);
+        return this;
+    }
+
+    public EventDetails removeEventContacts(EventContacts eventContacts) {
+        this.eventContacts.remove(eventContacts);
+        eventContacts.setEvent(null);
+        return this;
+    }
+
+    public Set<EventEmails> getEventEmails() {
+        return this.eventEmails;
+    }
+
+    public void setEventEmails(Set<EventEmails> eventEmails) {
+        if (this.eventEmails != null) {
+            this.eventEmails.forEach(i -> i.setEvent(null));
+        }
+        if (eventEmails != null) {
+            eventEmails.forEach(i -> i.setEvent(this));
+        }
+        this.eventEmails = eventEmails;
+    }
+
+    public EventDetails eventEmails(Set<EventEmails> eventEmails) {
+        this.setEventEmails(eventEmails);
+        return this;
+    }
+
+    public EventDetails addEventEmails(EventEmails eventEmails) {
+        this.eventEmails.add(eventEmails);
+        eventEmails.setEvent(this);
+        return this;
+    }
+
+    public EventDetails removeEventEmails(EventEmails eventEmails) {
+        this.eventEmails.remove(eventEmails);
+        eventEmails.setEvent(null);
+        return this;
+    }
+
+    public Set<EventProgramDirectors> getEventProgramDirectors() {
+        return this.eventProgramDirectors;
+    }
+
+    public void setEventProgramDirectors(Set<EventProgramDirectors> eventProgramDirectors) {
+        if (this.eventProgramDirectors != null) {
+            this.eventProgramDirectors.forEach(i -> i.setEvent(null));
+        }
+        if (eventProgramDirectors != null) {
+            eventProgramDirectors.forEach(i -> i.setEvent(this));
+        }
+        this.eventProgramDirectors = eventProgramDirectors;
+    }
+
+    public EventDetails eventProgramDirectors(Set<EventProgramDirectors> eventProgramDirectors) {
+        this.setEventProgramDirectors(eventProgramDirectors);
+        return this;
+    }
+
+    public EventDetails addEventProgramDirectors(EventProgramDirectors eventProgramDirectors) {
+        this.eventProgramDirectors.add(eventProgramDirectors);
+        eventProgramDirectors.setEvent(this);
+        return this;
+    }
+
+    public EventDetails removeEventProgramDirectors(EventProgramDirectors eventProgramDirectors) {
+        this.eventProgramDirectors.remove(eventProgramDirectors);
+        eventProgramDirectors.setEvent(null);
+        return this;
+    }
+
+    public Set<EventSponsorsJoin> getEventSponsorsJoins() {
+        return this.eventSponsorsJoins;
+    }
+
+    public void setEventSponsorsJoins(Set<EventSponsorsJoin> eventSponsorsJoins) {
+        if (this.eventSponsorsJoins != null) {
+            this.eventSponsorsJoins.forEach(i -> i.setEvent(null));
+        }
+        if (eventSponsorsJoins != null) {
+            eventSponsorsJoins.forEach(i -> i.setEvent(this));
+        }
+        this.eventSponsorsJoins = eventSponsorsJoins;
+    }
+
+    public EventDetails eventSponsorsJoins(Set<EventSponsorsJoin> eventSponsorsJoins) {
+        this.setEventSponsorsJoins(eventSponsorsJoins);
+        return this;
+    }
+
+    public EventDetails addEventSponsorsJoin(EventSponsorsJoin eventSponsorsJoin) {
+        this.eventSponsorsJoins.add(eventSponsorsJoin);
+        eventSponsorsJoin.setEvent(this);
+        return this;
+    }
+
+    public EventDetails removeEventSponsorsJoin(EventSponsorsJoin eventSponsorsJoin) {
+        this.eventSponsorsJoins.remove(eventSponsorsJoin);
+        eventSponsorsJoin.setEvent(null);
+        return this;
+    }
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
+    // setters here
 
     @Override
     public boolean equals(Object o) {
@@ -594,7 +771,8 @@ public class EventDetails implements Serializable {
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        // see
+        // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
@@ -602,35 +780,35 @@ public class EventDetails implements Serializable {
     @Override
     public String toString() {
         return "EventDetails{" +
-            "id=" + getId() +
-            ", tenantId='" + getTenantId() + "'" +
-            ", title='" + getTitle() + "'" +
-            ", caption='" + getCaption() + "'" +
-            ", description='" + getDescription() + "'" +
-            ", startDate='" + getStartDate() + "'" +
-            ", endDate='" + getEndDate() + "'" +
-            ", promotionStartDate='" + getPromotionStartDate() + "'" +
-            ", startTime='" + getStartTime() + "'" +
-            ", endTime='" + getEndTime() + "'" +
-            ", timezone='" + getTimezone() + "'" +
-            ", location='" + getLocation() + "'" +
-            ", directionsToVenue='" + getDirectionsToVenue() + "'" +
-            ", capacity=" + getCapacity() +
-            ", admissionType='" + getAdmissionType() + "'" +
-            ", isActive='" + getIsActive() + "'" +
-            ", maxGuestsPerAttendee=" + getMaxGuestsPerAttendee() +
-            ", allowGuests='" + getAllowGuests() + "'" +
-            ", requireGuestApproval='" + getRequireGuestApproval() + "'" +
-            ", enableGuestPricing='" + getEnableGuestPricing() + "'" +
-            ", enableQrCode='" + getEnableQrCode() + "'" +
-            ", isRegistrationRequired='" + getIsRegistrationRequired() + "'" +
-            ", isSportsEvent='" + getIsSportsEvent() + "'" +
-            ", isLive='" + getIsLive() + "'" +
-            ", isFeaturedEvent='" + getIsFeaturedEvent() + "'" +
-            ", featuredEventPriorityRanking=" + getFeaturedEventPriorityRanking() +
-            ", liveEventPriorityRanking=" + getLiveEventPriorityRanking() +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            "}";
+                "id=" + getId() +
+                ", tenantId='" + getTenantId() + "'" +
+                ", title='" + getTitle() + "'" +
+                ", caption='" + getCaption() + "'" +
+                ", description='" + getDescription() + "'" +
+                ", startDate='" + getStartDate() + "'" +
+                ", endDate='" + getEndDate() + "'" +
+                ", promotionStartDate='" + getPromotionStartDate() + "'" +
+                ", startTime='" + getStartTime() + "'" +
+                ", endTime='" + getEndTime() + "'" +
+                ", timezone='" + getTimezone() + "'" +
+                ", location='" + getLocation() + "'" +
+                ", directionsToVenue='" + getDirectionsToVenue() + "'" +
+                ", capacity=" + getCapacity() +
+                ", admissionType='" + getAdmissionType() + "'" +
+                ", isActive='" + getIsActive() + "'" +
+                ", maxGuestsPerAttendee=" + getMaxGuestsPerAttendee() +
+                ", allowGuests='" + getAllowGuests() + "'" +
+                ", requireGuestApproval='" + getRequireGuestApproval() + "'" +
+                ", enableGuestPricing='" + getEnableGuestPricing() + "'" +
+                ", enableQrCode='" + getEnableQrCode() + "'" +
+                ", isRegistrationRequired='" + getIsRegistrationRequired() + "'" +
+                ", isSportsEvent='" + getIsSportsEvent() + "'" +
+                ", isLive='" + getIsLive() + "'" +
+                ", isFeaturedEvent='" + getIsFeaturedEvent() + "'" +
+                ", featuredEventPriorityRanking=" + getFeaturedEventPriorityRanking() +
+                ", liveEventPriorityRanking=" + getLiveEventPriorityRanking() +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                "}";
     }
 }

@@ -57,11 +57,10 @@ public class EventMediaResource {
     private final EventMediaMapper eventMediaMapper;
 
     public EventMediaResource(
-        EventMediaService eventMediaService,
-        EventMediaRepository eventMediaRepository,
-        EventMediaQueryService eventMediaQueryService,
-        EventMediaMapper eventMediaMapper
-    ) {
+            EventMediaService eventMediaService,
+            EventMediaRepository eventMediaRepository,
+            EventMediaQueryService eventMediaQueryService,
+            EventMediaMapper eventMediaMapper) {
         this.eventMediaService = eventMediaService;
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaQueryService = eventMediaQueryService;
@@ -87,16 +86,18 @@ public class EventMediaResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<EventMediaDTO> createEventMedia(@Valid @RequestBody EventMediaDTO eventMediaDTO) throws URISyntaxException {
+    public ResponseEntity<EventMediaDTO> createEventMedia(@Valid @RequestBody EventMediaDTO eventMediaDTO)
+            throws URISyntaxException {
         log.debug("REST request to save EventMedia : {}", eventMediaDTO);
         if (eventMediaDTO.getId() != null) {
             throw new BadRequestAlertException("A new eventMedia cannot already have an ID", ENTITY_NAME, "idexists");
         }
         EventMediaDTO result = eventMediaService.save(eventMediaDTO);
         return ResponseEntity
-            .created(new URI("/api/event-medias/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+                .created(new URI("/api/event-medias/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        result.getId().toString()))
+                .body(result);
     }
 
     /**
@@ -114,9 +115,8 @@ public class EventMediaResource {
      */
     @PutMapping("/{id}")
     public ResponseEntity<EventMediaDTO> updateEventMedia(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody EventMediaDTO eventMediaDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody EventMediaDTO eventMediaDTO) throws URISyntaxException {
         log.debug("REST request to update EventMedia : {}, {}", id, eventMediaDTO);
         if (eventMediaDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -131,9 +131,10 @@ public class EventMediaResource {
 
         EventMediaDTO result = eventMediaService.update(eventMediaDTO);
         return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventMediaDTO.getId().toString()))
-            .body(result);
+                .ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        eventMediaDTO.getId().toString()))
+                .body(result);
     }
 
     /**
@@ -154,10 +155,9 @@ public class EventMediaResource {
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<EventMediaDTO> partialUpdateEventMedia(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody EventMediaDTO eventMediaDTO,
-        HttpServletRequest request
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody EventMediaDTO eventMediaDTO,
+            HttpServletRequest request) throws URISyntaxException {
         log.debug("REST request to partial update EventMedia partially : {}, {}", id, eventMediaDTO);
         log.debug("Request content type: {}", request.getContentType());
         log.debug("Request body: {}", eventMediaDTO);
@@ -176,9 +176,9 @@ public class EventMediaResource {
         Optional<EventMediaDTO> result = eventMediaService.partialUpdate(eventMediaDTO);
 
         return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventMediaDTO.getId().toString())
-        );
+                result,
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        eventMediaDTO.getId().toString()));
     }
 
     /**
@@ -192,16 +192,17 @@ public class EventMediaResource {
     @GetMapping("")
     @Transactional(readOnly = true)
     public ResponseEntity<List<EventMediaDTO>> getAllEventMedias(
-        EventMediaCriteria criteria,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
-    ) {
+            EventMediaCriteria criteria,
+            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         log.debug("REST request to get EventMedias by criteria: {}", criteria);
 
         try {
             // Use the safe version that avoids LOB fields to prevent stream access errors
-            //            Page<EventMediaDTO> page = eventMediaQueryService.findByCriteriaSafe(criteria, pageable);
+            // Page<EventMediaDTO> page =
+            // eventMediaQueryService.findByCriteriaSafe(criteria, pageable);
             Page<EventMediaDTO> page = eventMediaQueryService.findByCriteria(criteria, pageable);
-            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            HttpHeaders headers = PaginationUtil
+                    .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
         } catch (Exception e) {
             log.error("Error fetching EventMedia with criteria, falling back to safe method", e);
@@ -239,10 +240,13 @@ public class EventMediaResource {
         Map<String, Object> result = new HashMap<>();
         try {
             // Update records with null LOB fields to prevent stream access errors
-            /* int updatedCount = eventMediaRepository.updateNullLobFields();
-            result.put("success", true);
-            result.put("updatedRecords", updatedCount);
-            result.put("message", "Successfully cleaned up " + updatedCount + " records with orphaned LOB references");*/
+            /*
+             * int updatedCount = eventMediaRepository.updateNullLobFields();
+             * result.put("success", true);
+             * result.put("updatedRecords", updatedCount);
+             * result.put("message", "Successfully cleaned up " + updatedCount +
+             * " records with orphaned LOB references");
+             */
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Error during LOB cleanup", e);
@@ -290,9 +294,9 @@ public class EventMediaResource {
         log.debug("REST request to delete EventMedia : {}", id);
         eventMediaService.delete(id);
         return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+                .noContent()
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+                .build();
     }
 
     // --- Begin: S3/Upload endpoints migrated from EventMediaUploadResource ---
@@ -302,24 +306,35 @@ public class EventMediaResource {
      */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EventMediaDTO> uploadFile(
-        @RequestParam("file") MultipartFile file,
-        @RequestParam(value = "eventId", required = false) Long eventId,
-        @RequestParam(value = "executiveTeamMemberID", required = false) Long executiveTeamMemberID,
-        @RequestParam("title") @NotNull String title,
-        @RequestParam(value = "description", required = false) String description,
-        @RequestParam("tenantId") String tenantId,
-        @RequestParam(value = "isPublic", required = false) Boolean isPublic,
-        @RequestParam(value = "eventFlyer", required = false) Boolean eventFlyer,
-        @RequestParam(value = "isEventManagementOfficialDocument", required = false) Boolean isEventManagementOfficialDocument,
-        @RequestParam(value = "isHeroImage", required = false) Boolean isHeroImage,
-        @RequestParam(value = "isActiveHeroImage", required = false) Boolean isActiveHeroImage,
-        @RequestParam(value = "isTeamMemberProfileImage", required = false) Boolean isTeamMemberProfileImage,
-        @RequestParam(value = "isHomePageHeroImage", required = false) Boolean isHomePageHeroImage,
-        @RequestParam(value = "isFeaturedEventImage", required = false) Boolean isFeaturedEventImage,
-        @RequestParam(value = "isLiveEventImage", required = false) Boolean isLiveEventImage,
-        @RequestParam(value = "startDisplayingFromDate", required = false) String startDisplayingFromDate,
-        Authentication authentication
-    ) throws URISyntaxException {
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "eventId", required = false) Long eventId,
+            @RequestParam(value = "executiveTeamMemberID", required = false) Long executiveTeamMemberID,
+            @RequestParam("title") @NotNull String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("tenantId") String tenantId,
+            @RequestParam(value = "isPublic", required = false) Boolean isPublic,
+            @RequestParam(value = "eventFlyer", required = false) Boolean eventFlyer,
+            @RequestParam(value = "isEventManagementOfficialDocument", required = false) Boolean isEventManagementOfficialDocument,
+            @RequestParam(value = "isHeroImage", required = false) Boolean isHeroImage,
+            @RequestParam(value = "isActiveHeroImage", required = false) Boolean isActiveHeroImage,
+            @RequestParam(value = "isTeamMemberProfileImage", required = false) Boolean isTeamMemberProfileImage,
+            @RequestParam(value = "isHomePageHeroImage", required = false) Boolean isHomePageHeroImage,
+            @RequestParam(value = "isFeaturedEventImage", required = false) Boolean isFeaturedEventImage,
+            @RequestParam(value = "isLiveEventImage", required = false) Boolean isLiveEventImage,
+            @RequestParam(value = "startDisplayingFromDate", required = false) String startDisplayingFromDate,
+            // New entity-specific upload parameters
+            @RequestParam(value = "isFeaturedPerformerPortrait", required = false) Boolean isFeaturedPerformerPortrait,
+            @RequestParam(value = "isFeaturedPerformerPerformance", required = false) Boolean isFeaturedPerformerPerformance,
+            @RequestParam(value = "isFeaturedPerformerGallery", required = false) Boolean isFeaturedPerformerGallery,
+            @RequestParam(value = "isSponsorLogo", required = false) Boolean isSponsorLogo,
+            @RequestParam(value = "isSponsorHero", required = false) Boolean isSponsorHero,
+            @RequestParam(value = "isSponsorBanner", required = false) Boolean isSponsorBanner,
+            @RequestParam(value = "isContactPhoto", required = false) Boolean isContactPhoto,
+            @RequestParam(value = "isProgramDirectorPhoto", required = false) Boolean isProgramDirectorPhoto,
+            @RequestParam(value = "entityId", required = false) Long entityId,
+            @RequestParam(value = "entityType", required = false) String entityType,
+            @RequestParam(value = "imageType", required = false) String imageType,
+            Authentication authentication) throws URISyntaxException {
         log.debug("REST request to upload EventMedia file: {} for event: {}", file.getOriginalFilename(), eventId);
         if (file.isEmpty()) {
             throw new BadRequestAlertException("File cannot be empty", ENTITY_NAME, "fileempty");
@@ -339,47 +354,217 @@ public class EventMediaResource {
             try {
                 startDisplayingFromDateIn = LocalDate.parse(startDisplayingFromDate);
             } catch (Exception e) {
-                throw new BadRequestAlertException("Invalid date format for startDisplayingFromDate. Expected format: YYYY-MM-DD", ENTITY_NAME, "invalidDateFormat");
+                throw new BadRequestAlertException(
+                        "Invalid date format for startDisplayingFromDate. Expected format: YYYY-MM-DD", ENTITY_NAME,
+                        "invalidDateFormat");
             }
         }
 
         EventMediaDTO result = eventMediaService.uploadFile(
-            file,
-            eventId,
-            userProfileId,
-            title,
-            description,
-            tenantId,
-            isPublicValue,
-            eventFlyer,
-            isEventManagementOfficialDocument,
-            isHeroImage,
-            isActiveHeroImage,
-            isTeamMemberProfileImage,
-            executiveTeamMemberID,
-            isHomePageHeroImageValue,
-            isFeaturedEventImageValue,
-            isLiveEventImageValue,
-            startDisplayingFromDateIn
-        );
+                file,
+                eventId,
+                userProfileId,
+                title,
+                description,
+                tenantId,
+                isPublicValue,
+                eventFlyer,
+                isEventManagementOfficialDocument,
+                isHeroImage,
+                isActiveHeroImage,
+                isTeamMemberProfileImage,
+                executiveTeamMemberID,
+                isHomePageHeroImageValue,
+                isFeaturedEventImageValue,
+                isLiveEventImageValue,
+                startDisplayingFromDateIn,
+                // New entity-specific parameters
+                isFeaturedPerformerPortrait,
+                isFeaturedPerformerPerformance,
+                isFeaturedPerformerGallery,
+                isSponsorLogo,
+                isSponsorHero,
+                isSponsorBanner,
+                isContactPhoto,
+                isProgramDirectorPhoto,
+                entityId,
+                entityType,
+                imageType);
 
-        // For team member profile images, return OK status instead of CREATED since no EventMedia record is created
-        /* if (result != null && result.getId() != null && result.getId() == -1L) {
-            return ResponseEntity
-                    .ok()
-                    .headers(HeaderUtil.createAlert(applicationName, "Profile image uploaded successfully", file.getOriginalFilename()))
-                    .body(result);
-        }*/
-        /*  It's OK even if the result is null since this method is used by
-      multiple front end urls  This method is used for file upload of any type from the front end so we're trying to
-      make this method general so it is OK for the result variable to be null
-       which may not have the event media DTO object So even if it is null we are planning
-       to return a success and in the front it will check the HTTP status code anything success is
-        */
+        // For team member profile images, return OK status instead of CREATED since no
+        // EventMedia record is created
+        /*
+         * if (result != null && result.getId() != null && result.getId() == -1L) {
+         * return ResponseEntity
+         * .ok()
+         * .headers(HeaderUtil.createAlert(applicationName,
+         * "Profile image uploaded successfully", file.getOriginalFilename()))
+         * .body(result);
+         * }
+         */
+        /*
+         * It's OK even if the result is null since this method is used by
+         * multiple front end urls This method is used for file upload of any type from
+         * the front end so we're trying to
+         * make this method general so it is OK for the result variable to be null
+         * which may not have the event media DTO object So even if it is null we are
+         * planning
+         * to return a success and in the front it will check the HTTP status code
+         * anything success is
+         */
         return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createAlert(applicationName, "File uploaded successfully", file.getOriginalFilename()))
-            .body(result);
+                .ok()
+                .headers(HeaderUtil.createAlert(applicationName, "File uploaded successfully",
+                        file.getOriginalFilename()))
+                .body(result);
+    }
+
+    /**
+     * POST /event-medias/upload/featured-performer/{entityId}/{imageType} : Upload
+     * image for featured performer.
+     */
+    @PostMapping(value = "/upload/featured-performer/{entityId}/{imageType}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadFeaturedPerformerImage(
+            @RequestParam("file") MultipartFile file,
+            @PathVariable Long entityId,
+            @PathVariable String imageType,
+            @RequestParam("eventId") Long eventId,
+            @RequestParam("title") @NotNull String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("tenantId") String tenantId,
+            @RequestParam(value = "isPublic", required = false) Boolean isPublic,
+            Authentication authentication) throws URISyntaxException {
+        log.debug("REST request to upload FeaturedPerformer {} image for entity: {}", imageType, entityId);
+
+        // Validate image type
+        if (!isValidImageType(imageType, "featured-performer")) {
+            throw new BadRequestAlertException("Invalid image type for featured performer: " + imageType, ENTITY_NAME,
+                    "invalidImageType");
+        }
+
+        Long userProfileId = getCurrentUserProfileId(authentication);
+        boolean isPublicValue = isPublic != null ? isPublic : false;
+
+        EventMediaDTO result = eventMediaService.uploadFile(
+                file, eventId, userProfileId, title, description, tenantId, isPublicValue,
+                null, null, null, null, null, null, false, false, false, null,
+                imageType.equals("portrait"), imageType.equals("performance"), imageType.equals("gallery"),
+                null, null, null, null, null, entityId, "featured-performer", imageType);
+
+        return ResponseEntity.created(new URI("/api/event-medias/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        result.getId().toString()))
+                .body(result);
+    }
+
+    /**
+     * POST /event-medias/upload/sponsor/{entityId}/{imageType} : Upload image for
+     * sponsor.
+     */
+    @PostMapping(value = "/upload/sponsor/{entityId}/{imageType}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadSponsorImage(
+            @RequestParam("file") MultipartFile file,
+            @PathVariable Long entityId,
+            @PathVariable String imageType,
+            @RequestParam("eventId") Long eventId,
+            @RequestParam("title") @NotNull String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("tenantId") String tenantId,
+            @RequestParam(value = "isPublic", required = false) Boolean isPublic,
+            Authentication authentication) throws URISyntaxException {
+        log.debug("REST request to upload Sponsor {} image for entity: {}", imageType, entityId);
+
+        // Validate image type
+        if (!isValidImageType(imageType, "sponsor")) {
+            throw new BadRequestAlertException("Invalid image type for sponsor: " + imageType, ENTITY_NAME,
+                    "invalidImageType");
+        }
+
+        Long userProfileId = getCurrentUserProfileId(authentication);
+        boolean isPublicValue = isPublic != null ? isPublic : false;
+
+        EventMediaDTO result = eventMediaService.uploadFile(
+                file, eventId, userProfileId, title, description, tenantId, isPublicValue,
+                null, null, null, null, null, null, false, false, false, null,
+                null, null, null, imageType.equals("logo"), imageType.equals("hero"), imageType.equals("banner"),
+                null, null, entityId, "sponsor", imageType);
+
+        return ResponseEntity.created(new URI("/api/event-medias/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        result.getId().toString()))
+                .body(result);
+    }
+
+    /**
+     * POST /event-medias/upload/contact/{entityId}/photo : Upload photo for
+     * contact.
+     */
+    @PostMapping(value = "/upload/contact/{entityId}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadContactPhoto(
+            @RequestParam("file") MultipartFile file,
+            @PathVariable Long entityId,
+            @RequestParam("eventId") Long eventId,
+            @RequestParam("title") @NotNull String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("tenantId") String tenantId,
+            @RequestParam(value = "isPublic", required = false) Boolean isPublic,
+            Authentication authentication) throws URISyntaxException {
+        log.debug("REST request to upload Contact photo for entity: {}", entityId);
+
+        Long userProfileId = getCurrentUserProfileId(authentication);
+        boolean isPublicValue = isPublic != null ? isPublic : false;
+
+        EventMediaDTO result = eventMediaService.uploadFile(
+                file, eventId, userProfileId, title, description, tenantId, isPublicValue,
+                null, null, null, null, null, null, false, false, false, null,
+                null, null, null, null, null, null, true, null, entityId, "contact", "photo");
+
+        return ResponseEntity.created(new URI("/api/event-medias/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        result.getId().toString()))
+                .body(result);
+    }
+
+    /**
+     * POST /event-medias/upload/program-director/{entityId}/photo : Upload photo
+     * for program director.
+     */
+    @PostMapping(value = "/upload/program-director/{entityId}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadProgramDirectorPhoto(
+            @RequestParam("file") MultipartFile file,
+            @PathVariable Long entityId,
+            @RequestParam("eventId") Long eventId,
+            @RequestParam("title") @NotNull String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("tenantId") String tenantId,
+            @RequestParam(value = "isPublic", required = false) Boolean isPublic,
+            Authentication authentication) throws URISyntaxException {
+        log.debug("REST request to upload ProgramDirector photo for entity: {}", entityId);
+
+        Long userProfileId = getCurrentUserProfileId(authentication);
+        boolean isPublicValue = isPublic != null ? isPublic : false;
+
+        EventMediaDTO result = eventMediaService.uploadFile(
+                file, eventId, userProfileId, title, description, tenantId, isPublicValue,
+                null, null, null, null, null, null, false, false, false, null,
+                null, null, null, null, null, null, null, true, entityId, "program-director", "photo");
+
+        return ResponseEntity.created(new URI("/api/event-medias/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        result.getId().toString()))
+                .body(result);
+    }
+
+    /**
+     * Helper method to validate image type for specific entity type.
+     */
+    private boolean isValidImageType(String imageType, String entityType) {
+        return switch (entityType) {
+            case "featured-performer" -> Set.of("portrait", "performance", "gallery").contains(imageType);
+            case "sponsor" -> Set.of("logo", "hero", "banner").contains(imageType);
+            case "contact", "program-director" -> "photo".equals(imageType);
+            default -> false;
+        };
     }
 
     /**
@@ -387,25 +572,24 @@ public class EventMediaResource {
      */
     @PostMapping(value = "/upload-multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<EventMediaDTO>> uploadMultipleFiles(
-        @RequestParam("files") List<MultipartFile> files,
-        @RequestParam(value = "eventId", required = false) Long eventId,
-        @RequestParam(value = "upLoadedById", required = false) Long upLoadedById,
-        @RequestParam(value = "executiveTeamMemberID", required = false) Long executiveTeamMemberID,
-        @RequestParam("titles") List<String> titles,
-        @RequestParam(value = "descriptions", required = false) List<String> descriptions,
-        @RequestParam("tenantId") String tenantId,
-        @RequestParam(value = "isPublic", required = false) Boolean isPublic,
-        @RequestParam(value = "eventFlyer", required = false) Boolean eventFlyer,
-        @RequestParam(value = "isEventManagementOfficialDocument", required = false) Boolean isEventManagementOfficialDocument,
-        @RequestParam(value = "isHeroImage", required = false) Boolean isHeroImage,
-        @RequestParam(value = "isActiveHeroImage", required = false) Boolean isActiveHeroImage,
-        @RequestParam(value = "isTeamMemberProfileImage", required = false) Boolean isTeamMemberProfileImage,
-        @RequestParam(value = "isHomePageHeroImage", required = false) Boolean isHomePageHeroImage,
-        @RequestParam(value = "isFeaturedEventImage", required = false) Boolean isFeaturedEventImage,
-        @RequestParam(value = "isLiveEventImage", required = false) Boolean isLiveEventImage,
-        @RequestParam(value = "startDisplayingFromDate", required = false) String startDisplayingFromDate,
-        Authentication authentication
-    ) {
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam(value = "eventId", required = false) Long eventId,
+            @RequestParam(value = "upLoadedById", required = false) Long upLoadedById,
+            @RequestParam(value = "executiveTeamMemberID", required = false) Long executiveTeamMemberID,
+            @RequestParam("titles") List<String> titles,
+            @RequestParam(value = "descriptions", required = false) List<String> descriptions,
+            @RequestParam("tenantId") String tenantId,
+            @RequestParam(value = "isPublic", required = false) Boolean isPublic,
+            @RequestParam(value = "eventFlyer", required = false) Boolean eventFlyer,
+            @RequestParam(value = "isEventManagementOfficialDocument", required = false) Boolean isEventManagementOfficialDocument,
+            @RequestParam(value = "isHeroImage", required = false) Boolean isHeroImage,
+            @RequestParam(value = "isActiveHeroImage", required = false) Boolean isActiveHeroImage,
+            @RequestParam(value = "isTeamMemberProfileImage", required = false) Boolean isTeamMemberProfileImage,
+            @RequestParam(value = "isHomePageHeroImage", required = false) Boolean isHomePageHeroImage,
+            @RequestParam(value = "isFeaturedEventImage", required = false) Boolean isFeaturedEventImage,
+            @RequestParam(value = "isLiveEventImage", required = false) Boolean isLiveEventImage,
+            @RequestParam(value = "startDisplayingFromDate", required = false) String startDisplayingFromDate,
+            Authentication authentication) {
         log.debug("REST request to upload {} EventMedia files for event: {}", files.size(), eventId);
         if (files.isEmpty()) {
             throw new BadRequestAlertException("Files list cannot be empty", ENTITY_NAME, "filesempty");
@@ -420,14 +604,16 @@ public class EventMediaResource {
             throw new BadRequestAlertException("Titles are required for all files", ENTITY_NAME, "titlesmissing");
         }
         if (titles.size() != files.size()) {
-            throw new BadRequestAlertException("Number of titles must match number of files", ENTITY_NAME, "titlessizemismatch");
+            throw new BadRequestAlertException("Number of titles must match number of files", ENTITY_NAME,
+                    "titlessizemismatch");
         }
 
         // Validate that titles are not empty or blank
         for (int i = 0; i < titles.size(); i++) {
             String title = titles.get(i);
             if (title == null || title.trim().isEmpty()) {
-                throw new BadRequestAlertException("Title for file " + (i + 1) + " cannot be empty", ENTITY_NAME, "titleempty");
+                throw new BadRequestAlertException("Title for file " + (i + 1) + " cannot be empty", ENTITY_NAME,
+                        "titleempty");
             }
         }
         Long userProfileId = null;
@@ -447,40 +633,45 @@ public class EventMediaResource {
             try {
                 startDisplayingFromDateIn = LocalDate.parse(startDisplayingFromDate);
             } catch (Exception e) {
-                throw new BadRequestAlertException("Invalid date format for startDisplayingFromDate. Expected format: YYYY-MM-DD", ENTITY_NAME, "invalidDateFormat");
+                throw new BadRequestAlertException(
+                        "Invalid date format for startDisplayingFromDate. Expected format: YYYY-MM-DD", ENTITY_NAME,
+                        "invalidDateFormat");
             }
         }
         List<EventMediaDTO> results = eventMediaService.uploadMultipleFiles(
-            files,
-            eventId,
-            userProfileId,
-            titles,
-            descriptions,
-            tenantId,
-            isPublicValue,
-            eventFlyer,
-            isEventManagementOfficialDocument,
-            isHeroImage,
-            isActiveHeroImage,
-            isTeamMemberProfileImage,
-            executiveTeamMemberID,
-            isHomePageHeroImageValue,
-            isFeaturedEventImageValue,
-            isLiveEventImageValue,
-            startDisplayingFromDateIn
-        );
+                files,
+                eventId,
+                userProfileId,
+                titles,
+                descriptions,
+                tenantId,
+                isPublicValue,
+                eventFlyer,
+                isEventManagementOfficialDocument,
+                isHeroImage,
+                isActiveHeroImage,
+                isTeamMemberProfileImage,
+                executiveTeamMemberID,
+                isHomePageHeroImageValue,
+                isFeaturedEventImageValue,
+                isLiveEventImageValue,
+                startDisplayingFromDateIn);
 
-        /*  It's OK even if the result is null since this method is used by
-      multiple front end urls  This method is used for file upload of any type from the front end so we're trying to
-      make this method general so it is OK for the result variable to be null
-       which may not have the event media DTO object So even if it is null we are planning
-       to return a success and in the front it will check the HTTP status code anything success is
-        */
+        /*
+         * It's OK even if the result is null since this method is used by
+         * multiple front end urls This method is used for file upload of any type from
+         * the front end so we're trying to
+         * make this method general so it is OK for the result variable to be null
+         * which may not have the event media DTO object So even if it is null we are
+         * planning
+         * to return a success and in the front it will check the HTTP status code
+         * anything success is
+         */
 
         return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createAlert(applicationName, "eventMedia.uploaded", String.valueOf(results.size())))
-            .body(results);
+                .ok()
+                .headers(HeaderUtil.createAlert(applicationName, "eventMedia.uploaded", String.valueOf(results.size())))
+                .body(results);
     }
 
     /**
@@ -489,13 +680,13 @@ public class EventMediaResource {
      */
     @GetMapping("/event/{eventId}/view")
     public ResponseEntity<List<EventMediaDTO>> getEventMediaForViewing(
-        @PathVariable Long eventId,
-        @RequestParam(value = "includePrivate", defaultValue = "false") boolean includePrivate,
-        Authentication authentication
-    ) {
+            @PathVariable Long eventId,
+            @RequestParam(value = "includePrivate", defaultValue = "false") boolean includePrivate,
+            Authentication authentication) {
         log.debug("REST request to get EventMedias with viewing URLs for event: {}", eventId);
         Long userProfileId = getCurrentUserProfileId(authentication);
-        List<EventMediaDTO> eventMedia = eventMediaService.getEventMediaWithUrls(eventId, userProfileId, includePrivate);
+        List<EventMediaDTO> eventMedia = eventMediaService.getEventMediaWithUrls(eventId, userProfileId,
+                includePrivate);
         return ResponseEntity.ok(eventMedia);
     }
 
@@ -505,10 +696,9 @@ public class EventMediaResource {
      */
     @GetMapping("/{id}/download-url")
     public ResponseEntity<Map<String, Object>> getDownloadUrl(
-        @PathVariable Long id,
-        @RequestParam(value = "expirationHours", defaultValue = "2") int expirationHours,
-        Authentication authentication
-    ) {
+            @PathVariable Long id,
+            @RequestParam(value = "expirationHours", defaultValue = "2") int expirationHours,
+            Authentication authentication) {
         log.debug("REST request to get download URL for EventMedia: {}", id);
         Long userProfileId = getCurrentUserProfileId(authentication);
         String downloadUrl = eventMediaService.getViewingUrl(id, userProfileId);
@@ -524,27 +714,28 @@ public class EventMediaResource {
      * EventMedias.
      */
     @PostMapping("/refresh-urls")
-    public ResponseEntity<List<Map<String, Object>>> refreshUrls(@RequestBody UrlRefreshRequest request, Authentication authentication) {
+    public ResponseEntity<List<Map<String, Object>>> refreshUrls(@RequestBody UrlRefreshRequest request,
+            Authentication authentication) {
         log.debug("REST request to refresh URLs for {} EventMedias", request.getMediaIds().size());
         Long userProfileId = getCurrentUserProfileId(authentication);
         List<Map<String, Object>> refreshedMedia = request
-            .getMediaIds()
-            .stream()
-            .map(mediaId -> {
-                try {
-                    String newUrl = eventMediaService.getViewingUrl(mediaId, userProfileId);
-                    Map<String, Object> dto = new HashMap<>();
-                    dto.put("id", mediaId);
-                    dto.put("viewingUrl", newUrl);
-                    dto.put("expiresAt", Instant.now().plusSeconds(request.getExpirationHours() * 3600));
-                    return dto;
-                } catch (Exception e) {
-                    log.error("Error refreshing URL for EventMedia: {}", mediaId, e);
-                    return null;
-                }
-            })
-            .filter(java.util.Objects::nonNull)
-            .collect(Collectors.toList());
+                .getMediaIds()
+                .stream()
+                .map(mediaId -> {
+                    try {
+                        String newUrl = eventMediaService.getViewingUrl(mediaId, userProfileId);
+                        Map<String, Object> dto = new HashMap<>();
+                        dto.put("id", mediaId);
+                        dto.put("viewingUrl", newUrl);
+                        dto.put("expiresAt", Instant.now().plusSeconds(request.getExpirationHours() * 3600));
+                        return dto;
+                    } catch (Exception e) {
+                        log.error("Error refreshing URL for EventMedia: {}", mediaId, e);
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(refreshedMedia);
     }
 

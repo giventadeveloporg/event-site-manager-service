@@ -140,6 +140,13 @@ DROP TABLE IF EXISTS public.event_ticket_transaction_item CASCADE;
 DROP TABLE IF EXISTS public.user_payment_transaction CASCADE;
 DROP TABLE IF EXISTS public.event_ticket_type CASCADE;
 DROP TABLE IF EXISTS public.event_organizer CASCADE;
+-- New event-related tables (in reverse dependency order)
+DROP TABLE IF EXISTS public.event_program_directors CASCADE;
+DROP TABLE IF EXISTS public.event_emails CASCADE;
+DROP TABLE IF EXISTS public.event_sponsors_join CASCADE;
+DROP TABLE IF EXISTS public.event_sponsors CASCADE;
+DROP TABLE IF EXISTS public.event_contacts CASCADE;
+DROP TABLE IF EXISTS public.event_featured_performers CASCADE;
 DROP TABLE IF EXISTS public.event_details CASCADE;
 DROP TABLE IF EXISTS public.event_admin CASCADE;
 DROP TABLE IF EXISTS public.event_live_update_attachment CASCADE;
@@ -3012,4 +3019,262 @@ type character varying(50), -- TRANSACTIONAL, BULK
     CONSTRAINT whatsapp_log_pkey PRIMARY KEY (id),
     CONSTRAINT fk_whatsapp_log_campaign FOREIGN KEY (campaign_id) REFERENCES public.communication_campaign(id) ON DELETE SET NULL
 );
+
+-- =============================================
+-- NEW EVENT-RELATED TABLES
+-- =============================================
+
+-- Table: event_featured_performers
+-- Stores comprehensive information about featured performers/artists for an event
+CREATE TABLE public.event_featured_performers (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id bigint NOT NULL,
+    -- Basic performer information
+    name varchar(255) NOT NULL,
+    stage_name varchar(255) NULL,
+    role varchar(100) NULL,
+    -- Personal details
+    bio text NULL,
+    nationality varchar(100) NULL,
+    date_of_birth date NULL,
+    -- Contact information
+    email varchar(255) NULL,
+    phone varchar(50) NULL,
+    website_url varchar(1024) NULL,
+    -- Media URLs (AWS S3 or other cloud storage)
+    portrait_image_url varchar(1024) NULL,
+    performance_image_url varchar(1024) NULL,
+    gallery_image_urls text NULL, -- JSON array of additional image URLs
+    -- Performance details
+    performance_duration_minutes int4 NULL,
+    performance_order int4 DEFAULT 0 NOT NULL,
+    is_headliner boolean DEFAULT false NOT NULL,
+    -- Social media presence
+    facebook_url varchar(1024) NULL,
+    twitter_url varchar(1024) NULL,
+    instagram_url varchar(1024) NULL,
+    youtube_url varchar(1024) NULL,
+    linkedin_url varchar(1024) NULL,
+    tiktok_url varchar(1024) NULL,
+    -- Status and metadata
+    is_active boolean DEFAULT true NOT NULL,
+    priority_ranking int4 DEFAULT 0 NOT NULL,
+    -- Timestamps
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    -- Constraints
+    CONSTRAINT event_featured_performers_pkey PRIMARY KEY (id),
+    CONSTRAINT check_performance_duration CHECK (performance_duration_minutes IS NULL OR performance_duration_minutes > 0),
+    CONSTRAINT check_performance_order CHECK (performance_order >= 0),
+    CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
+    CONSTRAINT check_date_of_birth CHECK (date_of_birth IS NULL OR date_of_birth <= CURRENT_DATE),
+    CONSTRAINT check_url_format_website CHECK (website_url IS NULL OR website_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_portrait CHECK (portrait_image_url IS NULL OR portrait_image_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_performance CHECK (performance_image_url IS NULL OR performance_image_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_facebook CHECK (facebook_url IS NULL OR facebook_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_twitter CHECK (twitter_url IS NULL OR twitter_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_instagram CHECK (instagram_url IS NULL OR instagram_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_youtube CHECK (youtube_url IS NULL OR youtube_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_linkedin CHECK (linkedin_url IS NULL OR linkedin_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_tiktok CHECK (tiktok_url IS NULL OR tiktok_url ~* '^https?://.*'),
+    CONSTRAINT check_email_format CHECK (email IS NULL OR email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+);
+
+-- Table: event_contacts
+-- Stores booking or organizing contact info for events
+CREATE TABLE public.event_contacts (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id bigint NOT NULL,
+    name varchar(255) NOT NULL,
+    phone varchar(50) NOT NULL,
+    email varchar(255) NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT event_contacts_pkey PRIMARY KEY (id)
+);
+
+-- Table: event_sponsors
+-- Stores comprehensive sponsor/company information
+CREATE TABLE public.event_sponsors (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    name varchar(255) NOT NULL,
+    type varchar(100) NOT NULL,
+    -- Company information
+    company_name varchar(255) NULL,
+    tagline varchar(500) NULL,
+    description text NULL,
+    website_url varchar(1024) NULL,
+    -- Contact information
+    contact_email varchar(255) NULL,
+    contact_phone varchar(50) NULL,
+    -- Media URLs (AWS S3 or other cloud storage)
+    logo_url varchar(1024) NULL,
+    hero_image_url varchar(1024) NULL,
+    banner_image_url varchar(1024) NULL,
+    -- Status and metadata
+    is_active boolean DEFAULT true NOT NULL,
+    priority_ranking int4 DEFAULT 0 NOT NULL,
+    -- Social media links
+    facebook_url varchar(1024) NULL,
+    twitter_url varchar(1024) NULL,
+    linkedin_url varchar(1024) NULL,
+    instagram_url varchar(1024) NULL,
+    -- Timestamps
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    -- Constraints
+    CONSTRAINT event_sponsors_pkey PRIMARY KEY (id),
+    CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
+    CONSTRAINT check_url_format_website CHECK (website_url IS NULL OR website_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_logo CHECK (logo_url IS NULL OR logo_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_hero CHECK (hero_image_url IS NULL OR hero_image_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_banner CHECK (banner_image_url IS NULL OR banner_image_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_facebook CHECK (facebook_url IS NULL OR facebook_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_twitter CHECK (twitter_url IS NULL OR twitter_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_linkedin CHECK (linkedin_url IS NULL OR linkedin_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_instagram CHECK (instagram_url IS NULL OR instagram_url ~* '^https?://.*'),
+    CONSTRAINT check_email_format CHECK (contact_email IS NULL OR contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+);
+
+-- Table: event_sponsors_join
+-- Join table for many-to-many relationship between events and sponsors
+CREATE TABLE public.event_sponsors_join (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id bigint NOT NULL,
+    sponsor_id bigint NOT NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT event_sponsors_join_pkey PRIMARY KEY (id),
+    CONSTRAINT unique_event_sponsor UNIQUE (event_id, sponsor_id)
+);
+
+-- Table: event_emails
+-- For general event-level emails (for public or organizers)
+CREATE TABLE public.event_emails (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id bigint NOT NULL,
+    email varchar(255) NOT NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT event_emails_pkey PRIMARY KEY (id)
+);
+
+-- Table: event_program_directors
+-- Stores info about the event's program director
+CREATE TABLE public.event_program_directors (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id bigint NOT NULL,
+    name varchar(255) NOT NULL,
+    photo_url varchar(1024) NULL,
+    bio text NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT event_program_directors_pkey PRIMARY KEY (id)
+);
+
+-- =============================================
+-- FOREIGN KEY CONSTRAINTS
+-- =============================================
+
+-- Foreign key constraints for event_featured_performers
+ALTER TABLE ONLY public.event_featured_performers
+    ADD CONSTRAINT fk_event_featured_performers_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+-- Foreign key constraints for event_contacts
+ALTER TABLE ONLY public.event_contacts
+    ADD CONSTRAINT fk_event_contacts_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+-- Foreign key constraints for event_sponsors_join
+ALTER TABLE ONLY public.event_sponsors_join
+    ADD CONSTRAINT fk_event_sponsors_join_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.event_sponsors_join
+    ADD CONSTRAINT fk_event_sponsors_join_sponsor_id FOREIGN KEY (sponsor_id) REFERENCES public.event_sponsors(id) ON DELETE CASCADE;
+
+-- Foreign key constraints for event_emails
+ALTER TABLE ONLY public.event_emails
+    ADD CONSTRAINT fk_event_emails_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+-- Foreign key constraints for event_program_directors
+ALTER TABLE ONLY public.event_program_directors
+    ADD CONSTRAINT fk_event_program_directors_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+-- =============================================
+-- TABLE COMMENTS
+-- =============================================
+
+COMMENT ON TABLE public.event_featured_performers IS 'Stores comprehensive information about featured performers/artists including bios, media assets, social presence, and performance details';
+COMMENT ON TABLE public.event_contacts IS 'Stores booking or organizing contact info for events';
+COMMENT ON TABLE public.event_sponsors IS 'Stores comprehensive sponsor/company information including logos, contact details, and social media links';
+COMMENT ON TABLE public.event_sponsors_join IS 'Join table for many-to-many relationship between events and sponsors';
+COMMENT ON TABLE public.event_emails IS 'Stores general event-level emails for public or organizers';
+COMMENT ON TABLE public.event_program_directors IS 'Stores information about event program directors';
+
+-- =============================================
+-- COLUMN COMMENTS
+-- =============================================
+
+-- event_featured_performers column comments
+COMMENT ON COLUMN public.event_featured_performers.event_id IS 'Foreign key reference to event_details.id';
+COMMENT ON COLUMN public.event_featured_performers.name IS 'Full name of the featured performer/artist';
+COMMENT ON COLUMN public.event_featured_performers.stage_name IS 'Stage name or artistic name (may differ from legal name)';
+COMMENT ON COLUMN public.event_featured_performers.role IS 'Role of the performer (e.g., Singer, Violinist, Dancer, Comedian)';
+COMMENT ON COLUMN public.event_featured_performers.bio IS 'Detailed biography and background of the performer';
+COMMENT ON COLUMN public.event_featured_performers.nationality IS 'Nationality or country of origin';
+COMMENT ON COLUMN public.event_featured_performers.date_of_birth IS 'Date of birth of the performer';
+COMMENT ON COLUMN public.event_featured_performers.email IS 'Contact email for the performer or their management';
+COMMENT ON COLUMN public.event_featured_performers.phone IS 'Contact phone number for the performer or their management';
+COMMENT ON COLUMN public.event_featured_performers.website_url IS 'Official website URL of the performer (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_featured_performers.portrait_image_url IS 'URL to portrait/headshot image (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_featured_performers.performance_image_url IS 'URL to performance/action image (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_featured_performers.gallery_image_urls IS 'JSON array of additional image URLs for gallery display';
+COMMENT ON COLUMN public.event_featured_performers.performance_duration_minutes IS 'Expected duration of performance in minutes';
+COMMENT ON COLUMN public.event_featured_performers.performance_order IS 'Order of performance in the event lineup';
+COMMENT ON COLUMN public.event_featured_performers.is_headliner IS 'Whether this performer is a headliner for the event';
+COMMENT ON COLUMN public.event_featured_performers.facebook_url IS 'Facebook profile/page URL';
+COMMENT ON COLUMN public.event_featured_performers.twitter_url IS 'Twitter profile URL';
+COMMENT ON COLUMN public.event_featured_performers.instagram_url IS 'Instagram profile URL';
+COMMENT ON COLUMN public.event_featured_performers.youtube_url IS 'YouTube channel URL';
+COMMENT ON COLUMN public.event_featured_performers.linkedin_url IS 'LinkedIn profile URL';
+COMMENT ON COLUMN public.event_featured_performers.tiktok_url IS 'TikTok profile URL';
+COMMENT ON COLUMN public.event_featured_performers.is_active IS 'Whether the performer is currently active and should be displayed';
+COMMENT ON COLUMN public.event_featured_performers.priority_ranking IS 'Display priority ranking (higher numbers = higher priority)';
+
+-- event_contacts column comments
+COMMENT ON COLUMN public.event_contacts.event_id IS 'Foreign key reference to event_details.id';
+COMMENT ON COLUMN public.event_contacts.name IS 'Contact person name';
+COMMENT ON COLUMN public.event_contacts.phone IS 'Contact phone number';
+COMMENT ON COLUMN public.event_contacts.email IS 'Contact email address (optional)';
+
+-- event_sponsors column comments
+COMMENT ON COLUMN public.event_sponsors.name IS 'Sponsor display name';
+COMMENT ON COLUMN public.event_sponsors.type IS 'Type of sponsor (e.g., Tour Sponsor, Hospitality Partner, Title Sponsor)';
+COMMENT ON COLUMN public.event_sponsors.company_name IS 'Official company name (may differ from display name)';
+COMMENT ON COLUMN public.event_sponsors.tagline IS 'Company tagline or slogan';
+COMMENT ON COLUMN public.event_sponsors.description IS 'Detailed description of the sponsor/company';
+COMMENT ON COLUMN public.event_sponsors.website_url IS 'Company website URL (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_sponsors.contact_email IS 'Primary contact email for the sponsor';
+COMMENT ON COLUMN public.event_sponsors.contact_phone IS 'Primary contact phone number';
+COMMENT ON COLUMN public.event_sponsors.logo_url IS 'URL to sponsor logo image (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_sponsors.hero_image_url IS 'URL to sponsor hero/banner image (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_sponsors.banner_image_url IS 'URL to sponsor banner image for event displays (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_sponsors.is_active IS 'Whether the sponsor is currently active and should be displayed';
+COMMENT ON COLUMN public.event_sponsors.priority_ranking IS 'Display priority ranking (higher numbers = higher priority)';
+COMMENT ON COLUMN public.event_sponsors.facebook_url IS 'Facebook page URL';
+COMMENT ON COLUMN public.event_sponsors.twitter_url IS 'Twitter profile URL';
+COMMENT ON COLUMN public.event_sponsors.linkedin_url IS 'LinkedIn company page URL';
+COMMENT ON COLUMN public.event_sponsors.instagram_url IS 'Instagram profile URL';
+
+-- event_sponsors_join column comments
+COMMENT ON COLUMN public.event_sponsors_join.event_id IS 'Foreign key reference to event_details.id';
+COMMENT ON COLUMN public.event_sponsors_join.sponsor_id IS 'Foreign key reference to event_sponsors.id';
+
+-- event_emails column comments
+COMMENT ON COLUMN public.event_emails.event_id IS 'Foreign key reference to event_details.id';
+COMMENT ON COLUMN public.event_emails.email IS 'Event-related email address';
+
+-- event_program_directors column comments
+COMMENT ON COLUMN public.event_program_directors.event_id IS 'Foreign key reference to event_details.id';
+COMMENT ON COLUMN public.event_program_directors.name IS 'Program director name';
+COMMENT ON COLUMN public.event_program_directors.photo_url IS 'URL to program director photo';
+COMMENT ON COLUMN public.event_program_directors.bio IS 'Program director biography';
 
