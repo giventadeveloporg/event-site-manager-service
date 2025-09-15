@@ -2,8 +2,6 @@ package com.nextjstemplate.service;
 
 import com.nextjstemplate.service.dto.EventAdminAuditLogDTO;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.nextjstemplate.domain.EventAdminAuditLog}.
@@ -32,14 +30,6 @@ public interface EventAdminAuditLogService {
      * @return the persisted entity.
      */
     Optional<EventAdminAuditLogDTO> partialUpdate(EventAdminAuditLogDTO eventAdminAuditLogDTO);
-
-    /**
-     * Get all the eventAdminAuditLogs.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<EventAdminAuditLogDTO> findAll(Pageable pageable);
 
     /**
      * Get the "id" eventAdminAuditLog.

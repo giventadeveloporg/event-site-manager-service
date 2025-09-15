@@ -8,8 +8,6 @@ import com.nextjstemplate.service.mapper.TenantSettingsMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TenantSettingsServiceImpl implements TenantSettingsService {
 
-    private final Logger log = LoggerFactory.getLogger(TenantSettingsServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TenantSettingsServiceImpl.class);
 
     private final TenantSettingsRepository tenantSettingsRepository;
 
@@ -33,7 +31,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
 
     @Override
     public TenantSettingsDTO save(TenantSettingsDTO tenantSettingsDTO) {
-        log.debug("Request to save TenantSettings : {}", tenantSettingsDTO);
+        LOG.debug("Request to save TenantSettings : {}", tenantSettingsDTO);
         TenantSettings tenantSettings = tenantSettingsMapper.toEntity(tenantSettingsDTO);
         tenantSettings = tenantSettingsRepository.save(tenantSettings);
         return tenantSettingsMapper.toDto(tenantSettings);
@@ -41,7 +39,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
 
     @Override
     public TenantSettingsDTO update(TenantSettingsDTO tenantSettingsDTO) {
-        log.debug("Request to update TenantSettings : {}", tenantSettingsDTO);
+        LOG.debug("Request to update TenantSettings : {}", tenantSettingsDTO);
         TenantSettings tenantSettings = tenantSettingsMapper.toEntity(tenantSettingsDTO);
         tenantSettings = tenantSettingsRepository.save(tenantSettings);
         return tenantSettingsMapper.toDto(tenantSettings);
@@ -49,7 +47,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
 
     @Override
     public Optional<TenantSettingsDTO> partialUpdate(TenantSettingsDTO tenantSettingsDTO) {
-        log.debug("Request to partially update TenantSettings : {}", tenantSettingsDTO);
+        LOG.debug("Request to partially update TenantSettings : {}", tenantSettingsDTO);
 
         return tenantSettingsRepository
             .findById(tenantSettingsDTO.getId())
@@ -64,21 +62,14 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TenantSettingsDTO> findAll(Pageable pageable) {
-        log.debug("Request to get all TenantSettings");
-        return tenantSettingsRepository.findAll(pageable).map(tenantSettingsMapper::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Optional<TenantSettingsDTO> findOne(Long id) {
-        log.debug("Request to get TenantSettings : {}", id);
+        LOG.debug("Request to get TenantSettings : {}", id);
         return tenantSettingsRepository.findById(id).map(tenantSettingsMapper::toDto);
     }
 
     @Override
     public void delete(Long id) {
-        log.debug("Request to delete TenantSettings : {}", id);
+        LOG.debug("Request to delete TenantSettings : {}", id);
         tenantSettingsRepository.deleteById(id);
     }
 }

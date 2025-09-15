@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -92,14 +93,23 @@ public class EventMedia implements Serializable {
     @Column(name = "featured_video_url", length = 2048)
     private String featuredVideoUrl;
 
-    @Column(name = "is_featured_image")
-    private Boolean isFeaturedImage;
-
     @Column(name = "is_hero_image")
     private Boolean isHeroImage;
 
     @Column(name = "is_active_hero_image")
     private Boolean isActiveHeroImage;
+
+    @NotNull
+    @Column(name = "is_home_page_hero_image", nullable = false)
+    private Boolean isHomePageHeroImage;
+
+    @NotNull
+    @Column(name = "is_featured_event_image", nullable = false)
+    private Boolean isFeaturedEventImage;
+
+    @NotNull
+    @Column(name = "is_live_event_image", nullable = false)
+    private Boolean isLiveEventImage;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -114,6 +124,9 @@ public class EventMedia implements Serializable {
 
     @Column(name = "uploaded_by_id")
     private Long uploadedById;
+
+    @Column(name = "start_displaying_from_date")
+    private LocalDate startDisplayingFromDate;
 
     /*
      * @ManyToOne(fetch = FetchType.LAZY)
@@ -378,19 +391,6 @@ public class EventMedia implements Serializable {
         this.featuredVideoUrl = featuredVideoUrl;
     }
 
-    public Boolean getIsFeaturedImage() {
-        return this.isFeaturedImage;
-    }
-
-    public EventMedia isFeaturedImage(Boolean isFeaturedImage) {
-        this.setIsFeaturedImage(isFeaturedImage);
-        return this;
-    }
-
-    public void setIsFeaturedImage(Boolean isFeaturedImage) {
-        this.isFeaturedImage = isFeaturedImage;
-    }
-
     public Boolean getIsHeroImage() {
         return this.isHeroImage;
     }
@@ -415,6 +415,45 @@ public class EventMedia implements Serializable {
 
     public void setIsActiveHeroImage(Boolean isActiveHeroImage) {
         this.isActiveHeroImage = isActiveHeroImage;
+    }
+
+    public Boolean getIsHomePageHeroImage() {
+        return this.isHomePageHeroImage;
+    }
+
+    public EventMedia isHomePageHeroImage(Boolean isHomePageHeroImage) {
+        this.setIsHomePageHeroImage(isHomePageHeroImage);
+        return this;
+    }
+
+    public void setIsHomePageHeroImage(Boolean isHomePageHeroImage) {
+        this.isHomePageHeroImage = isHomePageHeroImage;
+    }
+
+    public Boolean getIsFeaturedEventImage() {
+        return this.isFeaturedEventImage;
+    }
+
+    public EventMedia isFeaturedEventImage(Boolean isFeaturedEventImage) {
+        this.setIsFeaturedEventImage(isFeaturedEventImage);
+        return this;
+    }
+
+    public void setIsFeaturedEventImage(Boolean isFeaturedEventImage) {
+        this.isFeaturedEventImage = isFeaturedEventImage;
+    }
+
+    public Boolean getIsLiveEventImage() {
+        return this.isLiveEventImage;
+    }
+
+    public EventMedia isLiveEventImage(Boolean isLiveEventImage) {
+        this.setIsLiveEventImage(isLiveEventImage);
+        return this;
+    }
+
+    public void setIsLiveEventImage(Boolean isLiveEventImage) {
+        this.isLiveEventImage = isLiveEventImage;
     }
 
     public ZonedDateTime getCreatedAt() {
@@ -467,6 +506,19 @@ public class EventMedia implements Serializable {
 
     public void setUploadedById(Long uploadedById) {
         this.uploadedById = uploadedById;
+    }
+
+    public LocalDate getStartDisplayingFromDate() {
+        return this.startDisplayingFromDate;
+    }
+
+    public EventMedia startDisplayingFromDate(LocalDate startDisplayingFromDate) {
+        this.setStartDisplayingFromDate(startDisplayingFromDate);
+        return this;
+    }
+
+    public void setStartDisplayingFromDate(LocalDate startDisplayingFromDate) {
+        this.startDisplayingFromDate = startDisplayingFromDate;
     }
 
     /*
@@ -541,13 +593,16 @@ public class EventMedia implements Serializable {
             ", downloadCount=" + getDownloadCount() +
             ", isFeaturedVideo='" + getIsFeaturedVideo() + "'" +
             ", featuredVideoUrl='" + getFeaturedVideoUrl() + "'" +
-            ", isFeaturedImage='" + getIsFeaturedImage() + "'" +
             ", isHeroImage='" + getIsHeroImage() + "'" +
             ", isActiveHeroImage='" + getIsActiveHeroImage() + "'" +
+            ", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
+            ", isFeaturedEventImage='" + getIsFeaturedEventImage() + "'" +
+            ", isLiveEventImage='" + getIsLiveEventImage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", eventId=" + getEventId() +
             ", uploadedById=" + getUploadedById() +
+            ", startDisplayingFromDate='" + getStartDisplayingFromDate() + "'" +
             "}";
     }
 }

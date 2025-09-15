@@ -45,8 +45,8 @@ public class EventLiveUpdate implements Serializable {
     @Column(name = "content_link_url", length = 1024)
     private String contentLinkUrl;
 
-    @Lob
-    @Column(name = "metadata")
+    @Size(max = 8192)
+    @Column(name = "metadata", length = 8192)
     private String metadata;
 
     @Column(name = "display_order")

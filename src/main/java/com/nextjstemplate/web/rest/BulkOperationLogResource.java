@@ -33,7 +33,7 @@ import tech.jhipster.web.util.ResponseUtil;
 @RequestMapping("/api/bulk-operation-logs")
 public class BulkOperationLogResource {
 
-    private final Logger log = LoggerFactory.getLogger(BulkOperationLogResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BulkOperationLogResource.class);
 
     private static final String ENTITY_NAME = "bulkOperationLog";
 
@@ -66,15 +66,15 @@ public class BulkOperationLogResource {
     @PostMapping("")
     public ResponseEntity<BulkOperationLogDTO> createBulkOperationLog(@Valid @RequestBody BulkOperationLogDTO bulkOperationLogDTO)
         throws URISyntaxException {
-        log.debug("REST request to save BulkOperationLog : {}", bulkOperationLogDTO);
+        LOG.debug("REST request to save BulkOperationLog : {}", bulkOperationLogDTO);
         if (bulkOperationLogDTO.getId() != null) {
             throw new BadRequestAlertException("A new bulkOperationLog cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        BulkOperationLogDTO result = bulkOperationLogService.save(bulkOperationLogDTO);
+        bulkOperationLogDTO = bulkOperationLogService.save(bulkOperationLogDTO);
         return ResponseEntity
-            .created(new URI("/api/bulk-operation-logs/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+            .created(new URI("/api/bulk-operation-logs/" + bulkOperationLogDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, bulkOperationLogDTO.getId().toString()))
+            .body(bulkOperationLogDTO);
     }
 
     /**
@@ -92,7 +92,7 @@ public class BulkOperationLogResource {
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody BulkOperationLogDTO bulkOperationLogDTO
     ) throws URISyntaxException {
-        log.debug("REST request to update BulkOperationLog : {}, {}", id, bulkOperationLogDTO);
+        LOG.debug("REST request to update BulkOperationLog : {}, {}", id, bulkOperationLogDTO);
         if (bulkOperationLogDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -104,11 +104,11 @@ public class BulkOperationLogResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        BulkOperationLogDTO result = bulkOperationLogService.update(bulkOperationLogDTO);
+        bulkOperationLogDTO = bulkOperationLogService.update(bulkOperationLogDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, bulkOperationLogDTO.getId().toString()))
-            .body(result);
+            .body(bulkOperationLogDTO);
     }
 
     /**
@@ -127,7 +127,7 @@ public class BulkOperationLogResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody BulkOperationLogDTO bulkOperationLogDTO
     ) throws URISyntaxException {
-        log.debug("REST request to partial update BulkOperationLog partially : {}, {}", id, bulkOperationLogDTO);
+        LOG.debug("REST request to partial update BulkOperationLog partially : {}, {}", id, bulkOperationLogDTO);
         if (bulkOperationLogDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -159,7 +159,7 @@ public class BulkOperationLogResource {
         BulkOperationLogCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get BulkOperationLogs by criteria: {}", criteria);
+        LOG.debug("REST request to get BulkOperationLogs by criteria: {}", criteria);
 
         Page<BulkOperationLogDTO> page = bulkOperationLogQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -174,7 +174,7 @@ public class BulkOperationLogResource {
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countBulkOperationLogs(BulkOperationLogCriteria criteria) {
-        log.debug("REST request to count BulkOperationLogs by criteria: {}", criteria);
+        LOG.debug("REST request to count BulkOperationLogs by criteria: {}", criteria);
         return ResponseEntity.ok().body(bulkOperationLogQueryService.countByCriteria(criteria));
     }
 
@@ -185,8 +185,8 @@ public class BulkOperationLogResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the bulkOperationLogDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<BulkOperationLogDTO> getBulkOperationLog(@PathVariable Long id) {
-        log.debug("REST request to get BulkOperationLog : {}", id);
+    public ResponseEntity<BulkOperationLogDTO> getBulkOperationLog(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get BulkOperationLog : {}", id);
         Optional<BulkOperationLogDTO> bulkOperationLogDTO = bulkOperationLogService.findOne(id);
         return ResponseUtil.wrapOrNotFound(bulkOperationLogDTO);
     }
@@ -198,8 +198,8 @@ public class BulkOperationLogResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBulkOperationLog(@PathVariable Long id) {
-        log.debug("REST request to delete BulkOperationLog : {}", id);
+    public ResponseEntity<Void> deleteBulkOperationLog(@PathVariable("id") Long id) {
+        LOG.debug("REST request to delete BulkOperationLog : {}", id);
         bulkOperationLogService.delete(id);
         return ResponseEntity
             .noContent()

@@ -1,11 +1,13 @@
 # Communication Architecture: Email (SES) & WhatsApp (Twilio) for Multi-Tenant Event Management
 
 ## 1. Overview
+
 This document outlines the requirements, analysis, and recommended architecture for integrating Amazon SES (email) and Twilio (WhatsApp) into the multi-tenant event management backend. It covers transactional and bulk messaging, per-tenant usage tracking, and reporting/billing needs.
 
 ---
 
 ## 2. Requirements
+
 - **Transactional Email (SES):**
   - Send confirmation emails (e.g., ticket purchase) to individual users.
 - **Bulk Email (SES):**
@@ -22,20 +24,23 @@ This document outlines the requirements, analysis, and recommended architecture 
 ---
 
 ## 3. Off-the-Shelf Solutions: Analysis
+
 - **Email:**
-  - *Amazon SES* is enabled and suitable for transactional and bulk email. For advanced campaign management, consider AWS Pinpoint, but it is more complex to integrate.
-  - *SendGrid/Mailgun* offer analytics/campaigns but require migration and are not multi-tenant aware out-of-the-box.
+  - _Amazon SES_ is enabled and suitable for transactional and bulk email. For advanced campaign management, consider AWS Pinpoint, but it is more complex to integrate.
+  - _SendGrid/Mailgun_ offer analytics/campaigns but require migration and are not multi-tenant aware out-of-the-box.
 - **WhatsApp:**
-  - *Twilio* is the industry standard for WhatsApp API. No off-the-shelf solution provides per-tenant analytics; custom tracking is required.
+  - _Twilio_ is the industry standard for WhatsApp API. No off-the-shelf solution provides per-tenant analytics; custom tracking is required.
 - **Unified Communication Platforms:**
-  - *MessageBird, Vonage* offer APIs for multiple channels but still require custom integration for multi-tenant usage tracking.
+  - _MessageBird, Vonage_ offer APIs for multiple channels but still require custom integration for multi-tenant usage tracking.
 
 **Conclusion:**
+
 - Use SES and Twilio for sending, but implement custom tracking/logging in your own database for analytics, reporting, and billing.
 
 ---
 
 ## 4. Current JDL/Schema Review
+
 - No existing entities for communication/email/WhatsApp logging or campaign management.
 - `TenantSettings` includes flags for enabling/disabling email/WhatsApp, but no tracking.
 - No campaign or communication log entities exist.
@@ -85,6 +90,7 @@ entity CommunicationCampaign {
 ```
 
 **Relationships:**
+
 - `EmailLog{campaign} to CommunicationCampaign`
 - `WhatsAppLog{campaign} to CommunicationCampaign`
 - `CommunicationCampaign{createdBy} to UserProfile`
@@ -92,6 +98,7 @@ entity CommunicationCampaign {
 ---
 
 ## 6. Implementation Tasks
+
 1. **Integrate SES and Twilio using Java SDKs.**
 2. **Create service classes** for sending and logging communications.
 3. **Expose REST endpoints** for transactional and bulk messaging.
@@ -103,18 +110,19 @@ entity CommunicationCampaign {
 
 ## 7. Build vs. Buy Summary
 
-| Feature                | Off-the-Shelf | Custom Build (Recommended) |
-|------------------------|---------------|---------------------------|
-| Transactional Email    | SES           | SES + EmailLog            |
-| Bulk Email             | Pinpoint/3rdP | SES + EmailLog + Campaign |
-| Transactional WhatsApp | Twilio        | Twilio + WhatsAppLog      |
+| Feature                | Off-the-Shelf | Custom Build (Recommended)      |
+| ---------------------- | ------------- | ------------------------------- |
+| Transactional Email    | SES           | SES + EmailLog                  |
+| Bulk Email             | Pinpoint/3rdP | SES + EmailLog + Campaign       |
+| Transactional WhatsApp | Twilio        | Twilio + WhatsAppLog            |
 | Bulk WhatsApp          | Twilio        | Twilio + WhatsAppLog + Campaign |
-| Per-Tenant Analytics   | No            | Custom DB tables/queries  |
-| Multi-Tenant Billing   | No            | Custom DB tables/queries  |
+| Per-Tenant Analytics   | No            | Custom DB tables/queries        |
+| Multi-Tenant Billing   | No            | Custom DB tables/queries        |
 
 ---
 
 ## 8. Recommendations
+
 - **Proceed with SES and Twilio for sending.**
 - **Implement EmailLog, WhatsAppLog, and CommunicationCampaign entities** for tracking and analytics.
 - **No off-the-shelf solution** provides all requirements for multi-tenant analytics and billing; custom DB tracking is required.
@@ -122,5 +130,5 @@ entity CommunicationCampaign {
 
 ---
 
-*Prepared for: Multi-Tenant Event Management System*
-*Date: [Insert Date]*
+_Prepared for: Multi-Tenant Event Management System_
+_Date: [Insert Date]_

@@ -7,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
  * Service Interface for managing S3 operations.
  */
 public interface S3Service {
-
     /**
      * Upload a file to S3.
      *
@@ -16,7 +15,25 @@ public interface S3Service {
      * @param title   the title of the file.
      * @return the S3 URL of the uploaded file.
      */
-    String uploadFile(MultipartFile file, Long eventId, String title, String tenantId);
+    String uploadFile(MultipartFile file, Long eventId, String title, String tenantId,
+            Boolean isTeamMemberProfileImage);
+
+    /**
+     * Upload a file to S3 with entity-specific path construction.
+     *
+     * @param file       the file to upload.
+     * @param eventId    the event ID for organization.
+     * @param entityId   the entity ID (performer, sponsor, contact, etc.).
+     * @param entityType the type of entity (featured-performer, sponsor, contact,
+     *                   etc.).
+     * @param imageType  the type of image (portrait, performance, gallery, logo,
+     *                   hero, banner, photo).
+     * @param title      the title of the file.
+     * @param tenantId   the tenant ID.
+     * @return the S3 URL of the uploaded file.
+     */
+    String uploadFileWithEntityPath(MultipartFile file, Long eventId, Long entityId, String entityType,
+            String imageType, String title, String tenantId);
 
     /**
      * Generate a presigned URL for S3 file access.

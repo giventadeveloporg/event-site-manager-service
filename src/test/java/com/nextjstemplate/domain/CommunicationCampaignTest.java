@@ -22,7 +22,6 @@ class CommunicationCampaignTest {
         communicationCampaign2 = getCommunicationCampaignSample2();
         assertThat(communicationCampaign1).isNotEqualTo(communicationCampaign2);
     }
-
     /*@Test
     void createdByTest() throws Exception {
         CommunicationCampaign communicationCampaign = getCommunicationCampaignRandomSampleGenerator();

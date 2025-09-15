@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @WithMockUser
 class UserSubscriptionResourceIT {
-/*
+    /*
     private static final String DEFAULT_STRIPE_CUSTOMER_ID = "AAAAAAAAAA";
     private static final String UPDATED_STRIPE_CUSTOMER_ID = "BBBBBBBBBB";
 

@@ -1,6 +1,5 @@
 package com.nextjstemplate.service.dto;
 
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -29,7 +28,7 @@ public class EventAdminAuditLogDTO implements Serializable {
     @Size(max = 255)
     private String recordId;
 
-    @Lob
+    @Size(max = 8192)
     private String changes;
 
     @NotNull

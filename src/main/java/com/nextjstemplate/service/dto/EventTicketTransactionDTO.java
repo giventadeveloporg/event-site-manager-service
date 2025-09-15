@@ -47,6 +47,7 @@ public class EventTicketTransactionDTO implements Serializable {
 
     private BigDecimal platformFeeAmount;
 
+    private BigDecimal serviceFee;
     private Long discountCodeId;
 
     private BigDecimal discountAmount;
@@ -73,7 +74,7 @@ public class EventTicketTransactionDTO implements Serializable {
 
     private ZonedDateTime refundDate;
 
-    @Lob
+    @Size(max = 2048)
     private String refundReason;
 
     @Size(max = 255)
@@ -102,9 +103,11 @@ public class EventTicketTransactionDTO implements Serializable {
 
     @Size(max = 2048)
     private String qrCodeImageUrl;
+
     private Long eventId;
 
     private Long userId;
+
     @NotNull
     private ZonedDateTime createdAt;
 
@@ -119,6 +122,7 @@ public class EventTicketTransactionDTO implements Serializable {
     private ZonedDateTime checkInTime;
 
     private ZonedDateTime checkOutTime;
+
     public Long getId() {
         return id;
     }
@@ -215,6 +219,13 @@ public class EventTicketTransactionDTO implements Serializable {
         this.platformFeeAmount = platformFeeAmount;
     }
 
+    public BigDecimal getServiceFee() {
+        return serviceFee;
+    }
+
+    public void setServiceFee(BigDecimal serviceFee) {
+        this.serviceFee = serviceFee;
+    }
 
     public Long getDiscountCodeId() {
         return discountCodeId;
@@ -447,6 +458,7 @@ public class EventTicketTransactionDTO implements Serializable {
     public void setCheckOutTime(ZonedDateTime checkOutTime) {
         this.checkOutTime = checkOutTime;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -483,7 +495,8 @@ public class EventTicketTransactionDTO implements Serializable {
             ", pricePerUnit=" + getPricePerUnit() +
             ", totalAmount=" + getTotalAmount() +
             ", taxAmount=" + getTaxAmount() +
-           ", platformFeeAmount=" + getPlatformFeeAmount() +
+            ", platformFeeAmount=" + getPlatformFeeAmount() +
+            ", serviceFee=" + getServiceFee() +
             ", discountCodeId=" + getDiscountCodeId() +
             ", discountAmount=" + getDiscountAmount() +
             ", finalAmount=" + getFinalAmount() +

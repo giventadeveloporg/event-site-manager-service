@@ -473,6 +473,7 @@ public class UserProfileCriteria implements Serializable, Criteria {
     public void setIsEmailSubscriptionTokenUsed(BooleanFilter isEmailSubscriptionTokenUsed) {
         this.isEmailSubscriptionTokenUsed = isEmailSubscriptionTokenUsed;
     }
+
     public StringFilter getUserStatus() {
         return userStatus;
     }

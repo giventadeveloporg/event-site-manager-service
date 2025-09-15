@@ -47,8 +47,8 @@ public class TenantSettings implements Serializable {
     @Column(name = "whatsapp_api_key", length = 500)
     private String whatsappApiKey;
 
-    @Lob
-    @Column(name = "email_provider_config")
+    @Size(max = 2048)
+    @Column(name = "email_provider_config", length = 2048)
     private String emailProviderConfig;
 
     @Column(name = "max_events_per_month")
@@ -69,12 +69,12 @@ public class TenantSettings implements Serializable {
     @Column(name = "platform_fee_percentage", precision = 21, scale = 2)
     private BigDecimal platformFeePercentage;
 
-    @Lob
-    @Column(name = "custom_css")
+    @Size(max = 8192)
+    @Column(name = "custom_css", length = 8192)
     private String customCss;
 
-    @Lob
-    @Column(name = "custom_js")
+    @Size(max = 16384)
+    @Column(name = "custom_js", length = 16384)
     private String customJs;
 
     @NotNull
@@ -85,11 +85,11 @@ public class TenantSettings implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
 
-   /* @JsonIgnoreProperties(value = { "tenantSettings" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "tenantSettings" }, allowSetters = true)
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
+    @JoinColumn(name = "tenant_organization_id", referencedColumnName = "id")
     private TenantOrganization tenantOrganization;
-*/
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -326,20 +326,21 @@ public class TenantSettings implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-   /* public TenantOrganization getTenantOrganization() {
+    public TenantOrganization getTenantOrganization() {
         return this.tenantOrganization;
     }
 
     public void setTenantOrganization(TenantOrganization tenantOrganization) {
         this.tenantOrganization = tenantOrganization;
     }
-*/
-   /* public TenantSettings tenantOrganization(TenantOrganization tenantOrganization) {
+
+    public TenantSettings tenantOrganization(TenantOrganization tenantOrganization) {
         this.setTenantOrganization(tenantOrganization);
         return this;
-    }*/
+    }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
+    // setters here
 
     @Override
     public boolean equals(Object o) {
@@ -354,7 +355,8 @@ public class TenantSettings implements Serializable {
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        // see
+        // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
@@ -362,24 +364,24 @@ public class TenantSettings implements Serializable {
     @Override
     public String toString() {
         return "TenantSettings{" +
-            "id=" + getId() +
-            ", tenantId='" + getTenantId() + "'" +
-            ", allowUserRegistration='" + getAllowUserRegistration() + "'" +
-            ", requireAdminApproval='" + getRequireAdminApproval() + "'" +
-            ", enableWhatsappIntegration='" + getEnableWhatsappIntegration() + "'" +
-            ", enableEmailMarketing='" + getEnableEmailMarketing() + "'" +
-            ", whatsappApiKey='" + getWhatsappApiKey() + "'" +
-            ", emailProviderConfig='" + getEmailProviderConfig() + "'" +
-            ", maxEventsPerMonth=" + getMaxEventsPerMonth() +
-            ", maxAttendeesPerEvent=" + getMaxAttendeesPerEvent() +
-            ", enableGuestRegistration='" + getEnableGuestRegistration() + "'" +
-            ", maxGuestsPerAttendee=" + getMaxGuestsPerAttendee() +
-            ", defaultEventCapacity=" + getDefaultEventCapacity() +
-            ", platformFeePercentage=" + getPlatformFeePercentage() +
-            ", customCss='" + getCustomCss() + "'" +
-            ", customJs='" + getCustomJs() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            "}";
+                "id=" + getId() +
+                ", tenantId='" + getTenantId() + "'" +
+                ", allowUserRegistration='" + getAllowUserRegistration() + "'" +
+                ", requireAdminApproval='" + getRequireAdminApproval() + "'" +
+                ", enableWhatsappIntegration='" + getEnableWhatsappIntegration() + "'" +
+                ", enableEmailMarketing='" + getEnableEmailMarketing() + "'" +
+                ", whatsappApiKey='" + getWhatsappApiKey() + "'" +
+                ", emailProviderConfig='" + getEmailProviderConfig() + "'" +
+                ", maxEventsPerMonth=" + getMaxEventsPerMonth() +
+                ", maxAttendeesPerEvent=" + getMaxAttendeesPerEvent() +
+                ", enableGuestRegistration='" + getEnableGuestRegistration() + "'" +
+                ", maxGuestsPerAttendee=" + getMaxGuestsPerAttendee() +
+                ", defaultEventCapacity=" + getDefaultEventCapacity() +
+                ", platformFeePercentage=" + getPlatformFeePercentage() +
+                ", customCss='" + getCustomCss() + "'" +
+                ", customJs='" + getCustomJs() + "'" +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                "}";
     }
 }

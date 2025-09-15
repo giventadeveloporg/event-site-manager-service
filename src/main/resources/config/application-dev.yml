@@ -32,9 +32,9 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5432/giventa_event_management
-    username: giventa_event_management
-    password: giventa_event_management
+    url: jdbc:postgresql://localhost:5432/giventauser_db
+    username: giventauser
+    password: giventauser
     hikari:
       poolName: Hikari
       auto-commit: false

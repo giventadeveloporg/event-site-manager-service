@@ -101,6 +101,7 @@ public class UserProfile implements Serializable {
 
     @Column(name = "is_email_subscribed")
     private Boolean isEmailSubscribed;
+
     @Size(max = 255)
     @Column(name = "email_subscription_token", length = 255)
     private String emailSubscriptionToken;
@@ -146,6 +147,7 @@ public class UserProfile implements Serializable {
 
     @Column(name = "rejected_at")
     private ZonedDateTime rejectedAt;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -423,6 +425,7 @@ public class UserProfile implements Serializable {
     public void setIsEmailSubscribed(Boolean isEmailSubscribed) {
         this.isEmailSubscribed = isEmailSubscribed;
     }
+
     public String getEmailSubscriptionToken() {
         return this.emailSubscriptionToken;
     }
@@ -448,6 +451,7 @@ public class UserProfile implements Serializable {
     public void setIsEmailSubscriptionTokenUsed(Boolean isEmailSubscriptionTokenUsed) {
         this.isEmailSubscriptionTokenUsed = isEmailSubscriptionTokenUsed;
     }
+
     public String getUserStatus() {
         return this.userStatus;
     }

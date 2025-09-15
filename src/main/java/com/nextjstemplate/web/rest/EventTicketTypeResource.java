@@ -70,6 +70,8 @@ public class EventTicketTypeResource {
         if (eventTicketTypeDTO.getId() != null) {
             throw new BadRequestAlertException("A new eventTicketType cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        eventTicketTypeDTO.setSoldQuantity(0);
+        eventTicketTypeDTO.setRemainingQuantity(eventTicketTypeDTO.getAvailableQuantity());
         EventTicketTypeDTO result = eventTicketTypeService.save(eventTicketTypeDTO);
         return ResponseEntity
             .created(new URI("/api/event-ticket-types/" + result.getId()))

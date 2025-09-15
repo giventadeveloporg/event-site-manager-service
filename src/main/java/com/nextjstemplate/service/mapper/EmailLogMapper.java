@@ -11,7 +11,7 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface EmailLogMapper extends EntityMapper<EmailLogDTO, EmailLog> {
-//    @Mapping(target = "campaign", source = "campaign", qualifiedByName = "communicationCampaignId")
+    @Mapping(target = "campaign", source = "campaign", qualifiedByName = "communicationCampaignId")
     EmailLogDTO toDto(EmailLog s);
 
     @Named("communicationCampaignId")

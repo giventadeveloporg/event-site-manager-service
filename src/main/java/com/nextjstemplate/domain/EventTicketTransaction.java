@@ -69,6 +69,9 @@ public class EventTicketTransaction implements Serializable {
     @Column(name = "platform_fee_amount", precision = 21, scale = 2)
     private BigDecimal platformFeeAmount;
 
+    @Column(name = "service_fee", precision = 21, scale = 2)
+    private BigDecimal serviceFee;
+
     @Column(name = "discount_code_id")
     private Long discountCodeId;
 
@@ -105,8 +108,8 @@ public class EventTicketTransaction implements Serializable {
     @Column(name = "refund_date")
     private ZonedDateTime refundDate;
 
-    @Lob
-    @Column(name = "refund_reason")
+    @Size(max = 2048)
+    @Column(name = "refund_reason", length = 2048)
     private String refundReason;
 
     @Size(max = 255)
@@ -151,6 +154,7 @@ public class EventTicketTransaction implements Serializable {
 
     @Column(name = "user_id")
     private Long userId;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -172,7 +176,7 @@ public class EventTicketTransaction implements Serializable {
     @Column(name = "check_out_time")
     private ZonedDateTime checkOutTime;
 
-   /* @ManyToOne(fetch = FetchType.LAZY)
+    /* @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "createdBy", "eventType" }, allowSetters = true)
     private EventDetails event;
 
@@ -326,7 +330,7 @@ public class EventTicketTransaction implements Serializable {
         this.taxAmount = taxAmount;
     }
 
-        public BigDecimal getPlatformFeeAmount() {
+    public BigDecimal getPlatformFeeAmount() {
         return this.platformFeeAmount;
     }
 
@@ -337,6 +341,19 @@ public class EventTicketTransaction implements Serializable {
 
     public void setPlatformFeeAmount(BigDecimal platformFeeAmount) {
         this.platformFeeAmount = platformFeeAmount;
+    }
+
+    public BigDecimal getServiceFee() {
+        return this.serviceFee;
+    }
+
+    public EventTicketTransaction serviceFee(BigDecimal serviceFee) {
+        this.setServiceFee(serviceFee);
+        return this;
+    }
+
+    public void setServiceFee(BigDecimal serviceFee) {
+        this.serviceFee = serviceFee;
     }
 
     public Long getDiscountCodeId() {
@@ -664,7 +681,7 @@ public class EventTicketTransaction implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-     public String getCheckInStatus() {
+    public String getCheckInStatus() {
         return this.checkInStatus;
     }
 
@@ -737,7 +754,7 @@ public class EventTicketTransaction implements Serializable {
         this.user = userProfile;
     }*/
 
-   /* public EventTicketTransaction user(UserProfile userProfile) {
+    /* public EventTicketTransaction user(UserProfile userProfile) {
         this.setUser(userProfile);
         return this;
     }*/
@@ -776,7 +793,9 @@ public class EventTicketTransaction implements Serializable {
             ", pricePerUnit=" + getPricePerUnit() +
             ", totalAmount=" + getTotalAmount() +
             ", taxAmount=" + getTaxAmount() +
-            ", platformFeeAmount=" + getPlatformFeeAmount() +            ", discountCodeId=" + getDiscountCodeId() +
+            ", platformFeeAmount=" + getPlatformFeeAmount() +
+            ", serviceFee=" + getServiceFee() +
+            ", discountCodeId=" + getDiscountCodeId() +
             ", discountAmount=" + getDiscountAmount() +
             ", finalAmount=" + getFinalAmount() +
             ", status='" + getStatus() + "'" +

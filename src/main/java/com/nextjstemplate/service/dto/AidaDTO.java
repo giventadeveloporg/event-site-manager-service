@@ -1,6 +1,5 @@
 package com.nextjstemplate.service.dto;
 
-
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 

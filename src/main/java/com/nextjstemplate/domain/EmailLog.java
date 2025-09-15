@@ -39,8 +39,8 @@ public class EmailLog implements Serializable {
     @Column(name = "subject", length = 255)
     private String subject;
 
-    @Lob
-    @Column(name = "body")
+    @Size(max = 32768)
+    @Column(name = "body", length = 32768)
     private String body;
 
     @NotNull
@@ -58,13 +58,14 @@ public class EmailLog implements Serializable {
     @Column(name = "campaign_id")
     private Long campaignId;
 
-    @Lob
-    @Column(name = "metadata")
+    @Size(max = 8192)
+    @Column(name = "metadata", length = 8192)
     private String metadata;
 
-  /*  @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "campaign_id", insertable = false, updatable = false)
     @JsonIgnoreProperties(value = { "createdBy" }, allowSetters = true)
-    private CommunicationCampaign campaign;*/
+    private CommunicationCampaign campaign;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -198,7 +199,7 @@ public class EmailLog implements Serializable {
         this.metadata = metadata;
     }
 
-   /* public CommunicationCampaign getCampaign() {
+    public CommunicationCampaign getCampaign() {
         return this.campaign;
     }
 
@@ -209,7 +210,7 @@ public class EmailLog implements Serializable {
     public EmailLog campaign(CommunicationCampaign communicationCampaign) {
         this.setCampaign(communicationCampaign);
         return this;
-    }*/
+    }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 

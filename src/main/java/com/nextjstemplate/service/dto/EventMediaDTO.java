@@ -3,6 +3,7 @@ package com.nextjstemplate.service.dto;
 import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -63,11 +64,18 @@ public class EventMediaDTO implements Serializable {
     @Size(max = 2048)
     private String featuredVideoUrl;
 
-    private Boolean isFeaturedImage;
-
     private Boolean isHeroImage;
 
     private Boolean isActiveHeroImage;
+
+    @NotNull
+    private Boolean isHomePageHeroImage;
+
+    @NotNull
+    private Boolean isFeaturedEventImage;
+
+    @NotNull
+    private Boolean isLiveEventImage;
 
     private Long eventId;
 
@@ -79,9 +87,9 @@ public class EventMediaDTO implements Serializable {
     @NotNull
     private ZonedDateTime updatedAt;
 
+    private LocalDate startDisplayingFromDate;
 
-
-   /* private EventDetailsDTO event;
+    /* private EventDetailsDTO event;
 
     private UserProfileDTO uploadedBy;*/
 
@@ -237,15 +245,6 @@ public class EventMediaDTO implements Serializable {
         this.featuredVideoUrl = featuredVideoUrl;
     }
 
-    public Boolean getIsFeaturedImage() {
-        return isFeaturedImage;
-    }
-
-    public void setIsFeaturedImage(Boolean isFeaturedImage) {
-        this.isFeaturedImage = isFeaturedImage;
-    }
-
-
     public Boolean getIsHeroImage() {
         return isHeroImage;
     }
@@ -262,6 +261,30 @@ public class EventMediaDTO implements Serializable {
         this.isActiveHeroImage = isActiveHeroImage;
     }
 
+    public Boolean getIsHomePageHeroImage() {
+        return isHomePageHeroImage;
+    }
+
+    public void setIsHomePageHeroImage(Boolean isHomePageHeroImage) {
+        this.isHomePageHeroImage = isHomePageHeroImage;
+    }
+
+    public Boolean getIsFeaturedEventImage() {
+        return isFeaturedEventImage;
+    }
+
+    public void setIsFeaturedEventImage(Boolean isFeaturedEventImage) {
+        this.isFeaturedEventImage = isFeaturedEventImage;
+    }
+
+    public Boolean getIsLiveEventImage() {
+        return isLiveEventImage;
+    }
+
+    public void setIsLiveEventImage(Boolean isLiveEventImage) {
+        this.isLiveEventImage = isLiveEventImage;
+    }
+
     public Long getEventId() {
         return eventId;
     }
@@ -269,6 +292,7 @@ public class EventMediaDTO implements Serializable {
     public void setEventId(Long eventId) {
         this.eventId = eventId;
     }
+
     public Long getUploadedById() {
         return uploadedById;
     }
@@ -293,7 +317,13 @@ public class EventMediaDTO implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public LocalDate getStartDisplayingFromDate() {
+        return startDisplayingFromDate;
+    }
 
+    public void setStartDisplayingFromDate(LocalDate startDisplayingFromDate) {
+        this.startDisplayingFromDate = startDisplayingFromDate;
+    }
 
     /*public EventDetailsDTO getEvent() {
         return event;
@@ -355,15 +385,16 @@ public class EventMediaDTO implements Serializable {
             ", downloadCount=" + getDownloadCount() +
             ", isFeaturedVideo='" + getIsFeaturedVideo() + "'" +
             ", featuredVideoUrl='" + getFeaturedVideoUrl() + "'" +
-            ", isFeaturedImage='" + getIsFeaturedImage() + "'" +
             ", isHeroImage='" + getIsHeroImage() + "'" +
             ", isActiveHeroImage='" + getIsActiveHeroImage() + "'" +
+			", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
+            ", isFeaturedEventImage='" + getIsFeaturedEventImage() + "'" +
+            ", isLiveEventImage='" + getIsLiveEventImage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
+            ", startDisplayingFromDate='" + getStartDisplayingFromDate() + "'" +
            /* ", event=" + getEvent() +
             ", uploadedBy=" + getUploadedBy() +*/
             "}";
     }
-
-
 }

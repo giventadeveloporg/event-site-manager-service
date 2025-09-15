@@ -2,8 +2,6 @@ package com.nextjstemplate.service;
 
 import com.nextjstemplate.service.dto.EventLiveUpdateAttachmentDTO;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.nextjstemplate.domain.EventLiveUpdateAttachment}.
@@ -32,14 +30,6 @@ public interface EventLiveUpdateAttachmentService {
      * @return the persisted entity.
      */
     Optional<EventLiveUpdateAttachmentDTO> partialUpdate(EventLiveUpdateAttachmentDTO eventLiveUpdateAttachmentDTO);
-
-    /**
-     * Get all the eventLiveUpdateAttachments.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<EventLiveUpdateAttachmentDTO> findAll(Pageable pageable);
 
     /**
      * Get the "id" eventLiveUpdateAttachment.

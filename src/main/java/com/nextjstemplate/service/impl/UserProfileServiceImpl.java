@@ -156,9 +156,8 @@ public class UserProfileServiceImpl implements UserProfileService {
         log.debug("Request to get subscribed users for tenantId {} with limit {} and offset {}", tenantId, limit,
                 offset);
         Pageable pageable = PageRequest.of(offset / limit, limit);
-        return userProfileRepository.findSubscribedUsersByTenantIdWithPagination(tenantId, pageable)
-                .getContent()
-                .stream()
+        Page<UserProfile> page = userProfileRepository.findSubscribedUsersByTenantIdWithPagination(tenantId, pageable);
+        return page.getContent().stream()
                 .map(userProfileMapper::toDto)
                 .collect(Collectors.toList());
     }

@@ -565,7 +565,7 @@ class EventAdminResourceIT {
         defaultEventAdminShouldBeFound("updatedAt.greaterThan=" + SMALLER_UPDATED_AT);
     }
 
-  /*  @Test
+    /*  @Test
     @Transactional
     void getAllEventAdminsByUserIsEqualToSomething() throws Exception {
         UserProfile user;

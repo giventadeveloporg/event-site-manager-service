@@ -7,7 +7,6 @@ import com.nextjstemplate.service.criteria.EventAdminAuditLogCriteria;
 import com.nextjstemplate.service.dto.EventAdminAuditLogDTO;
 import com.nextjstemplate.service.mapper.EventAdminAuditLogMapper;
 import jakarta.persistence.criteria.JoinType;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -21,13 +20,13 @@ import tech.jhipster.service.QueryService;
  * Service for executing complex queries for {@link EventAdminAuditLog} entities in the database.
  * The main input is a {@link EventAdminAuditLogCriteria} which gets converted to {@link Specification},
  * in a way that all the filters must apply.
- * It returns a {@link List} of {@link EventAdminAuditLogDTO} or a {@link Page} of {@link EventAdminAuditLogDTO} which fulfills the criteria.
+ * It returns a {@link Page} of {@link EventAdminAuditLogDTO} which fulfills the criteria.
  */
 @Service
 @Transactional(readOnly = true)
 public class EventAdminAuditLogQueryService extends QueryService<EventAdminAuditLog> {
 
-    private final Logger log = LoggerFactory.getLogger(EventAdminAuditLogQueryService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventAdminAuditLogQueryService.class);
 
     private final EventAdminAuditLogRepository eventAdminAuditLogRepository;
 
@@ -42,18 +41,6 @@ public class EventAdminAuditLogQueryService extends QueryService<EventAdminAudit
     }
 
     /**
-     * Return a {@link List} of {@link EventAdminAuditLogDTO} which matches the criteria from the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
-     * @return the matching entities.
-     */
-    @Transactional(readOnly = true)
-    public List<EventAdminAuditLogDTO> findByCriteria(EventAdminAuditLogCriteria criteria) {
-        log.debug("find by criteria : {}", criteria);
-        final Specification<EventAdminAuditLog> specification = createSpecification(criteria);
-        return eventAdminAuditLogMapper.toDto(eventAdminAuditLogRepository.findAll(specification));
-    }
-
-    /**
      * Return a {@link Page} of {@link EventAdminAuditLogDTO} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @param page The page, which should be returned.
@@ -61,7 +48,7 @@ public class EventAdminAuditLogQueryService extends QueryService<EventAdminAudit
      */
     @Transactional(readOnly = true)
     public Page<EventAdminAuditLogDTO> findByCriteria(EventAdminAuditLogCriteria criteria, Pageable page) {
-        log.debug("find by criteria : {}, page: {}", criteria, page);
+        LOG.debug("find by criteria : {}, page: {}", criteria, page);
         final Specification<EventAdminAuditLog> specification = createSpecification(criteria);
         return eventAdminAuditLogRepository.findAll(specification, page).map(eventAdminAuditLogMapper::toDto);
     }
@@ -73,7 +60,7 @@ public class EventAdminAuditLogQueryService extends QueryService<EventAdminAudit
      */
     @Transactional(readOnly = true)
     public long countByCriteria(EventAdminAuditLogCriteria criteria) {
-        log.debug("count by criteria : {}", criteria);
+        LOG.debug("count by criteria : {}", criteria);
         final Specification<EventAdminAuditLog> specification = createSpecification(criteria);
         return eventAdminAuditLogRepository.count(specification);
     }
@@ -87,36 +74,21 @@ public class EventAdminAuditLogQueryService extends QueryService<EventAdminAudit
         Specification<EventAdminAuditLog> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            if (criteria.getDistinct() != null) {
-                specification = specification.and(distinct(criteria.getDistinct()));
-            }
-            if (criteria.getId() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getId(), EventAdminAuditLog_.id));
-            }
-            if (criteria.getTenantId() != null) {
-                specification = specification.and(buildStringSpecification(criteria.getTenantId(), EventAdminAuditLog_.tenantId));
-            }
-            if (criteria.getAction() != null) {
-                specification = specification.and(buildStringSpecification(criteria.getAction(), EventAdminAuditLog_.action));
-            }
-            if (criteria.getTableName() != null) {
-                specification = specification.and(buildStringSpecification(criteria.getTableName(), EventAdminAuditLog_.tableName));
-            }
-            if (criteria.getRecordId() != null) {
-                specification = specification.and(buildStringSpecification(criteria.getRecordId(), EventAdminAuditLog_.recordId));
-            }
-            if (criteria.getCreatedAt() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), EventAdminAuditLog_.createdAt));
-            }
-            if (criteria.getAdminId() != null) {
-                specification =
-                    specification.and(
-                        buildSpecification(
-                            criteria.getAdminId(),
-                            root -> root.join(EventAdminAuditLog_.admin, JoinType.LEFT).get(UserProfile_.id)
-                        )
-                    );
-            }
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), EventAdminAuditLog_.id),
+                    buildStringSpecification(criteria.getTenantId(), EventAdminAuditLog_.tenantId),
+                    buildStringSpecification(criteria.getAction(), EventAdminAuditLog_.action),
+                    buildStringSpecification(criteria.getTableName(), EventAdminAuditLog_.tableName),
+                    buildStringSpecification(criteria.getRecordId(), EventAdminAuditLog_.recordId),
+                    buildStringSpecification(criteria.getChanges(), EventAdminAuditLog_.changes),
+                    buildRangeSpecification(criteria.getCreatedAt(), EventAdminAuditLog_.createdAt),
+                    buildSpecification(
+                        criteria.getAdminId(),
+                        root -> root.join(EventAdminAuditLog_.admin, JoinType.LEFT).get(UserProfile_.id)
+                    )
+                );
         }
         return specification;
     }

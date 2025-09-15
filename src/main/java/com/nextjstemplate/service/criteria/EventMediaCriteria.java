@@ -2,6 +2,7 @@ package com.nextjstemplate.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
@@ -57,12 +58,15 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     private StringFilter featuredVideoUrl;
 
-    private BooleanFilter isFeaturedImage;
-
     private BooleanFilter isHeroImage;
 
     private BooleanFilter isActiveHeroImage;
 
+    private BooleanFilter isHomePageHeroImage;
+
+    private BooleanFilter isFeaturedEventImage;
+
+    private BooleanFilter isLiveEventImage;
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -70,6 +74,8 @@ public class EventMediaCriteria implements Serializable, Criteria {
     private LongFilter eventId;
 
     private LongFilter uploadedById;
+
+    private LocalDateFilter startDisplayingFromDate;
 
     private Boolean distinct;
 
@@ -95,15 +101,19 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.downloadCount = other.downloadCount == null ? null : other.downloadCount.copy();
         this.isFeaturedVideo = other.isFeaturedVideo == null ? null : other.isFeaturedVideo.copy();
         this.featuredVideoUrl = other.featuredVideoUrl == null ? null : other.featuredVideoUrl.copy();
-        this.isFeaturedImage = other.isFeaturedImage == null ? null : other.isFeaturedImage.copy();
         this.isHeroImage = other.isHeroImage == null ? null : other.isHeroImage.copy();
         this.isActiveHeroImage = other.isActiveHeroImage == null ? null : other.isActiveHeroImage.copy();
+        this.isHomePageHeroImage = other.optionalIsHomePageHeroImage().map(BooleanFilter::copy).orElse(null);
+        this.isFeaturedEventImage = other.optionalIsFeaturedEventImage().map(BooleanFilter::copy).orElse(null);
+        this.isLiveEventImage = other.optionalIsLiveEventImage().map(BooleanFilter::copy).orElse(null);
+
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.eventId = other.eventId == null ? null : other.eventId.copy();
         this.uploadedById = other.uploadedById == null ? null : other.uploadedById.copy();
         this.eventId = other.eventId == null ? null : other.eventId.copy();
         this.uploadedById = other.uploadedById == null ? null : other.uploadedById.copy();
+        this.startDisplayingFromDate = other.startDisplayingFromDate == null ? null : other.startDisplayingFromDate.copy();
         this.distinct = other.distinct;
     }
 
@@ -382,21 +392,6 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.featuredVideoUrl = featuredVideoUrl;
     }
 
-    public BooleanFilter getIsFeaturedImage() {
-        return isFeaturedImage;
-    }
-
-    public BooleanFilter isFeaturedImage() {
-        if (isFeaturedImage == null) {
-            isFeaturedImage = new BooleanFilter();
-        }
-        return isFeaturedImage;
-    }
-
-    public void setIsFeaturedImage(BooleanFilter isFeaturedImage) {
-        this.isFeaturedImage = isFeaturedImage;
-    }
-
     public BooleanFilter getIsHeroImage() {
         return isHeroImage;
     }
@@ -425,6 +420,63 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     public void setIsActiveHeroImage(BooleanFilter isActiveHeroImage) {
         this.isActiveHeroImage = isActiveHeroImage;
+    }
+
+    public BooleanFilter getIsHomePageHeroImage() {
+        return isHomePageHeroImage;
+    }
+
+    public Optional<BooleanFilter> optionalIsHomePageHeroImage() {
+        return Optional.ofNullable(isHomePageHeroImage);
+    }
+
+    public BooleanFilter isHomePageHeroImage() {
+        if (isHomePageHeroImage == null) {
+            setIsHomePageHeroImage(new BooleanFilter());
+        }
+        return isHomePageHeroImage;
+    }
+
+    public void setIsHomePageHeroImage(BooleanFilter isHomePageHeroImage) {
+        this.isHomePageHeroImage = isHomePageHeroImage;
+    }
+
+    public BooleanFilter getIsFeaturedEventImage() {
+        return isFeaturedEventImage;
+    }
+
+    public Optional<BooleanFilter> optionalIsFeaturedEventImage() {
+        return Optional.ofNullable(isFeaturedEventImage);
+    }
+
+    public BooleanFilter isFeaturedEventImage() {
+        if (isFeaturedEventImage == null) {
+            setIsFeaturedEventImage(new BooleanFilter());
+        }
+        return isFeaturedEventImage;
+    }
+
+    public void setIsFeaturedEventImage(BooleanFilter isFeaturedEventImage) {
+        this.isFeaturedEventImage = isFeaturedEventImage;
+    }
+
+    public BooleanFilter getIsLiveEventImage() {
+        return isLiveEventImage;
+    }
+
+    public Optional<BooleanFilter> optionalIsLiveEventImage() {
+        return Optional.ofNullable(isLiveEventImage);
+    }
+
+    public BooleanFilter isLiveEventImage() {
+        if (isLiveEventImage == null) {
+            setIsLiveEventImage(new BooleanFilter());
+        }
+        return isLiveEventImage;
+    }
+
+    public void setIsLiveEventImage(BooleanFilter isLiveEventImage) {
+        this.isLiveEventImage = isLiveEventImage;
     }
 
     public ZonedDateTimeFilter getCreatedAt() {
@@ -487,6 +539,21 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.uploadedById = uploadedById;
     }
 
+    public LocalDateFilter getStartDisplayingFromDate() {
+        return startDisplayingFromDate;
+    }
+
+    public LocalDateFilter startDisplayingFromDate() {
+        if (startDisplayingFromDate == null) {
+            startDisplayingFromDate = new LocalDateFilter();
+        }
+        return startDisplayingFromDate;
+    }
+
+    public void setStartDisplayingFromDate(LocalDateFilter startDisplayingFromDate) {
+        this.startDisplayingFromDate = startDisplayingFromDate;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -523,15 +590,19 @@ public class EventMediaCriteria implements Serializable, Criteria {
             Objects.equals(downloadCount, that.downloadCount) &&
             Objects.equals(isFeaturedVideo, that.isFeaturedVideo) &&
             Objects.equals(featuredVideoUrl, that.featuredVideoUrl) &&
-            Objects.equals(isFeaturedImage, that.isFeaturedImage) &&
             Objects.equals(isHeroImage, that.isHeroImage) &&
             Objects.equals(isActiveHeroImage, that.isActiveHeroImage) &&
+            Objects.equals(isHomePageHeroImage, that.isHomePageHeroImage) &&
+            Objects.equals(isFeaturedEventImage, that.isFeaturedEventImage) &&
+            Objects.equals(isLiveEventImage, that.isLiveEventImage) &&
+            Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(eventId, that.eventId) &&
             Objects.equals(uploadedById, that.uploadedById) &&
             Objects.equals(eventId, that.eventId) &&
             Objects.equals(uploadedById, that.uploadedById) &&
+            Objects.equals(startDisplayingFromDate, that.startDisplayingFromDate) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -557,15 +628,18 @@ public class EventMediaCriteria implements Serializable, Criteria {
             downloadCount,
             isFeaturedVideo,
             featuredVideoUrl,
-            isFeaturedImage,
             isHeroImage,
             isActiveHeroImage,
+            isHomePageHeroImage,
+            isFeaturedEventImage,
+            isLiveEventImage,
             createdAt,
             updatedAt,
             eventId,
             uploadedById,
             eventId,
             uploadedById,
+            startDisplayingFromDate,
             distinct
         );
     }
@@ -592,15 +666,19 @@ public class EventMediaCriteria implements Serializable, Criteria {
             (downloadCount != null ? "downloadCount=" + downloadCount + ", " : "") +
             (isFeaturedVideo != null ? "isFeaturedVideo=" + isFeaturedVideo + ", " : "") +
             (featuredVideoUrl != null ? "featuredVideoUrl=" + featuredVideoUrl + ", " : "") +
-            (isFeaturedImage != null ? "isFeaturedImage=" + isFeaturedImage + ", " : "") +
             (isHeroImage != null ? "isHeroImage=" + isHeroImage + ", " : "") +
             (isActiveHeroImage != null ? "isActiveHeroImage=" + isActiveHeroImage + ", " : "") +
+            optionalIsHomePageHeroImage().map(f -> "isHomePageHeroImage=" + f + ", ").orElse("") +
+            optionalIsFeaturedEventImage().map(f -> "isFeaturedEventImage=" + f + ", ").orElse("") +
+            optionalIsLiveEventImage().map(f -> "isLiveEventImage=" + f + ", ").orElse("") +
+
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
             (eventId != null ? "eventId=" + eventId + ", " : "") +
             (uploadedById != null ? "uploadedById=" + uploadedById + ", " : "") +
             (eventId != null ? "eventId=" + eventId + ", " : "") +
             (uploadedById != null ? "uploadedById=" + uploadedById + ", " : "") +
+            (startDisplayingFromDate != null ? "startDisplayingFromDate=" + startDisplayingFromDate + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}";
     }

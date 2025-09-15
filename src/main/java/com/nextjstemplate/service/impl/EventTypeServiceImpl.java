@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional
-public class EventTypeServiceImpl /* implements EventTypeService*/ {/*
+public class EventTypeServiceImpl /* implements EventTypeService*/{/*
 
     private final Logger log = LoggerFactory.getLogger(EventTypeServiceImpl.class);
 
@@ -75,5 +75,4 @@ public class EventTypeServiceImpl /* implements EventTypeService*/ {/*
     public void delete(Long id) {
         log.debug("Request to delete EventType : {}", id);
         eventTypeRepository.deleteById(id);
-    }*/
-}
+    }*/}

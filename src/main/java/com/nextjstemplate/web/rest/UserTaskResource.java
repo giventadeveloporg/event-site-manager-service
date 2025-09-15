@@ -33,7 +33,7 @@ import tech.jhipster.web.util.ResponseUtil;
 @RequestMapping("/api/user-tasks")
 public class UserTaskResource {
 
-    private final Logger log = LoggerFactory.getLogger(UserTaskResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserTaskResource.class);
 
     private static final String ENTITY_NAME = "userTask";
 
@@ -65,15 +65,15 @@ public class UserTaskResource {
      */
     @PostMapping("")
     public ResponseEntity<UserTaskDTO> createUserTask(@Valid @RequestBody UserTaskDTO userTaskDTO) throws URISyntaxException {
-        log.debug("REST request to save UserTask : {}", userTaskDTO);
+        LOG.debug("REST request to save UserTask : {}", userTaskDTO);
         if (userTaskDTO.getId() != null) {
             throw new BadRequestAlertException("A new userTask cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        UserTaskDTO result = userTaskService.save(userTaskDTO);
+        userTaskDTO = userTaskService.save(userTaskDTO);
         return ResponseEntity
-            .created(new URI("/api/user-tasks/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+            .created(new URI("/api/user-tasks/" + userTaskDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, userTaskDTO.getId().toString()))
+            .body(userTaskDTO);
     }
 
     /**
@@ -91,7 +91,7 @@ public class UserTaskResource {
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody UserTaskDTO userTaskDTO
     ) throws URISyntaxException {
-        log.debug("REST request to update UserTask : {}, {}", id, userTaskDTO);
+        LOG.debug("REST request to update UserTask : {}, {}", id, userTaskDTO);
         if (userTaskDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -103,11 +103,11 @@ public class UserTaskResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        UserTaskDTO result = userTaskService.update(userTaskDTO);
+        userTaskDTO = userTaskService.update(userTaskDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, userTaskDTO.getId().toString()))
-            .body(result);
+            .body(userTaskDTO);
     }
 
     /**
@@ -126,7 +126,7 @@ public class UserTaskResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody UserTaskDTO userTaskDTO
     ) throws URISyntaxException {
-        log.debug("REST request to partial update UserTask partially : {}, {}", id, userTaskDTO);
+        LOG.debug("REST request to partial update UserTask partially : {}, {}", id, userTaskDTO);
         if (userTaskDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -158,7 +158,7 @@ public class UserTaskResource {
         UserTaskCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get UserTasks by criteria: {}", criteria);
+        LOG.debug("REST request to get UserTasks by criteria: {}", criteria);
 
         Page<UserTaskDTO> page = userTaskQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -173,7 +173,7 @@ public class UserTaskResource {
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countUserTasks(UserTaskCriteria criteria) {
-        log.debug("REST request to count UserTasks by criteria: {}", criteria);
+        LOG.debug("REST request to count UserTasks by criteria: {}", criteria);
         return ResponseEntity.ok().body(userTaskQueryService.countByCriteria(criteria));
     }
 
@@ -184,8 +184,8 @@ public class UserTaskResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the userTaskDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<UserTaskDTO> getUserTask(@PathVariable Long id) {
-        log.debug("REST request to get UserTask : {}", id);
+    public ResponseEntity<UserTaskDTO> getUserTask(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get UserTask : {}", id);
         Optional<UserTaskDTO> userTaskDTO = userTaskService.findOne(id);
         return ResponseUtil.wrapOrNotFound(userTaskDTO);
     }
@@ -197,8 +197,8 @@ public class UserTaskResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUserTask(@PathVariable Long id) {
-        log.debug("REST request to delete UserTask : {}", id);
+    public ResponseEntity<Void> deleteUserTask(@PathVariable("id") Long id) {
+        LOG.debug("REST request to delete UserTask : {}", id);
         userTaskService.delete(id);
         return ResponseEntity
             .noContent()

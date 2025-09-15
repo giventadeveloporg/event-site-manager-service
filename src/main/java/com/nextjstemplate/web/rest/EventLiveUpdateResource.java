@@ -33,7 +33,7 @@ import tech.jhipster.web.util.ResponseUtil;
 @RequestMapping("/api/event-live-updates")
 public class EventLiveUpdateResource {
 
-    private final Logger log = LoggerFactory.getLogger(EventLiveUpdateResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventLiveUpdateResource.class);
 
     private static final String ENTITY_NAME = "eventLiveUpdate";
 
@@ -66,15 +66,15 @@ public class EventLiveUpdateResource {
     @PostMapping("")
     public ResponseEntity<EventLiveUpdateDTO> createEventLiveUpdate(@Valid @RequestBody EventLiveUpdateDTO eventLiveUpdateDTO)
         throws URISyntaxException {
-        log.debug("REST request to save EventLiveUpdate : {}", eventLiveUpdateDTO);
+        LOG.debug("REST request to save EventLiveUpdate : {}", eventLiveUpdateDTO);
         if (eventLiveUpdateDTO.getId() != null) {
             throw new BadRequestAlertException("A new eventLiveUpdate cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        EventLiveUpdateDTO result = eventLiveUpdateService.save(eventLiveUpdateDTO);
+        eventLiveUpdateDTO = eventLiveUpdateService.save(eventLiveUpdateDTO);
         return ResponseEntity
-            .created(new URI("/api/event-live-updates/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+            .created(new URI("/api/event-live-updates/" + eventLiveUpdateDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, eventLiveUpdateDTO.getId().toString()))
+            .body(eventLiveUpdateDTO);
     }
 
     /**
@@ -92,7 +92,7 @@ public class EventLiveUpdateResource {
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody EventLiveUpdateDTO eventLiveUpdateDTO
     ) throws URISyntaxException {
-        log.debug("REST request to update EventLiveUpdate : {}, {}", id, eventLiveUpdateDTO);
+        LOG.debug("REST request to update EventLiveUpdate : {}, {}", id, eventLiveUpdateDTO);
         if (eventLiveUpdateDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -104,11 +104,11 @@ public class EventLiveUpdateResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        EventLiveUpdateDTO result = eventLiveUpdateService.update(eventLiveUpdateDTO);
+        eventLiveUpdateDTO = eventLiveUpdateService.update(eventLiveUpdateDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventLiveUpdateDTO.getId().toString()))
-            .body(result);
+            .body(eventLiveUpdateDTO);
     }
 
     /**
@@ -127,7 +127,7 @@ public class EventLiveUpdateResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody EventLiveUpdateDTO eventLiveUpdateDTO
     ) throws URISyntaxException {
-        log.debug("REST request to partial update EventLiveUpdate partially : {}, {}", id, eventLiveUpdateDTO);
+        LOG.debug("REST request to partial update EventLiveUpdate partially : {}, {}", id, eventLiveUpdateDTO);
         if (eventLiveUpdateDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -159,7 +159,7 @@ public class EventLiveUpdateResource {
         EventLiveUpdateCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get EventLiveUpdates by criteria: {}", criteria);
+        LOG.debug("REST request to get EventLiveUpdates by criteria: {}", criteria);
 
         Page<EventLiveUpdateDTO> page = eventLiveUpdateQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -174,7 +174,7 @@ public class EventLiveUpdateResource {
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countEventLiveUpdates(EventLiveUpdateCriteria criteria) {
-        log.debug("REST request to count EventLiveUpdates by criteria: {}", criteria);
+        LOG.debug("REST request to count EventLiveUpdates by criteria: {}", criteria);
         return ResponseEntity.ok().body(eventLiveUpdateQueryService.countByCriteria(criteria));
     }
 
@@ -185,8 +185,8 @@ public class EventLiveUpdateResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the eventLiveUpdateDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<EventLiveUpdateDTO> getEventLiveUpdate(@PathVariable Long id) {
-        log.debug("REST request to get EventLiveUpdate : {}", id);
+    public ResponseEntity<EventLiveUpdateDTO> getEventLiveUpdate(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get EventLiveUpdate : {}", id);
         Optional<EventLiveUpdateDTO> eventLiveUpdateDTO = eventLiveUpdateService.findOne(id);
         return ResponseUtil.wrapOrNotFound(eventLiveUpdateDTO);
     }
@@ -198,8 +198,8 @@ public class EventLiveUpdateResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEventLiveUpdate(@PathVariable Long id) {
-        log.debug("REST request to delete EventLiveUpdate : {}", id);
+    public ResponseEntity<Void> deleteEventLiveUpdate(@PathVariable("id") Long id) {
+        LOG.debug("REST request to delete EventLiveUpdate : {}", id);
         eventLiveUpdateService.delete(id);
         return ResponseEntity
             .noContent()

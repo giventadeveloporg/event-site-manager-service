@@ -848,7 +848,7 @@ class QrCodeUsageResourceIT {
         defaultQrCodeUsageShouldBeFound("createdAt.greaterThan=" + SMALLER_CREATED_AT);
     }
 
-   /* @Test
+    /* @Test
     @Transactional
     void getAllQrCodeUsagesByAttendeeIsEqualToSomething() throws Exception {
         EventAttendee attendee;

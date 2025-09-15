@@ -2,6 +2,7 @@ package com.nextjstemplate.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
@@ -29,6 +30,8 @@ public class EmailLogCriteria implements Serializable, Criteria {
 
     private StringFilter subject;
 
+    private StringFilter body;
+
     private ZonedDateTimeFilter sentAt;
 
     private StringFilter status;
@@ -37,20 +40,23 @@ public class EmailLogCriteria implements Serializable, Criteria {
 
     private LongFilter campaignId;
 
+    private StringFilter metadata;
+
     private Boolean distinct;
 
     public EmailLogCriteria() {}
 
     public EmailLogCriteria(EmailLogCriteria other) {
-        this.id = other.id == null ? null : other.id.copy();
-        this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
-        this.recipientEmail = other.recipientEmail == null ? null : other.recipientEmail.copy();
-        this.subject = other.subject == null ? null : other.subject.copy();
-        this.sentAt = other.sentAt == null ? null : other.sentAt.copy();
-        this.status = other.status == null ? null : other.status.copy();
-        this.type = other.type == null ? null : other.type.copy();
-        this.campaignId = other.campaignId == null ? null : other.campaignId.copy();
-        this.campaignId = other.campaignId == null ? null : other.campaignId.copy();
+        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
+        this.tenantId = other.optionalTenantId().map(StringFilter::copy).orElse(null);
+        this.recipientEmail = other.optionalRecipientEmail().map(StringFilter::copy).orElse(null);
+        this.subject = other.optionalSubject().map(StringFilter::copy).orElse(null);
+        this.body = other.optionalBody().map(StringFilter::copy).orElse(null);
+        this.sentAt = other.optionalSentAt().map(ZonedDateTimeFilter::copy).orElse(null);
+        this.status = other.optionalStatus().map(StringFilter::copy).orElse(null);
+        this.type = other.optionalType().map(StringFilter::copy).orElse(null);
+        this.campaignId = other.optionalCampaignId().map(LongFilter::copy).orElse(null);
+        this.metadata = other.optionalMetadata().map(StringFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -63,9 +69,13 @@ public class EmailLogCriteria implements Serializable, Criteria {
         return id;
     }
 
+    public Optional<LongFilter> optionalId() {
+        return Optional.ofNullable(id);
+    }
+
     public LongFilter id() {
         if (id == null) {
-            id = new LongFilter();
+            setId(new LongFilter());
         }
         return id;
     }
@@ -78,9 +88,13 @@ public class EmailLogCriteria implements Serializable, Criteria {
         return tenantId;
     }
 
+    public Optional<StringFilter> optionalTenantId() {
+        return Optional.ofNullable(tenantId);
+    }
+
     public StringFilter tenantId() {
         if (tenantId == null) {
-            tenantId = new StringFilter();
+            setTenantId(new StringFilter());
         }
         return tenantId;
     }
@@ -93,9 +107,13 @@ public class EmailLogCriteria implements Serializable, Criteria {
         return recipientEmail;
     }
 
+    public Optional<StringFilter> optionalRecipientEmail() {
+        return Optional.ofNullable(recipientEmail);
+    }
+
     public StringFilter recipientEmail() {
         if (recipientEmail == null) {
-            recipientEmail = new StringFilter();
+            setRecipientEmail(new StringFilter());
         }
         return recipientEmail;
     }
@@ -108,9 +126,13 @@ public class EmailLogCriteria implements Serializable, Criteria {
         return subject;
     }
 
+    public Optional<StringFilter> optionalSubject() {
+        return Optional.ofNullable(subject);
+    }
+
     public StringFilter subject() {
         if (subject == null) {
-            subject = new StringFilter();
+            setSubject(new StringFilter());
         }
         return subject;
     }
@@ -119,13 +141,36 @@ public class EmailLogCriteria implements Serializable, Criteria {
         this.subject = subject;
     }
 
+    public StringFilter getBody() {
+        return body;
+    }
+
+    public Optional<StringFilter> optionalBody() {
+        return Optional.ofNullable(body);
+    }
+
+    public StringFilter body() {
+        if (body == null) {
+            setBody(new StringFilter());
+        }
+        return body;
+    }
+
+    public void setBody(StringFilter body) {
+        this.body = body;
+    }
+
     public ZonedDateTimeFilter getSentAt() {
         return sentAt;
     }
 
+    public Optional<ZonedDateTimeFilter> optionalSentAt() {
+        return Optional.ofNullable(sentAt);
+    }
+
     public ZonedDateTimeFilter sentAt() {
         if (sentAt == null) {
-            sentAt = new ZonedDateTimeFilter();
+            setSentAt(new ZonedDateTimeFilter());
         }
         return sentAt;
     }
@@ -138,9 +183,13 @@ public class EmailLogCriteria implements Serializable, Criteria {
         return status;
     }
 
+    public Optional<StringFilter> optionalStatus() {
+        return Optional.ofNullable(status);
+    }
+
     public StringFilter status() {
         if (status == null) {
-            status = new StringFilter();
+            setStatus(new StringFilter());
         }
         return status;
     }
@@ -153,9 +202,13 @@ public class EmailLogCriteria implements Serializable, Criteria {
         return type;
     }
 
+    public Optional<StringFilter> optionalType() {
+        return Optional.ofNullable(type);
+    }
+
     public StringFilter type() {
         if (type == null) {
-            type = new StringFilter();
+            setType(new StringFilter());
         }
         return type;
     }
@@ -168,9 +221,13 @@ public class EmailLogCriteria implements Serializable, Criteria {
         return campaignId;
     }
 
+    public Optional<LongFilter> optionalCampaignId() {
+        return Optional.ofNullable(campaignId);
+    }
+
     public LongFilter campaignId() {
         if (campaignId == null) {
-            campaignId = new LongFilter();
+            setCampaignId(new LongFilter());
         }
         return campaignId;
     }
@@ -179,7 +236,37 @@ public class EmailLogCriteria implements Serializable, Criteria {
         this.campaignId = campaignId;
     }
 
+    public StringFilter getMetadata() {
+        return metadata;
+    }
+
+    public Optional<StringFilter> optionalMetadata() {
+        return Optional.ofNullable(metadata);
+    }
+
+    public StringFilter metadata() {
+        if (metadata == null) {
+            setMetadata(new StringFilter());
+        }
+        return metadata;
+    }
+
+    public void setMetadata(StringFilter metadata) {
+        this.metadata = metadata;
+    }
+
     public Boolean getDistinct() {
+        return distinct;
+    }
+
+    public Optional<Boolean> optionalDistinct() {
+        return Optional.ofNullable(distinct);
+    }
+
+    public Boolean distinct() {
+        if (distinct == null) {
+            setDistinct(true);
+        }
         return distinct;
     }
 
@@ -201,34 +288,36 @@ public class EmailLogCriteria implements Serializable, Criteria {
             Objects.equals(tenantId, that.tenantId) &&
             Objects.equals(recipientEmail, that.recipientEmail) &&
             Objects.equals(subject, that.subject) &&
+            Objects.equals(body, that.body) &&
             Objects.equals(sentAt, that.sentAt) &&
             Objects.equals(status, that.status) &&
             Objects.equals(type, that.type) &&
             Objects.equals(campaignId, that.campaignId) &&
-            Objects.equals(campaignId, that.campaignId) &&
+            Objects.equals(metadata, that.metadata) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, tenantId, recipientEmail, subject, sentAt, status, type, campaignId, campaignId, distinct);
+        return Objects.hash(id, tenantId, recipientEmail, subject, body, sentAt, status, type, campaignId, metadata, distinct);
     }
 
     // prettier-ignore
     @Override
     public String toString() {
         return "EmailLogCriteria{" +
-            (id != null ? "id=" + id + ", " : "") +
-            (tenantId != null ? "tenantId=" + tenantId + ", " : "") +
-            (recipientEmail != null ? "recipientEmail=" + recipientEmail + ", " : "") +
-            (subject != null ? "subject=" + subject + ", " : "") +
-            (sentAt != null ? "sentAt=" + sentAt + ", " : "") +
-            (status != null ? "status=" + status + ", " : "") +
-            (type != null ? "type=" + type + ", " : "") +
-            (campaignId != null ? "campaignId=" + campaignId + ", " : "") +
-            (campaignId != null ? "campaignId=" + campaignId + ", " : "") +
-            (distinct != null ? "distinct=" + distinct + ", " : "") +
-            "}";
+            optionalId().map(f -> "id=" + f + ", ").orElse("") +
+            optionalTenantId().map(f -> "tenantId=" + f + ", ").orElse("") +
+            optionalRecipientEmail().map(f -> "recipientEmail=" + f + ", ").orElse("") +
+            optionalSubject().map(f -> "subject=" + f + ", ").orElse("") +
+            optionalBody().map(f -> "body=" + f + ", ").orElse("") +
+            optionalSentAt().map(f -> "sentAt=" + f + ", ").orElse("") +
+            optionalStatus().map(f -> "status=" + f + ", ").orElse("") +
+            optionalType().map(f -> "type=" + f + ", ").orElse("") +
+            optionalCampaignId().map(f -> "campaignId=" + f + ", ").orElse("") +
+            optionalMetadata().map(f -> "metadata=" + f + ", ").orElse("") +
+            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
+        "}";
     }
 }

@@ -2,6 +2,7 @@ package com.nextjstemplate.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
@@ -26,6 +27,8 @@ public class UserTaskCriteria implements Serializable, Criteria {
     private StringFilter tenantId;
 
     private StringFilter title;
+
+    private StringFilter description;
 
     private StringFilter status;
 
@@ -54,20 +57,21 @@ public class UserTaskCriteria implements Serializable, Criteria {
     public UserTaskCriteria() {}
 
     public UserTaskCriteria(UserTaskCriteria other) {
-        this.id = other.id == null ? null : other.id.copy();
-        this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
-        this.title = other.title == null ? null : other.title.copy();
-        this.status = other.status == null ? null : other.status.copy();
-        this.priority = other.priority == null ? null : other.priority.copy();
-        this.dueDate = other.dueDate == null ? null : other.dueDate.copy();
-        this.completed = other.completed == null ? null : other.completed.copy();
-        this.assigneeName = other.assigneeName == null ? null : other.assigneeName.copy();
-        this.assigneeContactPhone = other.assigneeContactPhone == null ? null : other.assigneeContactPhone.copy();
-        this.assigneeContactEmail = other.assigneeContactEmail == null ? null : other.assigneeContactEmail.copy();
-        this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
-        this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
-        this.userId = other.userId == null ? null : other.userId.copy();
-        this.eventId = other.eventId == null ? null : other.eventId.copy();
+        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
+        this.tenantId = other.optionalTenantId().map(StringFilter::copy).orElse(null);
+        this.title = other.optionalTitle().map(StringFilter::copy).orElse(null);
+        this.description = other.optionalDescription().map(StringFilter::copy).orElse(null);
+        this.status = other.optionalStatus().map(StringFilter::copy).orElse(null);
+        this.priority = other.optionalPriority().map(StringFilter::copy).orElse(null);
+        this.dueDate = other.optionalDueDate().map(ZonedDateTimeFilter::copy).orElse(null);
+        this.completed = other.optionalCompleted().map(BooleanFilter::copy).orElse(null);
+        this.assigneeName = other.optionalAssigneeName().map(StringFilter::copy).orElse(null);
+        this.assigneeContactPhone = other.optionalAssigneeContactPhone().map(StringFilter::copy).orElse(null);
+        this.assigneeContactEmail = other.optionalAssigneeContactEmail().map(StringFilter::copy).orElse(null);
+        this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
+        this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
+        this.userId = other.optionalUserId().map(LongFilter::copy).orElse(null);
+        this.eventId = other.optionalEventId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -80,9 +84,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return id;
     }
 
+    public Optional<LongFilter> optionalId() {
+        return Optional.ofNullable(id);
+    }
+
     public LongFilter id() {
         if (id == null) {
-            id = new LongFilter();
+            setId(new LongFilter());
         }
         return id;
     }
@@ -95,9 +103,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return tenantId;
     }
 
+    public Optional<StringFilter> optionalTenantId() {
+        return Optional.ofNullable(tenantId);
+    }
+
     public StringFilter tenantId() {
         if (tenantId == null) {
-            tenantId = new StringFilter();
+            setTenantId(new StringFilter());
         }
         return tenantId;
     }
@@ -110,9 +122,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return title;
     }
 
+    public Optional<StringFilter> optionalTitle() {
+        return Optional.ofNullable(title);
+    }
+
     public StringFilter title() {
         if (title == null) {
-            title = new StringFilter();
+            setTitle(new StringFilter());
         }
         return title;
     }
@@ -121,13 +137,36 @@ public class UserTaskCriteria implements Serializable, Criteria {
         this.title = title;
     }
 
+    public StringFilter getDescription() {
+        return description;
+    }
+
+    public Optional<StringFilter> optionalDescription() {
+        return Optional.ofNullable(description);
+    }
+
+    public StringFilter description() {
+        if (description == null) {
+            setDescription(new StringFilter());
+        }
+        return description;
+    }
+
+    public void setDescription(StringFilter description) {
+        this.description = description;
+    }
+
     public StringFilter getStatus() {
         return status;
     }
 
+    public Optional<StringFilter> optionalStatus() {
+        return Optional.ofNullable(status);
+    }
+
     public StringFilter status() {
         if (status == null) {
-            status = new StringFilter();
+            setStatus(new StringFilter());
         }
         return status;
     }
@@ -140,9 +179,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return priority;
     }
 
+    public Optional<StringFilter> optionalPriority() {
+        return Optional.ofNullable(priority);
+    }
+
     public StringFilter priority() {
         if (priority == null) {
-            priority = new StringFilter();
+            setPriority(new StringFilter());
         }
         return priority;
     }
@@ -155,9 +198,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return dueDate;
     }
 
+    public Optional<ZonedDateTimeFilter> optionalDueDate() {
+        return Optional.ofNullable(dueDate);
+    }
+
     public ZonedDateTimeFilter dueDate() {
         if (dueDate == null) {
-            dueDate = new ZonedDateTimeFilter();
+            setDueDate(new ZonedDateTimeFilter());
         }
         return dueDate;
     }
@@ -170,9 +217,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return completed;
     }
 
+    public Optional<BooleanFilter> optionalCompleted() {
+        return Optional.ofNullable(completed);
+    }
+
     public BooleanFilter completed() {
         if (completed == null) {
-            completed = new BooleanFilter();
+            setCompleted(new BooleanFilter());
         }
         return completed;
     }
@@ -185,9 +236,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return assigneeName;
     }
 
+    public Optional<StringFilter> optionalAssigneeName() {
+        return Optional.ofNullable(assigneeName);
+    }
+
     public StringFilter assigneeName() {
         if (assigneeName == null) {
-            assigneeName = new StringFilter();
+            setAssigneeName(new StringFilter());
         }
         return assigneeName;
     }
@@ -200,9 +255,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return assigneeContactPhone;
     }
 
+    public Optional<StringFilter> optionalAssigneeContactPhone() {
+        return Optional.ofNullable(assigneeContactPhone);
+    }
+
     public StringFilter assigneeContactPhone() {
         if (assigneeContactPhone == null) {
-            assigneeContactPhone = new StringFilter();
+            setAssigneeContactPhone(new StringFilter());
         }
         return assigneeContactPhone;
     }
@@ -215,9 +274,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return assigneeContactEmail;
     }
 
+    public Optional<StringFilter> optionalAssigneeContactEmail() {
+        return Optional.ofNullable(assigneeContactEmail);
+    }
+
     public StringFilter assigneeContactEmail() {
         if (assigneeContactEmail == null) {
-            assigneeContactEmail = new StringFilter();
+            setAssigneeContactEmail(new StringFilter());
         }
         return assigneeContactEmail;
     }
@@ -230,9 +293,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return createdAt;
     }
 
+    public Optional<ZonedDateTimeFilter> optionalCreatedAt() {
+        return Optional.ofNullable(createdAt);
+    }
+
     public ZonedDateTimeFilter createdAt() {
         if (createdAt == null) {
-            createdAt = new ZonedDateTimeFilter();
+            setCreatedAt(new ZonedDateTimeFilter());
         }
         return createdAt;
     }
@@ -245,9 +312,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return updatedAt;
     }
 
+    public Optional<ZonedDateTimeFilter> optionalUpdatedAt() {
+        return Optional.ofNullable(updatedAt);
+    }
+
     public ZonedDateTimeFilter updatedAt() {
         if (updatedAt == null) {
-            updatedAt = new ZonedDateTimeFilter();
+            setUpdatedAt(new ZonedDateTimeFilter());
         }
         return updatedAt;
     }
@@ -260,9 +331,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return userId;
     }
 
+    public Optional<LongFilter> optionalUserId() {
+        return Optional.ofNullable(userId);
+    }
+
     public LongFilter userId() {
         if (userId == null) {
-            userId = new LongFilter();
+            setUserId(new LongFilter());
         }
         return userId;
     }
@@ -275,9 +350,13 @@ public class UserTaskCriteria implements Serializable, Criteria {
         return eventId;
     }
 
+    public Optional<LongFilter> optionalEventId() {
+        return Optional.ofNullable(eventId);
+    }
+
     public LongFilter eventId() {
         if (eventId == null) {
-            eventId = new LongFilter();
+            setEventId(new LongFilter());
         }
         return eventId;
     }
@@ -287,6 +366,17 @@ public class UserTaskCriteria implements Serializable, Criteria {
     }
 
     public Boolean getDistinct() {
+        return distinct;
+    }
+
+    public Optional<Boolean> optionalDistinct() {
+        return Optional.ofNullable(distinct);
+    }
+
+    public Boolean distinct() {
+        if (distinct == null) {
+            setDistinct(true);
+        }
         return distinct;
     }
 
@@ -307,6 +397,7 @@ public class UserTaskCriteria implements Serializable, Criteria {
             Objects.equals(id, that.id) &&
             Objects.equals(tenantId, that.tenantId) &&
             Objects.equals(title, that.title) &&
+            Objects.equals(description, that.description) &&
             Objects.equals(status, that.status) &&
             Objects.equals(priority, that.priority) &&
             Objects.equals(dueDate, that.dueDate) &&
@@ -328,6 +419,7 @@ public class UserTaskCriteria implements Serializable, Criteria {
             id,
             tenantId,
             title,
+            description,
             status,
             priority,
             dueDate,
@@ -347,21 +439,22 @@ public class UserTaskCriteria implements Serializable, Criteria {
     @Override
     public String toString() {
         return "UserTaskCriteria{" +
-            (id != null ? "id=" + id + ", " : "") +
-            (tenantId != null ? "tenantId=" + tenantId + ", " : "") +
-            (title != null ? "title=" + title + ", " : "") +
-            (status != null ? "status=" + status + ", " : "") +
-            (priority != null ? "priority=" + priority + ", " : "") +
-            (dueDate != null ? "dueDate=" + dueDate + ", " : "") +
-            (completed != null ? "completed=" + completed + ", " : "") +
-            (assigneeName != null ? "assigneeName=" + assigneeName + ", " : "") +
-            (assigneeContactPhone != null ? "assigneeContactPhone=" + assigneeContactPhone + ", " : "") +
-            (assigneeContactEmail != null ? "assigneeContactEmail=" + assigneeContactEmail + ", " : "") +
-            (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
-            (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
-            (userId != null ? "userId=" + userId + ", " : "") +
-            (eventId != null ? "eventId=" + eventId + ", " : "") +
-            (distinct != null ? "distinct=" + distinct + ", " : "") +
-            "}";
+            optionalId().map(f -> "id=" + f + ", ").orElse("") +
+            optionalTenantId().map(f -> "tenantId=" + f + ", ").orElse("") +
+            optionalTitle().map(f -> "title=" + f + ", ").orElse("") +
+            optionalDescription().map(f -> "description=" + f + ", ").orElse("") +
+            optionalStatus().map(f -> "status=" + f + ", ").orElse("") +
+            optionalPriority().map(f -> "priority=" + f + ", ").orElse("") +
+            optionalDueDate().map(f -> "dueDate=" + f + ", ").orElse("") +
+            optionalCompleted().map(f -> "completed=" + f + ", ").orElse("") +
+            optionalAssigneeName().map(f -> "assigneeName=" + f + ", ").orElse("") +
+            optionalAssigneeContactPhone().map(f -> "assigneeContactPhone=" + f + ", ").orElse("") +
+            optionalAssigneeContactEmail().map(f -> "assigneeContactEmail=" + f + ", ").orElse("") +
+            optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
+            optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
+            optionalUserId().map(f -> "userId=" + f + ", ").orElse("") +
+            optionalEventId().map(f -> "eventId=" + f + ", ").orElse("") +
+            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
+        "}";
     }
 }

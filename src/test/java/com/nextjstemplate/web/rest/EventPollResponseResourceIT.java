@@ -609,7 +609,7 @@ class EventPollResponseResourceIT {
         defaultEventPollResponseShouldNotBeFound("pollOptionId.equals=" + (pollOptionId + 1));
     }
 
-   /* @Test
+    /* @Test
     @Transactional
     void getAllEventPollResponsesByUserIsEqualToSomething() throws Exception {
         UserProfile user;

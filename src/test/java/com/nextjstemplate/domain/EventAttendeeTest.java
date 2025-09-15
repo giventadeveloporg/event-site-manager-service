@@ -23,8 +23,7 @@ class EventAttendeeTest {
         eventAttendee2 = getEventAttendeeSample2();
         assertThat(eventAttendee1).isNotEqualTo(eventAttendee2);
     }
-
-   /* @Test
+    /* @Test
     void eventTest() throws Exception {
         EventAttendee eventAttendee = getEventAttendeeRandomSampleGenerator();
         EventDetails eventDetailsBack = getEventDetailsRandomSampleGenerator();

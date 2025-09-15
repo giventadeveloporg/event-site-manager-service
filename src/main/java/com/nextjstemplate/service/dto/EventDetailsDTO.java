@@ -36,6 +36,9 @@ public class EventDetailsDTO implements Serializable {
     private LocalDate endDate;
 
     @NotNull
+    private LocalDate promotionStartDate;
+
+    @NotNull
     @Size(max = 100)
     private String startTime;
 
@@ -74,6 +77,15 @@ public class EventDetailsDTO implements Serializable {
     private Boolean isSportsEvent;
 
     private Boolean isLive;
+
+    @NotNull
+    private Boolean isFeaturedEvent;
+
+    @NotNull
+    private Integer featuredEventPriorityRanking;
+
+    @NotNull
+    private Integer liveEventPriorityRanking;
 
     @NotNull
     private ZonedDateTime createdAt;
@@ -143,6 +155,14 @@ public class EventDetailsDTO implements Serializable {
         this.endDate = endDate;
     }
 
+    public LocalDate getPromotionStartDate() {
+        return promotionStartDate;
+    }
+
+    public void setPromotionStartDate(LocalDate promotionStartDate) {
+        this.promotionStartDate = promotionStartDate;
+    }
+
     public String getStartTime() {
         return startTime;
     }
@@ -166,6 +186,7 @@ public class EventDetailsDTO implements Serializable {
     public void setTimezone(String timezone) {
         this.timezone = timezone;
     }
+
     public String getLocation() {
         return location;
     }
@@ -270,6 +291,30 @@ public class EventDetailsDTO implements Serializable {
         this.isLive = isLive;
     }
 
+    public Boolean getIsFeaturedEvent() {
+        return isFeaturedEvent;
+    }
+
+    public void setIsFeaturedEvent(Boolean isFeaturedEvent) {
+        this.isFeaturedEvent = isFeaturedEvent;
+    }
+
+    public Integer getFeaturedEventPriorityRanking() {
+        return featuredEventPriorityRanking;
+    }
+
+    public void setFeaturedEventPriorityRanking(Integer featuredEventPriorityRanking) {
+        this.featuredEventPriorityRanking = featuredEventPriorityRanking;
+    }
+
+    public Integer getLiveEventPriorityRanking() {
+        return liveEventPriorityRanking;
+    }
+
+    public void setLiveEventPriorityRanking(Integer liveEventPriorityRanking) {
+        this.liveEventPriorityRanking = liveEventPriorityRanking;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
@@ -342,6 +387,7 @@ public class EventDetailsDTO implements Serializable {
             ", description='" + getDescription() + "'" +
             ", startDate='" + getStartDate() + "'" +
             ", endDate='" + getEndDate() + "'" +
+            ", promotionStartDate='" + getPromotionStartDate() + "'" +
             ", startTime='" + getStartTime() + "'" +
             ", endTime='" + getEndTime() + "'" +
             ", timezone='" + getTimezone() + "'" +
@@ -358,6 +404,9 @@ public class EventDetailsDTO implements Serializable {
             ", isRegistrationRequired='" + getIsRegistrationRequired() + "'" +
             ", isSportsEvent='" + getIsSportsEvent() + "'" +
             ", isLive='" + getIsLive() + "'" +
+            ", isFeaturedEvent='" + getIsFeaturedEvent() + "'" +
+            ", featuredEventPriorityRanking=" + getFeaturedEventPriorityRanking() +
+            ", liveEventPriorityRanking=" + getLiveEventPriorityRanking() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", createdBy=" + getCreatedBy() +

@@ -795,27 +795,27 @@ class TenantSettingsResourceIT {
         defaultTenantSettingsShouldBeFound("updatedAt.greaterThan=" + SMALLER_UPDATED_AT);
     }
 
-//    @Test
-//    @Transactional
-//    void getAllTenantSettingsByTenantOrganizationIsEqualToSomething() throws Exception {
-//        TenantOrganization tenantOrganization;
-//        if (TestUtil.findAll(em, TenantOrganization.class).isEmpty()) {
-//            tenantSettingsRepository.saveAndFlush(tenantSettings);
-//            tenantOrganization = TenantOrganizationResourceIT.createEntity(em);
-//        } else {
-//            tenantOrganization = TestUtil.findAll(em, TenantOrganization.class).get(0);
-//        }
-//        em.persist(tenantOrganization);
-//        em.flush();
-//        tenantSettings.setTenantOrganization(tenantOrganization);
-//        tenantSettingsRepository.saveAndFlush(tenantSettings);
-//        Long tenantOrganizationId = tenantOrganization.getId();
-//        // Get all the tenantSettingsList where tenantOrganization equals to tenantOrganizationId
-//        defaultTenantSettingsShouldBeFound("tenantOrganizationId.equals=" + tenantOrganizationId);
-//
-//        // Get all the tenantSettingsList where tenantOrganization equals to (tenantOrganizationId + 1)
-//        defaultTenantSettingsShouldNotBeFound("tenantOrganizationId.equals=" + (tenantOrganizationId + 1));
-//    }
+    //    @Test
+    //    @Transactional
+    //    void getAllTenantSettingsByTenantOrganizationIsEqualToSomething() throws Exception {
+    //        TenantOrganization tenantOrganization;
+    //        if (TestUtil.findAll(em, TenantOrganization.class).isEmpty()) {
+    //            tenantSettingsRepository.saveAndFlush(tenantSettings);
+    //            tenantOrganization = TenantOrganizationResourceIT.createEntity(em);
+    //        } else {
+    //            tenantOrganization = TestUtil.findAll(em, TenantOrganization.class).get(0);
+    //        }
+    //        em.persist(tenantOrganization);
+    //        em.flush();
+    //        tenantSettings.setTenantOrganization(tenantOrganization);
+    //        tenantSettingsRepository.saveAndFlush(tenantSettings);
+    //        Long tenantOrganizationId = tenantOrganization.getId();
+    //        // Get all the tenantSettingsList where tenantOrganization equals to tenantOrganizationId
+    //        defaultTenantSettingsShouldBeFound("tenantOrganizationId.equals=" + tenantOrganizationId);
+    //
+    //        // Get all the tenantSettingsList where tenantOrganization equals to (tenantOrganizationId + 1)
+    //        defaultTenantSettingsShouldNotBeFound("tenantOrganizationId.equals=" + (tenantOrganizationId + 1));
+    //    }
 
     /**
      * Executes the search, and checks that the default entity is returned.

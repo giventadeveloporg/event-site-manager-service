@@ -31,6 +31,7 @@ public class EventAttendeeDTO implements Serializable {
     private Long eventId;
 
     private Long userId;
+
     @Size(max = 255)
     private String tenantId;
 
@@ -68,6 +69,7 @@ public class EventAttendeeDTO implements Serializable {
     private Integer totalNumberOfGuests;
 
     private Integer numberOfGuestsCheckedIn;
+
     @Size(max = 1000)
     private String notes;
 
@@ -103,6 +105,7 @@ public class EventAttendeeDTO implements Serializable {
     private Integer waitListPosition;
 
     private Integer priorityScore;
+
     @NotNull
     private ZonedDateTime createdAt;
 
@@ -176,6 +179,7 @@ public class EventAttendeeDTO implements Serializable {
     public void setUserId(Long userId) {
         this.userId = userId;
     }
+
     public String getTenantId() {
         return tenantId;
     }
@@ -287,6 +291,7 @@ public class EventAttendeeDTO implements Serializable {
     public void setNumberOfGuestsCheckedIn(Integer numberOfGuestsCheckedIn) {
         this.numberOfGuestsCheckedIn = numberOfGuestsCheckedIn;
     }
+
     public String getNotes() {
         return notes;
     }
@@ -390,6 +395,7 @@ public class EventAttendeeDTO implements Serializable {
     public void setPriorityScore(Integer priorityScore) {
         this.priorityScore = priorityScore;
     }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }

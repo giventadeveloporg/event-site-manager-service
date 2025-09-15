@@ -8,8 +8,6 @@ import com.nextjstemplate.service.mapper.EmailLogMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class EmailLogServiceImpl implements EmailLogService {
 
-    private final Logger log = LoggerFactory.getLogger(EmailLogServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EmailLogServiceImpl.class);
 
     private final EmailLogRepository emailLogRepository;
 
@@ -33,7 +31,7 @@ public class EmailLogServiceImpl implements EmailLogService {
 
     @Override
     public EmailLogDTO save(EmailLogDTO emailLogDTO) {
-        log.debug("Request to save EmailLog : {}", emailLogDTO);
+        LOG.debug("Request to save EmailLog : {}", emailLogDTO);
         EmailLog emailLog = emailLogMapper.toEntity(emailLogDTO);
         emailLog = emailLogRepository.save(emailLog);
         return emailLogMapper.toDto(emailLog);
@@ -41,7 +39,7 @@ public class EmailLogServiceImpl implements EmailLogService {
 
     @Override
     public EmailLogDTO update(EmailLogDTO emailLogDTO) {
-        log.debug("Request to update EmailLog : {}", emailLogDTO);
+        LOG.debug("Request to update EmailLog : {}", emailLogDTO);
         EmailLog emailLog = emailLogMapper.toEntity(emailLogDTO);
         emailLog = emailLogRepository.save(emailLog);
         return emailLogMapper.toDto(emailLog);
@@ -49,7 +47,7 @@ public class EmailLogServiceImpl implements EmailLogService {
 
     @Override
     public Optional<EmailLogDTO> partialUpdate(EmailLogDTO emailLogDTO) {
-        log.debug("Request to partially update EmailLog : {}", emailLogDTO);
+        LOG.debug("Request to partially update EmailLog : {}", emailLogDTO);
 
         return emailLogRepository
             .findById(emailLogDTO.getId())
@@ -64,21 +62,14 @@ public class EmailLogServiceImpl implements EmailLogService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<EmailLogDTO> findAll(Pageable pageable) {
-        log.debug("Request to get all EmailLogs");
-        return emailLogRepository.findAll(pageable).map(emailLogMapper::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Optional<EmailLogDTO> findOne(Long id) {
-        log.debug("Request to get EmailLog : {}", id);
+        LOG.debug("Request to get EmailLog : {}", id);
         return emailLogRepository.findById(id).map(emailLogMapper::toDto);
     }
 
     @Override
     public void delete(Long id) {
-        log.debug("Request to delete EmailLog : {}", id);
+        LOG.debug("Request to delete EmailLog : {}", id);
         emailLogRepository.deleteById(id);
     }
 }

@@ -48,9 +48,10 @@ public class EventTicketTransactionItemResource {
     private final EventTicketTransactionItemQueryService eventTicketTransactionItemQueryService;
 
     public EventTicketTransactionItemResource(
-            EventTicketTransactionItemService eventTicketTransactionItemService,
-            EventTicketTransactionItemRepository eventTicketTransactionItemRepository,
-            EventTicketTransactionItemQueryService eventTicketTransactionItemQueryService) {
+        EventTicketTransactionItemService eventTicketTransactionItemService,
+        EventTicketTransactionItemRepository eventTicketTransactionItemRepository,
+        EventTicketTransactionItemQueryService eventTicketTransactionItemQueryService
+    ) {
         this.eventTicketTransactionItemService = eventTicketTransactionItemService;
         this.eventTicketTransactionItemRepository = eventTicketTransactionItemRepository;
         this.eventTicketTransactionItemQueryService = eventTicketTransactionItemQueryService;
@@ -70,18 +71,17 @@ public class EventTicketTransactionItemResource {
      */
     @PostMapping("")
     public ResponseEntity<EventTicketTransactionItemDTO> createEventTicketTransactionItem(
-            @Valid @RequestBody EventTicketTransactionItemDTO eventTicketTransactionItemDTO) throws URISyntaxException {
+        @Valid @RequestBody EventTicketTransactionItemDTO eventTicketTransactionItemDTO
+    ) throws URISyntaxException {
         log.debug("REST request to save EventTicketTransactionItem : {}", eventTicketTransactionItemDTO);
         if (eventTicketTransactionItemDTO.getId() != null) {
-            throw new BadRequestAlertException("A new eventTicketTransactionItem cannot already have an ID",
-                    ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException("A new eventTicketTransactionItem cannot already have an ID", ENTITY_NAME, "idexists");
         }
         EventTicketTransactionItemDTO result = eventTicketTransactionItemService.save(eventTicketTransactionItemDTO);
         return ResponseEntity
-                .created(new URI("/api/event-ticket-transaction-items/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
-                        result.getId().toString()))
-                .body(result);
+            .created(new URI("/api/event-ticket-transaction-items/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -102,8 +102,9 @@ public class EventTicketTransactionItemResource {
      */
     @PutMapping("/{id}")
     public ResponseEntity<EventTicketTransactionItemDTO> updateEventTicketTransactionItem(
-            @PathVariable(value = "id", required = false) final Long id,
-            @Valid @RequestBody EventTicketTransactionItemDTO eventTicketTransactionItemDTO) throws URISyntaxException {
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody EventTicketTransactionItemDTO eventTicketTransactionItemDTO
+    ) throws URISyntaxException {
         log.debug("REST request to update EventTicketTransactionItem : {}, {}", id, eventTicketTransactionItemDTO);
         if (eventTicketTransactionItemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -118,11 +119,11 @@ public class EventTicketTransactionItemResource {
 
         EventTicketTransactionItemDTO result = eventTicketTransactionItemService.update(eventTicketTransactionItemDTO);
         return ResponseEntity
-                .ok()
-                .headers(
-                        HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
-                                eventTicketTransactionItemDTO.getId().toString()))
-                .body(result);
+            .ok()
+            .headers(
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventTicketTransactionItemDTO.getId().toString())
+            )
+            .body(result);
     }
 
     /**
@@ -146,11 +147,10 @@ public class EventTicketTransactionItemResource {
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<EventTicketTransactionItemDTO> partialUpdateEventTicketTransactionItem(
-            @PathVariable(value = "id", required = false) final Long id,
-            @NotNull @RequestBody EventTicketTransactionItemDTO eventTicketTransactionItemDTO)
-            throws URISyntaxException {
-        log.debug("REST request to partial update EventTicketTransactionItem partially : {}, {}", id,
-                eventTicketTransactionItemDTO);
+        @PathVariable(value = "id", required = false) final Long id,
+        @NotNull @RequestBody EventTicketTransactionItemDTO eventTicketTransactionItemDTO
+    ) throws URISyntaxException {
+        log.debug("REST request to partial update EventTicketTransactionItem partially : {}, {}", id, eventTicketTransactionItemDTO);
         if (eventTicketTransactionItemDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -162,13 +162,12 @@ public class EventTicketTransactionItemResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<EventTicketTransactionItemDTO> result = eventTicketTransactionItemService
-                .partialUpdate(eventTicketTransactionItemDTO);
+        Optional<EventTicketTransactionItemDTO> result = eventTicketTransactionItemService.partialUpdate(eventTicketTransactionItemDTO);
 
         return ResponseUtil.wrapOrNotFound(
-                result,
-                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
-                        eventTicketTransactionItemDTO.getId().toString()));
+            result,
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventTicketTransactionItemDTO.getId().toString())
+        );
     }
 
     /**
@@ -182,14 +181,13 @@ public class EventTicketTransactionItemResource {
      */
     @GetMapping("")
     public ResponseEntity<List<EventTicketTransactionItemDTO>> getAllEventTicketTransactionItems(
-            EventTicketTransactionItemCriteria criteria,
-            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+        EventTicketTransactionItemCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
         log.debug("REST request to get EventTicketTransactionItems by criteria: {}", criteria);
 
-        Page<EventTicketTransactionItemDTO> page = eventTicketTransactionItemQueryService.findByCriteria(criteria,
-                pageable);
-        HttpHeaders headers = PaginationUtil
-                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        Page<EventTicketTransactionItemDTO> page = eventTicketTransactionItemQueryService.findByCriteria(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -219,8 +217,7 @@ public class EventTicketTransactionItemResource {
     @GetMapping("/{id}")
     public ResponseEntity<EventTicketTransactionItemDTO> getEventTicketTransactionItem(@PathVariable Long id) {
         log.debug("REST request to get EventTicketTransactionItem : {}", id);
-        Optional<EventTicketTransactionItemDTO> eventTicketTransactionItemDTO = eventTicketTransactionItemService
-                .findOne(id);
+        Optional<EventTicketTransactionItemDTO> eventTicketTransactionItemDTO = eventTicketTransactionItemService.findOne(id);
         return ResponseUtil.wrapOrNotFound(eventTicketTransactionItemDTO);
     }
 
@@ -236,9 +233,9 @@ public class EventTicketTransactionItemResource {
         log.debug("REST request to delete EventTicketTransactionItem : {}", id);
         eventTicketTransactionItemService.delete(id);
         return ResponseEntity
-                .noContent()
-                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-                .build();
+            .noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .build();
     }
 
     /**
@@ -251,12 +248,10 @@ public class EventTicketTransactionItemResource {
      */
     @PostMapping("/bulk")
     public ResponseEntity<List<EventTicketTransactionItemDTO>> createEventTicketTransactionItemsBulk(
-            @Valid @RequestBody List<EventTicketTransactionItemDTO> eventTicketTransactionItemDTOs) {
+        @Valid @RequestBody List<EventTicketTransactionItemDTO> eventTicketTransactionItemDTOs
+    ) {
         log.debug("REST request to save bulk EventTicketTransactionItems : {}", eventTicketTransactionItemDTOs);
-        List<EventTicketTransactionItemDTO> result = eventTicketTransactionItemService
-                .saveAll(eventTicketTransactionItemDTOs);
-        return ResponseEntity
-                .ok()
-                .body(result);
+        List<EventTicketTransactionItemDTO> result = eventTicketTransactionItemService.saveAll(eventTicketTransactionItemDTOs);
+        return ResponseEntity.ok().body(result);
     }
 }

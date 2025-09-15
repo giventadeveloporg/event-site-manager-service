@@ -80,7 +80,7 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
      *  Get all the tenantOrganizations where TenantSettings is {@code null}.
      *  @return the list of entities.
      */
-   /* @Transactional(readOnly = true)
+    /* @Transactional(readOnly = true)
     public List<TenantOrganizationDTO> findAllWhereTenantSettingsIsNull() {
         log.debug("Request to get all tenantOrganizations where TenantSettings is null");
         return StreamSupport

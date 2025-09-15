@@ -262,6 +262,7 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
     public void setUserId(LongFilter userId) {
         this.userId = userId;
     }
+
     public StringFilter getTenantId() {
         return tenantId;
     }
@@ -471,6 +472,7 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
     public void setNumberOfGuestsCheckedIn(IntegerFilter numberOfGuestsCheckedIn) {
         this.numberOfGuestsCheckedIn = numberOfGuestsCheckedIn;
     }
+
     public StringFilter getNotes() {
         return notes;
     }
@@ -665,6 +667,7 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
     public void setPriorityScore(IntegerFilter priorityScore) {
         this.priorityScore = priorityScore;
     }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -764,7 +767,7 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
             email,
             phone,
             isMember,
-			eventId,
+            eventId,
             userId,
             tenantId,
             registrationStatus,
@@ -778,13 +781,13 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
             emergencyContactPhone,
             checkInStatus,
             checkInTime,
- 			totalNumberOfGuests,
+            totalNumberOfGuests,
             numberOfGuestsCheckedIn,
             notes,
             qrCodeData,
             qrCodeGenerated,
             qrCodeGeneratedAt,
-			dietaryRestrictions,
+            dietaryRestrictions,
             accessibilityNeeds,
             emergencyContactRelationship,
             checkOutTime,

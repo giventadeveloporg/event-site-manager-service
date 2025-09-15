@@ -1,6 +1,5 @@
 package com.nextjstemplate.service.dto;
 
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -21,7 +20,7 @@ public class UserTaskDTO implements Serializable {
     @Size(max = 255)
     private String title;
 
-    @Lob
+    @Size(max = 4096)
     private String description;
 
     @NotNull

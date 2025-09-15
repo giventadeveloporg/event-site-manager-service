@@ -2484,7 +2484,7 @@ class UserRegistrationRequestResourceIT {
         defaultUserRegistrationRequestShouldBeFound("updatedAt.greaterThan=" + SMALLER_UPDATED_AT);
     }
 
-   /* @Test
+    /* @Test
     @Transactional
     void getAllUserRegistrationRequestsByReviewedByIsEqualToSomething() throws Exception {
         UserProfile reviewedBy;

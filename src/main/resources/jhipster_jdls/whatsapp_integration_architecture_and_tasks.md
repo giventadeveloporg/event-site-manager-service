@@ -1,11 +1,13 @@
 # WhatsApp Integration Architecture & Tasks
 
 ## Overview
+
 Integrate Twilio WhatsApp API for transactional and bulk messaging in a multi-tenant event management backend.
 
 ---
 
 ## Requirements
+
 - Send WhatsApp confirmation after ticket purchase (triggered from EventTicketTransactionResource).
 - Allow tenants to send bulk WhatsApp messages for campaigns, announcements, and notices.
 - Log all WhatsApp messages for analytics and billing.
@@ -14,6 +16,7 @@ Integrate Twilio WhatsApp API for transactional and bulk messaging in a multi-te
 ---
 
 ## Example application.yml Configuration
+
 ```yaml
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID}
@@ -24,6 +27,7 @@ twilio:
 ---
 
 ## Proposed Schema (JDL-style)
+
 ```jdl
 entity WhatsAppLog {
     id Long,
@@ -59,6 +63,7 @@ relationship ManyToOne {
 ---
 
 ## Implementation Steps
+
 1. **Add Twilio Java SDK dependency to pom.xml:**
    ```xml
    <dependency>
@@ -78,16 +83,19 @@ relationship ManyToOne {
 ---
 
 ## Example WhatsApp Message Template
+
 ```
 Hello {{userName}},
 Your ticket for {{eventName}} on {{eventDate}} at {{eventVenue}} is confirmed!
 Thank you for your purchase.
 ```
+
 - Replace placeholders with actual values before sending.
 
 ---
 
 ## Recommendations
+
 - Use templates for WhatsApp messages for consistency and personalization.
 - Store templates as local files, in DB, or S3.
 - Use environment variables for Twilio credentials.
@@ -96,16 +104,18 @@ Thank you for your purchase.
 ---
 
 ## Summary Table
-| Feature                | Off-the-Shelf | Custom Build (Recommended) |
-|------------------------|---------------|---------------------------|
-| Transactional WhatsApp | Twilio        | Twilio + WhatsAppLog      |
+
+| Feature                | Off-the-Shelf | Custom Build (Recommended)      |
+| ---------------------- | ------------- | ------------------------------- |
+| Transactional WhatsApp | Twilio        | Twilio + WhatsAppLog            |
 | Bulk WhatsApp          | Twilio        | Twilio + WhatsAppLog + Campaign |
-| Per-Tenant Analytics   | No            | Custom DB tables/queries  |
-| Multi-Tenant Billing   | No            | Custom DB tables/queries  |
+| Per-Tenant Analytics   | No            | Custom DB tables/queries        |
+| Multi-Tenant Billing   | No            | Custom DB tables/queries        |
 
 ---
 
 ## Next Steps
+
 - Implement the above steps in the codebase, following the modular structure used for email integration.
 - Ensure all credentials are securely managed and not hardcoded.
 - Test transactional and bulk WhatsApp messaging flows.

@@ -2,6 +2,7 @@ package com.nextjstemplate.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
@@ -33,6 +34,8 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
 
     private StringFilter contentLinkUrl;
 
+    private StringFilter metadata;
+
     private IntegerFilter displayOrder;
 
     private BooleanFilter isDefault;
@@ -48,17 +51,18 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
     public EventLiveUpdateCriteria() {}
 
     public EventLiveUpdateCriteria(EventLiveUpdateCriteria other) {
-        this.id = other.id == null ? null : other.id.copy();
-        this.updateType = other.updateType == null ? null : other.updateType.copy();
-        this.contentText = other.contentText == null ? null : other.contentText.copy();
-        this.contentImageUrl = other.contentImageUrl == null ? null : other.contentImageUrl.copy();
-        this.contentVideoUrl = other.contentVideoUrl == null ? null : other.contentVideoUrl.copy();
-        this.contentLinkUrl = other.contentLinkUrl == null ? null : other.contentLinkUrl.copy();
-        this.displayOrder = other.displayOrder == null ? null : other.displayOrder.copy();
-        this.isDefault = other.isDefault == null ? null : other.isDefault.copy();
-        this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
-        this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
-        this.eventId = other.eventId == null ? null : other.eventId.copy();
+        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
+        this.updateType = other.optionalUpdateType().map(StringFilter::copy).orElse(null);
+        this.contentText = other.optionalContentText().map(StringFilter::copy).orElse(null);
+        this.contentImageUrl = other.optionalContentImageUrl().map(StringFilter::copy).orElse(null);
+        this.contentVideoUrl = other.optionalContentVideoUrl().map(StringFilter::copy).orElse(null);
+        this.contentLinkUrl = other.optionalContentLinkUrl().map(StringFilter::copy).orElse(null);
+        this.metadata = other.optionalMetadata().map(StringFilter::copy).orElse(null);
+        this.displayOrder = other.optionalDisplayOrder().map(IntegerFilter::copy).orElse(null);
+        this.isDefault = other.optionalIsDefault().map(BooleanFilter::copy).orElse(null);
+        this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
+        this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
+        this.eventId = other.optionalEventId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -71,9 +75,13 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         return id;
     }
 
+    public Optional<LongFilter> optionalId() {
+        return Optional.ofNullable(id);
+    }
+
     public LongFilter id() {
         if (id == null) {
-            id = new LongFilter();
+            setId(new LongFilter());
         }
         return id;
     }
@@ -86,9 +94,13 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         return updateType;
     }
 
+    public Optional<StringFilter> optionalUpdateType() {
+        return Optional.ofNullable(updateType);
+    }
+
     public StringFilter updateType() {
         if (updateType == null) {
-            updateType = new StringFilter();
+            setUpdateType(new StringFilter());
         }
         return updateType;
     }
@@ -101,9 +113,13 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         return contentText;
     }
 
+    public Optional<StringFilter> optionalContentText() {
+        return Optional.ofNullable(contentText);
+    }
+
     public StringFilter contentText() {
         if (contentText == null) {
-            contentText = new StringFilter();
+            setContentText(new StringFilter());
         }
         return contentText;
     }
@@ -116,9 +132,13 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         return contentImageUrl;
     }
 
+    public Optional<StringFilter> optionalContentImageUrl() {
+        return Optional.ofNullable(contentImageUrl);
+    }
+
     public StringFilter contentImageUrl() {
         if (contentImageUrl == null) {
-            contentImageUrl = new StringFilter();
+            setContentImageUrl(new StringFilter());
         }
         return contentImageUrl;
     }
@@ -131,9 +151,13 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         return contentVideoUrl;
     }
 
+    public Optional<StringFilter> optionalContentVideoUrl() {
+        return Optional.ofNullable(contentVideoUrl);
+    }
+
     public StringFilter contentVideoUrl() {
         if (contentVideoUrl == null) {
-            contentVideoUrl = new StringFilter();
+            setContentVideoUrl(new StringFilter());
         }
         return contentVideoUrl;
     }
@@ -146,9 +170,13 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         return contentLinkUrl;
     }
 
+    public Optional<StringFilter> optionalContentLinkUrl() {
+        return Optional.ofNullable(contentLinkUrl);
+    }
+
     public StringFilter contentLinkUrl() {
         if (contentLinkUrl == null) {
-            contentLinkUrl = new StringFilter();
+            setContentLinkUrl(new StringFilter());
         }
         return contentLinkUrl;
     }
@@ -157,13 +185,36 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         this.contentLinkUrl = contentLinkUrl;
     }
 
+    public StringFilter getMetadata() {
+        return metadata;
+    }
+
+    public Optional<StringFilter> optionalMetadata() {
+        return Optional.ofNullable(metadata);
+    }
+
+    public StringFilter metadata() {
+        if (metadata == null) {
+            setMetadata(new StringFilter());
+        }
+        return metadata;
+    }
+
+    public void setMetadata(StringFilter metadata) {
+        this.metadata = metadata;
+    }
+
     public IntegerFilter getDisplayOrder() {
         return displayOrder;
     }
 
+    public Optional<IntegerFilter> optionalDisplayOrder() {
+        return Optional.ofNullable(displayOrder);
+    }
+
     public IntegerFilter displayOrder() {
         if (displayOrder == null) {
-            displayOrder = new IntegerFilter();
+            setDisplayOrder(new IntegerFilter());
         }
         return displayOrder;
     }
@@ -176,9 +227,13 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         return isDefault;
     }
 
+    public Optional<BooleanFilter> optionalIsDefault() {
+        return Optional.ofNullable(isDefault);
+    }
+
     public BooleanFilter isDefault() {
         if (isDefault == null) {
-            isDefault = new BooleanFilter();
+            setIsDefault(new BooleanFilter());
         }
         return isDefault;
     }
@@ -191,9 +246,13 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         return createdAt;
     }
 
+    public Optional<ZonedDateTimeFilter> optionalCreatedAt() {
+        return Optional.ofNullable(createdAt);
+    }
+
     public ZonedDateTimeFilter createdAt() {
         if (createdAt == null) {
-            createdAt = new ZonedDateTimeFilter();
+            setCreatedAt(new ZonedDateTimeFilter());
         }
         return createdAt;
     }
@@ -206,9 +265,13 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         return updatedAt;
     }
 
+    public Optional<ZonedDateTimeFilter> optionalUpdatedAt() {
+        return Optional.ofNullable(updatedAt);
+    }
+
     public ZonedDateTimeFilter updatedAt() {
         if (updatedAt == null) {
-            updatedAt = new ZonedDateTimeFilter();
+            setUpdatedAt(new ZonedDateTimeFilter());
         }
         return updatedAt;
     }
@@ -221,9 +284,13 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
         return eventId;
     }
 
+    public Optional<LongFilter> optionalEventId() {
+        return Optional.ofNullable(eventId);
+    }
+
     public LongFilter eventId() {
         if (eventId == null) {
-            eventId = new LongFilter();
+            setEventId(new LongFilter());
         }
         return eventId;
     }
@@ -233,6 +300,17 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
     }
 
     public Boolean getDistinct() {
+        return distinct;
+    }
+
+    public Optional<Boolean> optionalDistinct() {
+        return Optional.ofNullable(distinct);
+    }
+
+    public Boolean distinct() {
+        if (distinct == null) {
+            setDistinct(true);
+        }
         return distinct;
     }
 
@@ -256,6 +334,7 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
             Objects.equals(contentImageUrl, that.contentImageUrl) &&
             Objects.equals(contentVideoUrl, that.contentVideoUrl) &&
             Objects.equals(contentLinkUrl, that.contentLinkUrl) &&
+            Objects.equals(metadata, that.metadata) &&
             Objects.equals(displayOrder, that.displayOrder) &&
             Objects.equals(isDefault, that.isDefault) &&
             Objects.equals(createdAt, that.createdAt) &&
@@ -274,6 +353,7 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
             contentImageUrl,
             contentVideoUrl,
             contentLinkUrl,
+            metadata,
             displayOrder,
             isDefault,
             createdAt,
@@ -287,18 +367,19 @@ public class EventLiveUpdateCriteria implements Serializable, Criteria {
     @Override
     public String toString() {
         return "EventLiveUpdateCriteria{" +
-            (id != null ? "id=" + id + ", " : "") +
-            (updateType != null ? "updateType=" + updateType + ", " : "") +
-            (contentText != null ? "contentText=" + contentText + ", " : "") +
-            (contentImageUrl != null ? "contentImageUrl=" + contentImageUrl + ", " : "") +
-            (contentVideoUrl != null ? "contentVideoUrl=" + contentVideoUrl + ", " : "") +
-            (contentLinkUrl != null ? "contentLinkUrl=" + contentLinkUrl + ", " : "") +
-            (displayOrder != null ? "displayOrder=" + displayOrder + ", " : "") +
-            (isDefault != null ? "isDefault=" + isDefault + ", " : "") +
-            (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
-            (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
-            (eventId != null ? "eventId=" + eventId + ", " : "") +
-            (distinct != null ? "distinct=" + distinct + ", " : "") +
-            "}";
+            optionalId().map(f -> "id=" + f + ", ").orElse("") +
+            optionalUpdateType().map(f -> "updateType=" + f + ", ").orElse("") +
+            optionalContentText().map(f -> "contentText=" + f + ", ").orElse("") +
+            optionalContentImageUrl().map(f -> "contentImageUrl=" + f + ", ").orElse("") +
+            optionalContentVideoUrl().map(f -> "contentVideoUrl=" + f + ", ").orElse("") +
+            optionalContentLinkUrl().map(f -> "contentLinkUrl=" + f + ", ").orElse("") +
+            optionalMetadata().map(f -> "metadata=" + f + ", ").orElse("") +
+            optionalDisplayOrder().map(f -> "displayOrder=" + f + ", ").orElse("") +
+            optionalIsDefault().map(f -> "isDefault=" + f + ", ").orElse("") +
+            optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
+            optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
+            optionalEventId().map(f -> "eventId=" + f + ", ").orElse("") +
+            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
+        "}";
     }
 }

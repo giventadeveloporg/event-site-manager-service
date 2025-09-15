@@ -2,8 +2,6 @@ package com.nextjstemplate.service;
 
 import com.nextjstemplate.service.dto.EmailLogDTO;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.nextjstemplate.domain.EmailLog}.
@@ -32,14 +30,6 @@ public interface EmailLogService {
      * @return the persisted entity.
      */
     Optional<EmailLogDTO> partialUpdate(EmailLogDTO emailLogDTO);
-
-    /**
-     * Get all the emailLogs.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<EmailLogDTO> findAll(Pageable pageable);
 
     /**
      * Get the "id" emailLog.

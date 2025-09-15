@@ -35,8 +35,8 @@ public class WhatsAppLog implements Serializable {
     @Column(name = "recipient_phone", length = 50, nullable = false)
     private String recipientPhone;
 
-    @Lob
-    @Column(name = "message_body")
+    @Size(max = 4096)
+    @Column(name = "message_body", length = 4096)
     private String messageBody;
 
     @NotNull
@@ -54,13 +54,14 @@ public class WhatsAppLog implements Serializable {
     @Column(name = "campaign_id")
     private Long campaignId;
 
-    @Lob
-    @Column(name = "metadata")
+    @Size(max = 8192)
+    @Column(name = "metadata", length = 8192)
     private String metadata;
 
-   /* @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "campaign_id", insertable = false, updatable = false)
     @JsonIgnoreProperties(value = { "createdBy" }, allowSetters = true)
-    private CommunicationCampaign campaign;*/
+    private CommunicationCampaign campaign;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -181,7 +182,7 @@ public class WhatsAppLog implements Serializable {
         this.metadata = metadata;
     }
 
-   /* public CommunicationCampaign getCampaign() {
+    public CommunicationCampaign getCampaign() {
         return this.campaign;
     }
 
@@ -192,7 +193,7 @@ public class WhatsAppLog implements Serializable {
     public WhatsAppLog campaign(CommunicationCampaign communicationCampaign) {
         this.setCampaign(communicationCampaign);
         return this;
-    }*/
+    }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 

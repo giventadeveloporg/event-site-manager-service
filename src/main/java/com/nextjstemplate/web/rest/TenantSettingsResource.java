@@ -33,7 +33,7 @@ import tech.jhipster.web.util.ResponseUtil;
 @RequestMapping("/api/tenant-settings")
 public class TenantSettingsResource {
 
-    private final Logger log = LoggerFactory.getLogger(TenantSettingsResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TenantSettingsResource.class);
 
     private static final String ENTITY_NAME = "tenantSettings";
 
@@ -66,15 +66,15 @@ public class TenantSettingsResource {
     @PostMapping("")
     public ResponseEntity<TenantSettingsDTO> createTenantSettings(@Valid @RequestBody TenantSettingsDTO tenantSettingsDTO)
         throws URISyntaxException {
-        log.debug("REST request to save TenantSettings : {}", tenantSettingsDTO);
+        LOG.debug("REST request to save TenantSettings : {}", tenantSettingsDTO);
         if (tenantSettingsDTO.getId() != null) {
             throw new BadRequestAlertException("A new tenantSettings cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        TenantSettingsDTO result = tenantSettingsService.save(tenantSettingsDTO);
+        tenantSettingsDTO = tenantSettingsService.save(tenantSettingsDTO);
         return ResponseEntity
-            .created(new URI("/api/tenant-settings/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+            .created(new URI("/api/tenant-settings/" + tenantSettingsDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, tenantSettingsDTO.getId().toString()))
+            .body(tenantSettingsDTO);
     }
 
     /**
@@ -92,7 +92,7 @@ public class TenantSettingsResource {
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody TenantSettingsDTO tenantSettingsDTO
     ) throws URISyntaxException {
-        log.debug("REST request to update TenantSettings : {}, {}", id, tenantSettingsDTO);
+        LOG.debug("REST request to update TenantSettings : {}, {}", id, tenantSettingsDTO);
         if (tenantSettingsDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -104,11 +104,11 @@ public class TenantSettingsResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        TenantSettingsDTO result = tenantSettingsService.update(tenantSettingsDTO);
+        tenantSettingsDTO = tenantSettingsService.update(tenantSettingsDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, tenantSettingsDTO.getId().toString()))
-            .body(result);
+            .body(tenantSettingsDTO);
     }
 
     /**
@@ -127,7 +127,7 @@ public class TenantSettingsResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody TenantSettingsDTO tenantSettingsDTO
     ) throws URISyntaxException {
-        log.debug("REST request to partial update TenantSettings partially : {}, {}", id, tenantSettingsDTO);
+        LOG.debug("REST request to partial update TenantSettings partially : {}, {}", id, tenantSettingsDTO);
         if (tenantSettingsDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -159,7 +159,7 @@ public class TenantSettingsResource {
         TenantSettingsCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get TenantSettings by criteria: {}", criteria);
+        LOG.debug("REST request to get TenantSettings by criteria: {}", criteria);
 
         Page<TenantSettingsDTO> page = tenantSettingsQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -174,7 +174,7 @@ public class TenantSettingsResource {
      */
     @GetMapping("/count")
     public ResponseEntity<Long> countTenantSettings(TenantSettingsCriteria criteria) {
-        log.debug("REST request to count TenantSettings by criteria: {}", criteria);
+        LOG.debug("REST request to count TenantSettings by criteria: {}", criteria);
         return ResponseEntity.ok().body(tenantSettingsQueryService.countByCriteria(criteria));
     }
 
@@ -185,8 +185,8 @@ public class TenantSettingsResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the tenantSettingsDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<TenantSettingsDTO> getTenantSettings(@PathVariable Long id) {
-        log.debug("REST request to get TenantSettings : {}", id);
+    public ResponseEntity<TenantSettingsDTO> getTenantSettings(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get TenantSettings : {}", id);
         Optional<TenantSettingsDTO> tenantSettingsDTO = tenantSettingsService.findOne(id);
         return ResponseUtil.wrapOrNotFound(tenantSettingsDTO);
     }
@@ -198,8 +198,8 @@ public class TenantSettingsResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTenantSettings(@PathVariable Long id) {
-        log.debug("REST request to delete TenantSettings : {}", id);
+    public ResponseEntity<Void> deleteTenantSettings(@PathVariable("id") Long id) {
+        LOG.debug("REST request to delete TenantSettings : {}", id);
         tenantSettingsService.delete(id);
         return ResponseEntity
             .noContent()

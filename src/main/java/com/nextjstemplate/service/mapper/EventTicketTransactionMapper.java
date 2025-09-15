@@ -15,7 +15,7 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface EventTicketTransactionMapper extends EntityMapper<EventTicketTransactionDTO, EventTicketTransaction> {
-   /* @Mapping(target = "event", source = "event", qualifiedByName = "eventDetailsId")
+    /* @Mapping(target = "event", source = "event", qualifiedByName = "eventDetailsId")
     @Mapping(target = "user", source = "user", qualifiedByName = "userProfileId")*/
     EventTicketTransactionDTO toDto(EventTicketTransaction s);
 
@@ -23,8 +23,6 @@ public interface EventTicketTransactionMapper extends EntityMapper<EventTicketTr
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     EventDetailsDTO toDtoEventDetailsId(EventDetails eventDetails);
-
-
 
     @Named("userProfileId")
     @BeanMapping(ignoreByDefault = true)

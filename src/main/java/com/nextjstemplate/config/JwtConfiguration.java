@@ -6,30 +6,31 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 @Configuration
 public class JwtConfiguration {
 
-  @Value("${jhipster.security.authentication.jwt.base64-secret}")
-  private String base64Secret;
+    @Value("${jhipster.security.authentication.jwt.base64-secret}")
+    private String base64Secret;
 
-  @Bean
-  public JwtEncoder jwtEncoder() {
-    byte[] secretBytes = java.util.Base64.getDecoder().decode(base64Secret);
-    SecretKey secretKey = new SecretKeySpec(secretBytes, 0, secretBytes.length, "HmacSHA512");
-    return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey));
-  }
+    @Bean
+    public JwtEncoder jwtEncoder() {
+        byte[] secretBytes = java.util.Base64.getDecoder().decode(base64Secret);
+        SecretKey secretKey = new SecretKeySpec(secretBytes, 0, secretBytes.length, "HmacSHA512");
+        return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey));
+    }
 
-  @Bean
-  public JwtDecoder jwtDecoder() {
-    byte[] secretBytes = java.util.Base64.getDecoder().decode(base64Secret);
-    SecretKey secretKey = new SecretKeySpec(secretBytes, 0, secretBytes.length, "HmacSHA512");
-    return NimbusJwtDecoder.withSecretKey(secretKey)
-        .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS512)
-        .build();
-  }
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        byte[] secretBytes = java.util.Base64.getDecoder().decode(base64Secret);
+        SecretKey secretKey = new SecretKeySpec(secretBytes, 0, secretBytes.length, "HmacSHA512");
+        return NimbusJwtDecoder
+            .withSecretKey(secretKey)
+            .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS512)
+            .build();
+    }
 }

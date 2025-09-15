@@ -153,7 +153,7 @@ public class TenantOrganizationQueryService extends QueryService<TenantOrganizat
             if (criteria.getUpdatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getUpdatedAt(), TenantOrganization_.updatedAt));
             }
-           /* if (criteria.getTenantSettingsId() != null) {
+            /* if (criteria.getTenantSettingsId() != null) {
                 specification =
                     specification.and(
                         buildSpecification(

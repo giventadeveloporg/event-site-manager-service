@@ -124,7 +124,7 @@ public class CommunicationCampaignQueryService extends QueryService<Communicatio
             if (criteria.getCreatedById() != null) {
                 specification = specification.and(buildSpecification(criteria.getCreatedById(), CommunicationCampaign_.createdById));
             }
-           /* if (criteria.getCreatedById() != null) {
+            /* if (criteria.getCreatedById() != null) {
                 specification =
                     specification.and(
                         buildSpecification(

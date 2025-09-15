@@ -1,4 +1,5 @@
 
+--SET ROLE giventa_event_management;
 
 INSERT INTO public.event_type_details VALUES (1, 'tenant_demo_001', 'Gala', 'Formal gala event', '#3B82F6', NULL, true, 0, '2025-06-22 11:31:26.181502', '2025-06-22 11:31:26.181502');
 INSERT INTO public.event_type_details VALUES (2, 'tenant_demo_001', 'Conference', 'Tech conference', '#3B82F6', NULL, true, 0, '2025-06-22 11:31:26.181502', '2025-06-22 11:31:26.181502');
@@ -50,19 +51,38 @@ INSERT INTO public.user_profile VALUES (
   'PENDING_APPROVAL', 'MEMBER', NULL, NULL, '2025-06-22 16:44:08.782', '2025-06-22 23:01:49.434045', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 );
 
-INSERT INTO public.event_details (
-    id, tenant_id, title, caption, description, start_date, end_date, start_time, end_time, timezone, location, directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live
-) VALUES
-(1, 'tenant_demo_001', 'Tech Conference', '2025 Tech Innovations', 'A conference on the latest in technology.', '2025-08-07', '2025-08-07', '09:00', '17:00', 'America/New_York', 'Convention Center', NULL, 500, 'TICKETED', true, 3, true, true, false, '2025-08-12 23:59:00', '2025-08-12 23:59:00', NULL, NULL, false, true, false, NULL, 2, 2, '2025-06-14 23:13:02.565996', '2025-06-22 13:44:09.025068', false, false, false),
-(2, 'tenant_demo_001', 'Charity Run', '5K Charity Run', 'A 5K run to raise funds for charity.', '2025-09-01', '2025-09-01', '07:00', '12:00', 'America/New_York', 'City Park', NULL, 300, 'DONATION_BASED', true, 0, false, false, false, '2025-08-28 23:59:00', '2025-08-28 23:59:00', NULL, NULL, false, true, false, NULL, 3, 3, '2025-06-14 23:13:02.565996', '2025-06-14 23:13:02.565996', false, false, false),
-(3, 'tenant_demo_001', 'Family Picnic', 'Community Family Picnic', 'A fun picnic for families in the community.', '2025-09-10', '2025-09-10', '11:00', '16:00', 'America/New_York', 'Lakeside Park', NULL, 150, 'FREE', true, 4, true, false, false, '2025-09-05 23:59:00', '2025-09-05 23:59:00', NULL, NULL, false, true, false, NULL, 4, 4, '2025-06-14 23:13:02.565996', '2025-06-14 23:13:02.565996', false, false, false),
-(4, 'tenant_demo_001', 'VIP Dinner', 'Exclusive VIP Dinner', 'A dinner event for VIP guests.', '2025-09-15', '2025-09-15', '19:00', '22:00', 'America/New_York', 'Skyline Restaurant', NULL, 50, 'INVITATION_ONLY', true, 0, false, true, false, '2025-09-12 23:59:00', '2025-09-12 23:59:00', NULL, NULL, false, true, false, NULL, 5, 5, '2025-06-14 23:13:02.565996', '2025-06-14 23:13:02.565996', false, false, false),
-(5, 'tenant_demo_001', 'Summer Fest', 'Summer Festival', 'A festival with games, food, and music.', '2025-09-20', '2025-09-20', '10:00', '20:00', 'America/New_York', 'Downtown Plaza', NULL, 400, 'TICKETED', true, 3, true, true, true, '2025-09-12 23:59:00', '2025-09-12 23:59:00', NULL, NULL, false, true, false, NULL, 6, 6, '2025-06-14 23:13:02.565996', '2025-06-14 23:13:02.565996', false, false, false),
-(6, 'tenant_demo_001', 'Spring Gala', 'Annual Spring Gala', 'A celebration of spring with music and food.', '2025-08-10', '2025-08-10', '18:00', '23:00', 'America/New_York', 'Grand Hall', NULL, 200, 'TICKETED', true, 2, true, false, true, '2025-08-05 23:59:00', '2025-08-05 23:59:00', NULL, NULL, false, true, false, NULL, 1, 1, '2025-06-14 23:13:02.565996', '2025-06-14 23:19:16.458888', true, false, false),
-(7, 'tenant_demo_001', 'Spring Gala', 'Annual Spring Gala', 'A celebration of spring with music and food.', '2025-08-10', '2025-08-10', '18:00', '23:00', 'America/New_York', 'Grand Hall', NULL, 200, 'TICKETED', true, 2, true, false, true, '2025-08-05 23:59:00', '2025-08-05 23:59:00', NULL, NULL, false, true, false, NULL, 1, 1, '2025-06-14 23:13:02.565996', '2025-06-14 23:19:16.458888', true, false, false),
-(8, 'tenant_demo_001', 'Spring Gala', 'Annual Spring Gala', 'A celebration of spring with music and food.', '2025-08-10', '2025-08-10', '18:00', '23:00', 'America/New_York', 'Grand Hall', NULL, 200, 'TICKETED', true, 2, true, false, true, '2025-08-05 23:59:00', '2025-08-05 23:59:00', NULL, NULL, false, true, false, NULL, 1, 1, '2025-06-14 23:13:02.565996', '2025-06-14 23:19:16.458888', true, false, false),
-(9, 'tenant_demo_001', 'Spring Gala', 'Annual Spring Gala', 'A celebration of spring with music and food.', '2025-08-10', '2025-08-10', '18:00', '23:00', 'America/New_York', 'Grand Hall', NULL, 200, 'TICKETED', true, 2, true, false, true, '2025-08-05 23:59:00', '2025-08-05 23:59:00', NULL, NULL, false, true, false, NULL, 1, 1, '2025-06-14 23:13:02.565996', '2025-06-14 23:19:16.458888', true, false, false),
-(10, 'tenant_demo_001', 'Spring Gala', 'Annual Spring Gala', 'A celebration of spring with music and food.', '2025-08-10', '2025-08-10', '18:00', '23:00', 'America/New_York', 'Grand Hall', NULL, 200, 'TICKETED', true, 2, true, false, true, '2025-08-05 23:59:00', '2025-08-05 23:59:00', NULL, NULL, false, true, false, NULL, 1, 1, '2025-06-14 23:13:02.565996', '2025-06-14 23:19:16.458888', true, false, false);
+INSERT INTO public.event_details
+(id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
+VALUES(4, 'tenant_demo_001', 'VIP Dinner', 'Exclusive VIP Dinner', 'A dinner event for VIP guests.', '2025-09-15', '2025-01-15', '2025-09-15', '19:00', '22:00', 'America/New_York', 'Skyline Restaurant', NULL, 50, 'INVITATION_ONLY', true, 0, false, true, false, '2025-09-12 23:59:00.000', '2025-09-12 23:59:00.000', NULL, NULL, false, true, false, NULL, 5, 5, '2025-06-14 23:13:02.565', '2025-06-14 23:13:02.565', false, false, false, false, 0, 0);
+INSERT INTO public.event_details
+(id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
+VALUES(7, 'tenant_demo_001', 'Spring Gala', 'Annual Spring Gala', 'A celebration of spring with music and food.', '2025-08-10', '2025-01-10', '2025-08-10', '18:00', '23:00', 'America/New_York', 'Grand Hall', NULL, 200, 'TICKETED', true, 2, true, false, true, '2025-08-05 23:59:00.000', '2025-08-05 23:59:00.000', NULL, NULL, false, true, false, NULL, 1, 1, '2025-06-14 23:13:02.565', '2025-09-04 04:48:18.789', true, false, false, false, 0, 0);
+INSERT INTO public.event_details
+(id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
+VALUES(8, 'tenant_demo_001', 'Spring Gala', 'Annual Spring Gala', 'A celebration of spring with music and food.', '2025-08-10', '2025-01-12', '2025-08-10', '18:00', '23:00', 'America/New_York', 'Grand Hall', NULL, 200, 'TICKETED', true, 2, true, false, true, '2025-08-05 23:59:00.000', '2025-08-05 23:59:00.000', NULL, NULL, false, true, false, NULL, 1, 1, '2025-06-14 23:13:02.565', '2025-09-04 04:48:18.789', true, false, false, false, 0, 0);
+INSERT INTO public.event_details
+(id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
+VALUES(9, 'tenant_demo_001', 'Spring Gala', 'Annual Spring Gala', 'A celebration of spring with music and food.', '2025-08-10', '2025-01-14', '2025-08-10', '18:00', '23:00', 'America/New_York', 'Grand Hall', NULL, 200, 'TICKETED', true, 2, true, false, true, '2025-08-05 23:59:00.000', '2025-08-05 23:59:00.000', NULL, NULL, false, true, false, NULL, 1, 1, '2025-06-14 23:13:02.565', '2025-09-04 04:48:18.789', true, false, false, false, 0, 0);
+INSERT INTO public.event_details
+(id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
+VALUES(10, 'tenant_demo_001', 'Spring Gala', 'Annual Spring Gala', 'A celebration of spring with music and food.', '2025-08-10', '2025-01-16', '2025-08-10', '18:00', '23:00', 'America/New_York', 'Grand Hall', NULL, 200, 'TICKETED', true, 2, true, false, true, '2025-08-05 23:59:00.000', '2025-08-05 23:59:00.000', NULL, NULL, false, true, false, NULL, 1, 1, '2025-06-14 23:13:02.565', '2025-09-04 04:48:18.789', true, false, false, false, 0, 0);
+INSERT INTO public.event_details
+(id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
+VALUES(1, 'tenant_demo_001', 'KHNJ Mega Onam 2025', 'KHNJ Mega Onam 2025', 'Grand Vazhayila Onasadhya, Mega Thiruvathira, Mahabali Procession with Thalapoli, Chendamelam, Pulikali, Cultural Programs, Meet & Greet with Friends & Family, Mega Stage Show.', '2025-09-10', '2025-01-05', '2025-09-10', '11:00 AM', '06:00 PM', 'America/New_York', 'Jo Ann Arts Center, 200 Rues Ln, East Brunswick, NJ 08816', NULL, 500, 'ticketed', true, 5, true, true, false, '2025-08-12 23:59:00.000', '2025-08-12 23:59:00.000', NULL, NULL, false, true, false, NULL, 2, 6, '2025-06-14 23:13:02.565', '2025-09-04 04:48:18.789', false, false, false, false, 0, 0);
+INSERT INTO public.event_details
+(id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
+VALUES(2, 'tenant_demo_001', 'Spark of Kerala', 'A Showcase Of Performance Arts & Rhythm.', '"Spark of Kerala," a showcase of performance arts and rhythm organized by MCEFEE, taking place in the USA from August to September 2025.  •	Featured Artists: Swasika, Afsal, Mokksha, Akhila Anand, Veda Mithra, Sidhique Roshan, Kukku, Minnale Nazeer, Shiju, Vipin Kumar, Jojo Mathew, Suneeshmon.
+•	Contact Information: Booking contacts Sujith (+1 551-283-2437) and Arun (+1 551-221-1972), and email contactus@mcefee.org.
+', '2025-09-14', '2025-01-08', '2025-09-14', '05:00 PM', '09:00 PM', 'America/New_York', 'Breslin Performing Arts Center, 262 S Main St, Lodi, NJ 07644', NULL, 300, 'ticketed', true, 8, false, false, false, '2025-08-28 23:59:00.000', '2025-08-28 23:59:00.000', NULL, NULL, false, true, false, NULL, 3, 3, '2025-06-14 23:13:02.565', '2025-09-04 05:37:26.522', false, false, false, false, 0, 0);
+INSERT INTO public.event_details
+(id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
+VALUES(3, 'tenant_demo_001', 'STAGE SHOW', 'Community / Family Entertainment Day', 'Swasika | Afsal | Mokksha | Akhila Anand | Sidique Roshan | Kukku Shiju | Vipin Kumar | Jojo Mathew | Suneeshmon', '2025-09-21', '2025-01-20', '2025-09-21', '05:00 PM', '08:00 PM', 'America/New_York', 'IKCC Knanaya Community Center, 400 Willow Grv Rd, Stony Point, NY 10980', NULL, 200, 'ticketed', true, 4, true, false, false, '2025-09-05 23:59:00.000', '2025-09-05 23:59:00.000', NULL, NULL, false, true, false, NULL, 4, 1, '2025-06-14 23:13:02.565', '2025-09-04 15:40:43.740', false, false, false, false, 0, 0);
+INSERT INTO public.event_details
+(id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
+VALUES(6, 'tenant_demo_001', 'Spring Gala', 'Annual Spring Gala', 'A celebration of spring with music and food.', '2025-09-20', '2025-01-18', '2025-09-20', '10:00 AM', '08:00 PM', 'America/New_York', 'Grand Hall', NULL, 200, 'TICKETED', true, 2, true, false, true, '2025-08-05 23:59:00.000', '2025-08-05 23:59:00.000', NULL, NULL, false, true, false, NULL, 1, 1, '2025-06-14 23:13:02.565', '2025-09-07 18:14:15.542', true, false, false, false, 2, 0);
+INSERT INTO public.event_details
+(id, tenant_id, title, caption, description, start_date, promotion_start_date, end_date, start_time, end_time, timezone, "location", directions_to_venue, capacity, admission_type, is_active, max_guests_per_attendee, allow_guests, require_guest_approval, enable_guest_pricing, registration_deadline, cancellation_deadline, minimum_age, maximum_age, requires_approval, enable_waitlist, enable_qr_code, external_registration_url, created_by_id, event_type_id, created_at, updated_at, is_registration_required, is_sports_event, is_live, is_featured_event, featured_event_priority_ranking, live_event_priority_ranking)
+VALUES(5, 'tenant_demo_001', 'Summer Fest', 'Summer Festival', 'A festival with games, food, and music.', '2025-09-20', '2025-01-22', '2025-09-20', '10:00', '20:00', 'America/New_York', 'Downtown Plaza', NULL, 400, 'TICKETED', true, 3, true, true, true, '2025-09-12 23:59:00.000', '2025-09-12 23:59:00.000', NULL, NULL, false, true, false, NULL, 6, 6, '2025-06-14 23:13:02.565', '2025-09-07 18:33:43.178', false, false, false, true, 4, 0);
 
 
 INSERT INTO public.event_guest_pricing VALUES (1, 'tenant_demo_001', 1, 'ADULT', 50.00, true, '2025-03-01', '2025-04-10', 'Adult pricing for Spring Gala', 2, 'Standard', 40.00, '2025-03-15 23:59:00', 5, 10.00, '2025-06-22 11:31:26.374558', '2025-06-22 11:31:26.374558');
@@ -121,34 +141,94 @@ INSERT INTO public.event_live_update_attachment VALUES (4, 4, 'IMAGE', 'https://
 INSERT INTO public.event_live_update_attachment VALUES (5, 5, 'VIDEO', 'https://example.com/video5.mp4', 5, NULL, '2025-06-22 11:31:26.770391', '2025-06-22 11:31:26.770391');
 INSERT INTO public.event_live_update_attachment VALUES (6, 6, 'IMAGE', 'https://example.com/image6.jpg', 6, NULL, '2025-06-22 11:31:26.770391', '2025-06-22 11:31:26.770391');
 
--- Corrected INSERT statements for event_media table (file_data column removed)
-INSERT INTO public.event_media VALUES (4050, 'tenant_demo_001', 'birthday_party.jfif', NULL, 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/birthday_party_1750026379828_bacbecdc.jfif', NULL, 'image/jpeg', 17757, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/birthday_party_1750026379828_bacbecdc.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222620Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=a8d7ab16523489684d14fdd1e5bfa063183664cb6788e5d0a54bc85142721fbc', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-15 22:26:20.4035', '2025-06-15 22:26:20.4035', 1, 1);
 
-INSERT INTO public.event_media VALUES (4100, 'tenant_demo_001', 'street_fair.jfif', '115941', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/street_fair_1750026381257_f70e40cf.jfif', NULL, 'image/jpeg', 10551, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/street_fair_1750026381257_f70e40cf.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222621Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=7b739490bda78d4127fbeb267d77856a11cc59a83b24e90c666a76783393e15d', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-15 22:26:21.363353', '2025-06-15 22:26:21.363353', 2, 1);
-
-INSERT INTO public.event_media VALUES (4150, 'tenant_demo_001', 'night_party.jfif', '115942', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/night_party_1750026381113_69263496.jfif', NULL, 'image/jpeg', 8851, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/night_party_1750026381113_69263496.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222621Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=976a14bab785e95765850160c250285fa2408035afc3b3eb7354e497769c5ffa', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-15 22:26:21.256044', '2025-06-15 22:26:21.256044', 3, 1);
-
-INSERT INTO public.event_media VALUES (4200, 'tenant_demo_001', 'music_fest.jfif', '115943', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/music_fest_1750026380991_16eac442.jfif', NULL, 'image/jpeg', 13369, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/music_fest_1750026380991_16eac442.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222621Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=fe05c34013a10da60e63df0cc7bcf34a493ff96dbd9a732408bebcff759afe96', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-15 22:26:21.112602', '2025-06-15 22:26:21.112602', 1, 1);
-
-INSERT INTO public.event_media VALUES (4250, 'tenant_demo_001', 'mens_party.jfif', '115944', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/mens_party_1750026380857_14c08f34.jfif', NULL, 'image/jpeg', 11908, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/mens_party_1750026380857_14c08f34.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222620Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=9b8f1373e82b4c9ef900736e3955434b27150e958e7816aa6e65bd9ae42e1080', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-15 22:26:20.990864', '2025-06-15 22:26:20.990864', 1, 1);
-
-INSERT INTO public.event_media VALUES (4300, 'tenant_demo_001', 'kanj_cine_star_nite_2025.avif', '115945', 'image/avif', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750026380584_8b2bfa97.avif', NULL, 'image/avif', 76564, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750026380584_8b2bfa97.avif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222620Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=c73013131cf421a28789e4fa611ce521b4c6d2f7998fa2e72551c10aa70e8070', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-15 22:26:20.856032', '2025-06-15 22:26:20.856032', 1, 1);
-
-INSERT INTO public.event_media VALUES (4350, 'tenant_demo_001', 'glow_party.jfif', '115946', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/glow_party_1750026380446_f58e53cd.jfif', NULL, 'image/jpeg', 14345, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/glow_party_1750026380446_f58e53cd.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222620Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=67f5380e4492f8716887259519c3d1e98ac6b969079e15f80396d38c6a1a4273', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-15 22:26:20.583355', '2025-06-15 22:26:20.583355', 1, 1);
-
-INSERT INTO public.event_media VALUES (4400, 'tenant_demo_001', 'zxz', '115947', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/event-poster-music-event_1749958343913_61cef052.jpg', NULL, 'image/jpeg', 26137, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/event-poster-music-event_1749958343913_61cef052.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T033224Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=f4a4017dbd783d610b73d436526f49fede315bf8f99b7c11e11f765fa0bcd712', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-15 03:32:24.279795', '2025-06-15 03:32:24.279795', 1, 1);
-
-INSERT INTO public.event_media VALUES (4450, 'tenant_demo_001', 'xcxcxcxxcxcxc', '115948', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/glow_party_1750045122643_236bc54f.jfif', NULL, 'image/jpeg', 14345, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/glow_party_1750045122643_236bc54f.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=f58364d96ff6d0a6127e70f1bd13fa54fe5dda93961360cfb8f3048cc208ee3f', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-16 03:38:43.045378', '2025-06-16 03:38:43.045378', 1, 1);
-
-INSERT INTO public.event_media VALUES (4500, 'tenant_demo_001', 'kanj_cine_star_nite_2025.avif', NULL, 'image/avif', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/kanj_cine_star_nite_2025_1750045123063_470db4ac.avif', NULL, 'image/avif', 76564, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/kanj_cine_star_nite_2025_1750045123063_470db4ac.avif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=96f8190f8b95f7185b5d7f92423c3682577db0728032abee59b781f82e280718', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-16 03:38:43.228752', '2025-06-16 03:38:43.228752', 2, 1);
-
-INSERT INTO public.event_media VALUES (4550, 'tenant_demo_001', 'mens_party.jfif', NULL, 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/mens_party_1750045123229_c2447fa3.jfif', NULL, 'image/jpeg', 11908, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/mens_party_1750045123229_c2447fa3.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=74d7c46ca459bfa5e451dd145e63b4b845b87fb8979796ee8dfd77e77262864c', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-16 03:38:43.330859', '2025-06-16 03:38:43.330859', 1, 1);
-
-INSERT INTO public.event_media VALUES (4600, 'tenant_demo_001', 'music_fest.jfif', NULL, 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/music_fest_1750045123331_4703ef82.jfif', NULL, 'image/jpeg', 13369, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/music_fest_1750045123331_4703ef82.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=ccafab0578292825faf548600cc8c7b7b97623ed7dff502f5bc3da8d9be5dd2c', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-16 03:38:43.437199', '2025-06-16 03:38:43.437199', 1, 1);
-
-INSERT INTO public.event_media VALUES (4650, 'tenant_demo_001', 'night_party.jfif', NULL, 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/night_party_1750045123438_59d4ca6c.jfif', NULL, 'image/jpeg', 8851, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/night_party_1750045123438_59d4ca6c.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=89011e0a4126acad5b6e6a9c231c6813f3079fca0ad3a8bf3276fedb8b69b948', NULL, NULL, NULL, NULL, false, NULL, false, false, false, '2025-06-16 03:38:43.540827', '2025-06-16 03:38:43.540827', 1, 1);
-
-INSERT INTO public.event_media VALUES (4701, 'tenant_demo_001', 'kanj_cine_star_nite_2025.avif', NULL, 'image/avif', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750611778776_7cd3457e.avif', NULL, 'image/avif', 76564, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750611778776_7cd3457e.avif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250622T170300Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250622%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=b57df8d480ce0e14365a1fe584665d8bc32608b186c5ce0a562a8010e014b690', NULL, NULL, NULL, NULL, NULL, NULL, false, false, false, '2025-06-22 17:03:00.151361', '2025-06-22 17:03:00.151361', 1, 4651);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4050, 'tenant_demo_001', 'street_fair.jfif', '115941', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/street_fair_1750026381257_f70e40cf.jfif', NULL, 'image/jpeg', 10551, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/street_fair_1750026381257_f70e40cf.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222621Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=7b739490bda78d4127fbeb267d77856a11cc59a83b24e90c666a76783393e15d', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-15', '2025-06-15 22:26:21.363', '2025-06-15 22:26:21.363', 2, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4100, 'tenant_demo_001', 'night_party.jfif', '115942', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/night_party_1750026381113_69263496.jfif', NULL, 'image/jpeg', 8851, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/night_party_1750026381113_69263496.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222621Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=976a14bab785e95765850160c250285fa2408035afc3b3eb7354e497769c5ffa', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-10', '2025-06-15 22:26:21.256', '2025-06-15 22:26:21.256', 3, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4150, 'tenant_demo_001', 'music_fest.jfif', '115943', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/music_fest_1750026380991_16eac442.jfif', NULL, 'image/jpeg', 13369, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/music_fest_1750026380991_16eac442.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222621Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=fe05c34013a10da60e63df0cc7bcf34a493ff96dbd9a732408bebcff759afe96', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-12', '2025-06-15 22:26:21.112', '2025-06-15 22:26:21.112', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4200, 'tenant_demo_001', 'mens_party.jfif', '115944', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/mens_party_1750026380857_14c08f34.jfif', NULL, 'image/jpeg', 11908, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/mens_party_1750026380857_14c08f34.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222620Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=9b8f1373e82b4c9ef900736e3955434b27150e958e7816aa6e65bd9ae42e1080', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-14', '2025-06-15 22:26:20.990', '2025-06-15 22:26:20.990', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4250, 'tenant_demo_001', 'kanj_cine_star_nite_2025.avif', '115945', 'image/avif', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750026380584_8b2bfa97.avif', NULL, 'image/avif', 76564, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750026380584_8b2bfa97.avif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222620Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=c73013131cf421a28789e4fa611ce521b4c6d2f7998fa2e72551c10aa70e8070', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-16', '2025-06-15 22:26:20.856', '2025-06-15 22:26:20.856', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4300, 'tenant_demo_001', 'glow_party.jfif', '115946', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/glow_party_1750026380446_f58e53cd.jfif', NULL, 'image/jpeg', 14345, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/glow_party_1750026380446_f58e53cd.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222620Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=67f5380e4492f8716887259519c3d1e98ac6b969079e15f80396d38c6a1a4273', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-18', '2025-06-15 22:26:20.583', '2025-06-15 22:26:20.583', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4350, 'tenant_demo_001', 'zxz', '115947', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/event-poster-music-event_1749958343913_61cef052.jpg', NULL, 'image/jpeg', 26137, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/event-poster-music-event_1749958343913_61cef052.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T033224Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=f4a4017dbd783d610b73d436526f49fede315bf8f99b7c11e11f765fa0bcd712', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-20', '2025-06-15 03:32:24.279', '2025-06-15 03:32:24.279', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4400, 'tenant_demo_001', 'xcxcxcxxcxcxc', '115948', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/glow_party_1750045122643_236bc54f.jfif', NULL, 'image/jpeg', 14345, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/glow_party_1750045122643_236bc54f.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=f58364d96ff6d0a6127e70f1bd13fa54fe5dda93961360cfb8f3048cc208ee3f', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-22', '2025-06-16 03:38:43.045', '2025-06-16 03:38:43.045', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4450, 'tenant_demo_001', 'kanj_cine_star_nite_2025.avif', NULL, 'image/avif', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/kanj_cine_star_nite_2025_1750045123063_470db4ac.avif', NULL, 'image/avif', 76564, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/kanj_cine_star_nite_2025_1750045123063_470db4ac.avif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=96f8190f8b95f7185b5d7f92423c3682577db0728032abee59b781f82e280718', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-24', '2025-06-16 03:38:43.228', '2025-06-16 03:38:43.228', 2, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4500, 'tenant_demo_001', 'mens_party.jfif', NULL, 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/mens_party_1750045123229_c2447fa3.jfif', NULL, 'image/jpeg', 11908, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/mens_party_1750045123229_c2447fa3.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=74d7c46ca459bfa5e451dd145e63b4b845b87fb8979796ee8dfd77e77262864c', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-26', '2025-06-16 03:38:43.330', '2025-06-16 03:38:43.330', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4550, 'tenant_demo_001', 'street_fair.jfif', '115941', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/street_fair_1750026381257_f70e40cf.jfif', NULL, 'image/jpeg', 10551, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/street_fair_1750026381257_f70e40cf.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222621Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=7b739490bda78d4127fbeb267d77856a11cc59a83b24e90c666a76783393e15d', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-15', '2025-06-15 22:26:21.363', '2025-06-15 22:26:21.363', 2, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4600, 'tenant_demo_001', 'night_party.jfif', '115942', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/night_party_1750026381113_69263496.jfif', NULL, 'image/jpeg', 8851, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/night_party_1750026381113_69263496.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222621Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=976a14bab785e95765850160c250285fa2408035afc3b3eb7354e497769c5ffa', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-10', '2025-06-15 22:26:21.256', '2025-06-15 22:26:21.256', 3, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4650, 'tenant_demo_001', 'music_fest.jfif', '115943', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/music_fest_1750026380991_16eac442.jfif', NULL, 'image/jpeg', 13369, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/music_fest_1750026380991_16eac442.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222621Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=fe05c34013a10da60e63df0cc7bcf34a493ff96dbd9a732408bebcff759afe96', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-12', '2025-06-15 22:26:21.112', '2025-06-15 22:26:21.112', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4700, 'tenant_demo_001', 'mens_party.jfif', '115944', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/mens_party_1750026380857_14c08f34.jfif', NULL, 'image/jpeg', 11908, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/mens_party_1750026380857_14c08f34.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222620Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=9b8f1373e82b4c9ef900736e3955434b27150e958e7816aa6e65bd9ae42e1080', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-14', '2025-06-15 22:26:20.990', '2025-06-15 22:26:20.990', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4750, 'tenant_demo_001', 'kanj_cine_star_nite_2025.avif', '115945', 'image/avif', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750026380584_8b2bfa97.avif', NULL, 'image/avif', 76564, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750026380584_8b2bfa97.avif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222620Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=c73013131cf421a28789e4fa611ce521b4c6d2f7998fa2e72551c10aa70e8070', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-16', '2025-06-15 22:26:20.856', '2025-06-15 22:26:20.856', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4800, 'tenant_demo_001', 'glow_party.jfif', '115946', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/glow_party_1750026380446_f58e53cd.jfif', NULL, 'image/jpeg', 14345, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/glow_party_1750026380446_f58e53cd.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T222620Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=67f5380e4492f8716887259519c3d1e98ac6b969079e15f80396d38c6a1a4273', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-18', '2025-06-15 22:26:20.583', '2025-06-15 22:26:20.583', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4850, 'tenant_demo_001', 'zxz', '115947', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/event-poster-music-event_1749958343913_61cef052.jpg', NULL, 'image/jpeg', 26137, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/event-poster-music-event_1749958343913_61cef052.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250615T033224Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250615%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=f4a4017dbd783d610b73d436526f49fede315bf8f99b7c11e11f765fa0bcd712', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-20', '2025-06-15 03:32:24.279', '2025-06-15 03:32:24.279', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4900, 'tenant_demo_001', 'xcxcxcxxcxcxc', '115948', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/glow_party_1750045122643_236bc54f.jfif', NULL, 'image/jpeg', 14345, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/glow_party_1750045122643_236bc54f.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=f58364d96ff6d0a6127e70f1bd13fa54fe5dda93961360cfb8f3048cc208ee3f', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-22', '2025-06-16 03:38:43.045', '2025-06-16 03:38:43.045', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(4950, 'tenant_demo_001', 'kanj_cine_star_nite_2025.avif', NULL, 'image/avif', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/kanj_cine_star_nite_2025_1750045123063_470db4ac.avif', NULL, 'image/avif', 76564, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/kanj_cine_star_nite_2025_1750045123063_470db4ac.avif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=96f8190f8b95f7185b5d7f92423c3682577db0728032abee59b781f82e280718', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-24', '2025-06-16 03:38:43.228', '2025-06-16 03:38:43.228', 2, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(5000, 'tenant_demo_001', 'mens_party.jfif', NULL, 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/mens_party_1750045123229_c2447fa3.jfif', NULL, 'image/jpeg', 11908, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/mens_party_1750045123229_c2447fa3.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=74d7c46ca459bfa5e451dd145e63b4b845b87fb8979796ee8dfd77e77262864c', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-26', '2025-06-16 03:38:43.330', '2025-06-16 03:38:43.330', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(5050, 'tenant_demo_001', 'music_fest.jfif', NULL, 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/music_fest_1750045123331_4703ef82.jfif', NULL, 'image/jpeg', 13369, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/music_fest_1750045123331_4703ef82.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=ccafab0578292825faf548600cc8c7b7b97623ed7dff502f5bc3da8d9be5dd2c', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-28', '2025-06-16 03:38:43.437', '2025-06-16 03:38:43.437', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(5100, 'tenant_demo_001', 'night_party.jfif', NULL, 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/night_party_1750045123438_59d4ca6c.jfif', NULL, 'image/jpeg', 8851, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/4500/night_party_1750045123438_59d4ca6c.jfif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250616T033843Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250616%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=89011e0a4126acad5b6e9c231c6813f3079fca0ad3a8bf3276fedb8b69b948', NULL, NULL, NULL, NULL, false, NULL, false, false, '2025-01-30', '2025-06-16 03:38:43.540', '2025-06-16 03:38:43.540', 1, 1, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(5150, 'tenant_demo_001', 'kanj_cine_star_nite_2025.avif', NULL, 'image/avif', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750611778776_7cd3457e.avif', NULL, 'image/avif', 76564, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/kanj_cine_star_nite_2025_1750611778776_7cd3457e.avif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250622T170300Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250622%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=b57df8d480ce0e14365a1fe584665d8bc32608b186c5ce0a562a8010e014b690', NULL, NULL, NULL, NULL, NULL, NULL, false, false, '2025-01-05', '2025-06-22 17:03:00.151', '2025-06-22 17:03:00.151', 1, 4651, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(5200, 'tenant_demo_001', 'spark_kerala_event_2025_1920px', 'spark_kerala_event_2025_1920px.jpeg', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/2/spark_kerala_event_2025_1756990296631_42abe2fa.jpeg', NULL, NULL, 194143, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/2/spark_kerala_event_2025_1756990296631_42abe2fa.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250904T125136Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250904%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=d99cbd7351a1a8a69e0704c007328d7f0dc931fba9f76948e97008a45a1685ce', NULL, NULL, NULL, NULL, NULL, NULL, false, false, '2025-01-08', '2025-09-04 12:51:36.975', '2025-09-04 12:51:36.975', 2, 4651, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(5250, 'tenant_demo_001', 'sdsdsdsds', NULL, 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/2/buy_tickets_sep_15_parsippany_1756991584906_90744672.jpeg', NULL, NULL, 784621, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/2/buy_tickets_sep_15_parsippany_1756991584906_90744672.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250904T131305Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250904%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=2d3625454d2ece527eaa30d040cb768fee4f83dc6353bb5ff73ba2fc87992aee', NULL, NULL, NULL, NULL, NULL, NULL, false, false, '2025-01-12', '2025-09-04 13:13:05.128', '2025-09-04 13:13:05.128', 2, 4651, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(5300, 'tenant_demo_001', 'zxzxzxzx', NULL, 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/2/email_header_image_1756991610137_e08b48f1.jpeg', NULL, NULL, 193978, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/2/email_header_image_1756991610137_e08b48f1.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250904T131330Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250904%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=8d7ac38ab728bbf45e195682f5d973881daa8275e91ab4100ca5c76614b4291e', NULL, NULL, NULL, NULL, NULL, NULL, false, false, '2025-01-14', '2025-09-04 13:13:30.272', '2025-09-04 13:13:30.272', 2, 4651, false, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(5350, 'tenant_demo_001', 'xcxcxcxcxcx', '', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/2/spark_kerala_event_2025_1756991634380_5a3890d1.jpeg', NULL, NULL, 194143, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/2/spark_kerala_event_2025_1756991634380_5a3890d1.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250904T131354Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250904%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=f969bf5b8e8a6dae8a94982f2361649a8d23dd66cf3954c01d7c1ef1297249ba', NULL, '', NULL, NULL, false, '', false, false, '2025-01-16', '2025-09-04 13:13:54.508', '2025-09-09 16:47:27.529', 2, 4651, true, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(5402, 'tenant_demo_001', 'khnk', NULL, 'image/png', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/khnj_onam_2025_1920px_with_bgc_1757362420545_1f202d92.png', NULL, NULL, 610808, true, false, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/khnj_onam_2025_1920px_with_bgc_1757362420545_1f202d92.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250908T201341Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250908%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=26e42a666e09bc9746d8d70b17835b513d1030ab54d5c27afcf3be9261bc3025', NULL, NULL, NULL, NULL, false, '', false, false, '2025-09-08', '2025-09-08 20:13:41.173', '2025-09-09 18:30:53.715', 1, 4651, true, false, false);
+INSERT INTO public.event_media
+(id, tenant_id, title, description, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, start_displaying_from_date, created_at, updated_at, event_id, uploaded_by_id, is_home_page_hero_image, is_featured_event_image, is_live_event_image)
+VALUES(5451, 'tenant_demo_001', 'khnj live and feature', '', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/khnj_onam_2025_1920px_1757429409289_4693cd88.jpg', NULL, NULL, 246487, true, true, false, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/tenantId/tenant_demo_001/event-id/1/khnj_onam_2025_1920px_1757429409289_4693cd88.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250909T145010Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250909%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=4ee19c1217837ca7002149666f76c23868cad2d68902614eb2e24d647a693437', NULL, '', NULL, NULL, false, '', true, false, '2025-09-09', '2025-09-09 14:50:10.906', '2025-09-09 20:06:20.229', 1, 4651, true, true, true);	 
 
 INSERT INTO public.event_organizer VALUES (1, 'tenant_demo_001', 'Lead Organizer', 'Manager', 'lead1@example.com', '555-3001', true, 1, 'Lead for Spring Gala', 'https://example.com/lead1.jpg', '2025-06-22 11:31:26.928238', '2025-06-22 11:31:26.928238', 1, 1);
 INSERT INTO public.event_organizer VALUES (2, 'tenant_demo_001', 'Co-Organizer', 'Assistant', 'co2@example.com', '555-3002', false, 2, 'Co-lead for Tech Conference', 'https://example.com/co2.jpg', '2025-06-22 11:31:26.928238', '2025-06-22 11:31:26.928238', 2, 2);
@@ -239,16 +319,24 @@ INSERT INTO public.tenant_organization VALUES (4, 'tenant_demo_004', 'Family Org
 INSERT INTO public.tenant_organization VALUES (5, 'tenant_demo_005', 'VIP Org', NULL, NULL, NULL, NULL, 'contact5@example.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, true, '2025-06-22 11:31:27.518852', '2025-06-22 11:31:27.518852');
 INSERT INTO public.tenant_organization VALUES (6, 'tenant_demo_006', 'Summer Org', NULL, NULL, NULL, NULL, 'contact6@example.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, true, '2025-06-22 11:31:27.518852', '2025-06-22 11:31:27.518852');
 
-INSERT INTO public.tenant_settings (
-    id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at
-) VALUES
-(1, 'tenant_demo_001', true, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 5, 100, NULL, '2025-06-22 11:31:27.571132', '2025-06-22 11:31:27.571132'),
-(2, 'tenant_demo_002', true, true, true, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 10, 200, NULL, '2025-06-22 11:31:27.571132', '2025-06-22 11:31:27.571132'),
-(3, 'tenant_demo_003', false, false, false, true, NULL, NULL, NULL, NULL, NULL, NULL, false, 3, 50, NULL, '2025-06-22 11:31:27.571132', '2025-06-22 11:31:27.571132'),
-(4, 'tenant_demo_004', true, false, true, true, NULL, NULL, NULL, NULL, NULL, NULL, true, 8, 150, NULL, '2025-06-22 11:31:27.571132', '2025-06-22 11:31:27.571132'),
-(5, 'tenant_demo_005', true, true, false, true, NULL, NULL, NULL, NULL, NULL, NULL, false, 2, 75, NULL, '2025-06-22 11:31:27.571132', '2025-06-22 11:31:27.571132'),
-(6, 'tenant_demo_006', false, true, true, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 6, 120, NULL, '2025-06-22 11:31:27.571132', '2025-06-22 11:31:27.571132');
-
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(1, 'tenant_demo_001', true, false, false, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 5, 100, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 1);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(2, 'tenant_demo_002', true, true, true, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 10, 200, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 2);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(3, 'tenant_demo_003', false, false, false, true, NULL, NULL, NULL, NULL, NULL, NULL, false, 3, 50, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 3);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(4, 'tenant_demo_004', true, false, true, true, NULL, NULL, NULL, NULL, NULL, NULL, true, 8, 150, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 4);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(5, 'tenant_demo_005', true, true, false, true, NULL, NULL, NULL, NULL, NULL, NULL, false, 2, 75, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 5);
+	INSERT INTO public.tenant_settings
+	(id, tenant_id, allow_user_registration, require_admin_approval, enable_whatsapp_integration, enable_email_marketing, whatsapp_api_key, email_provider_config, custom_css, custom_js, max_events_per_month, max_attendees_per_event, enable_guest_registration, max_guests_per_attendee, default_event_capacity, platform_fee_percentage, created_at, updated_at, tenant_organization_id)
+	VALUES(6, 'tenant_demo_006', false, true, true, false, NULL, NULL, NULL, NULL, NULL, NULL, true, 6, 120, NULL, '2025-06-22 11:31:27.571', '2025-09-11 22:08:43.520', 6);
 
 INSERT INTO public.user_payment_transaction VALUES (1, 'tenant_demo_001', 'TICKET_SALE', 100.00, 'USD', NULL, NULL, 0.00, 0.00, 'COMPLETED', 0.00, NULL, NULL, 'CARD', NULL, NULL, 1, 1, '2025-06-22 11:31:27.614757', '2025-06-22 11:31:27.614757');
 INSERT INTO public.user_payment_transaction VALUES (2, 'tenant_demo_001', 'SUBSCRIPTION', 200.00, 'USD', NULL, NULL, 0.00, 0.00, 'COMPLETED', 0.00, NULL, NULL, 'CARD', NULL, NULL, 2, NULL, '2025-06-22 11:31:27.614757', '2025-06-22 11:31:27.614757');
@@ -276,6 +364,12 @@ INSERT INTO public.user_task VALUES (6, 'tenant_demo_001', 'Setup Stage', 'Setup
 --INSERT INTO public.event_discount_code VALUES (5, 5);
 --INSERT INTO public.event_discount_code VALUES (6, 6);
 
+INSERT INTO public.executive_committee_team_members (first_name,last_name,title,designation,bio,email,priority_order,profile_image_url,expertise,image_background,image_style,department,join_date,is_active,linkedin_url,twitter_url,website_url,created_at,updated_at) VALUES
+	 ('Gain','Joseph','bnbnbbnb','','bnbnbbnb','giventauser@gmail.com',0,'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/media/tenantId/tenant_demo_001/executive-team-members/arun_sadasivan_1757093414753_3e098d44.jpeg',NULL,'','','',NULL,true,'','','','2025-09-05 13:30:12.146626-04','2025-09-05 13:30:12.146626-04'),
+	 ('ddddddd','Joseph','nbnbnbnbnbbnb','','bvbvbvbv','giventauser@gmail.com',0,'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/media/tenantId/tenant_demo_001/executive-team-members/latha_krishnan_1757093444035_7cfd3510.jpeg',NULL,'','','',NULL,true,'','','','2025-09-05 13:30:43.745627-04','2025-09-05 13:30:43.745627-04'),
+	 ('Manaoj','Joseph','nnnbnbbnbnbnbnbb','','','giventauser@gmail.com',0,'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/media/tenantId/tenant_demo_001/executive-team-members/Manoj_Kizhakkoot_1757093467818_a471c9c7.png',NULL,'','','',NULL,true,'','','','2025-09-05 13:31:07.135061-04','2025-09-05 13:31:07.135061-04');
+
+
 
 INSERT INTO public.rel_event_details__discount_codes VALUES (1, 1);
 INSERT INTO public.rel_event_details__discount_codes VALUES (2, 2);
@@ -301,3 +395,308 @@ INSERT INTO public.databasechangeloglock VALUES (3, false, '2025-06-22 11:31:27.
 INSERT INTO public.databasechangeloglock VALUES (4, false, '2025-06-22 11:31:27.859976', 'admin4');
 INSERT INTO public.databasechangeloglock VALUES (5, false, '2025-06-22 11:31:27.859976', 'admin5');
 INSERT INTO public.databasechangeloglock VALUES (6, false, '2025-06-22 11:31:27.859976', 'admin6');
+
+
+-- Event Management New Tables - Sample Insert Statements
+-- Generated: January 2025
+-- Purpose: Sample data for testing and development
+-- Note: All backend development is complete - this is for reference only
+
+-- =====================================================
+-- DELETE STATEMENTS - CLEAR EXISTING DATA
+-- =====================================================
+
+-- Clear all data from new event management tables (in correct order due to foreign key constraints)
+DELETE FROM public.event_sponsors_join;
+DELETE FROM public.event_featured_performers;
+DELETE FROM public.event_contacts;
+DELETE FROM public.event_emails;
+DELETE FROM public.event_program_directors;
+DELETE FROM public.event_sponsors;
+
+-- Note: Delete from join table first, then dependent tables, then parent tables
+-- This ensures foreign key constraints are satisfied
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT FEATURED PERFORMERS
+-- =====================================================
+
+INSERT INTO public.event_featured_performers VALUES (
+  1, 1, 'K.J. Yesudas', 'Yesudas', 'Vocalist',
+  'Renowned Malayalam classical singer with over 50 years of experience in the music industry. Known for his melodious voice and classical renditions.',
+  'Indian', '1940-01-10', 'yesudas@example.com', '+91-9847012345', 'https://yesudas.com',
+  'https://s3.amazonaws.com/bucket/performers/1/portrait/yesudas_portrait.jpg',
+  'https://s3.amazonaws.com/bucket/performers/1/performance/yesudas_performance.jpg',
+  '["https://s3.amazonaws.com/bucket/performers/1/gallery/img1.jpg", "https://s3.amazonaws.com/bucket/performers/1/gallery/img2.jpg"]',
+  45, 1, true, 'https://facebook.com/yesudas', 'https://twitter.com/yesudas', 'https://instagram.com/yesudas',
+  'https://youtube.com/yesudas', 'https://linkedin.com/in/yesudas', 'https://tiktok.com/@yesudas',
+  true, 100, '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_featured_performers VALUES (
+  2, 1, 'Kalamandalam Gopi', 'Gopi Asan', 'Kathakali Performer',
+  'Legendary Kathakali artist known for his exceptional performances and traditional Kerala dance form mastery.',
+  'Indian', '1937-05-15', 'gopi@example.com', '+91-9847012346', 'https://gopiasan.com',
+  'https://s3.amazonaws.com/bucket/performers/2/portrait/gopi_portrait.jpg',
+  'https://s3.amazonaws.com/bucket/performers/2/performance/gopi_performance.jpg',
+  '["https://s3.amazonaws.com/bucket/performers/2/gallery/img1.jpg"]',
+  60, 2, false, 'https://facebook.com/gopiasan', NULL, 'https://instagram.com/gopiasan',
+  'https://youtube.com/gopiasan', NULL, NULL,
+  true, 90, '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+); 
+
+INSERT INTO public.event_featured_performers VALUES (
+  3, 2, 'Zakir Hussain', 'Zakir Hussain', 'Percussionist',
+  'World-renowned tabla player and percussionist with international acclaim.',
+  'Indian', '1951-03-09', 'zakir@example.com', '+91-9847012347', 'https://zakirhussain.com',
+  'https://s3.amazonaws.com/bucket/performers/3/portrait/zakir_portrait.jpg',
+  'https://s3.amazonaws.com/bucket/performers/3/performance/zakir_performance.jpg',
+  '["https://s3.amazonaws.com/bucket/performers/3/gallery/img1.jpg", "https://s3.amazonaws.com/bucket/performers/3/gallery/img2.jpg", "https://s3.amazonaws.com/bucket/performers/3/gallery/img3.jpg"]',
+  30, 3, false, 'https://facebook.com/zakirhussain', 'https://twitter.com/zakirhussain', 'https://instagram.com/zakirhussain',
+  'https://youtube.com/zakirhussain', 'https://linkedin.com/in/zakirhussain', NULL,
+  true, 80, '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT CONTACTS
+-- =====================================================
+
+INSERT INTO public.event_contacts VALUES (
+  1, 1, 'Sarah Johnson', '+1-555-0101', 'sarah.johnson@example.com',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_contacts VALUES (
+  2, 1, 'Michael Chen', '+1-555-0102', 'michael.chen@example.com',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_contacts VALUES (
+  3, 2, 'Emily Rodriguez', '+1-555-0103', 'emily.rodriguez@example.com',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_contacts VALUES (
+  4, 2, 'David Kim', '+1-555-0104', 'david.kim@example.com',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_contacts VALUES (
+  5, 3, 'Lisa Wang', '+1-555-0105', 'lisa.wang@example.com',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT SPONSORS
+-- =====================================================
+
+INSERT INTO public.event_sponsors VALUES (
+  1, 'Kerala Tourism Development Corporation', 'Title Sponsor', 'KTDC', 'Explore Gods Own Country',
+  'Official tourism partner promoting Keralass rich cultural heritage and natural beauty.',
+  'https://www.ktdc.com', 'contact@ktdc.com', '+91-471-2321132',
+  'https://s3.amazonaws.com/bucket/sponsors/1/logo/ktdc_logo.png',
+  'https://s3.amazonaws.com/bucket/sponsors/1/hero/ktdc_hero.jpg',
+  'https://s3.amazonaws.com/bucket/sponsors/1/banner/ktdc_banner.jpg',
+  true, 100, 'https://facebook.com/keralatourism', 'https://twitter.com/keralatourism',
+  'https://linkedin.com/company/kerala-tourism', 'https://instagram.com/keralatourism',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors VALUES (
+  2, 'Tata Consultancy Services', 'Platinum Sponsor', 'TCS', 'Building on Belief',
+  'Leading IT services and consulting company supporting cultural events and community development.',
+  'https://www.tcs.com', 'sponsorship@tcs.com', '+91-22-67789999',
+  'https://s3.amazonaws.com/bucket/sponsors/2/logo/tcs_logo.png',
+  'https://s3.amazonaws.com/bucket/sponsors/2/hero/tcs_hero.jpg',
+  'https://s3.amazonaws.com/bucket/sponsors/2/banner/tcs_banner.jpg',
+  true, 90, 'https://facebook.com/tcs', 'https://twitter.com/tcs',
+  'https://linkedin.com/company/tcs', 'https://instagram.com/tcs',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors VALUES (
+  3, 'Federal Bank', 'Gold Sponsor', 'Federal Bank', 'Your Perfect Banking Partner',
+  'Premier private sector bank committed to supporting cultural and community events.',
+  'https://www.federalbank.co.in', 'events@federalbank.co.in', '+91-484-2630606',
+  'https://s3.amazonaws.com/bucket/sponsors/3/logo/federal_logo.png',
+  'https://s3.amazonaws.com/bucket/sponsors/3/hero/federal_hero.jpg',
+  'https://s3.amazonaws.com/bucket/sponsors/3/banner/federal_banner.jpg',
+  true, 80, 'https://facebook.com/federalbank', 'https://twitter.com/federalbank',
+  'https://linkedin.com/company/federal-bank', 'https://instagram.com/federalbank',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors VALUES (
+  4, 'Kerala State Beverages Corporation', 'Silver Sponsor', 'KSBC', 'Quality in Every Drop',
+  'Government corporation supporting cultural events and promoting responsible consumption.',
+  'https://www.ksbc.kerala.gov.in', 'info@ksbc.kerala.gov.in', '+91-471-2321234',
+  'https://s3.amazonaws.com/bucket/sponsors/4/logo/ksbc_logo.png',
+  'https://s3.amazonaws.com/bucket/sponsors/4/hero/ksbc_hero.jpg',
+  'https://s3.amazonaws.com/bucket/sponsors/4/banner/ksbc_banner.jpg',
+  true, 70, 'https://facebook.com/ksbc', NULL,
+  'https://linkedin.com/company/ksbc', 'https://instagram.com/ksbc',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors VALUES (
+  5, 'Malayalam Manorama', 'Media Partner', 'Manorama', 'Truth Above All',
+  'Leading Malayalam newspaper and media group promoting cultural events and community engagement.',
+  'https://www.manoramaonline.com', 'events@manoramaonline.com', '+91-471-2518000',
+  'https://s3.amazonaws.com/bucket/sponsors/5/logo/manorama_logo.png',
+  'https://s3.amazonaws.com/bucket/sponsors/5/hero/manorama_hero.jpg',
+  'https://s3.amazonaws.com/bucket/sponsors/5/banner/manorama_banner.jpg',
+  true, 60, 'https://facebook.com/manoramaonline', 'https://twitter.com/manoramaonline',
+  'https://linkedin.com/company/manorama', 'https://instagram.com/manoramaonline',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT SPONSORS JOIN (Many-to-Many)
+-- =====================================================
+
+INSERT INTO public.event_sponsors_join VALUES (
+  1, 1, 1, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  2, 1, 2, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  3, 1, 3, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  4, 2, 2, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  5, 2, 4, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  6, 3, 1, '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_sponsors_join VALUES (
+  7, 3, 5, '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT EMAILS
+-- =====================================================
+
+INSERT INTO public.event_emails VALUES (
+  1, 1, 'info@malayaleesfestival.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_emails VALUES (
+  2, 1, 'tickets@malayaleesfestival.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_emails VALUES (
+  3, 1, 'sponsorship@malayaleesfestival.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_emails VALUES (
+  4, 2, 'contact@culturalnight.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_emails VALUES (
+  5, 2, 'media@culturalnight.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_emails VALUES (
+  6, 3, 'admin@musicconcert.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- SAMPLE DATA FOR EVENT PROGRAM DIRECTORS
+-- =====================================================
+
+INSERT INTO public.event_program_directors VALUES (
+  1, 1, 'Dr. Rajesh Kumar', 'https://s3.amazonaws.com/bucket/directors/1/photo/rajesh_photo.jpg',
+  'Dr. Rajesh Kumar is a distinguished cultural director with over 25 years of experience in organizing large-scale cultural events. He has been instrumental in promoting Malayalam arts and culture across the globe.',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_program_directors VALUES (
+  2, 1, 'Ms. Priya Menon', 'https://s3.amazonaws.com/bucket/directors/2/photo/priya_photo.jpg',
+  'Ms. Priya Menon is an accomplished event director specializing in traditional Kerala cultural programs. She has successfully organized numerous festivals and cultural events with a focus on authentic representation of Malayalam traditions.',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_program_directors VALUES (
+  3, 2, 'Mr. Suresh Nair', 'https://s3.amazonaws.com/bucket/directors/3/photo/suresh_photo.jpg',
+  'Mr. Suresh Nair brings extensive experience in cultural event management and has been associated with several prestigious cultural organizations. His expertise lies in coordinating diverse artistic performances and managing large audiences.',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+INSERT INTO public.event_program_directors VALUES (
+  4, 3, 'Dr. Anitha Pillai', 'https://s3.amazonaws.com/bucket/directors/4/photo/anitha_photo.jpg',
+  'Dr. Anitha Pillai is a renowned music director and cultural consultant with deep knowledge of classical and contemporary music. She has curated numerous musical events and has been recognized for her contributions to promoting Indian classical music.',
+  '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+);
+
+-- =====================================================
+-- NOTES FOR FRONTEND DEVELOPERS
+-- =====================================================
+
+/*
+IMPORTANT NOTES FOR FRONTEND INTEGRATION:
+
+1. BACKEND STATUS: All backend development is complete and ready for frontend integration
+2. DATABASE: All tables are created with proper relationships and constraints
+3. API ENDPOINTS: 50+ REST endpoints are implemented and documented
+4. AUTHENTICATION: JWT-based security is configured
+5. IMAGE UPLOAD: AWS S3 integration with dynamic path construction is ready
+6. VALIDATION: Comprehensive input validation and error handling is implemented
+
+FRONTEND DEVELOPERS ONLY NEED TO:
+- Create UI components for entity management
+- Integrate with existing REST API endpoints
+- Implement image upload UI using documented endpoints
+- Handle frontend validation to complement backend validation
+- Design user experience workflows
+
+NO BACKEND DEVELOPMENT, DATABASE SETUP, OR INFRASTRUCTURE CONFIGURATION IS REQUIRED.
+
+SAMPLE DATA REFERENCE:
+- Event IDs 1, 2, 3 correspond to existing events in the event_details table
+- All image URLs are placeholder S3 URLs - backend handles actual URL generation
+- Phone numbers follow international format
+- Email addresses are example domains
+- All timestamps are in ISO format
+- Priority rankings are used for sorting and display order
+- Boolean flags control visibility and active status
+
+RELATIONSHIPS:
+- EventFeaturedPerformers → EventDetails (Many-to-One)
+- EventContacts → EventDetails (Many-to-One)
+- EventEmails → EventDetails (Many-to-One)
+- EventProgramDirectors → EventDetails (Many-to-One)
+- EventSponsorsJoin → EventDetails (Many-to-One)
+- EventSponsorsJoin → EventSponsors (Many-to-One)
+- EventDetails ↔ EventSponsors (Many-to-Many via EventSponsorsJoin)
+
+API ENDPOINTS AVAILABLE:
+- GET /api/event-featured-performers
+- POST /api/event-featured-performers
+- GET /api/event-contacts
+- POST /api/event-contacts
+- GET /api/event-sponsors
+- POST /api/event-sponsors
+- GET /api/event-sponsors-join
+- POST /api/event-sponsors-join
+- GET /api/event-emails
+- POST /api/event-emails
+- GET /api/event-program-directors
+- POST /api/event-program-directors
+
+IMAGE UPLOAD ENDPOINTS:
+- POST /api/event-medias/upload/featured-performer/{entityId}/{imageType}
+- POST /api/event-medias/upload/sponsor/{entityId}/{imageType}
+- POST /api/event-medias/upload/contact/{entityId}/photo
+- POST /api/event-medias/upload/program-director/{entityId}/photo
+- POST /api/event-medias/upload (enhanced general endpoint)
+*/

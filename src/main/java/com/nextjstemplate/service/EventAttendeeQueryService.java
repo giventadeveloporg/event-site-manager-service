@@ -214,7 +214,6 @@ public class EventAttendeeQueryService extends QueryService<EventAttendee> {
             if (criteria.getUpdatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getUpdatedAt(), EventAttendee_.updatedAt));
             }
-            
         }
         return specification;
     }

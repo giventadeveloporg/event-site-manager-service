@@ -8,8 +8,6 @@ import com.nextjstemplate.service.mapper.EventLiveUpdateMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class EventLiveUpdateServiceImpl implements EventLiveUpdateService {
 
-    private final Logger log = LoggerFactory.getLogger(EventLiveUpdateServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventLiveUpdateServiceImpl.class);
 
     private final EventLiveUpdateRepository eventLiveUpdateRepository;
 
@@ -33,7 +31,7 @@ public class EventLiveUpdateServiceImpl implements EventLiveUpdateService {
 
     @Override
     public EventLiveUpdateDTO save(EventLiveUpdateDTO eventLiveUpdateDTO) {
-        log.debug("Request to save EventLiveUpdate : {}", eventLiveUpdateDTO);
+        LOG.debug("Request to save EventLiveUpdate : {}", eventLiveUpdateDTO);
         EventLiveUpdate eventLiveUpdate = eventLiveUpdateMapper.toEntity(eventLiveUpdateDTO);
         eventLiveUpdate = eventLiveUpdateRepository.save(eventLiveUpdate);
         return eventLiveUpdateMapper.toDto(eventLiveUpdate);
@@ -41,7 +39,7 @@ public class EventLiveUpdateServiceImpl implements EventLiveUpdateService {
 
     @Override
     public EventLiveUpdateDTO update(EventLiveUpdateDTO eventLiveUpdateDTO) {
-        log.debug("Request to update EventLiveUpdate : {}", eventLiveUpdateDTO);
+        LOG.debug("Request to update EventLiveUpdate : {}", eventLiveUpdateDTO);
         EventLiveUpdate eventLiveUpdate = eventLiveUpdateMapper.toEntity(eventLiveUpdateDTO);
         eventLiveUpdate = eventLiveUpdateRepository.save(eventLiveUpdate);
         return eventLiveUpdateMapper.toDto(eventLiveUpdate);
@@ -49,7 +47,7 @@ public class EventLiveUpdateServiceImpl implements EventLiveUpdateService {
 
     @Override
     public Optional<EventLiveUpdateDTO> partialUpdate(EventLiveUpdateDTO eventLiveUpdateDTO) {
-        log.debug("Request to partially update EventLiveUpdate : {}", eventLiveUpdateDTO);
+        LOG.debug("Request to partially update EventLiveUpdate : {}", eventLiveUpdateDTO);
 
         return eventLiveUpdateRepository
             .findById(eventLiveUpdateDTO.getId())
@@ -64,21 +62,14 @@ public class EventLiveUpdateServiceImpl implements EventLiveUpdateService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<EventLiveUpdateDTO> findAll(Pageable pageable) {
-        log.debug("Request to get all EventLiveUpdates");
-        return eventLiveUpdateRepository.findAll(pageable).map(eventLiveUpdateMapper::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Optional<EventLiveUpdateDTO> findOne(Long id) {
-        log.debug("Request to get EventLiveUpdate : {}", id);
+        LOG.debug("Request to get EventLiveUpdate : {}", id);
         return eventLiveUpdateRepository.findById(id).map(eventLiveUpdateMapper::toDto);
     }
 
     @Override
     public void delete(Long id) {
-        log.debug("Request to delete EventLiveUpdate : {}", id);
+        LOG.debug("Request to delete EventLiveUpdate : {}", id);
         eventLiveUpdateRepository.deleteById(id);
     }
 }

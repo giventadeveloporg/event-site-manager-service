@@ -1,6 +1,5 @@
 package com.nextjstemplate.service.dto;
 
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -22,7 +21,7 @@ public class WhatsAppLogDTO implements Serializable {
     @Size(max = 50)
     private String recipientPhone;
 
-    @Lob
+    @Size(max = 4096)
     private String messageBody;
 
     @NotNull
@@ -36,7 +35,7 @@ public class WhatsAppLogDTO implements Serializable {
 
     private Long campaignId;
 
-    @Lob
+    @Size(max = 8192)
     private String metadata;
 
     private CommunicationCampaignDTO campaign;

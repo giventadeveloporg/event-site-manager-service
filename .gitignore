@@ -9,6 +9,13 @@ npm-debug.log.*
 /.cache-loader/*
 
 ######################
+# Environment Variables
+######################
+.env
+.env.local
+.env.*.local
+
+######################
 # SASS
 ######################
 .sass-cache/
@@ -74,7 +81,6 @@ out/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
-!.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
 
@@ -159,3 +165,11 @@ Desktop.ini
 ######################
 /coverage/
 /.nyc_output/
+.clinerules/byterover-rules.md
+.kilocode/rules/byterover-rules.md
+.roo/rules/byterover-rules.md
+.windsurf/rules/byterover-rules.md
+.cursor/rules/byterover-rules.mdc
+.kiro/steering/byterover-rules.md
+.qoder/rules/byterover-rules.md
+.augment/rules/byterover-rules.md

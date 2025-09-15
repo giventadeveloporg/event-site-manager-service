@@ -7,7 +7,6 @@ import com.nextjstemplate.service.criteria.UserTaskCriteria;
 import com.nextjstemplate.service.dto.UserTaskDTO;
 import com.nextjstemplate.service.mapper.UserTaskMapper;
 import jakarta.persistence.criteria.JoinType;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -21,13 +20,13 @@ import tech.jhipster.service.QueryService;
  * Service for executing complex queries for {@link UserTask} entities in the database.
  * The main input is a {@link UserTaskCriteria} which gets converted to {@link Specification},
  * in a way that all the filters must apply.
- * It returns a {@link List} of {@link UserTaskDTO} or a {@link Page} of {@link UserTaskDTO} which fulfills the criteria.
+ * It returns a {@link Page} of {@link UserTaskDTO} which fulfills the criteria.
  */
 @Service
 @Transactional(readOnly = true)
 public class UserTaskQueryService extends QueryService<UserTask> {
 
-    private final Logger log = LoggerFactory.getLogger(UserTaskQueryService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserTaskQueryService.class);
 
     private final UserTaskRepository userTaskRepository;
 
@@ -39,18 +38,6 @@ public class UserTaskQueryService extends QueryService<UserTask> {
     }
 
     /**
-     * Return a {@link List} of {@link UserTaskDTO} which matches the criteria from the database.
-     * @param criteria The object which holds all the filters, which the entities should match.
-     * @return the matching entities.
-     */
-    @Transactional(readOnly = true)
-    public List<UserTaskDTO> findByCriteria(UserTaskCriteria criteria) {
-        log.debug("find by criteria : {}", criteria);
-        final Specification<UserTask> specification = createSpecification(criteria);
-        return userTaskMapper.toDto(userTaskRepository.findAll(specification));
-    }
-
-    /**
      * Return a {@link Page} of {@link UserTaskDTO} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @param page The page, which should be returned.
@@ -58,7 +45,7 @@ public class UserTaskQueryService extends QueryService<UserTask> {
      */
     @Transactional(readOnly = true)
     public Page<UserTaskDTO> findByCriteria(UserTaskCriteria criteria, Pageable page) {
-        log.debug("find by criteria : {}, page: {}", criteria, page);
+        LOG.debug("find by criteria : {}, page: {}", criteria, page);
         final Specification<UserTask> specification = createSpecification(criteria);
         return userTaskRepository.findAll(specification, page).map(userTaskMapper::toDto);
     }
@@ -70,7 +57,7 @@ public class UserTaskQueryService extends QueryService<UserTask> {
      */
     @Transactional(readOnly = true)
     public long countByCriteria(UserTaskCriteria criteria) {
-        log.debug("count by criteria : {}", criteria);
+        LOG.debug("count by criteria : {}", criteria);
         final Specification<UserTask> specification = createSpecification(criteria);
         return userTaskRepository.count(specification);
     }
@@ -84,59 +71,25 @@ public class UserTaskQueryService extends QueryService<UserTask> {
         Specification<UserTask> specification = Specification.where(null);
         if (criteria != null) {
             // This has to be called first, because the distinct method returns null
-            if (criteria.getDistinct() != null) {
-                specification = specification.and(distinct(criteria.getDistinct()));
-            }
-            if (criteria.getId() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getId(), UserTask_.id));
-            }
-            if (criteria.getTenantId() != null) {
-                specification = specification.and(buildStringSpecification(criteria.getTenantId(), UserTask_.tenantId));
-            }
-            if (criteria.getTitle() != null) {
-                specification = specification.and(buildStringSpecification(criteria.getTitle(), UserTask_.title));
-            }
-            if (criteria.getStatus() != null) {
-                specification = specification.and(buildStringSpecification(criteria.getStatus(), UserTask_.status));
-            }
-            if (criteria.getPriority() != null) {
-                specification = specification.and(buildStringSpecification(criteria.getPriority(), UserTask_.priority));
-            }
-            if (criteria.getDueDate() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getDueDate(), UserTask_.dueDate));
-            }
-            if (criteria.getCompleted() != null) {
-                specification = specification.and(buildSpecification(criteria.getCompleted(), UserTask_.completed));
-            }
-            if (criteria.getAssigneeName() != null) {
-                specification = specification.and(buildStringSpecification(criteria.getAssigneeName(), UserTask_.assigneeName));
-            }
-            if (criteria.getAssigneeContactPhone() != null) {
-                specification =
-                    specification.and(buildStringSpecification(criteria.getAssigneeContactPhone(), UserTask_.assigneeContactPhone));
-            }
-            if (criteria.getAssigneeContactEmail() != null) {
-                specification =
-                    specification.and(buildStringSpecification(criteria.getAssigneeContactEmail(), UserTask_.assigneeContactEmail));
-            }
-            if (criteria.getCreatedAt() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), UserTask_.createdAt));
-            }
-            if (criteria.getUpdatedAt() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getUpdatedAt(), UserTask_.updatedAt));
-            }
-            if (criteria.getUserId() != null) {
-                specification =
-                    specification.and(
-                        buildSpecification(criteria.getUserId(), root -> root.join(UserTask_.user, JoinType.LEFT).get(UserProfile_.id))
-                    );
-            }
-            if (criteria.getEventId() != null) {
-                specification =
-                    specification.and(
-                        buildSpecification(criteria.getEventId(), root -> root.join(UserTask_.event, JoinType.LEFT).get(EventDetails_.id))
-                    );
-            }
+            specification =
+                Specification.allOf(
+                    Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
+                    buildRangeSpecification(criteria.getId(), UserTask_.id),
+                    buildStringSpecification(criteria.getTenantId(), UserTask_.tenantId),
+                    buildStringSpecification(criteria.getTitle(), UserTask_.title),
+                    buildStringSpecification(criteria.getDescription(), UserTask_.description),
+                    buildStringSpecification(criteria.getStatus(), UserTask_.status),
+                    buildStringSpecification(criteria.getPriority(), UserTask_.priority),
+                    buildRangeSpecification(criteria.getDueDate(), UserTask_.dueDate),
+                    buildSpecification(criteria.getCompleted(), UserTask_.completed),
+                    buildStringSpecification(criteria.getAssigneeName(), UserTask_.assigneeName),
+                    buildStringSpecification(criteria.getAssigneeContactPhone(), UserTask_.assigneeContactPhone),
+                    buildStringSpecification(criteria.getAssigneeContactEmail(), UserTask_.assigneeContactEmail),
+                    buildRangeSpecification(criteria.getCreatedAt(), UserTask_.createdAt),
+                    buildRangeSpecification(criteria.getUpdatedAt(), UserTask_.updatedAt),
+                    buildSpecification(criteria.getUserId(), root -> root.join(UserTask_.user, JoinType.LEFT).get(UserProfile_.id)),
+                    buildSpecification(criteria.getEventId(), root -> root.join(UserTask_.event, JoinType.LEFT).get(EventDetails_.id))
+                );
         }
         return specification;
     }
