@@ -13,6 +13,9 @@ public class EventContactsDTO implements Serializable {
 
   private Long id;
 
+  @Size(max = 255)
+  private String tenantId;
+
   @NotNull
   @Size(max = 255)
   private String name;
@@ -30,6 +33,9 @@ public class EventContactsDTO implements Serializable {
   @NotNull
   private ZonedDateTime updatedAt;
 
+  @Size(max = 1024)
+  private String photoUrl;
+
   private EventDetailsDTO event;
 
   public Long getId() {
@@ -38,6 +44,14 @@ public class EventContactsDTO implements Serializable {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public String getTenantId() {
+    return tenantId;
+  }
+
+  public void setTenantId(String tenantId) {
+    this.tenantId = tenantId;
   }
 
   public String getName() {
@@ -80,6 +94,14 @@ public class EventContactsDTO implements Serializable {
     this.updatedAt = updatedAt;
   }
 
+  public String getPhotoUrl() {
+    return photoUrl;
+  }
+
+  public void setPhotoUrl(String photoUrl) {
+    this.photoUrl = photoUrl;
+  }
+
   public EventDetailsDTO getEvent() {
     return event;
   }
@@ -114,9 +136,11 @@ public class EventContactsDTO implements Serializable {
   public String toString() {
     return "EventContactsDTO{" +
         "id=" + getId() +
+        ", tenantId='" + getTenantId() + "'" +
         ", name='" + getName() + "'" +
         ", phone='" + getPhone() + "'" +
         ", email='" + getEmail() + "'" +
+        ", photoUrl='" + getPhotoUrl() + "'" +
         ", createdAt='" + getCreatedAt() + "'" +
         ", updatedAt='" + getUpdatedAt() + "'" +
         ", event=" + getEvent() +

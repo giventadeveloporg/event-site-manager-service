@@ -3,9 +3,17 @@ package com.nextjstemplate.web.rest;
 import com.nextjstemplate.repository.EventMediaRepository;
 import com.nextjstemplate.service.EventMediaQueryService;
 import com.nextjstemplate.service.EventMediaService;
+import com.nextjstemplate.service.EventProgramDirectorsService;
+import com.nextjstemplate.service.EventFeaturedPerformersService;
+import com.nextjstemplate.service.EventContactsService;
+import com.nextjstemplate.service.EventSponsorsService;
 import com.nextjstemplate.service.criteria.EventMediaCriteria;
 import com.nextjstemplate.service.dto.AidaDTO;
 import com.nextjstemplate.service.dto.EventMediaDTO;
+import com.nextjstemplate.service.dto.EventProgramDirectorsDTO;
+import com.nextjstemplate.service.dto.EventFeaturedPerformersDTO;
+import com.nextjstemplate.service.dto.EventContactsDTO;
+import com.nextjstemplate.service.dto.EventSponsorsDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,16 +63,28 @@ public class EventMediaResource {
 
     private final EventMediaQueryService eventMediaQueryService;
     private final EventMediaMapper eventMediaMapper;
+    private final EventProgramDirectorsService eventProgramDirectorsService;
+    private final EventFeaturedPerformersService eventFeaturedPerformersService;
+    private final EventContactsService eventContactsService;
+    private final EventSponsorsService eventSponsorsService;
 
     public EventMediaResource(
             EventMediaService eventMediaService,
             EventMediaRepository eventMediaRepository,
             EventMediaQueryService eventMediaQueryService,
-            EventMediaMapper eventMediaMapper) {
+            EventMediaMapper eventMediaMapper,
+            EventProgramDirectorsService eventProgramDirectorsService,
+            EventFeaturedPerformersService eventFeaturedPerformersService,
+            EventContactsService eventContactsService,
+            EventSponsorsService eventSponsorsService) {
         this.eventMediaService = eventMediaService;
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaQueryService = eventMediaQueryService;
         this.eventMediaMapper = eventMediaMapper;
+        this.eventProgramDirectorsService = eventProgramDirectorsService;
+        this.eventFeaturedPerformersService = eventFeaturedPerformersService;
+        this.eventContactsService = eventContactsService;
+        this.eventSponsorsService = eventSponsorsService;
     }
 
     @PostMapping("test")
@@ -420,15 +440,15 @@ public class EventMediaResource {
     }
 
     /**
-     * POST /event-medias/upload/featured-performer/{entityId}/{imageType} : Upload
-     * image for featured performer.
+     * POST /event-medias/upload/featured-performer : Upload image for featured
+     * performer.
      */
-    @PostMapping(value = "/upload/featured-performer/{entityId}/{imageType}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/upload/featured-performer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EventMediaDTO> uploadFeaturedPerformerImage(
             @RequestParam("file") MultipartFile file,
-            @PathVariable Long entityId,
-            @PathVariable String imageType,
             @RequestParam("eventId") Long eventId,
+            @RequestParam("entityId") Long entityId,
+            @RequestParam("imageType") String imageType,
             @RequestParam("title") @NotNull String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("tenantId") String tenantId,
@@ -447,9 +467,46 @@ public class EventMediaResource {
 
         EventMediaDTO result = eventMediaService.uploadFile(
                 file, eventId, userProfileId, title, description, tenantId, isPublicValue,
-                null, null, null, null, null, null, false, false, false, null,
+                null, null, null, null, false, null, false, false, false, LocalDate.now(),
                 imageType.equals("portrait"), imageType.equals("performance"), imageType.equals("gallery"),
                 null, null, null, null, null, entityId, "featured-performer", imageType);
+
+        // Update the EventFeaturedPerformers entity with the appropriate image URL
+        if (result != null && result.getFileUrl() != null) {
+            try {
+                EventFeaturedPerformersDTO featuredPerformer = eventFeaturedPerformersService.findOne(entityId)
+                        .orElse(null);
+                if (featuredPerformer != null) {
+                    switch (imageType) {
+                        case "portrait":
+                            featuredPerformer.setPortraitImageUrl(result.getFileUrl());
+                            break;
+                        case "performance":
+                            featuredPerformer.setPerformanceImageUrl(result.getFileUrl());
+                            break;
+                        case "gallery":
+                            // For gallery, append to existing URLs or set if empty
+                            String existingGalleryUrls = featuredPerformer.getGalleryImageUrls();
+                            if (existingGalleryUrls == null || existingGalleryUrls.trim().isEmpty()) {
+                                featuredPerformer.setGalleryImageUrls(result.getFileUrl());
+                            } else {
+                                featuredPerformer.setGalleryImageUrls(existingGalleryUrls + "," + result.getFileUrl());
+                            }
+                            break;
+                    }
+                    eventFeaturedPerformersService.update(featuredPerformer);
+                    log.debug("Updated EventFeaturedPerformers ID {} with {} image URL: {}", entityId, imageType,
+                            result.getFileUrl());
+                } else {
+                    log.warn("EventFeaturedPerformers with ID {} not found, cannot update {} image URL", entityId,
+                            imageType);
+                }
+            } catch (Exception e) {
+                log.error("Failed to update EventFeaturedPerformers {} image URL for ID {}: {}", imageType, entityId,
+                        e.getMessage());
+                // Don't fail the upload if we can't update the featured performer record
+            }
+        }
 
         return ResponseEntity.created(new URI("/api/event-medias/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
@@ -458,15 +515,14 @@ public class EventMediaResource {
     }
 
     /**
-     * POST /event-medias/upload/sponsor/{entityId}/{imageType} : Upload image for
-     * sponsor.
+     * POST /event-medias/upload/sponsor : Upload image for sponsor.
      */
-    @PostMapping(value = "/upload/sponsor/{entityId}/{imageType}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/upload/sponsor", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EventMediaDTO> uploadSponsorImage(
             @RequestParam("file") MultipartFile file,
-            @PathVariable Long entityId,
-            @PathVariable String imageType,
             @RequestParam("eventId") Long eventId,
+            @RequestParam("entityId") Long entityId,
+            @RequestParam("imageType") String imageType,
             @RequestParam("title") @NotNull String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("tenantId") String tenantId,
@@ -485,9 +541,38 @@ public class EventMediaResource {
 
         EventMediaDTO result = eventMediaService.uploadFile(
                 file, eventId, userProfileId, title, description, tenantId, isPublicValue,
-                null, null, null, null, null, null, false, false, false, null,
+                null, null, null, null, false, null, false, false, false, LocalDate.now(),
                 null, null, null, imageType.equals("logo"), imageType.equals("hero"), imageType.equals("banner"),
                 null, null, entityId, "sponsor", imageType);
+
+        // Update the EventSponsors entity with the appropriate image URL
+        if (result != null && result.getFileUrl() != null) {
+            try {
+                EventSponsorsDTO sponsor = eventSponsorsService.findOne(entityId).orElse(null);
+                if (sponsor != null) {
+                    switch (imageType) {
+                        case "logo":
+                            sponsor.setLogoUrl(result.getFileUrl());
+                            break;
+                        case "hero":
+                            sponsor.setHeroImageUrl(result.getFileUrl());
+                            break;
+                        case "banner":
+                            sponsor.setBannerImageUrl(result.getFileUrl());
+                            break;
+                    }
+                    eventSponsorsService.update(sponsor);
+                    log.debug("Updated EventSponsors ID {} with {} image URL: {}", entityId, imageType,
+                            result.getFileUrl());
+                } else {
+                    log.warn("EventSponsors with ID {} not found, cannot update {} image URL", entityId, imageType);
+                }
+            } catch (Exception e) {
+                log.error("Failed to update EventSponsors {} image URL for ID {}: {}", imageType, entityId,
+                        e.getMessage());
+                // Don't fail the upload if we can't update the sponsor record
+            }
+        }
 
         return ResponseEntity.created(new URI("/api/event-medias/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
@@ -496,14 +581,13 @@ public class EventMediaResource {
     }
 
     /**
-     * POST /event-medias/upload/contact/{entityId}/photo : Upload photo for
-     * contact.
+     * POST /event-medias/upload/contact : Upload photo for contact.
      */
-    @PostMapping(value = "/upload/contact/{entityId}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/upload/contact", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EventMediaDTO> uploadContactPhoto(
             @RequestParam("file") MultipartFile file,
-            @PathVariable Long entityId,
             @RequestParam("eventId") Long eventId,
+            @RequestParam("entityId") Long entityId,
             @RequestParam("title") @NotNull String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("tenantId") String tenantId,
@@ -516,8 +600,25 @@ public class EventMediaResource {
 
         EventMediaDTO result = eventMediaService.uploadFile(
                 file, eventId, userProfileId, title, description, tenantId, isPublicValue,
-                null, null, null, null, null, null, false, false, false, null,
+                null, null, null, null, false, null, false, false, false, LocalDate.now(),
                 null, null, null, null, null, null, true, null, entityId, "contact", "photo");
+
+        // Update the EventContacts entity with the photo URL
+        if (result != null && result.getFileUrl() != null) {
+            try {
+                EventContactsDTO contact = eventContactsService.findOne(entityId).orElse(null);
+                if (contact != null) {
+                    contact.setPhotoUrl(result.getFileUrl());
+                    eventContactsService.update(contact);
+                    log.debug("Updated EventContacts ID {} with photo URL: {}", entityId, result.getFileUrl());
+                } else {
+                    log.warn("EventContacts with ID {} not found, cannot update photo URL", entityId);
+                }
+            } catch (Exception e) {
+                log.error("Failed to update EventContacts photo URL for ID {}: {}", entityId, e.getMessage());
+                // Don't fail the upload if we can't update the contact record
+            }
+        }
 
         return ResponseEntity.created(new URI("/api/event-medias/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
@@ -526,14 +627,14 @@ public class EventMediaResource {
     }
 
     /**
-     * POST /event-medias/upload/program-director/{entityId}/photo : Upload photo
-     * for program director.
+     * POST /event-medias/upload/program-director : Upload photo for program
+     * director.
      */
-    @PostMapping(value = "/upload/program-director/{entityId}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/upload/program-director", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EventMediaDTO> uploadProgramDirectorPhoto(
             @RequestParam("file") MultipartFile file,
-            @PathVariable Long entityId,
             @RequestParam("eventId") Long eventId,
+            @RequestParam("entityId") Long entityId,
             @RequestParam("title") @NotNull String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam("tenantId") String tenantId,
@@ -546,8 +647,25 @@ public class EventMediaResource {
 
         EventMediaDTO result = eventMediaService.uploadFile(
                 file, eventId, userProfileId, title, description, tenantId, isPublicValue,
-                null, null, null, null, null, null, false, false, false, null,
+                null, null, null, null, false, null, false, false, false, LocalDate.now(),
                 null, null, null, null, null, null, null, true, entityId, "program-director", "photo");
+
+        // Update the EventProgramDirectors entity with the photo URL
+        if (result != null && result.getFileUrl() != null) {
+            try {
+                EventProgramDirectorsDTO programDirector = eventProgramDirectorsService.findOne(entityId).orElse(null);
+                if (programDirector != null) {
+                    programDirector.setPhotoUrl(result.getFileUrl());
+                    eventProgramDirectorsService.update(programDirector);
+                    log.debug("Updated EventProgramDirectors ID {} with photo URL: {}", entityId, result.getFileUrl());
+                } else {
+                    log.warn("EventProgramDirectors with ID {} not found, cannot update photo URL", entityId);
+                }
+            } catch (Exception e) {
+                log.error("Failed to update EventProgramDirectors photo URL for ID {}: {}", entityId, e.getMessage());
+                // Don't fail the upload if we can't update the program director record
+            }
+        }
 
         return ResponseEntity.created(new URI("/api/event-medias/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,

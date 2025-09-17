@@ -153,7 +153,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             fileUrl = s3Service.uploadFile(file, eventId, title, tenantId, isTeamMemberProfileImage);
         }
 
-        if (!isTeamMemberProfileImage) {
+        if (isTeamMemberProfileImage == null || !isTeamMemberProfileImage) {
             EventMedia eventMedia = new EventMedia();
             // eventMedia.setEvent(event); // Event relationship handled by mapper
             eventMedia.setTitle(title);
@@ -185,6 +185,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             // eventMedia.setUploadedBy(...);
 
             eventMedia = eventMediaRepository.save(eventMedia);
+            return eventMediaMapper.toDto(eventMedia);
         } else if (executiveTeamMemberID != null) {
             // Handle ExecutiveCommitteeTeamMember profile image update
             log.debug("Updating ExecutiveCommitteeTeamMember profile image for ID: {}", executiveTeamMemberID);
@@ -208,10 +209,9 @@ public class EventMediaServiceImpl implements EventMediaService {
             responseDTO.setFileSize((int) file.getSize());
             return responseDTO;
         }
-        // since eventId field is removed and replaced with mapper we can return null
-        // for now.
+
+        // This should not happen in normal flow, but return null as fallback
         return null;
-        // return eventMediaMapper.toDto(eventMedia);
     }
 
     @Override

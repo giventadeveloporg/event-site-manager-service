@@ -16,6 +16,7 @@ public class EventEmailsCriteria implements Serializable, Criteria {
   private static final long serialVersionUID = 1L;
 
   private LongFilter id;
+  private StringFilter tenantId;
   private StringFilter email;
   private ZonedDateTimeFilter createdAt;
   private ZonedDateTimeFilter updatedAt;
@@ -27,6 +28,7 @@ public class EventEmailsCriteria implements Serializable, Criteria {
 
   public EventEmailsCriteria(EventEmailsCriteria other) {
     this.id = other.id == null ? null : other.id.copy();
+    this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
     this.email = other.email == null ? null : other.email.copy();
     this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
     this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
@@ -45,6 +47,21 @@ public class EventEmailsCriteria implements Serializable, Criteria {
 
   public void setId(LongFilter id) {
     this.id = id;
+  }
+
+  public StringFilter getTenantId() {
+    return tenantId;
+  }
+
+  public StringFilter tenantId() {
+    if (tenantId == null) {
+      tenantId = new StringFilter();
+    }
+    return tenantId;
+  }
+
+  public void setTenantId(StringFilter tenantId) {
+    this.tenantId = tenantId;
   }
 
   public StringFilter getEmail() {

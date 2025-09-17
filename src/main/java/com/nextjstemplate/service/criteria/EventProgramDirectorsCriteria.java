@@ -17,6 +17,7 @@ public class EventProgramDirectorsCriteria implements Serializable, Criteria {
   private static final long serialVersionUID = 1L;
 
   private LongFilter id;
+  private StringFilter tenantId;
   private StringFilter name;
   private StringFilter photoUrl;
   private StringFilter bio;
@@ -30,6 +31,7 @@ public class EventProgramDirectorsCriteria implements Serializable, Criteria {
 
   public EventProgramDirectorsCriteria(EventProgramDirectorsCriteria other) {
     this.id = other.id == null ? null : other.id.copy();
+    this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
     this.name = other.name == null ? null : other.name.copy();
     this.photoUrl = other.photoUrl == null ? null : other.photoUrl.copy();
     this.bio = other.bio == null ? null : other.bio.copy();
@@ -50,6 +52,21 @@ public class EventProgramDirectorsCriteria implements Serializable, Criteria {
 
   public void setId(LongFilter id) {
     this.id = id;
+  }
+
+  public StringFilter getTenantId() {
+    return tenantId;
+  }
+
+  public StringFilter tenantId() {
+    if (tenantId == null) {
+      tenantId = new StringFilter();
+    }
+    return tenantId;
+  }
+
+  public void setTenantId(StringFilter tenantId) {
+    this.tenantId = tenantId;
   }
 
   public StringFilter getName() {

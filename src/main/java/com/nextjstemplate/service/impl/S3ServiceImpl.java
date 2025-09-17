@@ -174,7 +174,7 @@ public class S3ServiceImpl implements S3Service {
             return String.format("events/tenantId/%s/event-id/%d/%s_%s_%s%s", tenantId, eventId, baseName, timestamp,
                     uuid, extension);
         } else {
-            if (isTeamMemberProfileImage) {
+            if (isTeamMemberProfileImage != null && isTeamMemberProfileImage) {
                 return String.format("media/tenantId/%s/executive-team-members/%s_%s_%s%s", tenantId, baseName,
                         timestamp, uuid, extension);
             }

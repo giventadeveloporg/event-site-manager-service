@@ -17,6 +17,7 @@ public class EventContactsCriteria implements Serializable, Criteria {
   private static final long serialVersionUID = 1L;
 
   private LongFilter id;
+  private StringFilter tenantId;
   private StringFilter name;
   private StringFilter phone;
   private StringFilter email;
@@ -30,6 +31,7 @@ public class EventContactsCriteria implements Serializable, Criteria {
 
   public EventContactsCriteria(EventContactsCriteria other) {
     this.id = other.id == null ? null : other.id.copy();
+    this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
     this.name = other.name == null ? null : other.name.copy();
     this.phone = other.phone == null ? null : other.phone.copy();
     this.email = other.email == null ? null : other.email.copy();
@@ -50,6 +52,21 @@ public class EventContactsCriteria implements Serializable, Criteria {
 
   public void setId(LongFilter id) {
     this.id = id;
+  }
+
+  public StringFilter getTenantId() {
+    return tenantId;
+  }
+
+  public StringFilter tenantId() {
+    if (tenantId == null) {
+      tenantId = new StringFilter();
+    }
+    return tenantId;
+  }
+
+  public void setTenantId(StringFilter tenantId) {
+    this.tenantId = tenantId;
   }
 
   public StringFilter getName() {

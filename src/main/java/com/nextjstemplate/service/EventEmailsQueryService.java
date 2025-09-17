@@ -55,6 +55,8 @@ public class EventEmailsQueryService extends QueryService<EventEmails> {
       specification = Specification.allOf(
           Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
           criteria.getId() != null ? buildRangeSpecification(criteria.getId(), EventEmails_.id) : null,
+          criteria.getTenantId() != null ? buildStringSpecification(criteria.getTenantId(), EventEmails_.tenantId)
+              : null,
           criteria.getEmail() != null ? buildStringSpecification(criteria.getEmail(), EventEmails_.email) : null,
           criteria.getCreatedAt() != null ? buildRangeSpecification(criteria.getCreatedAt(), EventEmails_.createdAt)
               : null,

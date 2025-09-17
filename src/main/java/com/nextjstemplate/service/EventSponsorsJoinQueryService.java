@@ -59,6 +59,8 @@ public class EventSponsorsJoinQueryService extends QueryService<EventSponsorsJoi
       specification = Specification.allOf(
           Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
           criteria.getId() != null ? buildRangeSpecification(criteria.getId(), EventSponsorsJoin_.id) : null,
+          criteria.getTenantId() != null ? buildStringSpecification(criteria.getTenantId(), EventSponsorsJoin_.tenantId)
+              : null,
           criteria.getCreatedAt() != null
               ? buildRangeSpecification(criteria.getCreatedAt(), EventSponsorsJoin_.createdAt)
               : null,

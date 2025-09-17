@@ -53,26 +53,56 @@ public class EventSponsorsQueryService extends QueryService<EventSponsors> {
     if (criteria != null) {
       specification = Specification.allOf(
           Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-          buildRangeSpecification(criteria.getId(), EventSponsors_.id),
-          buildStringSpecification(criteria.getName(), EventSponsors_.name),
-          buildStringSpecification(criteria.getType(), EventSponsors_.type),
-          buildStringSpecification(criteria.getCompanyName(), EventSponsors_.companyName),
-          buildStringSpecification(criteria.getTagline(), EventSponsors_.tagline),
-          buildStringSpecification(criteria.getDescription(), EventSponsors_.description),
-          buildStringSpecification(criteria.getWebsiteUrl(), EventSponsors_.websiteUrl),
-          buildStringSpecification(criteria.getContactEmail(), EventSponsors_.contactEmail),
-          buildStringSpecification(criteria.getContactPhone(), EventSponsors_.contactPhone),
-          buildStringSpecification(criteria.getLogoUrl(), EventSponsors_.logoUrl),
-          buildStringSpecification(criteria.getHeroImageUrl(), EventSponsors_.heroImageUrl),
-          buildStringSpecification(criteria.getBannerImageUrl(), EventSponsors_.bannerImageUrl),
-          buildSpecification(criteria.getIsActive(), EventSponsors_.isActive),
-          buildRangeSpecification(criteria.getPriorityRanking(), EventSponsors_.priorityRanking),
-          buildStringSpecification(criteria.getFacebookUrl(), EventSponsors_.facebookUrl),
-          buildStringSpecification(criteria.getTwitterUrl(), EventSponsors_.twitterUrl),
-          buildStringSpecification(criteria.getLinkedinUrl(), EventSponsors_.linkedinUrl),
-          buildStringSpecification(criteria.getInstagramUrl(), EventSponsors_.instagramUrl),
-          buildRangeSpecification(criteria.getCreatedAt(), EventSponsors_.createdAt),
-          buildRangeSpecification(criteria.getUpdatedAt(), EventSponsors_.updatedAt));
+          criteria.getId() != null ? buildRangeSpecification(criteria.getId(), EventSponsors_.id) : null,
+          criteria.getTenantId() != null ? buildStringSpecification(criteria.getTenantId(), EventSponsors_.tenantId)
+              : null,
+          criteria.getName() != null ? buildStringSpecification(criteria.getName(), EventSponsors_.name) : null,
+          criteria.getType() != null ? buildStringSpecification(criteria.getType(), EventSponsors_.type) : null,
+          criteria.getCompanyName() != null
+              ? buildStringSpecification(criteria.getCompanyName(), EventSponsors_.companyName)
+              : null,
+          criteria.getTagline() != null ? buildStringSpecification(criteria.getTagline(), EventSponsors_.tagline)
+              : null,
+          criteria.getDescription() != null
+              ? buildStringSpecification(criteria.getDescription(), EventSponsors_.description)
+              : null,
+          criteria.getWebsiteUrl() != null
+              ? buildStringSpecification(criteria.getWebsiteUrl(), EventSponsors_.websiteUrl)
+              : null,
+          criteria.getContactEmail() != null
+              ? buildStringSpecification(criteria.getContactEmail(), EventSponsors_.contactEmail)
+              : null,
+          criteria.getContactPhone() != null
+              ? buildStringSpecification(criteria.getContactPhone(), EventSponsors_.contactPhone)
+              : null,
+          criteria.getLogoUrl() != null ? buildStringSpecification(criteria.getLogoUrl(), EventSponsors_.logoUrl)
+              : null,
+          criteria.getHeroImageUrl() != null
+              ? buildStringSpecification(criteria.getHeroImageUrl(), EventSponsors_.heroImageUrl)
+              : null,
+          criteria.getBannerImageUrl() != null
+              ? buildStringSpecification(criteria.getBannerImageUrl(), EventSponsors_.bannerImageUrl)
+              : null,
+          criteria.getIsActive() != null ? buildSpecification(criteria.getIsActive(), EventSponsors_.isActive) : null,
+          criteria.getPriorityRanking() != null
+              ? buildRangeSpecification(criteria.getPriorityRanking(), EventSponsors_.priorityRanking)
+              : null,
+          criteria.getFacebookUrl() != null
+              ? buildStringSpecification(criteria.getFacebookUrl(), EventSponsors_.facebookUrl)
+              : null,
+          criteria.getTwitterUrl() != null
+              ? buildStringSpecification(criteria.getTwitterUrl(), EventSponsors_.twitterUrl)
+              : null,
+          criteria.getLinkedinUrl() != null
+              ? buildStringSpecification(criteria.getLinkedinUrl(), EventSponsors_.linkedinUrl)
+              : null,
+          criteria.getInstagramUrl() != null
+              ? buildStringSpecification(criteria.getInstagramUrl(), EventSponsors_.instagramUrl)
+              : null,
+          criteria.getCreatedAt() != null ? buildRangeSpecification(criteria.getCreatedAt(), EventSponsors_.createdAt)
+              : null,
+          criteria.getUpdatedAt() != null ? buildRangeSpecification(criteria.getUpdatedAt(), EventSponsors_.updatedAt)
+              : null);
     }
     return specification;
   }

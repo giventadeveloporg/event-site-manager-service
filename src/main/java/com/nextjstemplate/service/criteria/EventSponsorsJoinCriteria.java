@@ -17,6 +17,7 @@ public class EventSponsorsJoinCriteria implements Serializable, Criteria {
   private static final long serialVersionUID = 1L;
 
   private LongFilter id;
+  private StringFilter tenantId;
   private ZonedDateTimeFilter createdAt;
   private LongFilter eventId;
   private LongFilter sponsorId;
@@ -27,6 +28,7 @@ public class EventSponsorsJoinCriteria implements Serializable, Criteria {
 
   public EventSponsorsJoinCriteria(EventSponsorsJoinCriteria other) {
     this.id = other.id == null ? null : other.id.copy();
+    this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
     this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
     this.eventId = other.eventId == null ? null : other.eventId.copy();
     this.sponsorId = other.sponsorId == null ? null : other.sponsorId.copy();
@@ -44,6 +46,21 @@ public class EventSponsorsJoinCriteria implements Serializable, Criteria {
 
   public void setId(LongFilter id) {
     this.id = id;
+  }
+
+  public StringFilter getTenantId() {
+    return tenantId;
+  }
+
+  public StringFilter tenantId() {
+    if (tenantId == null) {
+      tenantId = new StringFilter();
+    }
+    return tenantId;
+  }
+
+  public void setTenantId(StringFilter tenantId) {
+    this.tenantId = tenantId;
   }
 
   public ZonedDateTimeFilter getCreatedAt() {

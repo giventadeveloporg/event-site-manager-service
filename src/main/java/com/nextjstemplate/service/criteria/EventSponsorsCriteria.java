@@ -17,6 +17,7 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
   private static final long serialVersionUID = 1L;
 
   private LongFilter id;
+  private StringFilter tenantId;
   private StringFilter name;
   private StringFilter type;
   private StringFilter companyName;
@@ -43,6 +44,7 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
 
   public EventSponsorsCriteria(EventSponsorsCriteria other) {
     this.id = other.id == null ? null : other.id.copy();
+    this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
     this.name = other.name == null ? null : other.name.copy();
     this.type = other.type == null ? null : other.type.copy();
     this.companyName = other.companyName == null ? null : other.companyName.copy();
@@ -76,6 +78,14 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
 
   public void setId(LongFilter id) {
     this.id = id;
+  }
+
+  public StringFilter getTenantId() {
+    return tenantId;
+  }
+
+  public void setTenantId(StringFilter tenantId) {
+    this.tenantId = tenantId;
   }
 
   public StringFilter getName() {
@@ -246,6 +256,7 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
       return false;
     EventSponsorsCriteria that = (EventSponsorsCriteria) o;
     return Objects.equals(id, that.id) &&
+        Objects.equals(tenantId, that.tenantId) &&
         Objects.equals(name, that.name) &&
         Objects.equals(type, that.type) &&
         Objects.equals(companyName, that.companyName) &&
@@ -270,7 +281,8 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, type, companyName, tagline, description, websiteUrl, contactEmail, contactPhone,
+    return Objects.hash(id, tenantId, name, type, companyName, tagline, description, websiteUrl, contactEmail,
+        contactPhone,
         logoUrl, heroImageUrl, bannerImageUrl, isActive, priorityRanking, facebookUrl, twitterUrl, linkedinUrl,
         instagramUrl, createdAt, updatedAt, distinct);
   }
@@ -279,6 +291,7 @@ public class EventSponsorsCriteria implements Serializable, Criteria {
   public String toString() {
     return "EventSponsorsCriteria{" +
         (id != null ? "id=" + id + ", " : "") +
+        (tenantId != null ? "tenantId=" + tenantId + ", " : "") +
         (name != null ? "name=" + name + ", " : "") +
         (type != null ? "type=" + type + ", " : "") +
         (companyName != null ? "companyName=" + companyName + ", " : "") +

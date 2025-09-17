@@ -3,6 +3,7 @@ package com.nextjstemplate.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
@@ -24,6 +25,10 @@ public class EventSponsorsJoin implements Serializable {
   @SequenceGenerator(name = "sequenceGenerator")
   @Column(name = "id")
   private Long id;
+
+  @Size(max = 255)
+  @Column(name = "tenant_id", length = 255)
+  private String tenantId;
 
   @NotNull
   @Column(name = "created_at", nullable = false)
@@ -51,6 +56,19 @@ public class EventSponsorsJoin implements Serializable {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public String getTenantId() {
+    return this.tenantId;
+  }
+
+  public EventSponsorsJoin tenantId(String tenantId) {
+    this.setTenantId(tenantId);
+    return this;
+  }
+
+  public void setTenantId(String tenantId) {
+    this.tenantId = tenantId;
   }
 
   public ZonedDateTime getCreatedAt() {
@@ -122,6 +140,3 @@ public class EventSponsorsJoin implements Serializable {
         "}";
   }
 }
-
-
-

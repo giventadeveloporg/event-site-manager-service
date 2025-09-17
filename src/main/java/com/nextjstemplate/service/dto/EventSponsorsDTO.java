@@ -13,6 +13,9 @@ public class EventSponsorsDTO implements Serializable {
 
   private Long id;
 
+  @Size(max = 255)
+  private String tenantId;
+
   @NotNull
   @Size(max = 255)
   private String name;
@@ -77,6 +80,14 @@ public class EventSponsorsDTO implements Serializable {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public String getTenantId() {
+    return tenantId;
+  }
+
+  public void setTenantId(String tenantId) {
+    this.tenantId = tenantId;
   }
 
   public String getName() {

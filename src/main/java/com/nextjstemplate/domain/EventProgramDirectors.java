@@ -25,6 +25,10 @@ public class EventProgramDirectors implements Serializable {
   @Column(name = "id")
   private Long id;
 
+  @Size(max = 255)
+  @Column(name = "tenant_id", length = 255)
+  private String tenantId;
+
   @NotNull
   @Size(max = 255)
   @Column(name = "name", length = 255, nullable = false)
@@ -63,6 +67,19 @@ public class EventProgramDirectors implements Serializable {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public String getTenantId() {
+    return this.tenantId;
+  }
+
+  public EventProgramDirectors tenantId(String tenantId) {
+    this.setTenantId(tenantId);
+    return this;
+  }
+
+  public void setTenantId(String tenantId) {
+    this.tenantId = tenantId;
   }
 
   public String getName() {
@@ -177,6 +194,3 @@ public class EventProgramDirectors implements Serializable {
         "}";
   }
 }
-
-
-

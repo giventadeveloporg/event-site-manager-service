@@ -27,6 +27,8 @@ public class EventFeaturedPerformersCriteria implements Serializable, Criteria {
 
   private LongFilter id;
 
+  private StringFilter tenantId;
+
   private StringFilter name;
 
   private StringFilter stageName;
@@ -86,6 +88,7 @@ public class EventFeaturedPerformersCriteria implements Serializable, Criteria {
 
   public EventFeaturedPerformersCriteria(EventFeaturedPerformersCriteria other) {
     this.id = other.id == null ? null : other.id.copy();
+    this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
     this.name = other.name == null ? null : other.name.copy();
     this.stageName = other.stageName == null ? null : other.stageName.copy();
     this.role = other.role == null ? null : other.role.copy();
@@ -134,6 +137,21 @@ public class EventFeaturedPerformersCriteria implements Serializable, Criteria {
 
   public void setId(LongFilter id) {
     this.id = id;
+  }
+
+  public StringFilter getTenantId() {
+    return tenantId;
+  }
+
+  public StringFilter tenantId() {
+    if (tenantId == null) {
+      tenantId = new StringFilter();
+    }
+    return tenantId;
+  }
+
+  public void setTenantId(StringFilter tenantId) {
+    this.tenantId = tenantId;
   }
 
   public StringFilter getName() {

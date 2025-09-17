@@ -57,6 +57,9 @@ public class EventProgramDirectorsQueryService extends QueryService<EventProgram
       specification = Specification.allOf(
           Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
           criteria.getId() != null ? buildRangeSpecification(criteria.getId(), EventProgramDirectors_.id) : null,
+          criteria.getTenantId() != null
+              ? buildStringSpecification(criteria.getTenantId(), EventProgramDirectors_.tenantId)
+              : null,
           criteria.getName() != null ? buildStringSpecification(criteria.getName(), EventProgramDirectors_.name) : null,
           criteria.getPhotoUrl() != null
               ? buildStringSpecification(criteria.getPhotoUrl(), EventProgramDirectors_.photoUrl)
