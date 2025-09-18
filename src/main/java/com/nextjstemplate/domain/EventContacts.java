@@ -43,10 +43,6 @@ public class EventContacts implements Serializable {
   @Column(name = "email", length = 255)
   private String email;
 
-  @Size(max = 1024)
-  @Column(name = "photo_url", length = 1024)
-  private String photoUrl;
-
   @NotNull
   @Column(name = "created_at", nullable = false)
   private ZonedDateTime createdAt;
@@ -127,19 +123,6 @@ public class EventContacts implements Serializable {
     this.email = email;
   }
 
-  public String getPhotoUrl() {
-    return this.photoUrl;
-  }
-
-  public EventContacts photoUrl(String photoUrl) {
-    this.setPhotoUrl(photoUrl);
-    return this;
-  }
-
-  public void setPhotoUrl(String photoUrl) {
-    this.photoUrl = photoUrl;
-  }
-
   public ZonedDateTime getCreatedAt() {
     return this.createdAt;
   }
@@ -208,7 +191,6 @@ public class EventContacts implements Serializable {
         ", name='" + getName() + "'" +
         ", phone='" + getPhone() + "'" +
         ", email='" + getEmail() + "'" +
-        ", photoUrl='" + getPhotoUrl() + "'" +
         ", createdAt='" + getCreatedAt() + "'" +
         ", updatedAt='" + getUpdatedAt() + "'" +
         "}";

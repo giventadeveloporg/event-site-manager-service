@@ -33,9 +33,6 @@ public class EventContactsDTO implements Serializable {
   @NotNull
   private ZonedDateTime updatedAt;
 
-  @Size(max = 1024)
-  private String photoUrl;
-
   private EventDetailsDTO event;
 
   public Long getId() {
@@ -94,14 +91,6 @@ public class EventContactsDTO implements Serializable {
     this.updatedAt = updatedAt;
   }
 
-  public String getPhotoUrl() {
-    return photoUrl;
-  }
-
-  public void setPhotoUrl(String photoUrl) {
-    this.photoUrl = photoUrl;
-  }
-
   public EventDetailsDTO getEvent() {
     return event;
   }
@@ -140,7 +129,6 @@ public class EventContactsDTO implements Serializable {
         ", name='" + getName() + "'" +
         ", phone='" + getPhone() + "'" +
         ", email='" + getEmail() + "'" +
-        ", photoUrl='" + getPhotoUrl() + "'" +
         ", createdAt='" + getCreatedAt() + "'" +
         ", updatedAt='" + getUpdatedAt() + "'" +
         ", event=" + getEvent() +

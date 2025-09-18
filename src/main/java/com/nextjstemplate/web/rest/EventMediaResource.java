@@ -5,14 +5,12 @@ import com.nextjstemplate.service.EventMediaQueryService;
 import com.nextjstemplate.service.EventMediaService;
 import com.nextjstemplate.service.EventProgramDirectorsService;
 import com.nextjstemplate.service.EventFeaturedPerformersService;
-import com.nextjstemplate.service.EventContactsService;
 import com.nextjstemplate.service.EventSponsorsService;
 import com.nextjstemplate.service.criteria.EventMediaCriteria;
 import com.nextjstemplate.service.dto.AidaDTO;
 import com.nextjstemplate.service.dto.EventMediaDTO;
 import com.nextjstemplate.service.dto.EventProgramDirectorsDTO;
 import com.nextjstemplate.service.dto.EventFeaturedPerformersDTO;
-import com.nextjstemplate.service.dto.EventContactsDTO;
 import com.nextjstemplate.service.dto.EventSponsorsDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
@@ -65,7 +63,6 @@ public class EventMediaResource {
     private final EventMediaMapper eventMediaMapper;
     private final EventProgramDirectorsService eventProgramDirectorsService;
     private final EventFeaturedPerformersService eventFeaturedPerformersService;
-    private final EventContactsService eventContactsService;
     private final EventSponsorsService eventSponsorsService;
 
     public EventMediaResource(
@@ -75,7 +72,6 @@ public class EventMediaResource {
             EventMediaMapper eventMediaMapper,
             EventProgramDirectorsService eventProgramDirectorsService,
             EventFeaturedPerformersService eventFeaturedPerformersService,
-            EventContactsService eventContactsService,
             EventSponsorsService eventSponsorsService) {
         this.eventMediaService = eventMediaService;
         this.eventMediaRepository = eventMediaRepository;
@@ -83,7 +79,6 @@ public class EventMediaResource {
         this.eventMediaMapper = eventMediaMapper;
         this.eventProgramDirectorsService = eventProgramDirectorsService;
         this.eventFeaturedPerformersService = eventFeaturedPerformersService;
-        this.eventContactsService = eventContactsService;
         this.eventSponsorsService = eventSponsorsService;
     }
 
@@ -603,22 +598,9 @@ public class EventMediaResource {
                 null, null, null, null, false, null, false, false, false, LocalDate.now(),
                 null, null, null, null, null, null, true, null, entityId, "contact", "photo");
 
-        // Update the EventContacts entity with the photo URL
-        if (result != null && result.getFileUrl() != null) {
-            try {
-                EventContactsDTO contact = eventContactsService.findOne(entityId).orElse(null);
-                if (contact != null) {
-                    contact.setPhotoUrl(result.getFileUrl());
-                    eventContactsService.update(contact);
-                    log.debug("Updated EventContacts ID {} with photo URL: {}", entityId, result.getFileUrl());
-                } else {
-                    log.warn("EventContacts with ID {} not found, cannot update photo URL", entityId);
-                }
-            } catch (Exception e) {
-                log.error("Failed to update EventContacts photo URL for ID {}: {}", entityId, e.getMessage());
-                // Don't fail the upload if we can't update the contact record
-            }
-        }
+        // Note: Photo is uploaded and stored as EventMedia, linked via entityId and
+        // entityType
+        log.debug("Contact photo uploaded successfully for entity ID: {}", entityId);
 
         return ResponseEntity.created(new URI("/api/event-medias/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
