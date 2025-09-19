@@ -102,7 +102,7 @@ public class UserProfile implements Serializable {
     @Column(name = "is_email_subscribed")
     private Boolean isEmailSubscribed;
 
-    @Size(max = 255)
+    @Size(max = 2048)
     @Column(name = "email_subscription_token", length = 255)
     private String emailSubscriptionToken;
 

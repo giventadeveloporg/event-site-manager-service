@@ -71,7 +71,7 @@ public class UserProfileDTO implements Serializable {
 
     private Boolean isEmailSubscribed;
 
-    @Size(max = 255)
+    @Size(max = 2048)
     private String emailSubscriptionToken;
 
     private Boolean isEmailSubscriptionTokenUsed;

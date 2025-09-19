@@ -4,6 +4,7 @@ import com.nextjstemplate.domain.UserProfile;
 import com.nextjstemplate.domain.enumeration.UserRoleType;
 import com.nextjstemplate.domain.enumeration.UserStatusType;
 import com.nextjstemplate.repository.UserProfileRepository;
+import com.nextjstemplate.service.EmailSubscriptionTokenService;
 import com.nextjstemplate.service.UserProfileService;
 import com.nextjstemplate.service.dto.UserProfileDTO;
 import com.nextjstemplate.service.mapper.UserProfileMapper;
@@ -34,9 +35,13 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     private final UserProfileMapper userProfileMapper;
 
-    public UserProfileServiceImpl(UserProfileRepository userProfileRepository, UserProfileMapper userProfileMapper) {
+    private final EmailSubscriptionTokenService emailSubscriptionTokenService;
+
+    public UserProfileServiceImpl(UserProfileRepository userProfileRepository, UserProfileMapper userProfileMapper,
+            EmailSubscriptionTokenService emailSubscriptionTokenService) {
         this.userProfileRepository = userProfileRepository;
         this.userProfileMapper = userProfileMapper;
+        this.emailSubscriptionTokenService = emailSubscriptionTokenService;
     }
 
     @Override
@@ -51,6 +56,15 @@ public class UserProfileServiceImpl implements UserProfileService {
             userProfile.setUserStatus(UserStatusType.PENDING_APPROVAL.name()); // Set a default status
         }
 
+        // Set email subscription to true for new users with email
+        if (userProfile.getId() == null && userProfile.getEmail() != null && !userProfile.getEmail().trim().isEmpty()) {
+            userProfile.setIsEmailSubscribed(true);
+            log.debug("Set isEmailSubscribed to true for new user with email: {}", userProfile.getEmail());
+        }
+
+        // Generate JWT token for email subscription
+        generateEmailSubscriptionTokenIfNeeded(userProfile);
+
         userProfile = userProfileRepository.save(userProfile);
         return userProfileMapper.toDto(userProfile);
     }
@@ -59,6 +73,10 @@ public class UserProfileServiceImpl implements UserProfileService {
     public UserProfileDTO update(UserProfileDTO userProfileDTO) {
         log.debug("Request to update UserProfile : {}", userProfileDTO);
         UserProfile userProfile = userProfileMapper.toEntity(userProfileDTO);
+
+        // Generate JWT token for email subscription
+        generateEmailSubscriptionTokenIfNeeded(userProfile);
+
         userProfile = userProfileRepository.save(userProfile);
         return userProfileMapper.toDto(userProfile);
     }
@@ -71,6 +89,9 @@ public class UserProfileServiceImpl implements UserProfileService {
                 .findById(userProfileDTO.getId())
                 .map(existingUserProfile -> {
                     userProfileMapper.partialUpdate(existingUserProfile, userProfileDTO);
+
+                    // Generate JWT token for email subscription
+                    generateEmailSubscriptionTokenIfNeeded(existingUserProfile);
 
                     return existingUserProfile;
                 })
@@ -101,10 +122,12 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Optional<UserProfileDTO> findOne(Long id) {
         log.debug("Request to get UserProfile : {}", id);
-        return userProfileRepository.findById(id).map(userProfileMapper::toDto);
+        return userProfileRepository.findById(id)
+                .map(this::refreshEmailSubscriptionTokenIfNeeded)
+                .map(userProfileMapper::toDto);
     }
 
     @Override
@@ -114,31 +137,38 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Optional<UserProfileDTO> findByUserId(String userId) {
         log.debug("Request to get UserProfile by user ID : {}", userId);
-        return userProfileRepository.findByUserId(userId).map(userProfileMapper::toDto);
+        return userProfileRepository.findByUserId(userId)
+                .map(this::refreshEmailSubscriptionTokenIfNeeded)
+                .map(userProfileMapper::toDto);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Optional<UserProfileDTO> findByEmail(String email) {
         log.debug("Request to get UserProfile by email : {}", email);
-        return userProfileRepository.findByEmail(email).map(userProfileMapper::toDto);
+        return userProfileRepository.findByEmail(email)
+                .map(this::refreshEmailSubscriptionTokenIfNeeded)
+                .map(userProfileMapper::toDto);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Optional<UserProfileDTO> findByEmailAndTenantId(String email, String tenantId) {
         log.debug("Request to get UserProfile by email {} and tenantId {}", email, tenantId);
-        return userProfileRepository.findByEmailAndTenantId(email, tenantId).map(userProfileMapper::toDto);
+        return userProfileRepository.findByEmailAndTenantId(email, tenantId)
+                .map(this::refreshEmailSubscriptionTokenIfNeeded)
+                .map(userProfileMapper::toDto);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public String getUnsubscribeTokenByEmailAndTenantId(String email, String tenantId) {
         log.debug("Request to get unsubscribe token by email {} and tenantId {}", email, tenantId);
         return userProfileRepository.findByEmailAndTenantId(email, tenantId)
+                .map(this::refreshEmailSubscriptionTokenIfNeeded)
                 .map(UserProfile::getEmailSubscriptionToken)
                 .orElse(null);
     }
@@ -203,6 +233,12 @@ public class UserProfileServiceImpl implements UserProfileService {
                     if (userProfile.getUserStatus() == null) {
                         userProfile.setUserStatus(UserStatusType.PENDING_APPROVAL.name()); // Set a default status
                     }
+                    // Set email subscription to true for bulk uploaded users with email
+                    if (userProfile.getEmail() != null && !userProfile.getEmail().trim().isEmpty()) {
+                        userProfile.setIsEmailSubscribed(true);
+                    }
+                    // Generate JWT token for email subscription
+                    generateEmailSubscriptionTokenIfNeeded(userProfile);
                 })
                 .collect(Collectors.toList());
 
@@ -213,5 +249,75 @@ public class UserProfileServiceImpl implements UserProfileService {
         return saved.stream()
                 .map(userProfileMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Helper method to generate JWT token for email subscription if needed.
+     * Generates a new token if the user has an email and tenantId, and the current
+     * token is null or empty.
+     *
+     * @param userProfile the user profile entity
+     */
+    private void generateEmailSubscriptionTokenIfNeeded(UserProfile userProfile) {
+        if (userProfile != null &&
+                userProfile.getEmail() != null &&
+                !userProfile.getEmail().trim().isEmpty() &&
+                userProfile.getTenantId() != null &&
+                !userProfile.getTenantId().trim().isEmpty()) {
+
+            // Always generate a new token on insert/update operations
+            try {
+                String token = emailSubscriptionTokenService.generateEmailSubscriptionToken(
+                        userProfile.getEmail(),
+                        userProfile.getTenantId(),
+                        userProfile.getUserId());
+                userProfile.setEmailSubscriptionToken(token);
+                userProfile.setIsEmailSubscriptionTokenUsed(false); // Reset token usage flag
+                log.debug("Generated new email subscription token for user with email: {}", userProfile.getEmail());
+            } catch (Exception e) {
+                log.error("Failed to generate email subscription token for user with email: {}",
+                        userProfile.getEmail(), e);
+                // Don't fail the operation if token generation fails
+            }
+        }
+    }
+
+    /**
+     * Helper method to refresh email subscription token if it's null or empty
+     * during GET operations.
+     * This method checks if a token needs to be generated and updates the record if
+     * necessary.
+     *
+     * @param userProfile the user profile entity to check and potentially update
+     * @return the updated UserProfile entity if token was refreshed, or the
+     *         original entity if no update was needed
+     */
+    private UserProfile refreshEmailSubscriptionTokenIfNeeded(UserProfile userProfile) {
+        if (userProfile != null &&
+                userProfile.getEmail() != null &&
+                !userProfile.getEmail().trim().isEmpty() &&
+                userProfile.getTenantId() != null &&
+                !userProfile.getTenantId().trim().isEmpty() &&
+                (userProfile.getEmailSubscriptionToken() == null
+                        || userProfile.getEmailSubscriptionToken().trim().isEmpty())) {
+
+            try {
+                String token = emailSubscriptionTokenService.generateEmailSubscriptionToken(
+                        userProfile.getEmail(),
+                        userProfile.getTenantId(),
+                        userProfile.getUserId());
+                userProfile.setEmailSubscriptionToken(token);
+                userProfile.setIsEmailSubscriptionTokenUsed(false); // Reset token usage flag
+
+                // Save the updated record
+                userProfile = userProfileRepository.save(userProfile);
+                log.debug("Refreshed email subscription token for user with email: {}", userProfile.getEmail());
+            } catch (Exception e) {
+                log.error("Failed to refresh email subscription token for user with email: {}",
+                        userProfile.getEmail(), e);
+                // Don't fail the operation if token generation fails
+            }
+        }
+        return userProfile;
     }
 }
