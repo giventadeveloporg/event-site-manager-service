@@ -54,6 +54,12 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private StringFilter customJs;
 
+    private BooleanFilter showEventsSectionInHomePage;
+
+    private BooleanFilter showTeamMembersSectionInHomePage;
+
+    private BooleanFilter showSponsorsSectionInHomePage;
+
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -81,6 +87,9 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.platformFeePercentage = other.optionalPlatformFeePercentage().map(BigDecimalFilter::copy).orElse(null);
         this.customCss = other.optionalCustomCss().map(StringFilter::copy).orElse(null);
         this.customJs = other.optionalCustomJs().map(StringFilter::copy).orElse(null);
+        this.showEventsSectionInHomePage = other.optionalShowEventsSectionInHomePage().map(BooleanFilter::copy).orElse(null);
+        this.showTeamMembersSectionInHomePage = other.optionalShowTeamMembersSectionInHomePage().map(BooleanFilter::copy).orElse(null);
+        this.showSponsorsSectionInHomePage = other.optionalShowSponsorsSectionInHomePage().map(BooleanFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.tenantOrganizationId = other.optionalTenantOrganizationId().map(LongFilter::copy).orElse(null);
@@ -396,6 +405,63 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.customJs = customJs;
     }
 
+    public BooleanFilter getShowEventsSectionInHomePage() {
+        return showEventsSectionInHomePage;
+    }
+
+    public Optional<BooleanFilter> optionalShowEventsSectionInHomePage() {
+        return Optional.ofNullable(showEventsSectionInHomePage);
+    }
+
+    public BooleanFilter showEventsSectionInHomePage() {
+        if (showEventsSectionInHomePage == null) {
+            setShowEventsSectionInHomePage(new BooleanFilter());
+        }
+        return showEventsSectionInHomePage;
+    }
+
+    public void setShowEventsSectionInHomePage(BooleanFilter showEventsSectionInHomePage) {
+        this.showEventsSectionInHomePage = showEventsSectionInHomePage;
+    }
+
+    public BooleanFilter getShowTeamMembersSectionInHomePage() {
+        return showTeamMembersSectionInHomePage;
+    }
+
+    public Optional<BooleanFilter> optionalShowTeamMembersSectionInHomePage() {
+        return Optional.ofNullable(showTeamMembersSectionInHomePage);
+    }
+
+    public BooleanFilter showTeamMembersSectionInHomePage() {
+        if (showTeamMembersSectionInHomePage == null) {
+            setShowTeamMembersSectionInHomePage(new BooleanFilter());
+        }
+        return showTeamMembersSectionInHomePage;
+    }
+
+    public void setShowTeamMembersSectionInHomePage(BooleanFilter showTeamMembersSectionInHomePage) {
+        this.showTeamMembersSectionInHomePage = showTeamMembersSectionInHomePage;
+    }
+
+    public BooleanFilter getShowSponsorsSectionInHomePage() {
+        return showSponsorsSectionInHomePage;
+    }
+
+    public Optional<BooleanFilter> optionalShowSponsorsSectionInHomePage() {
+        return Optional.ofNullable(showSponsorsSectionInHomePage);
+    }
+
+    public BooleanFilter showSponsorsSectionInHomePage() {
+        if (showSponsorsSectionInHomePage == null) {
+            setShowSponsorsSectionInHomePage(new BooleanFilter());
+        }
+        return showSponsorsSectionInHomePage;
+    }
+
+    public void setShowSponsorsSectionInHomePage(BooleanFilter showSponsorsSectionInHomePage) {
+        this.showSponsorsSectionInHomePage = showSponsorsSectionInHomePage;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -498,6 +564,9 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(platformFeePercentage, that.platformFeePercentage) &&
             Objects.equals(customCss, that.customCss) &&
             Objects.equals(customJs, that.customJs) &&
+            Objects.equals(showEventsSectionInHomePage, that.showEventsSectionInHomePage) &&
+            Objects.equals(showTeamMembersSectionInHomePage, that.showTeamMembersSectionInHomePage) &&
+            Objects.equals(showSponsorsSectionInHomePage, that.showSponsorsSectionInHomePage) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
@@ -524,6 +593,9 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             platformFeePercentage,
             customCss,
             customJs,
+            showEventsSectionInHomePage,
+            showTeamMembersSectionInHomePage,
+            showSponsorsSectionInHomePage,
             createdAt,
             updatedAt,
             tenantOrganizationId,
@@ -551,6 +623,9 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             optionalPlatformFeePercentage().map(f -> "platformFeePercentage=" + f + ", ").orElse("") +
             optionalCustomCss().map(f -> "customCss=" + f + ", ").orElse("") +
             optionalCustomJs().map(f -> "customJs=" + f + ", ").orElse("") +
+            optionalShowEventsSectionInHomePage().map(f -> "showEventsSectionInHomePage=" + f + ", ").orElse("") +
+            optionalShowTeamMembersSectionInHomePage().map(f -> "showTeamMembersSectionInHomePage=" + f + ", ").orElse("") +
+            optionalShowSponsorsSectionInHomePage().map(f -> "showSponsorsSectionInHomePage=" + f + ", ").orElse("") +
             optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
             optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
             optionalTenantOrganizationId().map(f -> "tenantOrganizationId=" + f + ", ").orElse("") +

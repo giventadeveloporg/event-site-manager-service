@@ -50,6 +50,12 @@ public class TenantSettingsDTO implements Serializable {
     @Size(max = 16384)
     private String customJs;
 
+    private Boolean showEventsSectionInHomePage;
+
+    private Boolean showTeamMembersSectionInHomePage;
+
+    private Boolean showSponsorsSectionInHomePage;
+
     @NotNull
     private ZonedDateTime createdAt;
 
@@ -186,6 +192,30 @@ public class TenantSettingsDTO implements Serializable {
         this.customJs = customJs;
     }
 
+    public Boolean getShowEventsSectionInHomePage() {
+        return showEventsSectionInHomePage;
+    }
+
+    public void setShowEventsSectionInHomePage(Boolean showEventsSectionInHomePage) {
+        this.showEventsSectionInHomePage = showEventsSectionInHomePage;
+    }
+
+    public Boolean getShowTeamMembersSectionInHomePage() {
+        return showTeamMembersSectionInHomePage;
+    }
+
+    public void setShowTeamMembersSectionInHomePage(Boolean showTeamMembersSectionInHomePage) {
+        this.showTeamMembersSectionInHomePage = showTeamMembersSectionInHomePage;
+    }
+
+    public Boolean getShowSponsorsSectionInHomePage() {
+        return showSponsorsSectionInHomePage;
+    }
+
+    public void setShowSponsorsSectionInHomePage(Boolean showSponsorsSectionInHomePage) {
+        this.showSponsorsSectionInHomePage = showSponsorsSectionInHomePage;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
@@ -251,6 +281,9 @@ public class TenantSettingsDTO implements Serializable {
             ", platformFeePercentage=" + getPlatformFeePercentage() +
             ", customCss='" + getCustomCss() + "'" +
             ", customJs='" + getCustomJs() + "'" +
+            ", showEventsSectionInHomePage='" + getShowEventsSectionInHomePage() + "'" +
+            ", showTeamMembersSectionInHomePage='" + getShowTeamMembersSectionInHomePage() + "'" +
+            ", showSponsorsSectionInHomePage='" + getShowSponsorsSectionInHomePage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", tenantOrganization=" + getTenantOrganization() +

@@ -21,7 +21,7 @@ public interface EventMediaRepository extends JpaRepository<EventMedia, Long>, J
     // Custom query to fetch EventMedia without LOB fields to avoid LOB stream
     // issues
     @Query(
-        value = "SELECT id, tenant_id, title, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, is_home_page_hero_image, is_featured_event_image, is_live_event_image, created_at, updated_at, event_id, uploaded_by_id, start_displaying_from FROM event_media",
+        value = "SELECT id, tenant_id, title, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, is_home_page_hero_image, is_featured_event_image, is_live_event_image, created_at, updated_at, event_id, uploaded_by_id, start_displaying_from_date FROM event_media",
         nativeQuery = true
     )
     List<Object[]> findAllWithoutLobFieldsRaw();

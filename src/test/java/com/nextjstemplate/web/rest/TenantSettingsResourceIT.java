@@ -64,6 +64,15 @@ class TenantSettingsResourceIT {
     private static final String DEFAULT_CUSTOM_JS = "AAAAAAAAAA";
     private static final String UPDATED_CUSTOM_JS = "BBBBBBBBBB";
 
+    private static final Boolean DEFAULT_SHOW_EVENTS_SECTION_IN_HOME_PAGE = false;
+    private static final Boolean UPDATED_SHOW_EVENTS_SECTION_IN_HOME_PAGE = true;
+
+    private static final Boolean DEFAULT_SHOW_TEAM_MEMBERS_SECTION_IN_HOME_PAGE = false;
+    private static final Boolean UPDATED_SHOW_TEAM_MEMBERS_SECTION_IN_HOME_PAGE = true;
+
+    private static final Boolean DEFAULT_SHOW_SPONSORS_SECTION_IN_HOME_PAGE = false;
+    private static final Boolean UPDATED_SHOW_SPONSORS_SECTION_IN_HOME_PAGE = true;
+
     private static final ZonedDateTime DEFAULT_CREATED_AT = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_CREATED_AT = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
     private static final ZonedDateTime SMALLER_CREATED_AT = ZonedDateTime.ofInstant(Instant.ofEpochMilli(-1L), ZoneOffset.UTC);
@@ -109,6 +118,9 @@ class TenantSettingsResourceIT {
             .emailProviderConfig(DEFAULT_EMAIL_PROVIDER_CONFIG)
             .customCss(DEFAULT_CUSTOM_CSS)
             .customJs(DEFAULT_CUSTOM_JS)
+            .showEventsSectionInHomePage(DEFAULT_SHOW_EVENTS_SECTION_IN_HOME_PAGE)
+            .showTeamMembersSectionInHomePage(DEFAULT_SHOW_TEAM_MEMBERS_SECTION_IN_HOME_PAGE)
+            .showSponsorsSectionInHomePage(DEFAULT_SHOW_SPONSORS_SECTION_IN_HOME_PAGE)
             .createdAt(DEFAULT_CREATED_AT)
             .updatedAt(DEFAULT_UPDATED_AT);
         return tenantSettings;
@@ -131,6 +143,9 @@ class TenantSettingsResourceIT {
             .emailProviderConfig(UPDATED_EMAIL_PROVIDER_CONFIG)
             .customCss(UPDATED_CUSTOM_CSS)
             .customJs(UPDATED_CUSTOM_JS)
+            .showEventsSectionInHomePage(UPDATED_SHOW_EVENTS_SECTION_IN_HOME_PAGE)
+            .showTeamMembersSectionInHomePage(UPDATED_SHOW_TEAM_MEMBERS_SECTION_IN_HOME_PAGE)
+            .showSponsorsSectionInHomePage(UPDATED_SHOW_SPONSORS_SECTION_IN_HOME_PAGE)
             .createdAt(UPDATED_CREATED_AT)
             .updatedAt(UPDATED_UPDATED_AT);
         return tenantSettings;

@@ -148,6 +148,18 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
                 specification = specification
                         .and(buildStringSpecification(criteria.getCustomJs(), TenantSettings_.customJs));
             }
+            if (criteria.getShowEventsSectionInHomePage() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowEventsSectionInHomePage(),
+                        TenantSettings_.showEventsSectionInHomePage));
+            }
+            if (criteria.getShowTeamMembersSectionInHomePage() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowTeamMembersSectionInHomePage(),
+                        TenantSettings_.showTeamMembersSectionInHomePage));
+            }
+            if (criteria.getShowSponsorsSectionInHomePage() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowSponsorsSectionInHomePage(),
+                        TenantSettings_.showSponsorsSectionInHomePage));
+            }
             if (criteria.getCreatedAt() != null) {
                 specification = specification
                         .and(buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt));

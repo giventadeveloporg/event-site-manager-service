@@ -77,6 +77,15 @@ public class TenantSettings implements Serializable {
     @Column(name = "custom_js", length = 16384)
     private String customJs;
 
+    @Column(name = "show_events_section_in_home_page")
+    private Boolean showEventsSectionInHomePage;
+
+    @Column(name = "show_team_members_section_in_home_page")
+    private Boolean showTeamMembersSectionInHomePage;
+
+    @Column(name = "show_sponsors_section_in_home_page")
+    private Boolean showSponsorsSectionInHomePage;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -300,6 +309,45 @@ public class TenantSettings implements Serializable {
         this.customJs = customJs;
     }
 
+    public Boolean getShowEventsSectionInHomePage() {
+        return this.showEventsSectionInHomePage;
+    }
+
+    public TenantSettings showEventsSectionInHomePage(Boolean showEventsSectionInHomePage) {
+        this.setShowEventsSectionInHomePage(showEventsSectionInHomePage);
+        return this;
+    }
+
+    public void setShowEventsSectionInHomePage(Boolean showEventsSectionInHomePage) {
+        this.showEventsSectionInHomePage = showEventsSectionInHomePage;
+    }
+
+    public Boolean getShowTeamMembersSectionInHomePage() {
+        return this.showTeamMembersSectionInHomePage;
+    }
+
+    public TenantSettings showTeamMembersSectionInHomePage(Boolean showTeamMembersSectionInHomePage) {
+        this.setShowTeamMembersSectionInHomePage(showTeamMembersSectionInHomePage);
+        return this;
+    }
+
+    public void setShowTeamMembersSectionInHomePage(Boolean showTeamMembersSectionInHomePage) {
+        this.showTeamMembersSectionInHomePage = showTeamMembersSectionInHomePage;
+    }
+
+    public Boolean getShowSponsorsSectionInHomePage() {
+        return this.showSponsorsSectionInHomePage;
+    }
+
+    public TenantSettings showSponsorsSectionInHomePage(Boolean showSponsorsSectionInHomePage) {
+        this.setShowSponsorsSectionInHomePage(showSponsorsSectionInHomePage);
+        return this;
+    }
+
+    public void setShowSponsorsSectionInHomePage(Boolean showSponsorsSectionInHomePage) {
+        this.showSponsorsSectionInHomePage = showSponsorsSectionInHomePage;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return this.createdAt;
     }
@@ -380,6 +428,9 @@ public class TenantSettings implements Serializable {
                 ", platformFeePercentage=" + getPlatformFeePercentage() +
                 ", customCss='" + getCustomCss() + "'" +
                 ", customJs='" + getCustomJs() + "'" +
+                ", showEventsSectionInHomePage='" + getShowEventsSectionInHomePage() + "'" +
+                ", showTeamMembersSectionInHomePage='" + getShowTeamMembersSectionInHomePage() + "'" +
+                ", showSponsorsSectionInHomePage='" + getShowSponsorsSectionInHomePage() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";
