@@ -175,9 +175,9 @@ BEGIN
     IF NEW.registration_status = 'CONFIRMED' AND (OLD IS NULL OR OLD.registration_status != 'CONFIRMED') THEN
         NEW.qr_code_data = 'ATTENDEE:' || NEW.id || '|EVENT:' || NEW.event_id || '|TENANT:' || NEW.tenant_id || '|TIMESTAMP:' || extract(epoch from NOW());
         NEW.qr_code_generated = TRUE;
-    END IF;
+END IF;
 
-    RETURN NEW;
+RETURN NEW;
 END;
 $$;
 
@@ -193,7 +193,7 @@ CREATE FUNCTION  public.generate_enhanced_qr_code() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 DECLARE
-    qr_data TEXT;
+qr_data TEXT;
     event_title TEXT;
     attendee_name TEXT;
 BEGIN
@@ -202,16 +202,16 @@ BEGIN
        (OLD IS NULL OR OLD.registration_status != 'CONFIRMED' OR OLD.qr_code_data IS NULL) THEN
 
         -- Get event title and attendee name for better QR code
-        SELECT e.title INTO event_title
-        FROM public.event_details e
-        WHERE e.id = NEW.event_id;
+SELECT e.title INTO event_title
+FROM public.event_details e
+WHERE e.id = NEW.event_id;
 
-        SELECT up.first_name || ' ' || up.last_name INTO attendee_name
-        FROM public.user_profile up
-        WHERE up.id = NEW.user_id;
+SELECT up.first_name || ' ' || up.last_name INTO attendee_name
+FROM public.user_profile up
+WHERE up.id = NEW.user_id;
 
-        -- Generate comprehensive QR code data
-        qr_data := 'ATTENDEE:' || NEW.id ||
+-- Generate comprehensive QR code data
+qr_data := 'ATTENDEE:' || NEW.id ||
                    '|EVENT:' || NEW.event_id ||
                    '|TENANT:' || NEW.tenant_id ||
                    '|NAME:' || COALESCE(attendee_name, 'Unknown') ||
@@ -224,9 +224,9 @@ BEGIN
         NEW.qr_code_generated_at = NOW();
 
         RAISE NOTICE 'Generated QR code for attendee % at event %', attendee_name, event_title;
-    END IF;
+END IF;
 
-    RETURN NEW;
+RETURN NEW;
 END;
 $$;
 
@@ -242,84 +242,84 @@ CREATE OR REPLACE FUNCTION public.manage_ticket_inventory() RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    ticket_type_record RECORD;
+ticket_type_record RECORD;
     available_quantity INTEGER;
     parent_status TEXT;
     txn_id BIGINT;
 BEGIN
     IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
         txn_id := NEW.transaction_id;
-    ELSE
+ELSE
         txn_id := OLD.transaction_id;
-    END IF;
+END IF;
 
     -- Get parent transaction status
-    SELECT status INTO parent_status FROM public.event_ticket_transaction WHERE id = txn_id;
+SELECT status INTO parent_status FROM public.event_ticket_transaction WHERE id = txn_id;
 
-    IF parent_status != 'COMPLETED' THEN
+IF parent_status != 'COMPLETED' THEN
         IF TG_OP = 'DELETE' THEN
             RETURN OLD;
-        ELSE
+ELSE
             RETURN NEW;
-        END IF;
-    END IF;
+END IF;
+END IF;
 
     -- Get ticket type details
     IF TG_OP = 'INSERT' THEN
-        SELECT * INTO ticket_type_record
-        FROM public.event_ticket_type
-        WHERE id = NEW.ticket_type_id;
+SELECT * INTO ticket_type_record
+FROM public.event_ticket_type
+WHERE id = NEW.ticket_type_id;
 
-        IF NOT FOUND THEN
+IF NOT FOUND THEN
             RAISE EXCEPTION 'Ticket type not found for ID: %', NEW.ticket_type_id;
-        END IF;
+END IF;
 
         available_quantity := ticket_type_record.available_quantity - ticket_type_record.sold_quantity;
         IF available_quantity < NEW.quantity THEN
             RAISE EXCEPTION 'Insufficient tickets available. Requested: %, Available: %',
                 NEW.quantity, available_quantity;
-        END IF;
+END IF;
 
-        UPDATE public.event_ticket_type
-        SET sold_quantity = sold_quantity + NEW.quantity,
-            updated_at = NOW()
-        WHERE id = NEW.ticket_type_id;
+UPDATE public.event_ticket_type
+SET sold_quantity = sold_quantity + NEW.quantity,
+    updated_at = NOW()
+WHERE id = NEW.ticket_type_id;
 
-        RAISE NOTICE 'Added % tickets to sold quantity for ticket type %', NEW.quantity, NEW.ticket_type_id;
+RAISE NOTICE 'Added % tickets to sold quantity for ticket type %', NEW.quantity, NEW.ticket_type_id;
 
     ELSIF TG_OP = 'UPDATE' THEN
         IF OLD.ticket_type_id = NEW.ticket_type_id THEN
-            UPDATE public.event_ticket_type
-            SET sold_quantity = sold_quantity - OLD.quantity + NEW.quantity,
-                updated_at = NOW()
-            WHERE id = NEW.ticket_type_id;
-        ELSE
+UPDATE public.event_ticket_type
+SET sold_quantity = sold_quantity - OLD.quantity + NEW.quantity,
+    updated_at = NOW()
+WHERE id = NEW.ticket_type_id;
+ELSE
             -- Remove from old ticket type
-            UPDATE public.event_ticket_type
-            SET sold_quantity = sold_quantity - OLD.quantity,
-                updated_at = NOW()
-            WHERE id = OLD.ticket_type_id;
-            -- Add to new ticket type
-            UPDATE public.event_ticket_type
-            SET sold_quantity = sold_quantity + NEW.quantity,
-                updated_at = NOW()
-            WHERE id = NEW.ticket_type_id;
-        END IF;
+UPDATE public.event_ticket_type
+SET sold_quantity = sold_quantity - OLD.quantity,
+    updated_at = NOW()
+WHERE id = OLD.ticket_type_id;
+-- Add to new ticket type
+UPDATE public.event_ticket_type
+SET sold_quantity = sold_quantity + NEW.quantity,
+    updated_at = NOW()
+WHERE id = NEW.ticket_type_id;
+END IF;
 
     ELSIF TG_OP = 'DELETE' THEN
-        UPDATE public.event_ticket_type
-        SET sold_quantity = sold_quantity - OLD.quantity,
-            updated_at = NOW()
-        WHERE id = OLD.ticket_type_id;
+UPDATE public.event_ticket_type
+SET sold_quantity = sold_quantity - OLD.quantity,
+    updated_at = NOW()
+WHERE id = OLD.ticket_type_id;
 
-        RAISE NOTICE 'Removed % tickets from sold quantity for ticket type %', OLD.quantity, OLD.ticket_type_id;
-    END IF;
+RAISE NOTICE 'Removed % tickets from sold quantity for ticket type %', OLD.quantity, OLD.ticket_type_id;
+END IF;
 
     IF TG_OP = 'DELETE' THEN
         RETURN OLD;
-    ELSE
+ELSE
         RETURN NEW;
-    END IF;
+END IF;
 END;
 $$;
 
@@ -337,28 +337,28 @@ CREATE FUNCTION  public.update_ticket_sold_quantity() RETURNS trigger
     AS $$
 BEGIN
     IF TG_OP = 'INSERT' AND NEW.status = 'COMPLETED' THEN
-        UPDATE public.event_ticket_type
-        SET sold_quantity = sold_quantity + NEW.quantity
-        WHERE id = NEW.ticket_type_id;
-    ELSIF TG_OP = 'UPDATE' AND OLD.status != 'COMPLETED' AND NEW.status = 'COMPLETED' THEN
-        UPDATE public.event_ticket_type
-        SET sold_quantity = sold_quantity + NEW.quantity
-        WHERE id = NEW.ticket_type_id;
-    ELSIF TG_OP = 'UPDATE' AND OLD.status = 'COMPLETED' AND NEW.status != 'COMPLETED' THEN
-        UPDATE public.event_ticket_type
-        SET sold_quantity = sold_quantity - OLD.quantity
-        WHERE id = OLD.ticket_type_id;
-    ELSIF TG_OP = 'DELETE' AND OLD.status = 'COMPLETED' THEN
-        UPDATE public.event_ticket_type
-        SET sold_quantity = sold_quantity - OLD.quantity
-        WHERE id = OLD.ticket_type_id;
-    END IF;
+UPDATE public.event_ticket_type
+SET sold_quantity = sold_quantity + NEW.quantity
+WHERE id = NEW.ticket_type_id;
+ELSIF TG_OP = 'UPDATE' AND OLD.status != 'COMPLETED' AND NEW.status = 'COMPLETED' THEN
+UPDATE public.event_ticket_type
+SET sold_quantity = sold_quantity + NEW.quantity
+WHERE id = NEW.ticket_type_id;
+ELSIF TG_OP = 'UPDATE' AND OLD.status = 'COMPLETED' AND NEW.status != 'COMPLETED' THEN
+UPDATE public.event_ticket_type
+SET sold_quantity = sold_quantity - OLD.quantity
+WHERE id = OLD.ticket_type_id;
+ELSIF TG_OP = 'DELETE' AND OLD.status = 'COMPLETED' THEN
+UPDATE public.event_ticket_type
+SET sold_quantity = sold_quantity - OLD.quantity
+WHERE id = OLD.ticket_type_id;
+END IF;
 
     IF TG_OP = 'DELETE' THEN
         RETURN OLD;
-    ELSE
+ELSE
         RETURN NEW;
-    END IF;
+END IF;
 END;
 $$;
 
@@ -375,7 +375,7 @@ CREATE FUNCTION  public.update_updated_at_column() RETURNS trigger
     AS $$
 BEGIN
     NEW.updated_at = NOW();
-    RETURN NEW;
+RETURN NEW;
 END;
 $$;
 
@@ -399,9 +399,9 @@ BEGIN
     -- Ensure registration deadline is before event start
     IF NEW.registration_deadline IS NOT NULL AND NEW.registration_deadline::date > NEW.start_date THEN
         RAISE EXCEPTION 'Registration deadline must be before event start date';
-    END IF;
+END IF;
 
-    RETURN NEW;
+RETURN NEW;
 END;
 $$;
 
@@ -423,9 +423,9 @@ BEGIN
 
     IF NEW.registration_deadline IS NOT NULL AND NEW.registration_deadline::date > NEW.start_date THEN
         RAISE EXCEPTION 'Registration deadline must be before event start date';
-    END IF;
+END IF;
 
-    RETURN NEW;
+RETURN NEW;
 END;
 $$;
 
@@ -447,9 +447,9 @@ BEGIN
 
     IF NEW.registration_deadline IS NOT NULL AND NEW.registration_deadline::date > NEW.start_date THEN
         RAISE EXCEPTION 'Registration deadline must be before event start date';
-    END IF;
+END IF;
 
-    RETURN NEW;
+RETURN NEW;
 END;
 $$;
 
@@ -480,17 +480,17 @@ BEGIN
     -- JDL VALIDATION: If allowGuests = true, maxGuestsPerAttendee should be > 0
     IF NEW.allow_guests = TRUE AND (NEW.max_guests_per_attendee IS NULL OR NEW.max_guests_per_attendee <= 0) THEN
         RAISE EXCEPTION 'When guests are allowed, max_guests_per_attendee must be greater than 0';
-    END IF;
+END IF;
 
     -- JDL VALIDATION: Validate capacity
     IF NEW.capacity IS NOT NULL AND NEW.capacity <= 0 THEN
         RAISE EXCEPTION 'Event capacity must be greater than zero, got: %', NEW.capacity;
-    END IF;
+END IF;
 
     -- Log the validation success
     RAISE NOTICE 'Event validation passed for event: %', NEW.title;
 
-    RETURN NEW;
+RETURN NEW;
 END;
 $$;
 
@@ -524,35 +524,35 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.user_profile (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255),
-user_id character varying(255) NOT NULL,
-first_name character varying(255),
-last_name character varying(255),
-email character varying(255),
-phone character varying(255),
-address_line_1 character varying(255),
-address_line_2 character varying(255),
-city character varying(255),
-state character varying(255),
-zip_code character varying(255),
-country character varying(255),
-notes text,
-family_name character varying(255),
-city_town character varying(255),
-district character varying(255),
-educational_institution character varying(255),
-profile_image_url character varying(1024),
-is_email_subscribed BOOLEAN,
-email_subscription_token VARCHAR(2048),
-is_email_subscription_token_used BOOLEAN,
-user_status character varying(50),
-user_role character varying(50),
-reviewed_by_admin_at timestamp without time zone,
-reviewed_by_admin_id bigint,
-created_at timestamp without time zone DEFAULT now() NOT NULL,
-updated_at timestamp without time zone DEFAULT now() NOT NULL,
-CONSTRAINT check_email_format CHECK (((email IS NULL) OR ((email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text))),
+                                     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                     tenant_id character varying(255),
+                                     user_id character varying(255) NOT NULL,
+                                     first_name character varying(255),
+                                     last_name character varying(255),
+                                     email character varying(255),
+                                     phone character varying(255),
+                                     address_line_1 character varying(255),
+                                     address_line_2 character varying(255),
+                                     city character varying(255),
+                                     state character varying(255),
+                                     zip_code character varying(255),
+                                     country character varying(255),
+                                     notes text,
+                                     family_name character varying(255),
+                                     city_town character varying(255),
+                                     district character varying(255),
+                                     educational_institution character varying(255),
+                                     profile_image_url character varying(1024),
+                                     is_email_subscribed BOOLEAN,
+                                     email_subscription_token VARCHAR(2048),
+                                     is_email_subscription_token_used BOOLEAN,
+                                     user_status character varying(50),
+                                     user_role character varying(50),
+                                     reviewed_by_admin_at timestamp without time zone,
+                                     reviewed_by_admin_id bigint,
+                                     created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                     updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                     CONSTRAINT check_email_format CHECK (((email IS NULL) OR ((email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text))),
     request_id character varying(255) UNIQUE,
     request_reason text,
     status character varying(50),
@@ -581,21 +581,21 @@ COMMENT ON TABLE public.user_profile IS 'User profiles with tenant isolation and
 --
 
 CREATE TABLE public.bulk_operation_log (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    operation_type character varying(50) NOT NULL,
-    operation_name character varying(255),
-    performed_by bigint,
-    target_count integer NOT NULL,
-    success_count integer DEFAULT 0,
-    error_count integer DEFAULT 0,
-    skipped_count integer DEFAULT 0,
-    operation_details  VARCHAR(16384),
-    error_details text,
-    execution_time_ms integer,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    completed_at timestamp without time zone,
-    CONSTRAINT check_operation_counts CHECK ((((success_count + error_count) + skipped_count) <= target_count))
+                                           id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                           tenant_id character varying(255),
+                                           operation_type character varying(50) NOT NULL,
+                                           operation_name character varying(255),
+                                           performed_by bigint,
+                                           target_count integer NOT NULL,
+                                           success_count integer DEFAULT 0,
+                                           error_count integer DEFAULT 0,
+                                           skipped_count integer DEFAULT 0,
+                                           operation_details  VARCHAR(16384),
+                                           error_details text,
+                                           execution_time_ms integer,
+                                           created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                           completed_at timestamp without time zone,
+                                           CONSTRAINT check_operation_counts CHECK ((((success_count + error_count) + skipped_count) <= target_count))
 );
 
 
@@ -607,20 +607,20 @@ CREATE TABLE public.bulk_operation_log (
 --
 
 CREATE TABLE public.databasechangelog (
-    id character varying(255) NOT NULL,
-    author character varying(255) NOT NULL,
-    filename character varying(255) NOT NULL,
-    dateexecuted timestamp without time zone NOT NULL,
-    orderexecuted integer NOT NULL,
-    exectype character varying(10) NOT NULL,
-    md5sum character varying(35),
-    description character varying(255),
-    comments character varying(255),
-    tag character varying(255),
-    liquibase character varying(20),
-    contexts character varying(255),
-    labels character varying(255),
-    deployment_id character varying(10)
+                                          id character varying(255) NOT NULL,
+                                          author character varying(255) NOT NULL,
+                                          filename character varying(255) NOT NULL,
+                                          dateexecuted timestamp without time zone NOT NULL,
+                                          orderexecuted integer NOT NULL,
+                                          exectype character varying(10) NOT NULL,
+                                          md5sum character varying(35),
+                                          description character varying(255),
+                                          comments character varying(255),
+                                          tag character varying(255),
+                                          liquibase character varying(20),
+                                          contexts character varying(255),
+                                          labels character varying(255),
+                                          deployment_id character varying(10)
 );
 
 
@@ -632,10 +632,10 @@ CREATE TABLE public.databasechangelog (
 --
 
 CREATE TABLE public.databasechangeloglock (
-    id integer NOT NULL,
-    locked boolean NOT NULL,
-    lockgranted timestamp without time zone,
-    lockedby character varying(255)
+                                              id integer NOT NULL,
+                                              locked boolean NOT NULL,
+                                              lockgranted timestamp without time zone,
+                                              lockedby character varying(255)
 );
 
 
@@ -648,50 +648,50 @@ CREATE TABLE public.databasechangeloglock (
 --
 
 CREATE TABLE public.event_details (
-   id int8 DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-	tenant_id varchar(255) NULL,
-	title varchar(255) NOT NULL,
-	caption varchar(500) NULL,
-	description text NULL,
-	start_date date NOT NULL,
-	promotion_start_date date NOT NULL,
-	end_date date NOT NULL,
-	start_time varchar(100) NOT NULL,
-	end_time varchar(100) NOT NULL,
-	timezone varchar(64) NOT NULL,
-	"location" varchar(500) NULL,
-	directions_to_venue text NULL,
-	capacity int4 NULL,
-	admission_type varchar(50) NULL,
-	is_active bool DEFAULT true NULL,
-	max_guests_per_attendee int4 DEFAULT 0 NULL,
-	allow_guests bool DEFAULT false NULL,
-	require_guest_approval bool DEFAULT false NULL,
-	enable_guest_pricing bool DEFAULT false NULL,
-	registration_deadline timestamp NULL,
-	cancellation_deadline timestamp NULL,
-	minimum_age int4 NULL,
-	maximum_age int4 NULL,
-	requires_approval bool DEFAULT false NULL,
-	enable_waitlist bool DEFAULT true NULL,
-	enable_qr_code bool DEFAULT false NULL,
-	external_registration_url varchar(1024) NULL,
-	created_by_id int8 NULL,
-	event_type_id int8 NULL,
-	created_at timestamp DEFAULT now() NOT NULL,
-	updated_at timestamp DEFAULT now() NOT NULL,
-	is_registration_required bool DEFAULT false NULL,
-	is_sports_event bool DEFAULT false NULL,
-	is_live bool DEFAULT false NULL,
-	is_featured_event BOOLEAN NOT NULL DEFAULT false,
-    featured_event_priority_ranking INT4 NOT NULL DEFAULT 0,
-    live_event_priority_ranking INT4 NOT NULL DEFAULT 0,
-    CONSTRAINT check_age_ranges CHECK (((minimum_age IS NULL) OR (maximum_age IS NULL) OR (maximum_age >= minimum_age))),
-    CONSTRAINT check_capacity_positive CHECK (((capacity IS NULL) OR (capacity > 0))),
-    CONSTRAINT check_deadlines CHECK (((registration_deadline IS NULL) OR (cancellation_deadline IS NULL) OR (cancellation_deadline <= registration_deadline))),
-    CONSTRAINT check_event_dates CHECK ((end_date >= start_date)),
-    CONSTRAINT event_details_max_guests_per_attendee_check CHECK ((max_guests_per_attendee >= 0)),
-    CONSTRAINT event_details_pkey PRIMARY KEY (id)
+                                      id int8 DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                      tenant_id varchar(255) NULL,
+                                      title varchar(255) NOT NULL,
+                                      caption varchar(500) NULL,
+                                      description text NULL,
+                                      start_date date NOT NULL,
+                                      promotion_start_date date NOT NULL,
+                                      end_date date NOT NULL,
+                                      start_time varchar(100) NOT NULL,
+                                      end_time varchar(100) NOT NULL,
+                                      timezone varchar(64) NOT NULL,
+                                      "location" varchar(500) NULL,
+                                      directions_to_venue text NULL,
+                                      capacity int4 NULL,
+                                      admission_type varchar(50) NULL,
+                                      is_active bool DEFAULT true NULL,
+                                      max_guests_per_attendee int4 DEFAULT 0 NULL,
+                                      allow_guests bool DEFAULT false NULL,
+                                      require_guest_approval bool DEFAULT false NULL,
+                                      enable_guest_pricing bool DEFAULT false NULL,
+                                      registration_deadline timestamp NULL,
+                                      cancellation_deadline timestamp NULL,
+                                      minimum_age int4 NULL,
+                                      maximum_age int4 NULL,
+                                      requires_approval bool DEFAULT false NULL,
+                                      enable_waitlist bool DEFAULT true NULL,
+                                      enable_qr_code bool DEFAULT false NULL,
+                                      external_registration_url varchar(1024) NULL,
+                                      created_by_id int8 NULL,
+                                      event_type_id int8 NULL,
+                                      created_at timestamp DEFAULT now() NOT NULL,
+                                      updated_at timestamp DEFAULT now() NOT NULL,
+                                      is_registration_required bool DEFAULT false NULL,
+                                      is_sports_event bool DEFAULT false NULL,
+                                      is_live bool DEFAULT false NULL,
+                                      is_featured_event BOOLEAN NOT NULL DEFAULT false,
+                                      featured_event_priority_ranking INT4 NOT NULL DEFAULT 0,
+                                      live_event_priority_ranking INT4 NOT NULL DEFAULT 0,
+                                      CONSTRAINT check_age_ranges CHECK (((minimum_age IS NULL) OR (maximum_age IS NULL) OR (maximum_age >= minimum_age))),
+                                      CONSTRAINT check_capacity_positive CHECK (((capacity IS NULL) OR (capacity > 0))),
+                                      CONSTRAINT check_deadlines CHECK (((registration_deadline IS NULL) OR (cancellation_deadline IS NULL) OR (cancellation_deadline <= registration_deadline))),
+                                      CONSTRAINT check_event_dates CHECK ((end_date >= start_date)),
+                                      CONSTRAINT event_details_max_guests_per_attendee_check CHECK ((max_guests_per_attendee >= 0)),
+                                      CONSTRAINT event_details_pkey PRIMARY KEY (id)
 );
 
 
@@ -776,28 +776,28 @@ COMMENT ON COLUMN public.event_details.is_live IS 'Whether this event is current
 --
 
 CREATE TABLE public.event_guest_pricing (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    event_id bigint NOT NULL,
-    age_group character varying(20) NOT NULL,
-    price numeric(21,2) DEFAULT 0.00 NOT NULL,
-    is_active boolean DEFAULT true,
-    valid_from date,
-    valid_to date,
-    description character varying(255),
-    max_guests integer,
-    pricing_tier character varying(100),
-    early_bird_price numeric(21,2),
-    early_bird_deadline timestamp without time zone,
-    group_discount_threshold integer,
-    group_discount_percentage numeric(5,2),
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    CONSTRAINT check_group_discount_threshold CHECK (((group_discount_threshold IS NULL) OR (group_discount_threshold > 1))),
-    CONSTRAINT check_guest_pricing_amounts CHECK (((price >= (0)::numeric) AND ((early_bird_price IS NULL) OR (early_bird_price >= (0)::numeric)) AND ((group_discount_percentage IS NULL) OR ((group_discount_percentage >= (0)::numeric) AND (group_discount_percentage <= (100)::numeric))))),
-    CONSTRAINT check_max_guests_positive CHECK (((max_guests IS NULL) OR (max_guests > 0))),
-    CONSTRAINT check_valid_date_range CHECK (((valid_from IS NULL) OR (valid_to IS NULL) OR (valid_to >= valid_from))),
-    CONSTRAINT event_guest_pricing_price_check CHECK ((price >= (0)::numeric))
+                                            id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                            tenant_id character varying(255),
+                                            event_id bigint NOT NULL,
+                                            age_group character varying(20) NOT NULL,
+                                            price numeric(21,2) DEFAULT 0.00 NOT NULL,
+                                            is_active boolean DEFAULT true,
+                                            valid_from date,
+                                            valid_to date,
+                                            description character varying(255),
+                                            max_guests integer,
+                                            pricing_tier character varying(100),
+                                            early_bird_price numeric(21,2),
+                                            early_bird_deadline timestamp without time zone,
+                                            group_discount_threshold integer,
+                                            group_discount_percentage numeric(5,2),
+                                            created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                            updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                            CONSTRAINT check_group_discount_threshold CHECK (((group_discount_threshold IS NULL) OR (group_discount_threshold > 1))),
+                                            CONSTRAINT check_guest_pricing_amounts CHECK (((price >= (0)::numeric) AND ((early_bird_price IS NULL) OR (early_bird_price >= (0)::numeric)) AND ((group_discount_percentage IS NULL) OR ((group_discount_percentage >= (0)::numeric) AND (group_discount_percentage <= (100)::numeric))))),
+                                            CONSTRAINT check_max_guests_positive CHECK (((max_guests IS NULL) OR (max_guests > 0))),
+                                            CONSTRAINT check_valid_date_range CHECK (((valid_from IS NULL) OR (valid_to IS NULL) OR (valid_to >= valid_from))),
+                                            CONSTRAINT event_guest_pricing_price_check CHECK ((price >= (0)::numeric))
 );
 
 
@@ -863,19 +863,19 @@ COMMENT ON COLUMN public.event_guest_pricing.description IS 'Pricing description
 --
 
 CREATE TABLE public.event_live_update (
-    id bigint NOT NULL,
-    event_id bigint NOT NULL,
-    update_type character varying(20) NOT NULL,
-    content_text text,
-    content_image_url character varying(1024),
-    content_video_url character varying(1024),
-    content_link_url character varying(1024),
-    metadata  VARCHAR(4096),
-    display_order integer DEFAULT 0,
-    is_default boolean DEFAULT false,
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now(),
-    CONSTRAINT event_live_update_pkey PRIMARY KEY (id)
+                                          id bigint NOT NULL,
+                                          event_id bigint NOT NULL,
+                                          update_type character varying(20) NOT NULL,
+                                          content_text text,
+                                          content_image_url character varying(1024),
+                                          content_video_url character varying(1024),
+                                          content_link_url character varying(1024),
+                                          metadata  VARCHAR(4096),
+                                          display_order integer DEFAULT 0,
+                                          is_default boolean DEFAULT false,
+                                          created_at timestamp without time zone DEFAULT now(),
+                                          updated_at timestamp without time zone DEFAULT now(),
+                                          CONSTRAINT event_live_update_pkey PRIMARY KEY (id)
 );
 
 
@@ -896,14 +896,14 @@ COMMENT ON TABLE public.event_live_update IS 'Live updates (text, image, video, 
 --
 
 CREATE TABLE public.event_live_update_attachment (
-    id bigint NOT NULL,
-    live_update_id bigint NOT NULL,
-    attachment_type character varying(20),
-    attachment_url character varying(1024),
-    display_order integer DEFAULT 0,
-     metadata  VARCHAR(4096),
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now()
+                                                     id bigint NOT NULL,
+                                                     live_update_id bigint NOT NULL,
+                                                     attachment_type character varying(20),
+                                                     attachment_url character varying(1024),
+                                                     display_order integer DEFAULT 0,
+                                                     metadata  VARCHAR(4096),
+                                                     created_at timestamp without time zone DEFAULT now(),
+                                                     updated_at timestamp without time zone DEFAULT now()
 );
 
 
@@ -971,15 +971,15 @@ ALTER SEQUENCE public.event_live_update_id_seq OWNED BY public.event_live_update
 --
 
 CREATE TABLE public.event_admin (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    role character varying(255) NOT NULL,
-    permissions text[],
-    is_active boolean DEFAULT true,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    user_id bigint,
-    created_by_id bigint
+                                    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                    tenant_id character varying(255),
+                                    role character varying(255) NOT NULL,
+                                    permissions text[],
+                                    is_active boolean DEFAULT true,
+                                    created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                    user_id bigint,
+                                    created_by_id bigint
 );
 
 
@@ -991,19 +991,19 @@ CREATE TABLE public.event_admin (
 --
 
 CREATE TABLE public.event_admin_audit_log (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    action character varying(255) NOT NULL,
-    table_name character varying(255) NOT NULL,
-    record_id character varying(255) NOT NULL,
-    changes VARCHAR(8192) NULL,
-    old_values jsonb,
-    new_values jsonb,
-    ip_address inet,
-    user_agent text,
-    session_id character varying(255),
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    admin_id bigint
+                                              id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                              tenant_id character varying(255),
+                                              action character varying(255) NOT NULL,
+                                              table_name character varying(255) NOT NULL,
+                                              record_id character varying(255) NOT NULL,
+                                              changes VARCHAR(8192) NULL,
+                                              old_values jsonb,
+                                              new_values jsonb,
+                                              ip_address inet,
+                                              user_agent text,
+                                              session_id character varying(255),
+                                              created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                              admin_id bigint
 );
 
 
@@ -1023,48 +1023,48 @@ COMMENT ON TABLE public.event_admin_audit_log IS 'Comprehensive audit logging fo
 --
 
 CREATE TABLE public.event_attendee (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255),
-event_id bigint NOT NULL,
-user_id bigint,
-registration_status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
-registration_date timestamp without time zone DEFAULT now() NOT NULL,
-confirmation_date timestamp without time zone,
-cancellation_date timestamp without time zone,
-cancellation_reason text,
-attendee_type character varying(50) DEFAULT 'MEMBER'::character varying,
-special_requirements text,
-dietary_restrictions text,
-accessibility_needs text,
-emergency_contact_name character varying(255),
-emergency_contact_phone character varying(50),
-emergency_contact_relationship character varying(100),
-total_number_of_guests integer,
-number_of_guests_checked_in integer,
-check_in_status character varying(20) DEFAULT 'NOT_CHECKED_IN'::character varying,
-check_in_time timestamp without time zone,
-check_out_time timestamp without time zone,
-attendance_rating integer,
-feedback text,
-notes text,
-qr_code_data character varying(1000),
-qr_code_generated boolean DEFAULT false,
-qr_code_generated_at timestamp without time zone,
-registration_source character varying(100) DEFAULT 'DIRECT'::character varying,
-    waitlist_position integer,
-    priority_score integer DEFAULT 0,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    first_name character varying(255),
-    last_name character varying(255),
-    email character varying(255),
-    phone character varying(255),
-    is_member boolean,
-    CONSTRAINT event_attendee_pkey PRIMARY KEY (id),
-    CONSTRAINT check_waitlist_position_positive CHECK (((waitlist_position IS NULL) OR (waitlist_position > 0))),
-    CONSTRAINT event_attendee_attendance_rating_check CHECK (((attendance_rating >= 1) AND (attendance_rating <= 5))),
-    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE SET null,
-    CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE SET null
+                                       id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                       tenant_id character varying(255),
+                                       event_id bigint NOT NULL,
+                                       user_id bigint,
+                                       registration_status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
+                                       registration_date timestamp without time zone DEFAULT now() NOT NULL,
+                                       confirmation_date timestamp without time zone,
+                                       cancellation_date timestamp without time zone,
+                                       cancellation_reason text,
+                                       attendee_type character varying(50) DEFAULT 'MEMBER'::character varying,
+                                       special_requirements text,
+                                       dietary_restrictions text,
+                                       accessibility_needs text,
+                                       emergency_contact_name character varying(255),
+                                       emergency_contact_phone character varying(50),
+                                       emergency_contact_relationship character varying(100),
+                                       total_number_of_guests integer,
+                                       number_of_guests_checked_in integer,
+                                       check_in_status character varying(20) DEFAULT 'NOT_CHECKED_IN'::character varying,
+                                       check_in_time timestamp without time zone,
+                                       check_out_time timestamp without time zone,
+                                       attendance_rating integer,
+                                       feedback text,
+                                       notes text,
+                                       qr_code_data character varying(1000),
+                                       qr_code_generated boolean DEFAULT false,
+                                       qr_code_generated_at timestamp without time zone,
+                                       registration_source character varying(100) DEFAULT 'DIRECT'::character varying,
+                                       waitlist_position integer,
+                                       priority_score integer DEFAULT 0,
+                                       created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                       updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                       first_name character varying(255),
+                                       last_name character varying(255),
+                                       email character varying(255),
+                                       phone character varying(255),
+                                       is_member boolean,
+                                       CONSTRAINT event_attendee_pkey PRIMARY KEY (id),
+                                       CONSTRAINT check_waitlist_position_positive CHECK (((waitlist_position IS NULL) OR (waitlist_position > 0))),
+                                       CONSTRAINT event_attendee_attendance_rating_check CHECK (((attendance_rating >= 1) AND (attendance_rating <= 5))),
+                                       CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE SET null,
+                                       CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE SET null
 );
 
 
@@ -1112,33 +1112,33 @@ COMMENT ON COLUMN public.event_attendee.qr_code_generated_at IS 'Timestamp when 
 --
 
 CREATE TABLE public.event_attendee_guest (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255),
-primary_attendee_id bigint NOT NULL,
-age_group character varying(20) NOT NULL,
-relationship character varying(20),
-special_requirements text,
-dietary_restrictions text,
-accessibility_needs text,
-registration_status character varying(20) DEFAULT 'PENDING'::character varying,
-check_in_status character varying(20) DEFAULT 'NOT_CHECKED_IN'::character varying,
-check_in_time timestamp without time zone,
-check_out_time timestamp without time zone,
-approval_status character varying(50) DEFAULT 'PENDING'::character varying,
-approved_by_id bigint,
-approved_at timestamp without time zone,
-rejection_reason text,
-pricing_tier character varying(100),
-fee_amount numeric(21,2) DEFAULT 0,
-payment_status character varying(50) DEFAULT 'PENDING'::character varying,
-    notes text,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    CONSTRAINT check_guest_fee_non_negative CHECK ((fee_amount >= (0)::numeric)),
-    first_name character varying(255),
-    last_name character varying(255),
-    email character varying(255),
-    phone character varying(255)
+                                             id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                             tenant_id character varying(255),
+                                             primary_attendee_id bigint NOT NULL,
+                                             age_group character varying(20) NOT NULL,
+                                             relationship character varying(20),
+                                             special_requirements text,
+                                             dietary_restrictions text,
+                                             accessibility_needs text,
+                                             registration_status character varying(20) DEFAULT 'PENDING'::character varying,
+                                             check_in_status character varying(20) DEFAULT 'NOT_CHECKED_IN'::character varying,
+                                             check_in_time timestamp without time zone,
+                                             check_out_time timestamp without time zone,
+                                             approval_status character varying(50) DEFAULT 'PENDING'::character varying,
+                                             approved_by_id bigint,
+                                             approved_at timestamp without time zone,
+                                             rejection_reason text,
+                                             pricing_tier character varying(100),
+                                             fee_amount numeric(21,2) DEFAULT 0,
+                                             payment_status character varying(50) DEFAULT 'PENDING'::character varying,
+                                             notes text,
+                                             created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                             updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                             CONSTRAINT check_guest_fee_non_negative CHECK ((fee_amount >= (0)::numeric)),
+                                             first_name character varying(255),
+                                             last_name character varying(255),
+                                             email character varying(255),
+                                             phone character varying(255)
 );
 
 
@@ -1177,18 +1177,18 @@ COMMENT ON COLUMN public.event_attendee_guest.relationship IS 'Relationship to p
 --
 
 CREATE TABLE public.event_calendar_entry (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255),
-calendar_provider character varying(255) NOT NULL,
-external_event_id character varying(255),
-calendar_link character varying(2048) NOT NULL,
-sync_status character varying(50) DEFAULT 'PENDING'::character varying,
-    last_sync_at timestamp without time zone,
-    sync_error_message text,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    event_id bigint,
-    created_by_id bigint
+                                             id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                             tenant_id character varying(255),
+                                             calendar_provider character varying(255) NOT NULL,
+                                             external_event_id character varying(255),
+                                             calendar_link character varying(2048) NOT NULL,
+                                             sync_status character varying(50) DEFAULT 'PENDING'::character varying,
+                                             last_sync_at timestamp without time zone,
+                                             sync_error_message text,
+                                             created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                             updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                             event_id bigint,
+                                             created_by_id bigint
 );
 
 
@@ -1201,38 +1201,38 @@ sync_status character varying(50) DEFAULT 'PENDING'::character varying,
 --
 
 CREATE TABLE public.event_media (
-    id int8 DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-	tenant_id varchar(255) NULL,
-	title varchar(255) NOT NULL,
-	description varchar(2048) NULL,
-	event_media_type varchar(255) NOT NULL,
-	storage_type varchar(255) NOT NULL,
-	file_url varchar(2048) NULL,
-	file_data_content_type varchar(255) NULL,
-	content_type varchar(255) NULL,
-	file_size int8 NULL,
-	is_public bool DEFAULT true NULL,
-	event_flyer bool DEFAULT false NULL,
-	is_event_management_official_document bool DEFAULT false NULL,
-	pre_signed_url varchar(2048) NULL,
-	pre_signed_url_expires_at timestamp NULL,
-	alt_text varchar(500) NULL,
-	display_order int4 DEFAULT 0 NULL,
-	download_count int4 DEFAULT 0 NULL,
-	is_featured_video bool DEFAULT false NULL,
-	featured_video_url varchar(2048) NULL,
-	is_hero_image bool DEFAULT false NULL,
-	is_active_hero_image bool DEFAULT false NULL,
-	start_displaying_from_date date NOT NULL,
-	created_at timestamp DEFAULT now() NOT NULL,
-	updated_at timestamp DEFAULT now() NOT NULL,
-	event_id int8 NULL,
-	uploaded_by_id int8 NULL,
-	is_home_page_hero_image bool DEFAULT false NOT NULL,
-	is_featured_event_image bool DEFAULT false NOT NULL,
-	is_live_event_image bool DEFAULT false NOT NULL,
-    CONSTRAINT check_download_count_non_negative CHECK ((download_count >= 0)),
-    CONSTRAINT check_file_size_positive CHECK (((file_size IS NULL) OR (file_size >= 0)))
+                                    id int8 DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                    tenant_id varchar(255) NULL,
+                                    title varchar(255) NOT NULL,
+                                    description varchar(2048) NULL,
+                                    event_media_type varchar(255) NOT NULL,
+                                    storage_type varchar(255) NOT NULL,
+                                    file_url varchar(2048) NULL,
+                                    file_data_content_type varchar(255) NULL,
+                                    content_type varchar(255) NULL,
+                                    file_size int8 NULL,
+                                    is_public bool DEFAULT true NULL,
+                                    event_flyer bool DEFAULT false NULL,
+                                    is_event_management_official_document bool DEFAULT false NULL,
+                                    pre_signed_url varchar(2048) NULL,
+                                    pre_signed_url_expires_at timestamp NULL,
+                                    alt_text varchar(500) NULL,
+                                    display_order int4 DEFAULT 0 NULL,
+                                    download_count int4 DEFAULT 0 NULL,
+                                    is_featured_video bool DEFAULT false NULL,
+                                    featured_video_url varchar(2048) NULL,
+                                    is_hero_image bool DEFAULT false NULL,
+                                    is_active_hero_image bool DEFAULT false NULL,
+                                    start_displaying_from_date date NOT NULL,
+                                    created_at timestamp DEFAULT now() NOT NULL,
+                                    updated_at timestamp DEFAULT now() NOT NULL,
+                                    event_id int8 NULL,
+                                    uploaded_by_id int8 NULL,
+                                    is_home_page_hero_image bool DEFAULT false NOT NULL,
+                                    is_featured_event_image bool DEFAULT false NOT NULL,
+                                    is_live_event_image bool DEFAULT false NOT NULL,
+                                    CONSTRAINT check_download_count_non_negative CHECK ((download_count >= 0)),
+                                    CONSTRAINT check_file_size_positive CHECK (((file_size IS NULL) OR (file_size >= 0)))
 );
 
 -- ALTER TABLE public.event_media OWNER TO giventa_event_management;
@@ -1252,21 +1252,21 @@ COMMENT ON COLUMN public.event_media.pre_signed_url IS 'Pre-signed URL for tempo
 --
 
 CREATE TABLE public.event_organizer (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255),
-title character varying(255) NOT NULL,
-designation character varying(255),
-contact_email character varying(255),
-contact_phone character varying(255),
-is_primary boolean DEFAULT false,
-display_order integer DEFAULT 0,
-bio text,
-profile_image_url character varying(1024),
-created_at timestamp without time zone DEFAULT now() NOT NULL,
-updated_at timestamp without time zone DEFAULT now() NOT NULL,
-event_id bigint,
-organizer_id bigint,
-CONSTRAINT check_contact_email_format CHECK (((contact_email IS NULL) OR ((contact_email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text)))
+                                        id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                        tenant_id character varying(255),
+                                        title character varying(255) NOT NULL,
+                                        designation character varying(255),
+                                        contact_email character varying(255),
+                                        contact_phone character varying(255),
+                                        is_primary boolean DEFAULT false,
+                                        display_order integer DEFAULT 0,
+                                        bio text,
+                                        profile_image_url character varying(1024),
+                                        created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                        updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                        event_id bigint,
+                                        organizer_id bigint,
+                                        CONSTRAINT check_contact_email_format CHECK (((contact_email IS NULL) OR ((contact_email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text)))
 );
 
 
@@ -1278,24 +1278,24 @@ CONSTRAINT check_contact_email_format CHECK (((contact_email IS NULL) OR ((conta
 --
 
 CREATE TABLE public.event_poll (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255),
-title character varying(255) NOT NULL,
-description text,
-is_active boolean DEFAULT true,
-is_anonymous boolean DEFAULT false,
-allow_multiple_choices boolean DEFAULT false,
-start_date timestamp without time zone NOT NULL,
-end_date timestamp without time zone,
-max_responses_per_user integer DEFAULT 1,
-results_visible_to character varying(50) DEFAULT 'ALL'::character varying,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    event_id bigint,
-    created_by_id bigint,
-    CONSTRAINT check_max_responses_positive CHECK ((max_responses_per_user > 0)),
-    CONSTRAINT check_poll_dates CHECK (((end_date IS NULL) OR (end_date >= start_date))),
-    CONSTRAINT event_poll_pkey PRIMARY KEY (id)
+                                   id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                   tenant_id character varying(255),
+                                   title character varying(255) NOT NULL,
+                                   description text,
+                                   is_active boolean DEFAULT true,
+                                   is_anonymous boolean DEFAULT false,
+                                   allow_multiple_choices boolean DEFAULT false,
+                                   start_date timestamp without time zone NOT NULL,
+                                   end_date timestamp without time zone,
+                                   max_responses_per_user integer DEFAULT 1,
+                                   results_visible_to character varying(50) DEFAULT 'ALL'::character varying,
+                                   created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                   updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                   event_id bigint,
+                                   created_by_id bigint,
+                                   CONSTRAINT check_max_responses_positive CHECK ((max_responses_per_user > 0)),
+                                   CONSTRAINT check_poll_dates CHECK (((end_date IS NULL) OR (end_date >= start_date))),
+                                   CONSTRAINT event_poll_pkey PRIMARY KEY (id)
 );
 
 
@@ -1307,15 +1307,15 @@ results_visible_to character varying(50) DEFAULT 'ALL'::character varying,
 --
 
 CREATE TABLE public.event_poll_option (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    option_text character varying(500) NOT NULL,
-    display_order integer DEFAULT 0,
-    is_active boolean DEFAULT true,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    poll_id bigint,
-    CONSTRAINT event_poll_option_pkey PRIMARY KEY (id)
+                                          id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                          tenant_id character varying(255),
+                                          option_text character varying(500) NOT NULL,
+                                          display_order integer DEFAULT 0,
+                                          is_active boolean DEFAULT true,
+                                          created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                          updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                          poll_id bigint,
+                                          CONSTRAINT event_poll_option_pkey PRIMARY KEY (id)
 );
 
 
@@ -1327,16 +1327,16 @@ CREATE TABLE public.event_poll_option (
 --
 
 CREATE TABLE public.event_poll_response (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    comment text,
-    response_value character varying(1000),
-    is_anonymous boolean DEFAULT false,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    poll_id bigint,
-    poll_option_id bigint,
-    user_id bigint
+                                            id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                            tenant_id character varying(255),
+                                            comment text,
+                                            response_value character varying(1000),
+                                            is_anonymous boolean DEFAULT false,
+                                            created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                            updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                            poll_id bigint,
+                                            poll_option_id bigint,
+                                            user_id bigint
 );
 
 
@@ -1348,16 +1348,16 @@ CREATE TABLE public.event_poll_response (
 --
 
 CREATE TABLE public.event_score_card (
-    id bigint NOT NULL,
-    event_id bigint NOT NULL,
-    team_a_name character varying(255) NOT NULL,
-    team_b_name character varying(255) NOT NULL,
-    team_a_score integer DEFAULT 0 NOT NULL,
-    team_b_score integer DEFAULT 0 NOT NULL,
-    remarks text,
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now(),
-    CONSTRAINT event_score_card_pkey PRIMARY KEY (id)
+                                         id bigint NOT NULL,
+                                         event_id bigint NOT NULL,
+                                         team_a_name character varying(255) NOT NULL,
+                                         team_b_name character varying(255) NOT NULL,
+                                         team_a_score integer DEFAULT 0 NOT NULL,
+                                         team_b_score integer DEFAULT 0 NOT NULL,
+                                         remarks text,
+                                         created_at timestamp without time zone DEFAULT now(),
+                                         updated_at timestamp without time zone DEFAULT now(),
+                                         CONSTRAINT event_score_card_pkey PRIMARY KEY (id)
 );
 
 
@@ -1378,15 +1378,15 @@ COMMENT ON TABLE public.event_score_card IS 'Score card for sports events';
 --
 
 CREATE TABLE public.event_score_card_detail (
-    id bigint NOT NULL,
-    score_card_id bigint NOT NULL,
-    team_name character varying(255) NOT NULL,
-    player_name character varying(255),
-    points integer DEFAULT 0 NOT NULL,
-    remarks text,
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now(),
-    CONSTRAINT event_score_card_detail_pkey PRIMARY KEY (id)
+                                                id bigint NOT NULL,
+                                                score_card_id bigint NOT NULL,
+                                                team_name character varying(255) NOT NULL,
+                                                player_name character varying(255),
+                                                points integer DEFAULT 0 NOT NULL,
+                                                remarks text,
+                                                created_at timestamp without time zone DEFAULT now(),
+                                                updated_at timestamp without time zone DEFAULT now(),
+                                                CONSTRAINT event_score_card_detail_pkey PRIMARY KEY (id)
 );
 
 
@@ -1456,9 +1456,9 @@ ALTER SEQUENCE public.event_score_card_id_seq OWNED BY public.event_score_card.i
 --
 
 CREATE TABLE public.event_ticket_transaction (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255),
-transaction_reference varchar(255) GENERATED ALWAYS AS ('TKTN' || id::text) STORED,
+                                                 id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                 tenant_id character varying(255),
+                                                 transaction_reference varchar(255) GENERATED ALWAYS AS ('TKTN' || id::text) STORED,
 email character varying(255) NOT NULL,
 first_name character varying(255),
 last_name character varying(255),
@@ -1533,32 +1533,32 @@ COMMENT ON COLUMN public.event_ticket_transaction.discount_amount IS 'Discount a
 --
 
 CREATE TABLE public.event_ticket_type (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    name character varying(255) NOT NULL,
-    description text,
-    price numeric(21,2) NOT NULL,
-    is_service_fee_included boolean DEFAULT false,
-    service_fee numeric(21,2),
-    code character varying(255) NOT NULL,
-    available_quantity integer,
-    sold_quantity integer DEFAULT 0,
-    remaining_quantity integer,
-    is_active boolean DEFAULT true,
-    sale_start_date timestamp without time zone,
-    sale_end_date timestamp without time zone,
-    min_quantity_per_order integer DEFAULT 1,
-    max_quantity_per_order integer DEFAULT 10,
-    requires_approval boolean DEFAULT false,
-    sort_order integer DEFAULT 0,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    event_id bigint,
-    CONSTRAINT check_price_non_negative CHECK ((price >= (0)::numeric)),
-    CONSTRAINT check_quantities_positive CHECK ((((available_quantity IS NULL) OR (available_quantity >= 0)) AND (sold_quantity >= 0) AND (min_quantity_per_order > 0) AND (max_quantity_per_order >= min_quantity_per_order))),
-    CONSTRAINT check_sale_dates CHECK (((sale_end_date IS NULL) OR (sale_start_date IS NULL) OR (sale_end_date >= sale_start_date))),
-    CONSTRAINT check_sold_vs_available CHECK (((available_quantity IS NULL) OR (sold_quantity <= available_quantity))),
-    CONSTRAINT event_ticket_type_pkey PRIMARY KEY (id)
+                                          id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                          tenant_id character varying(255),
+                                          name character varying(255) NOT NULL,
+                                          description text,
+                                          price numeric(21,2) NOT NULL,
+                                          is_service_fee_included boolean DEFAULT false,
+                                          service_fee numeric(21,2),
+                                          code character varying(255) NOT NULL,
+                                          available_quantity integer,
+                                          sold_quantity integer DEFAULT 0,
+                                          remaining_quantity integer,
+                                          is_active boolean DEFAULT true,
+                                          sale_start_date timestamp without time zone,
+                                          sale_end_date timestamp without time zone,
+                                          min_quantity_per_order integer DEFAULT 1,
+                                          max_quantity_per_order integer DEFAULT 10,
+                                          requires_approval boolean DEFAULT false,
+                                          sort_order integer DEFAULT 0,
+                                          created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                          updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                          event_id bigint,
+                                          CONSTRAINT check_price_non_negative CHECK ((price >= (0)::numeric)),
+                                          CONSTRAINT check_quantities_positive CHECK ((((available_quantity IS NULL) OR (available_quantity >= 0)) AND (sold_quantity >= 0) AND (min_quantity_per_order > 0) AND (max_quantity_per_order >= min_quantity_per_order))),
+                                          CONSTRAINT check_sale_dates CHECK (((sale_end_date IS NULL) OR (sale_start_date IS NULL) OR (sale_end_date >= sale_start_date))),
+                                          CONSTRAINT check_sold_vs_available CHECK (((available_quantity IS NULL) OR (sold_quantity <= available_quantity))),
+                                          CONSTRAINT event_ticket_type_pkey PRIMARY KEY (id)
 );
 
 
@@ -1574,16 +1574,16 @@ COMMENT ON COLUMN public.event_ticket_type.sold_quantity IS 'Number of tickets s
 
 
 CREATE TABLE public.event_ticket_transaction_item (
-    id BIGSERIAL PRIMARY KEY,
-    tenant_id character varying(255),
-    transaction_id BIGINT NOT NULL REFERENCES public.event_ticket_transaction(id) ON DELETE CASCADE,
-    ticket_type_id BIGINT NOT NULL REFERENCES public.event_ticket_type(id),
-    quantity INTEGER NOT NULL,
-    price_per_unit NUMERIC(21,2) NOT NULL,
-    total_amount NUMERIC(21,2) NOT NULL,
+                                                      id BIGSERIAL PRIMARY KEY,
+                                                      tenant_id character varying(255),
+                                                      transaction_id BIGINT NOT NULL REFERENCES public.event_ticket_transaction(id) ON DELETE CASCADE,
+                                                      ticket_type_id BIGINT NOT NULL REFERENCES public.event_ticket_type(id),
+                                                      quantity INTEGER NOT NULL,
+                                                      price_per_unit NUMERIC(21,2) NOT NULL,
+                                                      total_amount NUMERIC(21,2) NOT NULL,
     -- Optionally: discount_amount, fee_amount, etc.
-    created_at TIMESTAMP DEFAULT now() NOT NULL,
-    updated_at TIMESTAMP DEFAULT now() NOT NULL
+                                                      created_at TIMESTAMP DEFAULT now() NOT NULL,
+                                                      updated_at TIMESTAMP DEFAULT now() NOT NULL
 );
 --
 -- TOC entry 232 (class 1259 OID 82832)
@@ -1591,17 +1591,17 @@ CREATE TABLE public.event_ticket_transaction_item (
 --
 
 CREATE TABLE public.event_type_details (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255),
-name character varying(255) NOT NULL,
-description text,
-color character varying(7) DEFAULT '#3B82F6'::character varying,
-icon character varying(100),
-is_active boolean DEFAULT true,
-display_order integer DEFAULT 0,
-created_at timestamp without time zone DEFAULT now() NOT NULL,
-updated_at timestamp without time zone DEFAULT now() NOT NULL,
-CONSTRAINT check_color_format CHECK (((color)::text ~* '^#[0-9A-Fa-f]{6}$'::text)),
+                                           id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                           tenant_id character varying(255),
+                                           name character varying(255) NOT NULL,
+                                           description text,
+                                           color character varying(7) DEFAULT '#3B82F6'::character varying,
+                                           icon character varying(100),
+                                           is_active boolean DEFAULT true,
+                                           display_order integer DEFAULT 0,
+                                           created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                           updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                           CONSTRAINT check_color_format CHECK (((color)::text ~* '^#[0-9A-Fa-f]{6}$'::text)),
     CONSTRAINT event_type_details_pkey PRIMARY KEY (id)
 );
 
@@ -1623,25 +1623,25 @@ COMMENT ON TABLE public.event_type_details IS 'Event type classifications with v
 --
 
 CREATE TABLE public.qr_code_usage (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255),
-attendee_id bigint NOT NULL,
-qr_code_data character varying(1000) NOT NULL,
-qr_code_type character varying(50) DEFAULT 'CHECK_IN'::character varying,
-    generated_at timestamp without time zone DEFAULT now() NOT NULL,
-    expires_at timestamp without time zone,
-    used_at timestamp without time zone,
-    usage_count integer DEFAULT 0,
-    max_usage_count integer DEFAULT 1,
-    last_scanned_by character varying(255),
-    scan_location character varying(255),
-    device_info text,
-    ip_address inet,
-    is_valid boolean DEFAULT true,
-    invalidated_at timestamp without time zone,
-    invalidation_reason text,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    CONSTRAINT check_usage_counts CHECK (((usage_count >= 0) AND (max_usage_count > 0) AND (usage_count <= max_usage_count)))
+                                      id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                      tenant_id character varying(255),
+                                      attendee_id bigint NOT NULL,
+                                      qr_code_data character varying(1000) NOT NULL,
+                                      qr_code_type character varying(50) DEFAULT 'CHECK_IN'::character varying,
+                                      generated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                      expires_at timestamp without time zone,
+                                      used_at timestamp without time zone,
+                                      usage_count integer DEFAULT 0,
+                                      max_usage_count integer DEFAULT 1,
+                                      last_scanned_by character varying(255),
+                                      scan_location character varying(255),
+                                      device_info text,
+                                      ip_address inet,
+                                      is_valid boolean DEFAULT true,
+                                      invalidated_at timestamp without time zone,
+                                      invalidation_reason text,
+                                      created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                      CONSTRAINT check_usage_counts CHECK (((usage_count >= 0) AND (max_usage_count > 0) AND (usage_count <= max_usage_count)))
 );
 
 
@@ -1662,8 +1662,8 @@ COMMENT ON TABLE public.qr_code_usage IS 'Enhanced QR code generation and usage 
 --
 
 CREATE TABLE public.rel_event_details__discount_codes (
-    event_details_id bigint NOT NULL,
-    discount_codes_id bigint NOT NULL
+                                                          event_details_id bigint NOT NULL,
+                                                          discount_codes_id bigint NOT NULL
 );
 
 
@@ -1684,29 +1684,29 @@ COMMENT ON TABLE public.rel_event_details__discount_codes IS 'Join table for Eve
 --
 
 CREATE TABLE public.tenant_organization (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255) NOT NULL,
-    organization_name character varying(255) NOT NULL,
-    domain character varying(255),
-    primary_color character varying(7),
-    secondary_color character varying(7),
-    logo_url character varying(1024),
-    contact_email character varying(255) NOT NULL,
-    contact_phone character varying(50),
-    subscription_plan character varying(20),
-    subscription_status character varying(20),
-    subscription_start_date date,
-    subscription_end_date date,
-    monthly_fee_usd numeric(21,2),
-    stripe_customer_id character varying(255),
-    is_active boolean DEFAULT true,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    CONSTRAINT check_monthly_fee_positive CHECK ((monthly_fee_usd >= (0)::numeric)),
-    CONSTRAINT check_subscription_dates CHECK (((subscription_end_date IS NULL) OR (subscription_end_date >= subscription_start_date))),
-    CONSTRAINT tenant_organization_pkey PRIMARY KEY (id),
-    CONSTRAINT tenant_organization_tenant_id_key UNIQUE (tenant_id),
-    CONSTRAINT tenant_organization_domain_key UNIQUE (domain)
+                                            id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                            tenant_id character varying(255) NOT NULL,
+                                            organization_name character varying(255) NOT NULL,
+                                            domain character varying(255),
+                                            primary_color character varying(7),
+                                            secondary_color character varying(7),
+                                            logo_url character varying(1024),
+                                            contact_email character varying(255) NOT NULL,
+                                            contact_phone character varying(50),
+                                            subscription_plan character varying(20),
+                                            subscription_status character varying(20),
+                                            subscription_start_date date,
+                                            subscription_end_date date,
+                                            monthly_fee_usd numeric(21,2),
+                                            stripe_customer_id character varying(255),
+                                            is_active boolean DEFAULT true,
+                                            created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                            updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                            CONSTRAINT check_monthly_fee_positive CHECK ((monthly_fee_usd >= (0)::numeric)),
+                                            CONSTRAINT check_subscription_dates CHECK (((subscription_end_date IS NULL) OR (subscription_end_date >= subscription_start_date))),
+                                            CONSTRAINT tenant_organization_pkey PRIMARY KEY (id),
+                                            CONSTRAINT tenant_organization_tenant_id_key UNIQUE (tenant_id),
+                                            CONSTRAINT tenant_organization_domain_key UNIQUE (domain)
 );
 
 
@@ -1727,33 +1727,36 @@ COMMENT ON TABLE public.tenant_organization IS 'Multi-tenant organization config
 --
 
 CREATE TABLE public.tenant_settings (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255) NOT NULL,
-    tenant_organization_id bigint,
-    allow_user_registration boolean DEFAULT true,
-    require_admin_approval boolean DEFAULT false,
-    enable_whatsapp_integration boolean DEFAULT false,
-    enable_email_marketing boolean DEFAULT false,
-    whatsapp_api_key character varying(500),
-    email_provider_config  VARCHAR(2048),
-    custom_css  VARCHAR(8192),
-    custom_js  VARCHAR(16384),
-    max_events_per_month integer,
-    max_attendees_per_event integer,
-    enable_guest_registration boolean DEFAULT true,
-    max_guests_per_attendee integer DEFAULT 5,
-    default_event_capacity integer DEFAULT 100,
-    platform_fee_percentage decimal(6,4),
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    CONSTRAINT check_default_capacity_positive CHECK (((default_event_capacity IS NULL) OR (default_event_capacity > 0))),
-    CONSTRAINT check_max_attendees_positive CHECK (((max_attendees_per_event IS NULL) OR (max_attendees_per_event > 0))),
-    CONSTRAINT check_max_events_positive CHECK (((max_events_per_month IS NULL) OR (max_events_per_month > 0))),
-    CONSTRAINT check_max_guests_positive CHECK (((max_guests_per_attendee IS NULL) OR (max_guests_per_attendee >= 0))),
-    CONSTRAINT tenant_settings_pkey PRIMARY KEY (id),
-    CONSTRAINT tenant_settings_tenant_id_key UNIQUE (tenant_id),
-    CONSTRAINT fk_tenant_settings__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE,
-    CONSTRAINT fk_tenant_settings_organization_id FOREIGN KEY (tenant_organization_id) REFERENCES public.tenant_organization(id) ON DELETE CASCADE
+                                        id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                        tenant_id character varying(255) NOT NULL,
+                                        tenant_organization_id bigint,
+                                        allow_user_registration boolean DEFAULT true,
+                                        show_events_section_in_home_page boolean DEFAULT false,
+                                        show_team_members_section_in_home_page boolean DEFAULT false,
+                                        show_sponsors_section_in_home_page boolean DEFAULT false,
+                                        require_admin_approval boolean DEFAULT false,
+                                        enable_whatsapp_integration boolean DEFAULT false,
+                                        enable_email_marketing boolean DEFAULT false,
+                                        whatsapp_api_key character varying(500),
+                                        email_provider_config  VARCHAR(2048),
+                                        custom_css  VARCHAR(8192),
+                                        custom_js  VARCHAR(16384),
+                                        max_events_per_month integer,
+                                        max_attendees_per_event integer,
+                                        enable_guest_registration boolean DEFAULT true,
+                                        max_guests_per_attendee integer DEFAULT 5,
+                                        default_event_capacity integer DEFAULT 100,
+                                        platform_fee_percentage decimal(6,4),
+                                        created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                        updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                        CONSTRAINT check_default_capacity_positive CHECK (((default_event_capacity IS NULL) OR (default_event_capacity > 0))),
+                                        CONSTRAINT check_max_attendees_positive CHECK (((max_attendees_per_event IS NULL) OR (max_attendees_per_event > 0))),
+                                        CONSTRAINT check_max_events_positive CHECK (((max_events_per_month IS NULL) OR (max_events_per_month > 0))),
+                                        CONSTRAINT check_max_guests_positive CHECK (((max_guests_per_attendee IS NULL) OR (max_guests_per_attendee >= 0))),
+                                        CONSTRAINT tenant_settings_pkey PRIMARY KEY (id),
+                                        CONSTRAINT tenant_settings_tenant_id_key UNIQUE (tenant_id),
+                                        CONSTRAINT fk_tenant_settings__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE,
+                                        CONSTRAINT fk_tenant_settings_organization_id FOREIGN KEY (tenant_organization_id) REFERENCES public.tenant_organization(id) ON DELETE CASCADE
 );
 
 
@@ -1795,21 +1798,21 @@ CREATE SEQUENCE public.discount_code_id_seq
 --
 
 CREATE TABLE public.discount_code (
-    id bigint PRIMARY KEY DEFAULT nextval('public.discount_code_id_seq'::regclass),
-code character varying(50) NOT NULL,
-description character varying(255),
-discount_type character varying(20) DEFAULT 'PERCENT'::character varying NOT NULL,
-discount_value numeric(10,2) NOT NULL,
-max_uses integer,
-uses_count integer DEFAULT 0,
-valid_from timestamp without time zone,
-valid_to timestamp without time zone,
-is_active boolean DEFAULT true,
-created_at timestamp without time zone DEFAULT now(),
-updated_at timestamp without time zone DEFAULT now(),
-event_id bigint NOT NULL,
-tenant_id character varying(255) NOT NULL,
-CONSTRAINT fk_discount_code_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
+                                      id bigint PRIMARY KEY DEFAULT nextval('public.discount_code_id_seq'::regclass),
+                                      code character varying(50) NOT NULL,
+                                      description character varying(255),
+                                      discount_type character varying(20) DEFAULT 'PERCENT'::character varying NOT NULL,
+                                      discount_value numeric(10,2) NOT NULL,
+                                      max_uses integer,
+                                      uses_count integer DEFAULT 0,
+                                      valid_from timestamp without time zone,
+                                      valid_to timestamp without time zone,
+                                      is_active boolean DEFAULT true,
+                                      created_at timestamp without time zone DEFAULT now(),
+                                      updated_at timestamp without time zone DEFAULT now(),
+                                      event_id bigint NOT NULL,
+                                      tenant_id character varying(255) NOT NULL,
+                                      CONSTRAINT fk_discount_code_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
 
 COMMENT ON TABLE public.discount_code IS 'Discount codes for ticket purchases, now per event and tenant.';
@@ -1830,27 +1833,27 @@ COMMENT ON TABLE public.discount_code IS 'Discount codes for ticket purchases';
 --
 
 CREATE TABLE public.user_payment_transaction (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255) NOT NULL,
-transaction_type character varying(20) NOT NULL,
-amount numeric(21,2) NOT NULL,
-currency character varying(3) DEFAULT 'USD'::character varying NOT NULL,
-stripe_payment_intent_id character varying(255),
-stripe_transfer_group character varying(255),
-platform_fee_amount numeric(21,2) DEFAULT 0,
-tenant_amount numeric(21,2) DEFAULT 0,
-status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
-    processing_fee numeric(21,2) DEFAULT 0,
-    metadata jsonb,
-    external_transaction_id character varying(255),
-    payment_method character varying(100),
-    failure_reason text,
-    reconciliation_date date,
-    event_id bigint,
-    ticket_transaction_id bigint,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    CONSTRAINT check_payment_amounts CHECK (((amount >= (0)::numeric) AND (platform_fee_amount >= (0)::numeric) AND (tenant_amount >= (0)::numeric) AND (processing_fee >= (0)::numeric)))
+                                                 id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                 tenant_id character varying(255) NOT NULL,
+                                                 transaction_type character varying(20) NOT NULL,
+                                                 amount numeric(21,2) NOT NULL,
+                                                 currency character varying(3) DEFAULT 'USD'::character varying NOT NULL,
+                                                 stripe_payment_intent_id character varying(255),
+                                                 stripe_transfer_group character varying(255),
+                                                 platform_fee_amount numeric(21,2) DEFAULT 0,
+                                                 tenant_amount numeric(21,2) DEFAULT 0,
+                                                 status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
+                                                 processing_fee numeric(21,2) DEFAULT 0,
+                                                 metadata jsonb,
+                                                 external_transaction_id character varying(255),
+                                                 payment_method character varying(100),
+                                                 failure_reason text,
+                                                 reconciliation_date date,
+                                                 event_id bigint,
+                                                 ticket_transaction_id bigint,
+                                                 created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                                 updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                                 CONSTRAINT check_payment_amounts CHECK (((amount >= (0)::numeric) AND (platform_fee_amount >= (0)::numeric) AND (tenant_amount >= (0)::numeric) AND (processing_fee >= (0)::numeric)))
 );
 
 
@@ -1864,68 +1867,68 @@ status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
 --
 
 CREATE TABLE public.user_subscription (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    stripe_customer_id character varying(255),
-    stripe_subscription_id character varying(255),
-    stripe_price_id character varying(255),
-    stripe_current_period_end timestamp without time zone,
-    status character varying(255) NOT NULL,
-    trial_ends_at timestamp without time zone,
-    cancel_at_period_end boolean DEFAULT false,
-    user_profile_id bigint,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL
+                                          id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                          tenant_id character varying(255),
+                                          stripe_customer_id character varying(255),
+                                          stripe_subscription_id character varying(255),
+                                          stripe_price_id character varying(255),
+                                          stripe_current_period_end timestamp without time zone,
+                                          status character varying(255) NOT NULL,
+                                          trial_ends_at timestamp without time zone,
+                                          cancel_at_period_end boolean DEFAULT false,
+                                          user_profile_id bigint,
+                                          created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                          updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
 
 CREATE TABLE public.user_task (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255),
-title character varying(255) NOT NULL,
-description  VARCHAR(4096),
-status character varying(255) DEFAULT 'PENDING'::character varying NOT NULL,
-priority character varying(255) DEFAULT 'MEDIUM'::character varying NOT NULL,
-    due_date timestamp without time zone,
-    completed boolean DEFAULT false NOT NULL,
-    completion_date timestamp without time zone,
-    estimated_hours numeric(5,2),
-    actual_hours numeric(5,2),
-    progress_percentage integer DEFAULT 0,
-    event_id bigint,
-    assignee_name character varying(255),
-    assignee_contact_phone character varying(50),
-    assignee_contact_email character varying(255),
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    user_id bigint,
-    CONSTRAINT check_completion_logic CHECK (((completed = false) OR ((completed = true) AND (completion_date IS NOT NULL)))),
-    CONSTRAINT user_task_progress_percentage_check CHECK (((progress_percentage >= 0) AND (progress_percentage <= 100)))
+                                  id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                  tenant_id character varying(255),
+                                  title character varying(255) NOT NULL,
+                                  description  VARCHAR(4096),
+                                  status character varying(255) DEFAULT 'PENDING'::character varying NOT NULL,
+                                  priority character varying(255) DEFAULT 'MEDIUM'::character varying NOT NULL,
+                                  due_date timestamp without time zone,
+                                  completed boolean DEFAULT false NOT NULL,
+                                  completion_date timestamp without time zone,
+                                  estimated_hours numeric(5,2),
+                                  actual_hours numeric(5,2),
+                                  progress_percentage integer DEFAULT 0,
+                                  event_id bigint,
+                                  assignee_name character varying(255),
+                                  assignee_contact_phone character varying(50),
+                                  assignee_contact_email character varying(255),
+                                  created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                  updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                  user_id bigint,
+                                  CONSTRAINT check_completion_logic CHECK (((completed = false) OR ((completed = true) AND (completion_date IS NOT NULL)))),
+                                  CONSTRAINT user_task_progress_percentage_check CHECK (((progress_percentage >= 0) AND (progress_percentage <= 100)))
 );
 
 -- Create the executive_committee_team_members table
 CREATE TABLE public.executive_committee_team_members (
-    id BIGSERIAL PRIMARY KEY,
-    first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    designation VARCHAR(255),
-    bio VARCHAR(2048),
-    email VARCHAR(255),
-    priority_order integer,
-    profile_image_url VARCHAR(500),
-    expertise VARCHAR(500),
-    image_background VARCHAR(255),
-    image_style VARCHAR(100),
-    department VARCHAR(100),
-    join_date DATE,
-    is_active BOOLEAN DEFAULT TRUE,
-    linkedin_url VARCHAR(500),
-    twitter_url VARCHAR(500),
-    website_url VARCHAR(500),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                                                         id BIGSERIAL PRIMARY KEY,
+                                                         first_name VARCHAR(255) NOT NULL,
+                                                         last_name VARCHAR(255) NOT NULL,
+                                                         title VARCHAR(255) NOT NULL,
+                                                         designation VARCHAR(255),
+                                                         bio VARCHAR(2048),
+                                                         email VARCHAR(255),
+                                                         priority_order integer,
+                                                         profile_image_url VARCHAR(500),
+                                                         expertise VARCHAR(500),
+                                                         image_background VARCHAR(255),
+                                                         image_style VARCHAR(100),
+                                                         department VARCHAR(100),
+                                                         join_date DATE,
+                                                         is_active BOOLEAN DEFAULT TRUE,
+                                                         linkedin_url VARCHAR(500),
+                                                         twitter_url VARCHAR(500),
+                                                         website_url VARCHAR(500),
+                                                         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                                                         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create indexes for better performance
@@ -2300,11 +2303,11 @@ CREATE TRIGGER generate_enhanced_qr_code_trigger BEFORE INSERT OR UPDATE ON publ
 -- Name: event_ticket_transaction manage_ticket_inventory_trigger; Type: TRIGGER; Schema: public; Owner: giventa_event_management
 --
 
-  CREATE TRIGGER manage_ticket_inventory_trigger
-   AFTER INSERT OR UPDATE OR DELETE
-   ON public.event_ticket_transaction_item
-   FOR EACH ROW
-   EXECUTE FUNCTION public.manage_ticket_inventory();
+CREATE TRIGGER manage_ticket_inventory_trigger
+    AFTER INSERT OR UPDATE OR DELETE
+                    ON public.event_ticket_transaction_item
+                        FOR EACH ROW
+                        EXECUTE FUNCTION public.manage_ticket_inventory();
 
 
 --
@@ -2977,47 +2980,47 @@ ALTER TABLE ONLY public.user_task
 -- Communication and Campaign Logging Tables (added from JDL)
 
 CREATE TABLE public.communication_campaign (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255) NOT NULL,
-name character varying(255) NOT NULL,
-type character varying(50), -- EMAIL, WHATSAPP
-description character varying(1000),
-created_by_id bigint,
-created_at timestamp without time zone NOT NULL,
-scheduled_at timestamp without time zone,
-sent_at timestamp without time zone,
-status character varying(50), -- DRAFT, SCHEDULED, SENT, FAILED
-    CONSTRAINT communication_campaign_pkey PRIMARY KEY (id),
-    CONSTRAINT fk_communication_campaign_created_by FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL
+                                               id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                               tenant_id character varying(255) NOT NULL,
+                                               name character varying(255) NOT NULL,
+                                               type character varying(50), -- EMAIL, WHATSAPP
+                                               description character varying(1000),
+                                               created_by_id bigint,
+                                               created_at timestamp without time zone NOT NULL,
+                                               scheduled_at timestamp without time zone,
+                                               sent_at timestamp without time zone,
+                                               status character varying(50), -- DRAFT, SCHEDULED, SENT, FAILED
+                                               CONSTRAINT communication_campaign_pkey PRIMARY KEY (id),
+                                               CONSTRAINT fk_communication_campaign_created_by FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL
 );
 
 CREATE TABLE public.email_log (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255) NOT NULL,
-recipient_email character varying(255) NOT NULL,
-subject character varying(255),
-body VARCHAR(32768),
-sent_at timestamp without time zone NOT NULL,
-status character varying(50), -- SENT, FAILED, etc.
-type character varying(50), -- TRANSACTIONAL, BULK
-    campaign_id bigint,
-    metadata VARCHAR(8192),
-    CONSTRAINT email_log_pkey PRIMARY KEY (id),
-    CONSTRAINT fk_email_log_campaign FOREIGN KEY (campaign_id) REFERENCES public.communication_campaign(id) ON DELETE SET NULL
+                                  id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                  tenant_id character varying(255) NOT NULL,
+                                  recipient_email character varying(255) NOT NULL,
+                                  subject character varying(255),
+                                  body VARCHAR(32768),
+                                  sent_at timestamp without time zone NOT NULL,
+                                  status character varying(50), -- SENT, FAILED, etc.
+                                  type character varying(50), -- TRANSACTIONAL, BULK
+                                  campaign_id bigint,
+                                  metadata VARCHAR(8192),
+                                  CONSTRAINT email_log_pkey PRIMARY KEY (id),
+                                  CONSTRAINT fk_email_log_campaign FOREIGN KEY (campaign_id) REFERENCES public.communication_campaign(id) ON DELETE SET NULL
 );
 
 CREATE TABLE public.whatsapp_log (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-tenant_id character varying(255) NOT NULL,
-recipient_phone character varying(50) NOT NULL,
-message_body VARCHAR(4096),
-sent_at timestamp without time zone NOT NULL,
-status character varying(50), -- SENT, FAILED, etc.
-type character varying(50), -- TRANSACTIONAL, BULK
-    campaign_id bigint,
-    metadata VARCHAR(8192),
-    CONSTRAINT whatsapp_log_pkey PRIMARY KEY (id),
-    CONSTRAINT fk_whatsapp_log_campaign FOREIGN KEY (campaign_id) REFERENCES public.communication_campaign(id) ON DELETE SET NULL
+                                     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                     tenant_id character varying(255) NOT NULL,
+                                     recipient_phone character varying(50) NOT NULL,
+                                     message_body VARCHAR(4096),
+                                     sent_at timestamp without time zone NOT NULL,
+                                     status character varying(50), -- SENT, FAILED, etc.
+                                     type character varying(50), -- TRANSACTIONAL, BULK
+                                     campaign_id bigint,
+                                     metadata VARCHAR(8192),
+                                     CONSTRAINT whatsapp_log_pkey PRIMARY KEY (id),
+                                     CONSTRAINT fk_whatsapp_log_campaign FOREIGN KEY (campaign_id) REFERENCES public.communication_campaign(id) ON DELETE SET NULL
 );
 
 -- =============================================
@@ -3027,49 +3030,49 @@ type character varying(50), -- TRANSACTIONAL, BULK
 -- Table: event_featured_performers
 -- Stores comprehensive information about featured performers/artists for an event
 CREATE TABLE public.event_featured_performers (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    event_id bigint NOT NULL,
+                                                  id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                  tenant_id character varying(255),
+                                                  event_id bigint NOT NULL,
     -- Basic performer information
-    name varchar(255) NOT NULL,
-    stage_name varchar(255) NULL,
-    role varchar(100) NULL,
+                                                  name varchar(255) NOT NULL,
+                                                  stage_name varchar(255) NULL,
+                                                  role varchar(100) NULL,
     -- Personal details
-    bio text NULL,
-    nationality varchar(100) NULL,
-    date_of_birth date NULL,
+                                                  bio text NULL,
+                                                  nationality varchar(100) NULL,
+                                                  date_of_birth date NULL,
     -- Contact information
-    email varchar(255) NULL,
-    phone varchar(50) NULL,
-    website_url varchar(1024) NULL,
+                                                  email varchar(255) NULL,
+                                                  phone varchar(50) NULL,
+                                                  website_url varchar(1024) NULL,
     -- Media URLs (AWS S3 or other cloud storage)
-    portrait_image_url varchar(1024) NULL,
-    performance_image_url varchar(1024) NULL,
-    gallery_image_urls text NULL, -- JSON array of additional image URLs
+                                                  portrait_image_url varchar(1024) NULL,
+                                                  performance_image_url varchar(1024) NULL,
+                                                  gallery_image_urls text NULL, -- JSON array of additional image URLs
     -- Performance details
-    performance_duration_minutes int4 NULL,
-    performance_order int4 DEFAULT 0 NOT NULL,
-    is_headliner boolean DEFAULT false NOT NULL,
+                                                  performance_duration_minutes int4 NULL,
+                                                  performance_order int4 DEFAULT 0 NOT NULL,
+                                                  is_headliner boolean DEFAULT false NOT NULL,
     -- Social media presence
-    facebook_url varchar(1024) NULL,
-    twitter_url varchar(1024) NULL,
-    instagram_url varchar(1024) NULL,
-    youtube_url varchar(1024) NULL,
-    linkedin_url varchar(1024) NULL,
-    tiktok_url varchar(1024) NULL,
+                                                  facebook_url varchar(1024) NULL,
+                                                  twitter_url varchar(1024) NULL,
+                                                  instagram_url varchar(1024) NULL,
+                                                  youtube_url varchar(1024) NULL,
+                                                  linkedin_url varchar(1024) NULL,
+                                                  tiktok_url varchar(1024) NULL,
     -- Status and metadata
-    is_active boolean DEFAULT true NOT NULL,
-    priority_ranking int4 DEFAULT 0 NOT NULL,
+                                                  is_active boolean DEFAULT true NOT NULL,
+                                                  priority_ranking int4 DEFAULT 0 NOT NULL,
     -- Timestamps
-    created_at timestamp DEFAULT now() NOT NULL,
-    updated_at timestamp DEFAULT now() NOT NULL,
+                                                  created_at timestamp DEFAULT now() NOT NULL,
+                                                  updated_at timestamp DEFAULT now() NOT NULL,
     -- Constraints
-    CONSTRAINT event_featured_performers_pkey PRIMARY KEY (id),
-    CONSTRAINT check_performance_duration CHECK (performance_duration_minutes IS NULL OR performance_duration_minutes > 0),
-    CONSTRAINT check_performance_order CHECK (performance_order >= 0),
-    CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
-    CONSTRAINT check_date_of_birth CHECK (date_of_birth IS NULL OR date_of_birth <= CURRENT_DATE),
-    CONSTRAINT check_url_format_website CHECK (website_url IS NULL OR website_url ~* '^https?://.*'),
+                                                  CONSTRAINT event_featured_performers_pkey PRIMARY KEY (id),
+                                                  CONSTRAINT check_performance_duration CHECK (performance_duration_minutes IS NULL OR performance_duration_minutes > 0),
+                                                  CONSTRAINT check_performance_order CHECK (performance_order >= 0),
+                                                  CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
+                                                  CONSTRAINT check_date_of_birth CHECK (date_of_birth IS NULL OR date_of_birth <= CURRENT_DATE),
+                                                  CONSTRAINT check_url_format_website CHECK (website_url IS NULL OR website_url ~* '^https?://.*'),
     CONSTRAINT check_url_format_portrait CHECK (portrait_image_url IS NULL OR portrait_image_url ~* '^https?://.*'),
     CONSTRAINT check_url_format_performance CHECK (performance_image_url IS NULL OR performance_image_url ~* '^https?://.*'),
     CONSTRAINT check_url_format_facebook CHECK (facebook_url IS NULL OR facebook_url ~* '^https?://.*'),
@@ -3084,51 +3087,51 @@ CREATE TABLE public.event_featured_performers (
 -- Table: event_contacts
 -- Stores booking or organizing contact info for events
 CREATE TABLE public.event_contacts (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    event_id bigint NOT NULL,
-    name varchar(255) NOT NULL,
-    phone varchar(50) NOT NULL,
-    email varchar(255) NULL,
-    created_at timestamp DEFAULT now() NOT NULL,
-    updated_at timestamp DEFAULT now() NOT NULL,
-    CONSTRAINT event_contacts_pkey PRIMARY KEY (id)
+                                       id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                       tenant_id character varying(255),
+                                       event_id bigint NOT NULL,
+                                       name varchar(255) NOT NULL,
+                                       phone varchar(50) NOT NULL,
+                                       email varchar(255) NULL,
+                                       created_at timestamp DEFAULT now() NOT NULL,
+                                       updated_at timestamp DEFAULT now() NOT NULL,
+                                       CONSTRAINT event_contacts_pkey PRIMARY KEY (id)
 );
 
 -- Table: event_sponsors
 -- Stores comprehensive sponsor/company information
 CREATE TABLE public.event_sponsors (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    name varchar(255) NOT NULL,
-    type varchar(100) NOT NULL,
+                                       id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                       tenant_id character varying(255),
+                                       name varchar(255) NOT NULL,
+                                       type varchar(100) NOT NULL,
     -- Company information
-    company_name varchar(255) NULL,
-    tagline varchar(500) NULL,
-    description text NULL,
-    website_url varchar(1024) NULL,
+                                       company_name varchar(255) NULL,
+                                       tagline varchar(500) NULL,
+                                       description text NULL,
+                                       website_url varchar(1024) NULL,
     -- Contact information
-    contact_email varchar(255) NULL,
-    contact_phone varchar(50) NULL,
+                                       contact_email varchar(255) NULL,
+                                       contact_phone varchar(50) NULL,
     -- Media URLs (AWS S3 or other cloud storage)
-    logo_url varchar(1024) NULL,
-    hero_image_url varchar(1024) NULL,
-    banner_image_url varchar(1024) NULL,
+                                       logo_url varchar(1024) NULL,
+                                       hero_image_url varchar(1024) NULL,
+                                       banner_image_url varchar(1024) NULL,
     -- Status and metadata
-    is_active boolean DEFAULT true NOT NULL,
-    priority_ranking int4 DEFAULT 0 NOT NULL,
+                                       is_active boolean DEFAULT true NOT NULL,
+                                       priority_ranking int4 DEFAULT 0 NOT NULL,
     -- Social media links
-    facebook_url varchar(1024) NULL,
-    twitter_url varchar(1024) NULL,
-    linkedin_url varchar(1024) NULL,
-    instagram_url varchar(1024) NULL,
+                                       facebook_url varchar(1024) NULL,
+                                       twitter_url varchar(1024) NULL,
+                                       linkedin_url varchar(1024) NULL,
+                                       instagram_url varchar(1024) NULL,
     -- Timestamps
-    created_at timestamp DEFAULT now() NOT NULL,
-    updated_at timestamp DEFAULT now() NOT NULL,
+                                       created_at timestamp DEFAULT now() NOT NULL,
+                                       updated_at timestamp DEFAULT now() NOT NULL,
     -- Constraints
-    CONSTRAINT event_sponsors_pkey PRIMARY KEY (id),
-    CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
-    CONSTRAINT check_url_format_website CHECK (website_url IS NULL OR website_url ~* '^https?://.*'),
+                                       CONSTRAINT event_sponsors_pkey PRIMARY KEY (id),
+                                       CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
+                                       CONSTRAINT check_url_format_website CHECK (website_url IS NULL OR website_url ~* '^https?://.*'),
     CONSTRAINT check_url_format_logo CHECK (logo_url IS NULL OR logo_url ~* '^https?://.*'),
     CONSTRAINT check_url_format_hero CHECK (hero_image_url IS NULL OR hero_image_url ~* '^https?://.*'),
     CONSTRAINT check_url_format_banner CHECK (banner_image_url IS NULL OR banner_image_url ~* '^https?://.*'),
@@ -3142,39 +3145,39 @@ CREATE TABLE public.event_sponsors (
 -- Table: event_sponsors_join
 -- Join table for many-to-many relationship between events and sponsors
 CREATE TABLE public.event_sponsors_join (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    event_id bigint NOT NULL,
-    sponsor_id bigint NOT NULL,
-    created_at timestamp DEFAULT now() NOT NULL,
-    CONSTRAINT event_sponsors_join_pkey PRIMARY KEY (id),
-    CONSTRAINT unique_event_sponsor UNIQUE (event_id, sponsor_id)
+                                            id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                            tenant_id character varying(255),
+                                            event_id bigint NOT NULL,
+                                            sponsor_id bigint NOT NULL,
+                                            created_at timestamp DEFAULT now() NOT NULL,
+                                            CONSTRAINT event_sponsors_join_pkey PRIMARY KEY (id),
+                                            CONSTRAINT unique_event_sponsor UNIQUE (event_id, sponsor_id)
 );
 
 -- Table: event_emails
 -- For general event-level emails (for public or organizers)
 CREATE TABLE public.event_emails (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    event_id bigint NOT NULL,
-    email varchar(255) NOT NULL,
-    created_at timestamp DEFAULT now() NOT NULL,
-    updated_at timestamp DEFAULT now() NOT NULL,
-    CONSTRAINT event_emails_pkey PRIMARY KEY (id)
+                                     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                     tenant_id character varying(255),
+                                     event_id bigint NOT NULL,
+                                     email varchar(255) NOT NULL,
+                                     created_at timestamp DEFAULT now() NOT NULL,
+                                     updated_at timestamp DEFAULT now() NOT NULL,
+                                     CONSTRAINT event_emails_pkey PRIMARY KEY (id)
 );
 
 -- Table: event_program_directors
 -- Stores info about the event's program director
 CREATE TABLE public.event_program_directors (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    event_id bigint NOT NULL,
-    name varchar(255) NOT NULL,
-    photo_url varchar(1024) NULL,
-    bio text NULL,
-    created_at timestamp DEFAULT now() NOT NULL,
-    updated_at timestamp DEFAULT now() NOT NULL,
-    CONSTRAINT event_program_directors_pkey PRIMARY KEY (id)
+                                                id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                tenant_id character varying(255),
+                                                event_id bigint NOT NULL,
+                                                name varchar(255) NOT NULL,
+                                                photo_url varchar(1024) NULL,
+                                                bio text NULL,
+                                                created_at timestamp DEFAULT now() NOT NULL,
+                                                updated_at timestamp DEFAULT now() NOT NULL,
+                                                CONSTRAINT event_program_directors_pkey PRIMARY KEY (id)
 );
 
 -- =============================================

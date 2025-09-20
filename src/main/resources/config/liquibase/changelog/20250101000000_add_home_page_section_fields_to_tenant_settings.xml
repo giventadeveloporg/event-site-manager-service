@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Add home page section visibility fields to TenantSettings table.
+    -->
+    <changeSet id="20250101000000-1" author="system">
+        <addColumn tableName="tenant_settings">
+            <column name="show_events_section_in_home_page" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20250101000000-2" author="system">
+        <addColumn tableName="tenant_settings">
+            <column name="show_team_members_section_in_home_page" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20250101000000-3" author="system">
+        <addColumn tableName="tenant_settings">
+            <column name="show_sponsors_section_in_home_page" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>
