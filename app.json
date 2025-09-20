@@ -1,0 +1,31 @@
+{
+  "name": "NextJS Template Boot",
+  "description": "JHipster Spring Boot application for NextJS Template",
+  "image": "heroku/java",
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini"
+    }
+  ],
+  "env": {
+    "SPRING_PROFILES_ACTIVE": {
+      "description": "Spring profile to use",
+      "value": "heroku"
+    },
+    "JHIPSTER_JWT_SECRET": {
+      "description": "JWT secret key for authentication (generate with: openssl rand -base64 64)",
+      "generator": "secret"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/java"
+    }
+  ]
+}
