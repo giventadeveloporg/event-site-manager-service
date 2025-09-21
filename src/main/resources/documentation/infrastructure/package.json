@@ -1,0 +1,39 @@
+{
+  "name": "malayalees-infrastructure",
+  "version": "1.0.0",
+  "description": "AWS CDK infrastructure for Malayalees multi-tenant application",
+  "main": "lib/cdk-stack.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "deploy": "cdk deploy",
+    "destroy": "cdk destroy",
+    "synth": "cdk synth",
+    "diff": "cdk diff"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.10",
+    "@types/node": "10.17.27",
+    "jest": "^26.4.2",
+    "ts-jest": "^26.2.0",
+    "aws-cdk": "2.50.0",
+    "typescript": "~3.9.7"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-ec2": "2.50.0",
+    "@aws-cdk/aws-ecs": "2.50.0",
+    "@aws-cdk/aws-ecs-patterns": "2.50.0",
+    "@aws-cdk/aws-rds": "2.50.0",
+    "@aws-cdk/aws-elasticache": "2.50.0",
+    "@aws-cdk/aws-elasticloadbalancingv2": "2.50.0",
+    "@aws-cdk/aws-cloudwatch": "2.50.0",
+    "@aws-cdk/aws-iam": "2.50.0",
+    "@aws-cdk/aws-logs": "2.50.0",
+    "@aws-cdk/aws-s3": "2.50.0",
+    "@aws-cdk/aws-ssm": "2.50.0",
+    "@aws-cdk/core": "2.50.0",
+    "@aws-cdk/assertions": "2.50.0"
+  }
+}

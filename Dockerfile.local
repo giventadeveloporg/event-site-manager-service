@@ -1,33 +1,11 @@
 # ===================================================================
-# Multi-stage Dockerfile for Spring Boot Application
-# Optimized for AWS deployment with minimal image size
+# Local Development Dockerfile
+# Optimized for local testing and development
 # ===================================================================
 
-# Stage 1: Build the application
-FROM openjdk:11-jdk-slim AS builder
-
-# Set working directory
-WORKDIR /app
-
-# Copy Maven wrapper and pom.xml
-COPY mvnw .
-COPY mvnw.cmd .
-COPY .mvn .mvn
-COPY pom.xml .
-
-# Download dependencies (this layer will be cached if pom.xml doesn't change)
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
-
-# Copy source code
-COPY src src
-
-# Build the application
-RUN ./mvnw clean package -Pprod-aws -DskipTests -q
-
-# Stage 2: Runtime image
 FROM openjdk:11-jre-slim
 
-# Install necessary packages
+# Install curl for health checks
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
@@ -39,8 +17,8 @@ RUN groupadd -r spring && useradd -r -g spring spring
 # Set working directory
 WORKDIR /app
 
-# Copy the JAR file from builder stage
-COPY --from=builder /app/target/*.jar app.jar
+# Copy the JAR file (will be mounted as volume in docker-compose)
+# COPY target/*.jar app.jar
 
 # Create logs directory
 RUN mkdir -p /var/log/spring-boot-app && \
@@ -59,13 +37,13 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8080/management/health || exit 1
 
-# JVM optimization for containers
+# JVM optimization for local development
 ENV JAVA_OPTS="-XX:+UseContainerSupport \
     -XX:MaxRAMPercentage=75.0 \
     -XX:+UseG1GC \
-    -XX:+UseStringDeduplication \
     -Djava.security.egd=file:/dev/./urandom \
-    -Dspring.profiles.active=prod-aws"
+    -Dspring.profiles.active=local \
+    -Dspring.liquibase.enabled=true"
 
 # Run the application
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/target/*.jar"]
