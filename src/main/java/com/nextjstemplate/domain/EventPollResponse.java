@@ -29,6 +29,13 @@ public class EventPollResponse implements Serializable {
     @Column(name = "tenant_id", length = 255)
     private String tenantId;
 
+    @Size(max = 1000)
+    @Column(name = "response_value", length = 1000)
+    private String responseValue;
+
+    @Column(name = "is_anonymous")
+    private Boolean isAnonymous = false;
+
     @Size(max = 255)
     @Column(name = "comment", length = 255)
     private String comment;
@@ -159,6 +166,32 @@ public class EventPollResponse implements Serializable {
         return this;
     }
 
+    public String getResponseValue() {
+        return this.responseValue;
+    }
+
+    public EventPollResponse responseValue(String responseValue) {
+        this.setResponseValue(responseValue);
+        return this;
+    }
+
+    public void setResponseValue(String responseValue) {
+        this.responseValue = responseValue;
+    }
+
+    public Boolean getIsAnonymous() {
+        return this.isAnonymous;
+    }
+
+    public EventPollResponse isAnonymous(Boolean isAnonymous) {
+        this.setIsAnonymous(isAnonymous);
+        return this;
+    }
+
+    public void setIsAnonymous(Boolean isAnonymous) {
+        this.isAnonymous = isAnonymous;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -184,6 +217,8 @@ public class EventPollResponse implements Serializable {
         return "EventPollResponse{" +
             "id=" + getId() +
             ", tenantId='" + getTenantId() + "'" +
+            ", responseValue='" + getResponseValue() + "'" +
+            ", isAnonymous='" + getIsAnonymous() + "'" +
             ", comment='" + getComment() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

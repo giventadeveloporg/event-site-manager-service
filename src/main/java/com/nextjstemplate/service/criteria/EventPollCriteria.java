@@ -31,6 +31,14 @@ public class EventPollCriteria implements Serializable, Criteria {
 
     private BooleanFilter isActive;
 
+    private BooleanFilter isAnonymous;
+
+    private BooleanFilter allowMultipleChoices;
+
+    private IntegerFilter maxResponsesPerUser;
+
+    private StringFilter resultsVisibleTo;
+
     private ZonedDateTimeFilter startDate;
 
     private ZonedDateTimeFilter endDate;
@@ -53,6 +61,10 @@ public class EventPollCriteria implements Serializable, Criteria {
         this.title = other.title == null ? null : other.title.copy();
         this.description = other.description == null ? null : other.description.copy();
         this.isActive = other.isActive == null ? null : other.isActive.copy();
+        this.isAnonymous = other.isAnonymous == null ? null : other.isAnonymous.copy();
+        this.allowMultipleChoices = other.allowMultipleChoices == null ? null : other.allowMultipleChoices.copy();
+        this.maxResponsesPerUser = other.maxResponsesPerUser == null ? null : other.maxResponsesPerUser.copy();
+        this.resultsVisibleTo = other.resultsVisibleTo == null ? null : other.resultsVisibleTo.copy();
         this.startDate = other.startDate == null ? null : other.startDate.copy();
         this.endDate = other.endDate == null ? null : other.endDate.copy();
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
@@ -140,6 +152,66 @@ public class EventPollCriteria implements Serializable, Criteria {
 
     public void setIsActive(BooleanFilter isActive) {
         this.isActive = isActive;
+    }
+
+    public BooleanFilter getIsAnonymous() {
+        return isAnonymous;
+    }
+
+    public BooleanFilter isAnonymous() {
+        if (isAnonymous == null) {
+            isAnonymous = new BooleanFilter();
+        }
+        return isAnonymous;
+    }
+
+    public void setIsAnonymous(BooleanFilter isAnonymous) {
+        this.isAnonymous = isAnonymous;
+    }
+
+    public BooleanFilter getAllowMultipleChoices() {
+        return allowMultipleChoices;
+    }
+
+    public BooleanFilter allowMultipleChoices() {
+        if (allowMultipleChoices == null) {
+            allowMultipleChoices = new BooleanFilter();
+        }
+        return allowMultipleChoices;
+    }
+
+    public void setAllowMultipleChoices(BooleanFilter allowMultipleChoices) {
+        this.allowMultipleChoices = allowMultipleChoices;
+    }
+
+    public IntegerFilter getMaxResponsesPerUser() {
+        return maxResponsesPerUser;
+    }
+
+    public IntegerFilter maxResponsesPerUser() {
+        if (maxResponsesPerUser == null) {
+            maxResponsesPerUser = new IntegerFilter();
+        }
+        return maxResponsesPerUser;
+    }
+
+    public void setMaxResponsesPerUser(IntegerFilter maxResponsesPerUser) {
+        this.maxResponsesPerUser = maxResponsesPerUser;
+    }
+
+    public StringFilter getResultsVisibleTo() {
+        return resultsVisibleTo;
+    }
+
+    public StringFilter resultsVisibleTo() {
+        if (resultsVisibleTo == null) {
+            resultsVisibleTo = new StringFilter();
+        }
+        return resultsVisibleTo;
+    }
+
+    public void setResultsVisibleTo(StringFilter resultsVisibleTo) {
+        this.resultsVisibleTo = resultsVisibleTo;
     }
 
     public ZonedDateTimeFilter getStartDate() {
@@ -255,6 +327,10 @@ public class EventPollCriteria implements Serializable, Criteria {
             Objects.equals(title, that.title) &&
             Objects.equals(description, that.description) &&
             Objects.equals(isActive, that.isActive) &&
+            Objects.equals(isAnonymous, that.isAnonymous) &&
+            Objects.equals(allowMultipleChoices, that.allowMultipleChoices) &&
+            Objects.equals(maxResponsesPerUser, that.maxResponsesPerUser) &&
+            Objects.equals(resultsVisibleTo, that.resultsVisibleTo) &&
             Objects.equals(startDate, that.startDate) &&
             Objects.equals(endDate, that.endDate) &&
             Objects.equals(createdAt, that.createdAt) &&
@@ -273,6 +349,10 @@ public class EventPollCriteria implements Serializable, Criteria {
             title,
             description,
             isActive,
+            isAnonymous,
+            allowMultipleChoices,
+            maxResponsesPerUser,
+            resultsVisibleTo,
             startDate,
             endDate,
             createdAt,
@@ -292,6 +372,10 @@ public class EventPollCriteria implements Serializable, Criteria {
             (title != null ? "title=" + title + ", " : "") +
             (description != null ? "description=" + description + ", " : "") +
             (isActive != null ? "isActive=" + isActive + ", " : "") +
+            (isAnonymous != null ? "isAnonymous=" + isAnonymous + ", " : "") +
+            (allowMultipleChoices != null ? "allowMultipleChoices=" + allowMultipleChoices + ", " : "") +
+            (maxResponsesPerUser != null ? "maxResponsesPerUser=" + maxResponsesPerUser + ", " : "") +
+            (resultsVisibleTo != null ? "resultsVisibleTo=" + resultsVisibleTo + ", " : "") +
             (startDate != null ? "startDate=" + startDate + ", " : "") +
             (endDate != null ? "endDate=" + endDate + ", " : "") +
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +

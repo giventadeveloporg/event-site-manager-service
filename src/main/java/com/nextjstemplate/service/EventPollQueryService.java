@@ -102,6 +102,18 @@ public class EventPollQueryService extends QueryService<EventPoll> {
             if (criteria.getIsActive() != null) {
                 specification = specification.and(buildSpecification(criteria.getIsActive(), EventPoll_.isActive));
             }
+            if (criteria.getIsAnonymous() != null) {
+                specification = specification.and(buildSpecification(criteria.getIsAnonymous(), EventPoll_.isAnonymous));
+            }
+            if (criteria.getAllowMultipleChoices() != null) {
+                specification = specification.and(buildSpecification(criteria.getAllowMultipleChoices(), EventPoll_.allowMultipleChoices));
+            }
+            if (criteria.getMaxResponsesPerUser() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getMaxResponsesPerUser(), EventPoll_.maxResponsesPerUser));
+            }
+            if (criteria.getResultsVisibleTo() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getResultsVisibleTo(), EventPoll_.resultsVisibleTo));
+            }
             if (criteria.getStartDate() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getStartDate(), EventPoll_.startDate));
             }

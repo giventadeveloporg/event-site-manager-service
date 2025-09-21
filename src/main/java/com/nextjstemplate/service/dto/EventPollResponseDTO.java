@@ -16,6 +16,11 @@ public class EventPollResponseDTO implements Serializable {
     @Size(max = 255)
     private String tenantId;
 
+    @Size(max = 1000)
+    private String responseValue;
+
+    private Boolean isAnonymous;
+
     @Size(max = 255)
     private String comment;
 
@@ -95,6 +100,22 @@ public class EventPollResponseDTO implements Serializable {
         this.user = user;
     }
 
+    public String getResponseValue() {
+        return responseValue;
+    }
+
+    public void setResponseValue(String responseValue) {
+        this.responseValue = responseValue;
+    }
+
+    public Boolean getIsAnonymous() {
+        return isAnonymous;
+    }
+
+    public void setIsAnonymous(Boolean isAnonymous) {
+        this.isAnonymous = isAnonymous;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -122,6 +143,8 @@ public class EventPollResponseDTO implements Serializable {
         return "EventPollResponseDTO{" +
             "id=" + getId() +
             ", tenantId='" + getTenantId() + "'" +
+            ", responseValue='" + getResponseValue() + "'" +
+            ", isAnonymous='" + getIsAnonymous() + "'" +
             ", comment='" + getComment() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

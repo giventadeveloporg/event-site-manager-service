@@ -96,6 +96,12 @@ public class EventPollResponseQueryService extends QueryService<EventPollRespons
             if (criteria.getTenantId() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getTenantId(), EventPollResponse_.tenantId));
             }
+            if (criteria.getResponseValue() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getResponseValue(), EventPollResponse_.responseValue));
+            }
+            if (criteria.getIsAnonymous() != null) {
+                specification = specification.and(buildSpecification(criteria.getIsAnonymous(), EventPollResponse_.isAnonymous));
+            }
             if (criteria.getComment() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getComment(), EventPollResponse_.comment));
             }

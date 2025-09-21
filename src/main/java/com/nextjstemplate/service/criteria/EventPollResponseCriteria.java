@@ -25,6 +25,10 @@ public class EventPollResponseCriteria implements Serializable, Criteria {
 
     private StringFilter tenantId;
 
+    private StringFilter responseValue;
+
+    private BooleanFilter isAnonymous;
+
     private StringFilter comment;
 
     private ZonedDateTimeFilter createdAt;
@@ -44,6 +48,8 @@ public class EventPollResponseCriteria implements Serializable, Criteria {
     public EventPollResponseCriteria(EventPollResponseCriteria other) {
         this.id = other.id == null ? null : other.id.copy();
         this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
+        this.responseValue = other.responseValue == null ? null : other.responseValue.copy();
+        this.isAnonymous = other.isAnonymous == null ? null : other.isAnonymous.copy();
         this.comment = other.comment == null ? null : other.comment.copy();
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
@@ -86,6 +92,36 @@ public class EventPollResponseCriteria implements Serializable, Criteria {
 
     public void setTenantId(StringFilter tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public StringFilter getResponseValue() {
+        return responseValue;
+    }
+
+    public StringFilter responseValue() {
+        if (responseValue == null) {
+            responseValue = new StringFilter();
+        }
+        return responseValue;
+    }
+
+    public void setResponseValue(StringFilter responseValue) {
+        this.responseValue = responseValue;
+    }
+
+    public BooleanFilter getIsAnonymous() {
+        return isAnonymous;
+    }
+
+    public BooleanFilter isAnonymous() {
+        if (isAnonymous == null) {
+            isAnonymous = new BooleanFilter();
+        }
+        return isAnonymous;
+    }
+
+    public void setIsAnonymous(BooleanFilter isAnonymous) {
+        this.isAnonymous = isAnonymous;
     }
 
     public StringFilter getComment() {
@@ -198,6 +234,8 @@ public class EventPollResponseCriteria implements Serializable, Criteria {
         return (
             Objects.equals(id, that.id) &&
             Objects.equals(tenantId, that.tenantId) &&
+            Objects.equals(responseValue, that.responseValue) &&
+            Objects.equals(isAnonymous, that.isAnonymous) &&
             Objects.equals(comment, that.comment) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
@@ -210,7 +248,7 @@ public class EventPollResponseCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, tenantId, comment, createdAt, updatedAt, pollId, pollOptionId, userId, distinct);
+        return Objects.hash(id, tenantId, responseValue, isAnonymous, comment, createdAt, updatedAt, pollId, pollOptionId, userId, distinct);
     }
 
     // prettier-ignore
@@ -219,6 +257,8 @@ public class EventPollResponseCriteria implements Serializable, Criteria {
         return "EventPollResponseCriteria{" +
             (id != null ? "id=" + id + ", " : "") +
             (tenantId != null ? "tenantId=" + tenantId + ", " : "") +
+            (responseValue != null ? "responseValue=" + responseValue + ", " : "") +
+            (isAnonymous != null ? "isAnonymous=" + isAnonymous + ", " : "") +
             (comment != null ? "comment=" + comment + ", " : "") +
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +

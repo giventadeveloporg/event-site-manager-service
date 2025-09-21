@@ -41,6 +41,19 @@ public class EventPoll implements Serializable {
     @Column(name = "is_active")
     private Boolean isActive;
 
+    @Column(name = "is_anonymous")
+    private Boolean isAnonymous = false;
+
+    @Column(name = "allow_multiple_choices")
+    private Boolean allowMultipleChoices = false;
+
+    @Column(name = "max_responses_per_user")
+    private Integer maxResponsesPerUser = 1;
+
+    @Size(max = 50)
+    @Column(name = "results_visible_to", length = 50)
+    private String resultsVisibleTo = "ALL";
+
     @NotNull
     @Column(name = "start_date", nullable = false)
     private ZonedDateTime startDate;
@@ -209,6 +222,58 @@ public class EventPoll implements Serializable {
         return this;
     }
 
+    public Boolean getIsAnonymous() {
+        return this.isAnonymous;
+    }
+
+    public EventPoll isAnonymous(Boolean isAnonymous) {
+        this.setIsAnonymous(isAnonymous);
+        return this;
+    }
+
+    public void setIsAnonymous(Boolean isAnonymous) {
+        this.isAnonymous = isAnonymous;
+    }
+
+    public Boolean getAllowMultipleChoices() {
+        return this.allowMultipleChoices;
+    }
+
+    public EventPoll allowMultipleChoices(Boolean allowMultipleChoices) {
+        this.setAllowMultipleChoices(allowMultipleChoices);
+        return this;
+    }
+
+    public void setAllowMultipleChoices(Boolean allowMultipleChoices) {
+        this.allowMultipleChoices = allowMultipleChoices;
+    }
+
+    public Integer getMaxResponsesPerUser() {
+        return this.maxResponsesPerUser;
+    }
+
+    public EventPoll maxResponsesPerUser(Integer maxResponsesPerUser) {
+        this.setMaxResponsesPerUser(maxResponsesPerUser);
+        return this;
+    }
+
+    public void setMaxResponsesPerUser(Integer maxResponsesPerUser) {
+        this.maxResponsesPerUser = maxResponsesPerUser;
+    }
+
+    public String getResultsVisibleTo() {
+        return this.resultsVisibleTo;
+    }
+
+    public EventPoll resultsVisibleTo(String resultsVisibleTo) {
+        this.setResultsVisibleTo(resultsVisibleTo);
+        return this;
+    }
+
+    public void setResultsVisibleTo(String resultsVisibleTo) {
+        this.resultsVisibleTo = resultsVisibleTo;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -237,6 +302,10 @@ public class EventPoll implements Serializable {
             ", title='" + getTitle() + "'" +
             ", description='" + getDescription() + "'" +
             ", isActive='" + getIsActive() + "'" +
+            ", isAnonymous='" + getIsAnonymous() + "'" +
+            ", allowMultipleChoices='" + getAllowMultipleChoices() + "'" +
+            ", maxResponsesPerUser='" + getMaxResponsesPerUser() + "'" +
+            ", resultsVisibleTo='" + getResultsVisibleTo() + "'" +
             ", startDate='" + getStartDate() + "'" +
             ", endDate='" + getEndDate() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +

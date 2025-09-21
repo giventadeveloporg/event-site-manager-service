@@ -25,6 +25,15 @@ public class EventPollDTO implements Serializable {
 
     private Boolean isActive;
 
+    private Boolean isAnonymous;
+
+    private Boolean allowMultipleChoices;
+
+    private Integer maxResponsesPerUser;
+
+    @Size(max = 50)
+    private String resultsVisibleTo;
+
     @NotNull
     private ZonedDateTime startDate;
 
@@ -128,6 +137,38 @@ public class EventPollDTO implements Serializable {
         this.createdBy = createdBy;
     }
 
+    public Boolean getIsAnonymous() {
+        return isAnonymous;
+    }
+
+    public void setIsAnonymous(Boolean isAnonymous) {
+        this.isAnonymous = isAnonymous;
+    }
+
+    public Boolean getAllowMultipleChoices() {
+        return allowMultipleChoices;
+    }
+
+    public void setAllowMultipleChoices(Boolean allowMultipleChoices) {
+        this.allowMultipleChoices = allowMultipleChoices;
+    }
+
+    public Integer getMaxResponsesPerUser() {
+        return maxResponsesPerUser;
+    }
+
+    public void setMaxResponsesPerUser(Integer maxResponsesPerUser) {
+        this.maxResponsesPerUser = maxResponsesPerUser;
+    }
+
+    public String getResultsVisibleTo() {
+        return resultsVisibleTo;
+    }
+
+    public void setResultsVisibleTo(String resultsVisibleTo) {
+        this.resultsVisibleTo = resultsVisibleTo;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -158,6 +199,10 @@ public class EventPollDTO implements Serializable {
             ", title='" + getTitle() + "'" +
             ", description='" + getDescription() + "'" +
             ", isActive='" + getIsActive() + "'" +
+            ", isAnonymous='" + getIsAnonymous() + "'" +
+            ", allowMultipleChoices='" + getAllowMultipleChoices() + "'" +
+            ", maxResponsesPerUser='" + getMaxResponsesPerUser() + "'" +
+            ", resultsVisibleTo='" + getResultsVisibleTo() + "'" +
             ", startDate='" + getStartDate() + "'" +
             ", endDate='" + getEndDate() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
