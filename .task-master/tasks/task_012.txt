@@ -1,0 +1,14 @@
+# Task ID: 12
+# Title: Implement WhatsApp Analytics
+# Status: pending
+# Dependencies: 3 ⏱️
+# Priority: low
+# Description: Add functionality to retrieve analytics about WhatsApp message usage.
+# Details:
+- Add getAnalytics method to TwilioWhatsAppService
+- Create WhatsAppAnalytics DTO
+- Implement analytics endpoint in controller
+- Add query logic for message statistics
+
+# Test Strategy:
+Test retrieving analytics for different time periods, verify calculation of metrics.

@@ -1,0 +1,259 @@
+{
+  "meta": {
+    "projectName": "Task Master",
+    "version": "1.5.0",
+    "source": ".task-master/PRD.txt",
+    "description": "Tasks generated from PRD",
+    "totalTasksGenerated": 20,
+    "tasksIncluded": 20
+  },
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Database Schema Updates",
+      "description": "Add Twilio credential fields to the tenant_settings table and update the TenantSettingsDTO schema.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "- Add columns to tenant_settings table: twilio_account_sid, twilio_auth_token, twilio_whatsapp_from, whatsapp_webhook_url, whatsapp_webhook_token\n- Add appropriate comments to new columns\n- Update TenantSettingsDTO to include new fields with proper validation",
+      "testStrategy": "Verify that the database schema changes are applied correctly and the DTO can serialize/deserialize the new fields properly."
+    },
+    {
+      "id": 2,
+      "title": "Implement Encryption Service",
+      "description": "Create a service to securely encrypt and decrypt sensitive Twilio credentials and webhook tokens.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "- Implement EncryptionService with encrypt and decrypt methods\n- Use AES/GCM/NoPadding encryption algorithm\n- Configure encryption keys via environment variables\n- Create custom EncryptionException class",
+      "testStrategy": "Test encryption and decryption of sample data, verify that encrypted values can be properly decrypted, and test error handling for invalid inputs."
+    },
+    {
+      "id": 3,
+      "title": "Create Twilio WhatsApp Service",
+      "description": "Implement the core service to integrate with Twilio's WhatsApp Business API.",
+      "status": "pending",
+      "dependencies": [
+        1,
+        2
+      ],
+      "priority": "high",
+      "details": "- Create TwilioWhatsAppService class\n- Implement methods for retrieving tenant credentials\n- Add methods for initializing Twilio client\n- Implement single message sending functionality\n- Add message logging to whatsapp_log table",
+      "testStrategy": "Test the service with mock Twilio client to verify proper initialization and message sending. Verify logs are created correctly."
+    },
+    {
+      "id": 4,
+      "title": "Implement WhatsApp Controller",
+      "description": "Create REST API endpoints for WhatsApp messaging functionality.",
+      "status": "pending",
+      "dependencies": [
+        3
+      ],
+      "priority": "high",
+      "details": "- Create WhatsAppController with appropriate endpoints\n- Implement send-message endpoint\n- Add proper error handling\n- Include tenant ID header validation\n- Configure request/response DTOs",
+      "testStrategy": "Test API endpoints with valid and invalid requests, verify proper response codes and error handling."
+    },
+    {
+      "id": 5,
+      "title": "Create Message DTOs",
+      "description": "Implement data transfer objects for WhatsApp message requests and responses.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "- Create WhatsAppMessageRequest DTO\n- Implement WhatsAppMessageResponse DTO\n- Add validation annotations\n- Create message type enums",
+      "testStrategy": "Test serialization/deserialization of DTOs and validation of required fields."
+    },
+    {
+      "id": 6,
+      "title": "Implement Webhook Handler",
+      "description": "Create webhook endpoint to receive and process delivery receipts from Twilio.",
+      "status": "pending",
+      "dependencies": [
+        3,
+        4
+      ],
+      "priority": "high",
+      "details": "- Create WhatsAppWebhookController\n- Implement webhook signature validation\n- Add tenant ID extraction logic\n- Process delivery status updates\n- Update message logs with delivery status",
+      "testStrategy": "Test webhook endpoint with sample Twilio payloads, verify signature validation, and check that message status is updated correctly."
+    },
+    {
+      "id": 7,
+      "title": "Implement Webhook Signature Validator",
+      "description": "Create a component to validate Twilio webhook signatures for security.",
+      "status": "pending",
+      "dependencies": [
+        2
+      ],
+      "priority": "high",
+      "details": "- Create WebhookSignatureValidator component\n- Implement signature validation using Twilio's RequestValidator\n- Add proper error handling and logging",
+      "testStrategy": "Test with valid and invalid signatures to ensure proper validation."
+    },
+    {
+      "id": 8,
+      "title": "Implement Bulk Messaging",
+      "description": "Add functionality to send WhatsApp messages to multiple recipients.",
+      "status": "pending",
+      "dependencies": [
+        3,
+        5
+      ],
+      "priority": "medium",
+      "details": "- Add sendBulkMessages method to TwilioWhatsAppService\n- Create BulkWhatsAppRequest and BulkRecipient DTOs\n- Implement BulkWhatsAppResponse DTO\n- Add rate limiting and error handling\n- Implement send-bulk endpoint in controller",
+      "testStrategy": "Test bulk sending with various recipient counts, verify rate limiting works, and check error handling for partial failures."
+    },
+    {
+      "id": 9,
+      "title": "Implement Delivery Status Checking",
+      "description": "Add functionality to check the delivery status of sent messages.",
+      "status": "pending",
+      "dependencies": [
+        3
+      ],
+      "priority": "medium",
+      "details": "- Add checkDeliveryStatus method to TwilioWhatsAppService\n- Create DeliveryStatus DTO\n- Implement delivery-status endpoint in controller",
+      "testStrategy": "Test retrieving delivery status for various message states (sent, delivered, failed)."
+    },
+    {
+      "id": 10,
+      "title": "Implement Connection Testing",
+      "description": "Add functionality to test Twilio credentials and connection.",
+      "status": "pending",
+      "dependencies": [
+        3
+      ],
+      "priority": "medium",
+      "details": "- Add testConnection method to TwilioWhatsAppService\n- Create ConnectionTestResult DTO\n- Implement test-connection endpoint in controller",
+      "testStrategy": "Test with valid and invalid credentials to verify proper connection testing."
+    },
+    {
+      "id": 11,
+      "title": "Implement Template Management",
+      "description": "Add functionality to manage WhatsApp message templates.",
+      "status": "pending",
+      "dependencies": [
+        3,
+        5
+      ],
+      "priority": "medium",
+      "details": "- Add getApprovedTemplates method to TwilioWhatsAppService\n- Add createTemplate method to TwilioWhatsAppService\n- Create MessageTemplate and TemplateComponent DTOs\n- Create CreateTemplateRequest DTO\n- Implement templates endpoints in controller",
+      "testStrategy": "Test retrieving and creating templates, verify proper template structure."
+    },
+    {
+      "id": 12,
+      "title": "Implement WhatsApp Analytics",
+      "description": "Add functionality to retrieve analytics about WhatsApp message usage.",
+      "status": "pending",
+      "dependencies": [
+        3
+      ],
+      "priority": "low",
+      "details": "- Add getAnalytics method to TwilioWhatsAppService\n- Create WhatsAppAnalytics DTO\n- Implement analytics endpoint in controller\n- Add query logic for message statistics",
+      "testStrategy": "Test retrieving analytics for different time periods, verify calculation of metrics."
+    },
+    {
+      "id": 13,
+      "title": "Implement Custom Exceptions",
+      "description": "Create custom exception classes for WhatsApp-related errors.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "- Create WhatsAppNotEnabledException\n- Create WhatsAppConfigurationException\n- Create WhatsAppRateLimitException",
+      "testStrategy": "Verify that exceptions are thrown in appropriate scenarios."
+    },
+    {
+      "id": 14,
+      "title": "Implement Global Exception Handler",
+      "description": "Create a global exception handler for WhatsApp-related errors.",
+      "status": "pending",
+      "dependencies": [
+        13
+      ],
+      "priority": "medium",
+      "details": "- Create WhatsAppExceptionHandler with @RestControllerAdvice\n- Add handlers for each custom exception type\n- Return appropriate HTTP status codes and error messages",
+      "testStrategy": "Test that exceptions are properly caught and formatted in API responses."
+    },
+    {
+      "id": 15,
+      "title": "Configure Application Properties",
+      "description": "Set up application properties for Twilio and WhatsApp configuration.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "- Add Twilio encryption key properties\n- Add webhook encryption key properties\n- Configure WhatsApp webhook base URL\n- Set up rate limiting and retry parameters\n- Configure logging for WhatsApp components",
+      "testStrategy": "Verify that properties are correctly loaded and used by the application."
+    },
+    {
+      "id": 16,
+      "title": "Implement WebhookPayload DTO",
+      "description": "Create data transfer object for webhook payloads from Twilio.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "- Create WebhookPayload DTO with fields for messageId, status, timestamp, and metadata\n- Add appropriate getters and setters",
+      "testStrategy": "Test parsing sample webhook payloads from Twilio documentation."
+    },
+    {
+      "id": 17,
+      "title": "Integration Test Suite",
+      "description": "Create comprehensive integration tests for the WhatsApp integration.",
+      "status": "pending",
+      "dependencies": [
+        4,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "priority": "medium",
+      "details": "- Test end-to-end message sending flow\n- Test webhook processing\n- Test bulk message sending\n- Test template management\n- Test with Twilio sandbox environment",
+      "testStrategy": "Create integration test suite that uses Twilio test credentials and sandbox environment."
+    },
+    {
+      "id": 18,
+      "title": "Implement Rate Limiting and Retry Logic",
+      "description": "Add rate limiting and retry mechanisms for Twilio API calls.",
+      "status": "pending",
+      "dependencies": [
+        3
+      ],
+      "priority": "medium",
+      "details": "- Add delay between messages in bulk sending\n- Implement exponential backoff for failed requests\n- Add retry logic for temporary failures\n- Configure maximum retry attempts",
+      "testStrategy": "Test with simulated failures to verify retry behavior and rate limiting."
+    },
+    {
+      "id": 19,
+      "title": "Documentation",
+      "description": "Create comprehensive API documentation for the WhatsApp integration.",
+      "status": "pending",
+      "dependencies": [
+        4,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "priority": "low",
+      "details": "- Document all API endpoints\n- Include request/response examples\n- Document error codes and responses\n- Add setup instructions for Twilio integration",
+      "testStrategy": "Review documentation for completeness and accuracy."
+    },
+    {
+      "id": 20,
+      "title": "Security Audit",
+      "description": "Perform a security audit of the WhatsApp integration.",
+      "status": "pending",
+      "dependencies": [
+        2,
+        3,
+        6,
+        7
+      ],
+      "priority": "medium",
+      "details": "- Review encryption implementation\n- Audit webhook security\n- Check for potential data exposure\n- Verify proper credential handling",
+      "testStrategy": "Use security scanning tools and manual review to identify vulnerabilities."
+    }
+  ]
+}

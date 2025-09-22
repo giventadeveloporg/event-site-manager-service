@@ -10,5 +10,6 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface EventSponsorsMapper extends EntityMapper<EventSponsorsDTO, EventSponsors> {
+
   EventSponsorsDTO toDto(EventSponsors s);
 }

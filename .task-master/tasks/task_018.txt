@@ -1,0 +1,14 @@
+# Task ID: 18
+# Title: Implement Rate Limiting and Retry Logic
+# Status: pending
+# Dependencies: 3 ⏱️
+# Priority: medium
+# Description: Add rate limiting and retry mechanisms for Twilio API calls.
+# Details:
+- Add delay between messages in bulk sending
+- Implement exponential backoff for failed requests
+- Add retry logic for temporary failures
+- Configure maximum retry attempts
+
+# Test Strategy:
+Test with simulated failures to verify retry behavior and rate limiting.

@@ -7,10 +7,12 @@ import com.nextjstemplate.service.dto.EventGuestPricingDTO;
 import org.mapstruct.*;
 
 /**
- * Mapper for the entity {@link EventGuestPricing} and its DTO {@link EventGuestPricingDTO}.
+ * Mapper for the entity {@link EventGuestPricing} and its DTO
+ * {@link EventGuestPricingDTO}.
  */
 @Mapper(componentModel = "spring")
 public interface EventGuestPricingMapper extends EntityMapper<EventGuestPricingDTO, EventGuestPricing> {
+
     @Mapping(target = "event", source = "event", qualifiedByName = "eventDetailsId")
     EventGuestPricingDTO toDto(EventGuestPricing s);
 

@@ -2,6 +2,7 @@
   "name": "nextjs-template-boot",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "description": "Description for nextjs_template_boot",
   "license": "UNLICENSED",
   "scripts": {

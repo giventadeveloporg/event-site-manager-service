@@ -56,6 +56,21 @@ public class TenantSettingsDTO implements Serializable {
 
     private Boolean showSponsorsSectionInHomePage;
 
+    @Size(max = 500)
+    private String twilioAccountSid;
+
+    @Size(max = 1048)
+    private String twilioAuthToken;
+
+    @Size(max = 50)
+    private String twilioWhatsappFrom;
+
+    @Size(max = 1048)
+    private String whatsappWebhookUrl;
+
+    @Size(max = 1048)
+    private String whatsappWebhookToken;
+
     @NotNull
     private ZonedDateTime createdAt;
 
@@ -216,6 +231,46 @@ public class TenantSettingsDTO implements Serializable {
         this.showSponsorsSectionInHomePage = showSponsorsSectionInHomePage;
     }
 
+    public String getTwilioAccountSid() {
+        return twilioAccountSid;
+    }
+
+    public void setTwilioAccountSid(String twilioAccountSid) {
+        this.twilioAccountSid = twilioAccountSid;
+    }
+
+    public String getTwilioAuthToken() {
+        return twilioAuthToken;
+    }
+
+    public void setTwilioAuthToken(String twilioAuthToken) {
+        this.twilioAuthToken = twilioAuthToken;
+    }
+
+    public String getTwilioWhatsappFrom() {
+        return twilioWhatsappFrom;
+    }
+
+    public void setTwilioWhatsappFrom(String twilioWhatsappFrom) {
+        this.twilioWhatsappFrom = twilioWhatsappFrom;
+    }
+
+    public String getWhatsappWebhookUrl() {
+        return whatsappWebhookUrl;
+    }
+
+    public void setWhatsappWebhookUrl(String whatsappWebhookUrl) {
+        this.whatsappWebhookUrl = whatsappWebhookUrl;
+    }
+
+    public String getWhatsappWebhookToken() {
+        return whatsappWebhookToken;
+    }
+
+    public void setWhatsappWebhookToken(String whatsappWebhookToken) {
+        this.whatsappWebhookToken = whatsappWebhookToken;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
@@ -265,28 +320,33 @@ public class TenantSettingsDTO implements Serializable {
     @Override
     public String toString() {
         return "TenantSettingsDTO{" +
-            "id=" + getId() +
-            ", tenantId='" + getTenantId() + "'" +
-            ", allowUserRegistration='" + getAllowUserRegistration() + "'" +
-            ", requireAdminApproval='" + getRequireAdminApproval() + "'" +
-            ", enableWhatsappIntegration='" + getEnableWhatsappIntegration() + "'" +
-            ", enableEmailMarketing='" + getEnableEmailMarketing() + "'" +
-            ", whatsappApiKey='" + getWhatsappApiKey() + "'" +
-            ", emailProviderConfig='" + getEmailProviderConfig() + "'" +
-            ", maxEventsPerMonth=" + getMaxEventsPerMonth() +
-            ", maxAttendeesPerEvent=" + getMaxAttendeesPerEvent() +
-            ", enableGuestRegistration='" + getEnableGuestRegistration() + "'" +
-            ", maxGuestsPerAttendee=" + getMaxGuestsPerAttendee() +
-            ", defaultEventCapacity=" + getDefaultEventCapacity() +
-            ", platformFeePercentage=" + getPlatformFeePercentage() +
-            ", customCss='" + getCustomCss() + "'" +
-            ", customJs='" + getCustomJs() + "'" +
-            ", showEventsSectionInHomePage='" + getShowEventsSectionInHomePage() + "'" +
-            ", showTeamMembersSectionInHomePage='" + getShowTeamMembersSectionInHomePage() + "'" +
-            ", showSponsorsSectionInHomePage='" + getShowSponsorsSectionInHomePage() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            ", tenantOrganization=" + getTenantOrganization() +
-            "}";
+                "id=" + getId() +
+                ", tenantId='" + getTenantId() + "'" +
+                ", allowUserRegistration='" + getAllowUserRegistration() + "'" +
+                ", requireAdminApproval='" + getRequireAdminApproval() + "'" +
+                ", enableWhatsappIntegration='" + getEnableWhatsappIntegration() + "'" +
+                ", enableEmailMarketing='" + getEnableEmailMarketing() + "'" +
+                ", whatsappApiKey='" + getWhatsappApiKey() + "'" +
+                ", emailProviderConfig='" + getEmailProviderConfig() + "'" +
+                ", maxEventsPerMonth=" + getMaxEventsPerMonth() +
+                ", maxAttendeesPerEvent=" + getMaxAttendeesPerEvent() +
+                ", enableGuestRegistration='" + getEnableGuestRegistration() + "'" +
+                ", maxGuestsPerAttendee=" + getMaxGuestsPerAttendee() +
+                ", defaultEventCapacity=" + getDefaultEventCapacity() +
+                ", platformFeePercentage=" + getPlatformFeePercentage() +
+                ", customCss='" + getCustomCss() + "'" +
+                ", customJs='" + getCustomJs() + "'" +
+                ", showEventsSectionInHomePage='" + getShowEventsSectionInHomePage() + "'" +
+                ", showTeamMembersSectionInHomePage='" + getShowTeamMembersSectionInHomePage() + "'" +
+                ", showSponsorsSectionInHomePage='" + getShowSponsorsSectionInHomePage() + "'" +
+                ", twilioAccountSid='" + getTwilioAccountSid() + "'" +
+                ", twilioAuthToken='" + getTwilioAuthToken() + "'" +
+                ", twilioWhatsappFrom='" + getTwilioWhatsappFrom() + "'" +
+                ", whatsappWebhookUrl='" + getWhatsappWebhookUrl() + "'" +
+                ", whatsappWebhookToken='" + getWhatsappWebhookToken() + "'" +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                ", tenantOrganization=" + getTenantOrganization() +
+                "}";
     }
 }

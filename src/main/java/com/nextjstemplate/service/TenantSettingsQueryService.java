@@ -44,7 +44,7 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
     /**
      * Return a {@link Page} of {@link TenantSettingsDTO} which matches the criteria
      * from the database.
-     * 
+     *
      * @param criteria The object which holds all the filters, which the entities
      *                 should match.
      * @param page     The page, which should be returned.
@@ -59,7 +59,7 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
 
     /**
      * Return the number of matching entities in the database.
-     * 
+     *
      * @param criteria The object which holds all the filters, which the entities
      *                 should match.
      * @return the number of matching entities.
@@ -73,7 +73,7 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
 
     /**
      * Function to convert {@link TenantSettingsCriteria} to a {@link Specification}
-     * 
+     *
      * @param criteria The object which holds all the filters, which the entities
      *                 should match.
      * @return the matching {@link Specification} of the entity.
@@ -159,6 +159,30 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
             if (criteria.getShowSponsorsSectionInHomePage() != null) {
                 specification = specification.and(buildSpecification(criteria.getShowSponsorsSectionInHomePage(),
                         TenantSettings_.showSponsorsSectionInHomePage));
+            }
+            if (criteria.getTwilioAccountSid() != null) {
+                specification = specification
+                        .and(buildStringSpecification(criteria.getTwilioAccountSid(),
+                                TenantSettings_.twilioAccountSid));
+            }
+            if (criteria.getTwilioAuthToken() != null) {
+                specification = specification
+                        .and(buildStringSpecification(criteria.getTwilioAuthToken(), TenantSettings_.twilioAuthToken));
+            }
+            if (criteria.getTwilioWhatsappFrom() != null) {
+                specification = specification
+                        .and(buildStringSpecification(criteria.getTwilioWhatsappFrom(),
+                                TenantSettings_.twilioWhatsappFrom));
+            }
+            if (criteria.getWhatsappWebhookUrl() != null) {
+                specification = specification
+                        .and(buildStringSpecification(criteria.getWhatsappWebhookUrl(),
+                                TenantSettings_.whatsappWebhookUrl));
+            }
+            if (criteria.getWhatsappWebhookToken() != null) {
+                specification = specification
+                        .and(buildStringSpecification(criteria.getWhatsappWebhookToken(),
+                                TenantSettings_.whatsappWebhookToken));
             }
             if (criteria.getCreatedAt() != null) {
                 specification = specification

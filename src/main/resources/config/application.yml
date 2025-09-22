@@ -241,3 +241,37 @@ qrcode:
 email:
   host:
     url-prefix: ${EMAIL_HOST_URL_PREFIX}
+
+# ===================================================================
+# WhatsApp Integration Configuration
+# ===================================================================
+whatsapp:
+  # Encryption keys for sensitive data
+  encryption:
+    key: ${WHATSAPP_ENCRYPTION_KEY:your-32-character-encryption-key-here}
+    algorithm: AES/GCM/NoPadding
+
+  # Webhook configuration
+  webhook:
+    base-url: ${WHATSAPP_WEBHOOK_BASE_URL:http://localhost:8080}
+    encryption-key: ${WHATSAPP_WEBHOOK_ENCRYPTION_KEY:your-webhook-encryption-key-here}
+
+  # Rate limiting configuration
+  rate-limit:
+    messages-per-minute: ${WHATSAPP_RATE_LIMIT_MESSAGES_PER_MINUTE:20}
+    bulk-messages-per-hour: ${WHATSAPP_RATE_LIMIT_BULK_MESSAGES_PER_HOUR:100}
+    retry-attempts: ${WHATSAPP_RATE_LIMIT_RETRY_ATTEMPTS:3}
+    retry-delay-seconds: ${WHATSAPP_RATE_LIMIT_RETRY_DELAY_SECONDS:60}
+
+  # Message configuration
+  message:
+    max-recipients-per-bulk: ${WHATSAPP_MAX_RECIPIENTS_PER_BULK:1000}
+    template-validation-enabled: ${WHATSAPP_TEMPLATE_VALIDATION_ENABLED:true}
+    delivery-status-check-enabled: ${WHATSAPP_DELIVERY_STATUS_CHECK_ENABLED:true}
+
+  # Logging configuration
+  logging:
+    enabled: ${WHATSAPP_LOGGING_ENABLED:true}
+    log-level: ${WHATSAPP_LOGGING_LEVEL:INFO}
+    log-message-content: ${WHATSAPP_LOG_MESSAGE_CONTENT:false}
+    log-personal-data: ${WHATSAPP_LOG_PERSONAL_DATA:false}

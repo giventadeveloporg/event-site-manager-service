@@ -86,6 +86,26 @@ public class TenantSettings implements Serializable {
     @Column(name = "show_sponsors_section_in_home_page")
     private Boolean showSponsorsSectionInHomePage;
 
+    @Size(max = 500)
+    @Column(name = "twilio_account_sid", length = 500)
+    private String twilioAccountSid;
+
+    @Size(max = 1048)
+    @Column(name = "twilio_auth_token", length = 1048)
+    private String twilioAuthToken;
+
+    @Size(max = 50)
+    @Column(name = "twilio_whatsapp_from", length = 50)
+    private String twilioWhatsappFrom;
+
+    @Size(max = 1048)
+    @Column(name = "whatsapp_webhook_url", length = 1048)
+    private String whatsappWebhookUrl;
+
+    @Size(max = 1048)
+    @Column(name = "whatsapp_webhook_token", length = 1048)
+    private String whatsappWebhookToken;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -387,6 +407,71 @@ public class TenantSettings implements Serializable {
         return this;
     }
 
+    public String getTwilioAccountSid() {
+        return this.twilioAccountSid;
+    }
+
+    public TenantSettings twilioAccountSid(String twilioAccountSid) {
+        this.setTwilioAccountSid(twilioAccountSid);
+        return this;
+    }
+
+    public void setTwilioAccountSid(String twilioAccountSid) {
+        this.twilioAccountSid = twilioAccountSid;
+    }
+
+    public String getTwilioAuthToken() {
+        return this.twilioAuthToken;
+    }
+
+    public TenantSettings twilioAuthToken(String twilioAuthToken) {
+        this.setTwilioAuthToken(twilioAuthToken);
+        return this;
+    }
+
+    public void setTwilioAuthToken(String twilioAuthToken) {
+        this.twilioAuthToken = twilioAuthToken;
+    }
+
+    public String getTwilioWhatsappFrom() {
+        return this.twilioWhatsappFrom;
+    }
+
+    public TenantSettings twilioWhatsappFrom(String twilioWhatsappFrom) {
+        this.setTwilioWhatsappFrom(twilioWhatsappFrom);
+        return this;
+    }
+
+    public void setTwilioWhatsappFrom(String twilioWhatsappFrom) {
+        this.twilioWhatsappFrom = twilioWhatsappFrom;
+    }
+
+    public String getWhatsappWebhookUrl() {
+        return this.whatsappWebhookUrl;
+    }
+
+    public TenantSettings whatsappWebhookUrl(String whatsappWebhookUrl) {
+        this.setWhatsappWebhookUrl(whatsappWebhookUrl);
+        return this;
+    }
+
+    public void setWhatsappWebhookUrl(String whatsappWebhookUrl) {
+        this.whatsappWebhookUrl = whatsappWebhookUrl;
+    }
+
+    public String getWhatsappWebhookToken() {
+        return this.whatsappWebhookToken;
+    }
+
+    public TenantSettings whatsappWebhookToken(String whatsappWebhookToken) {
+        this.setWhatsappWebhookToken(whatsappWebhookToken);
+        return this;
+    }
+
+    public void setWhatsappWebhookToken(String whatsappWebhookToken) {
+        this.whatsappWebhookToken = whatsappWebhookToken;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
     // setters here
 
@@ -431,6 +516,11 @@ public class TenantSettings implements Serializable {
                 ", showEventsSectionInHomePage='" + getShowEventsSectionInHomePage() + "'" +
                 ", showTeamMembersSectionInHomePage='" + getShowTeamMembersSectionInHomePage() + "'" +
                 ", showSponsorsSectionInHomePage='" + getShowSponsorsSectionInHomePage() + "'" +
+                ", twilioAccountSid='" + getTwilioAccountSid() + "'" +
+                ", twilioAuthToken='" + getTwilioAuthToken() + "'" +
+                ", twilioWhatsappFrom='" + getTwilioWhatsappFrom() + "'" +
+                ", whatsappWebhookUrl='" + getWhatsappWebhookUrl() + "'" +
+                ", whatsappWebhookToken='" + getWhatsappWebhookToken() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";

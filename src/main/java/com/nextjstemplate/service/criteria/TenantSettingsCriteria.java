@@ -8,12 +8,15 @@ import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
 
 /**
- * Criteria class for the {@link com.nextjstemplate.domain.TenantSettings} entity. This class is used
- * in {@link com.nextjstemplate.web.rest.TenantSettingsResource} to receive all the possible filtering options from
+ * Criteria class for the {@link com.nextjstemplate.domain.TenantSettings}
+ * entity. This class is used
+ * in {@link com.nextjstemplate.web.rest.TenantSettingsResource} to receive all
+ * the possible filtering options from
  * the Http GET request parameters.
  * For example the following could be a valid request:
  * {@code /tenant-settings?id.greaterThan=5&attr1.contains=something&attr2.specified=false}
- * As Spring is unable to properly convert the types, unless specific {@link Filter} class are used, we need to use
+ * As Spring is unable to properly convert the types, unless specific
+ * {@link Filter} class are used, we need to use
  * fix type specific filters.
  */
 @ParameterObject
@@ -60,6 +63,16 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private BooleanFilter showSponsorsSectionInHomePage;
 
+    private StringFilter twilioAccountSid;
+
+    private StringFilter twilioAuthToken;
+
+    private StringFilter twilioWhatsappFrom;
+
+    private StringFilter whatsappWebhookUrl;
+
+    private StringFilter whatsappWebhookToken;
+
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -68,14 +81,16 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private Boolean distinct;
 
-    public TenantSettingsCriteria() {}
+    public TenantSettingsCriteria() {
+    }
 
     public TenantSettingsCriteria(TenantSettingsCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.tenantId = other.optionalTenantId().map(StringFilter::copy).orElse(null);
         this.allowUserRegistration = other.optionalAllowUserRegistration().map(BooleanFilter::copy).orElse(null);
         this.requireAdminApproval = other.optionalRequireAdminApproval().map(BooleanFilter::copy).orElse(null);
-        this.enableWhatsappIntegration = other.optionalEnableWhatsappIntegration().map(BooleanFilter::copy).orElse(null);
+        this.enableWhatsappIntegration = other.optionalEnableWhatsappIntegration().map(BooleanFilter::copy)
+                .orElse(null);
         this.enableEmailMarketing = other.optionalEnableEmailMarketing().map(BooleanFilter::copy).orElse(null);
         this.whatsappApiKey = other.optionalWhatsappApiKey().map(StringFilter::copy).orElse(null);
         this.emailProviderConfig = other.optionalEmailProviderConfig().map(StringFilter::copy).orElse(null);
@@ -87,9 +102,17 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.platformFeePercentage = other.optionalPlatformFeePercentage().map(BigDecimalFilter::copy).orElse(null);
         this.customCss = other.optionalCustomCss().map(StringFilter::copy).orElse(null);
         this.customJs = other.optionalCustomJs().map(StringFilter::copy).orElse(null);
-        this.showEventsSectionInHomePage = other.optionalShowEventsSectionInHomePage().map(BooleanFilter::copy).orElse(null);
-        this.showTeamMembersSectionInHomePage = other.optionalShowTeamMembersSectionInHomePage().map(BooleanFilter::copy).orElse(null);
-        this.showSponsorsSectionInHomePage = other.optionalShowSponsorsSectionInHomePage().map(BooleanFilter::copy).orElse(null);
+        this.showEventsSectionInHomePage = other.optionalShowEventsSectionInHomePage().map(BooleanFilter::copy)
+                .orElse(null);
+        this.showTeamMembersSectionInHomePage = other.optionalShowTeamMembersSectionInHomePage()
+                .map(BooleanFilter::copy).orElse(null);
+        this.showSponsorsSectionInHomePage = other.optionalShowSponsorsSectionInHomePage().map(BooleanFilter::copy)
+                .orElse(null);
+        this.twilioAccountSid = other.optionalTwilioAccountSid().map(StringFilter::copy).orElse(null);
+        this.twilioAuthToken = other.optionalTwilioAuthToken().map(StringFilter::copy).orElse(null);
+        this.twilioWhatsappFrom = other.optionalTwilioWhatsappFrom().map(StringFilter::copy).orElse(null);
+        this.whatsappWebhookUrl = other.optionalWhatsappWebhookUrl().map(StringFilter::copy).orElse(null);
+        this.whatsappWebhookToken = other.optionalWhatsappWebhookToken().map(StringFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.tenantOrganizationId = other.optionalTenantOrganizationId().map(LongFilter::copy).orElse(null);
@@ -462,6 +485,101 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.showSponsorsSectionInHomePage = showSponsorsSectionInHomePage;
     }
 
+    public StringFilter getTwilioAccountSid() {
+        return twilioAccountSid;
+    }
+
+    public Optional<StringFilter> optionalTwilioAccountSid() {
+        return Optional.ofNullable(twilioAccountSid);
+    }
+
+    public StringFilter twilioAccountSid() {
+        if (twilioAccountSid == null) {
+            setTwilioAccountSid(new StringFilter());
+        }
+        return twilioAccountSid;
+    }
+
+    public void setTwilioAccountSid(StringFilter twilioAccountSid) {
+        this.twilioAccountSid = twilioAccountSid;
+    }
+
+    public StringFilter getTwilioAuthToken() {
+        return twilioAuthToken;
+    }
+
+    public Optional<StringFilter> optionalTwilioAuthToken() {
+        return Optional.ofNullable(twilioAuthToken);
+    }
+
+    public StringFilter twilioAuthToken() {
+        if (twilioAuthToken == null) {
+            setTwilioAuthToken(new StringFilter());
+        }
+        return twilioAuthToken;
+    }
+
+    public void setTwilioAuthToken(StringFilter twilioAuthToken) {
+        this.twilioAuthToken = twilioAuthToken;
+    }
+
+    public StringFilter getTwilioWhatsappFrom() {
+        return twilioWhatsappFrom;
+    }
+
+    public Optional<StringFilter> optionalTwilioWhatsappFrom() {
+        return Optional.ofNullable(twilioWhatsappFrom);
+    }
+
+    public StringFilter twilioWhatsappFrom() {
+        if (twilioWhatsappFrom == null) {
+            setTwilioWhatsappFrom(new StringFilter());
+        }
+        return twilioWhatsappFrom;
+    }
+
+    public void setTwilioWhatsappFrom(StringFilter twilioWhatsappFrom) {
+        this.twilioWhatsappFrom = twilioWhatsappFrom;
+    }
+
+    public StringFilter getWhatsappWebhookUrl() {
+        return whatsappWebhookUrl;
+    }
+
+    public Optional<StringFilter> optionalWhatsappWebhookUrl() {
+        return Optional.ofNullable(whatsappWebhookUrl);
+    }
+
+    public StringFilter whatsappWebhookUrl() {
+        if (whatsappWebhookUrl == null) {
+            setWhatsappWebhookUrl(new StringFilter());
+        }
+        return whatsappWebhookUrl;
+    }
+
+    public void setWhatsappWebhookUrl(StringFilter whatsappWebhookUrl) {
+        this.whatsappWebhookUrl = whatsappWebhookUrl;
+    }
+
+    public StringFilter getWhatsappWebhookToken() {
+        return whatsappWebhookToken;
+    }
+
+    public Optional<StringFilter> optionalWhatsappWebhookToken() {
+        return Optional.ofNullable(whatsappWebhookToken);
+    }
+
+    public StringFilter whatsappWebhookToken() {
+        if (whatsappWebhookToken == null) {
+            setWhatsappWebhookToken(new StringFilter());
+        }
+        return whatsappWebhookToken;
+    }
+
+    public void setWhatsappWebhookToken(StringFilter whatsappWebhookToken) {
+        this.whatsappWebhookToken = whatsappWebhookToken;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -547,89 +665,104 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             return false;
         }
         final TenantSettingsCriteria that = (TenantSettingsCriteria) o;
-        return (
-            Objects.equals(id, that.id) &&
-            Objects.equals(tenantId, that.tenantId) &&
-            Objects.equals(allowUserRegistration, that.allowUserRegistration) &&
-            Objects.equals(requireAdminApproval, that.requireAdminApproval) &&
-            Objects.equals(enableWhatsappIntegration, that.enableWhatsappIntegration) &&
-            Objects.equals(enableEmailMarketing, that.enableEmailMarketing) &&
-            Objects.equals(whatsappApiKey, that.whatsappApiKey) &&
-            Objects.equals(emailProviderConfig, that.emailProviderConfig) &&
-            Objects.equals(maxEventsPerMonth, that.maxEventsPerMonth) &&
-            Objects.equals(maxAttendeesPerEvent, that.maxAttendeesPerEvent) &&
-            Objects.equals(enableGuestRegistration, that.enableGuestRegistration) &&
-            Objects.equals(maxGuestsPerAttendee, that.maxGuestsPerAttendee) &&
-            Objects.equals(defaultEventCapacity, that.defaultEventCapacity) &&
-            Objects.equals(platformFeePercentage, that.platformFeePercentage) &&
-            Objects.equals(customCss, that.customCss) &&
-            Objects.equals(customJs, that.customJs) &&
-            Objects.equals(showEventsSectionInHomePage, that.showEventsSectionInHomePage) &&
-            Objects.equals(showTeamMembersSectionInHomePage, that.showTeamMembersSectionInHomePage) &&
-            Objects.equals(showSponsorsSectionInHomePage, that.showSponsorsSectionInHomePage) &&
-            Objects.equals(createdAt, that.createdAt) &&
-            Objects.equals(updatedAt, that.updatedAt) &&
-            Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
-            Objects.equals(distinct, that.distinct)
-        );
+        return (Objects.equals(id, that.id) &&
+                Objects.equals(tenantId, that.tenantId) &&
+                Objects.equals(allowUserRegistration, that.allowUserRegistration) &&
+                Objects.equals(requireAdminApproval, that.requireAdminApproval) &&
+                Objects.equals(enableWhatsappIntegration, that.enableWhatsappIntegration) &&
+                Objects.equals(enableEmailMarketing, that.enableEmailMarketing) &&
+                Objects.equals(whatsappApiKey, that.whatsappApiKey) &&
+                Objects.equals(emailProviderConfig, that.emailProviderConfig) &&
+                Objects.equals(maxEventsPerMonth, that.maxEventsPerMonth) &&
+                Objects.equals(maxAttendeesPerEvent, that.maxAttendeesPerEvent) &&
+                Objects.equals(enableGuestRegistration, that.enableGuestRegistration) &&
+                Objects.equals(maxGuestsPerAttendee, that.maxGuestsPerAttendee) &&
+                Objects.equals(defaultEventCapacity, that.defaultEventCapacity) &&
+                Objects.equals(platformFeePercentage, that.platformFeePercentage) &&
+                Objects.equals(customCss, that.customCss) &&
+                Objects.equals(customJs, that.customJs) &&
+                Objects.equals(showEventsSectionInHomePage, that.showEventsSectionInHomePage) &&
+                Objects.equals(showTeamMembersSectionInHomePage, that.showTeamMembersSectionInHomePage) &&
+                Objects.equals(showSponsorsSectionInHomePage, that.showSponsorsSectionInHomePage) &&
+                Objects.equals(twilioAccountSid, that.twilioAccountSid) &&
+                Objects.equals(twilioAuthToken, that.twilioAuthToken) &&
+                Objects.equals(twilioWhatsappFrom, that.twilioWhatsappFrom) &&
+                Objects.equals(whatsappWebhookUrl, that.whatsappWebhookUrl) &&
+                Objects.equals(whatsappWebhookToken, that.whatsappWebhookToken) &&
+                Objects.equals(createdAt, that.createdAt) &&
+                Objects.equals(updatedAt, that.updatedAt) &&
+                Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
+                Objects.equals(distinct, that.distinct));
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-            id,
-            tenantId,
-            allowUserRegistration,
-            requireAdminApproval,
-            enableWhatsappIntegration,
-            enableEmailMarketing,
-            whatsappApiKey,
-            emailProviderConfig,
-            maxEventsPerMonth,
-            maxAttendeesPerEvent,
-            enableGuestRegistration,
-            maxGuestsPerAttendee,
-            defaultEventCapacity,
-            platformFeePercentage,
-            customCss,
-            customJs,
-            showEventsSectionInHomePage,
-            showTeamMembersSectionInHomePage,
-            showSponsorsSectionInHomePage,
-            createdAt,
-            updatedAt,
-            tenantOrganizationId,
-            distinct
-        );
+                id,
+                tenantId,
+                allowUserRegistration,
+                requireAdminApproval,
+                enableWhatsappIntegration,
+                enableEmailMarketing,
+                whatsappApiKey,
+                emailProviderConfig,
+                maxEventsPerMonth,
+                maxAttendeesPerEvent,
+                enableGuestRegistration,
+                maxGuestsPerAttendee,
+                defaultEventCapacity,
+                platformFeePercentage,
+                customCss,
+                customJs,
+                showEventsSectionInHomePage,
+                showTeamMembersSectionInHomePage,
+                showSponsorsSectionInHomePage,
+                twilioAccountSid,
+                twilioAuthToken,
+                twilioWhatsappFrom,
+                whatsappWebhookUrl,
+                whatsappWebhookToken,
+                createdAt,
+                updatedAt,
+                tenantOrganizationId,
+                distinct);
     }
 
     // prettier-ignore
     @Override
     public String toString() {
         return "TenantSettingsCriteria{" +
-            optionalId().map(f -> "id=" + f + ", ").orElse("") +
-            optionalTenantId().map(f -> "tenantId=" + f + ", ").orElse("") +
-            optionalAllowUserRegistration().map(f -> "allowUserRegistration=" + f + ", ").orElse("") +
-            optionalRequireAdminApproval().map(f -> "requireAdminApproval=" + f + ", ").orElse("") +
-            optionalEnableWhatsappIntegration().map(f -> "enableWhatsappIntegration=" + f + ", ").orElse("") +
-            optionalEnableEmailMarketing().map(f -> "enableEmailMarketing=" + f + ", ").orElse("") +
-            optionalWhatsappApiKey().map(f -> "whatsappApiKey=" + f + ", ").orElse("") +
-            optionalEmailProviderConfig().map(f -> "emailProviderConfig=" + f + ", ").orElse("") +
-            optionalMaxEventsPerMonth().map(f -> "maxEventsPerMonth=" + f + ", ").orElse("") +
-            optionalMaxAttendeesPerEvent().map(f -> "maxAttendeesPerEvent=" + f + ", ").orElse("") +
-            optionalEnableGuestRegistration().map(f -> "enableGuestRegistration=" + f + ", ").orElse("") +
-            optionalMaxGuestsPerAttendee().map(f -> "maxGuestsPerAttendee=" + f + ", ").orElse("") +
-            optionalDefaultEventCapacity().map(f -> "defaultEventCapacity=" + f + ", ").orElse("") +
-            optionalPlatformFeePercentage().map(f -> "platformFeePercentage=" + f + ", ").orElse("") +
-            optionalCustomCss().map(f -> "customCss=" + f + ", ").orElse("") +
-            optionalCustomJs().map(f -> "customJs=" + f + ", ").orElse("") +
-            optionalShowEventsSectionInHomePage().map(f -> "showEventsSectionInHomePage=" + f + ", ").orElse("") +
-            optionalShowTeamMembersSectionInHomePage().map(f -> "showTeamMembersSectionInHomePage=" + f + ", ").orElse("") +
-            optionalShowSponsorsSectionInHomePage().map(f -> "showSponsorsSectionInHomePage=" + f + ", ").orElse("") +
-            optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
-            optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
-            optionalTenantOrganizationId().map(f -> "tenantOrganizationId=" + f + ", ").orElse("") +
-            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
-        "}";
+                optionalId().map(f -> "id=" + f + ", ").orElse("") +
+                optionalTenantId().map(f -> "tenantId=" + f + ", ").orElse("") +
+                optionalAllowUserRegistration().map(f -> "allowUserRegistration=" + f + ", ").orElse("") +
+                optionalRequireAdminApproval().map(f -> "requireAdminApproval=" + f + ", ").orElse("") +
+                optionalEnableWhatsappIntegration().map(f -> "enableWhatsappIntegration=" + f + ", ").orElse("") +
+                optionalEnableEmailMarketing().map(f -> "enableEmailMarketing=" + f + ", ").orElse("") +
+                optionalWhatsappApiKey().map(f -> "whatsappApiKey=" + f + ", ").orElse("") +
+                optionalEmailProviderConfig().map(f -> "emailProviderConfig=" + f + ", ").orElse("") +
+                optionalMaxEventsPerMonth().map(f -> "maxEventsPerMonth=" + f + ", ").orElse("") +
+                optionalMaxAttendeesPerEvent().map(f -> "maxAttendeesPerEvent=" + f + ", ").orElse("") +
+                optionalEnableGuestRegistration().map(f -> "enableGuestRegistration=" + f + ", ").orElse("") +
+                optionalMaxGuestsPerAttendee().map(f -> "maxGuestsPerAttendee=" + f + ", ").orElse("") +
+                optionalDefaultEventCapacity().map(f -> "defaultEventCapacity=" + f + ", ").orElse("") +
+                optionalPlatformFeePercentage().map(f -> "platformFeePercentage=" + f + ", ").orElse("") +
+                optionalCustomCss().map(f -> "customCss=" + f + ", ").orElse("") +
+                optionalCustomJs().map(f -> "customJs=" + f + ", ").orElse("") +
+                optionalShowEventsSectionInHomePage().map(f -> "showEventsSectionInHomePage=" + f + ", ").orElse("") +
+                optionalShowTeamMembersSectionInHomePage().map(f -> "showTeamMembersSectionInHomePage=" + f + ", ")
+                        .orElse("")
+                +
+                optionalShowSponsorsSectionInHomePage().map(f -> "showSponsorsSectionInHomePage=" + f + ", ").orElse("")
+                +
+                optionalTwilioAccountSid().map(f -> "twilioAccountSid=" + f + ", ").orElse("") +
+                optionalTwilioAuthToken().map(f -> "twilioAuthToken=" + f + ", ").orElse("") +
+                optionalTwilioWhatsappFrom().map(f -> "twilioWhatsappFrom=" + f + ", ").orElse("") +
+                optionalWhatsappWebhookUrl().map(f -> "whatsappWebhookUrl=" + f + ", ").orElse("") +
+                optionalWhatsappWebhookToken().map(f -> "whatsappWebhookToken=" + f + ", ").orElse("") +
+                optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
+                optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
+                optionalTenantOrganizationId().map(f -> "tenantOrganizationId=" + f + ", ").orElse("") +
+                optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
+                "}";
     }
 }

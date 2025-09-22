@@ -160,6 +160,10 @@ Desktop.ini
 ######################
 .eslintcache
 
+# Ignore the task-master dev script
+.task-master/dev.js
+dev.js
+
 ######################
 # Code coverage
 ######################
