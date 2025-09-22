@@ -1,0 +1,13 @@
+# Task ID: 10
+# Title: Implement Connection Testing
+# Status: pending
+# Dependencies: 3 ⏱️
+# Priority: medium
+# Description: Add functionality to test Twilio credentials and connection.
+# Details:
+- Add testConnection method to TwilioWhatsAppService
+- Create ConnectionTestResult DTO
+- Implement test-connection endpoint in controller
+
+# Test Strategy:
+Test with valid and invalid credentials to verify proper connection testing.

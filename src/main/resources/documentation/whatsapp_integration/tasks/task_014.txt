@@ -1,0 +1,13 @@
+# Task ID: 14
+# Title: Implement Global Exception Handler
+# Status: pending
+# Dependencies: 13 ⏱️
+# Priority: medium
+# Description: Create a global exception handler for WhatsApp-related errors.
+# Details:
+- Create WhatsAppExceptionHandler with @RestControllerAdvice
+- Add handlers for each custom exception type
+- Return appropriate HTTP status codes and error messages
+
+# Test Strategy:
+Test that exceptions are properly caught and formatted in API responses.

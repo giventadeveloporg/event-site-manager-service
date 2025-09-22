@@ -1,0 +1,12 @@
+# Task ID: 16
+# Title: Implement WebhookPayload DTO
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Create data transfer object for webhook payloads from Twilio.
+# Details:
+- Create WebhookPayload DTO with fields for messageId, status, timestamp, and metadata
+- Add appropriate getters and setters
+
+# Test Strategy:
+Test parsing sample webhook payloads from Twilio documentation.

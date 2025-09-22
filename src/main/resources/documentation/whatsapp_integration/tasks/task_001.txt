@@ -1,0 +1,13 @@
+# Task ID: 1
+# Title: Database Schema Updates
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Add Twilio credential fields to the tenant_settings table and update the TenantSettingsDTO schema.
+# Details:
+- Add columns to tenant_settings table: twilio_account_sid, twilio_auth_token, twilio_whatsapp_from, whatsapp_webhook_url, whatsapp_webhook_token
+- Add appropriate comments to new columns
+- Update TenantSettingsDTO to include new fields with proper validation
+
+# Test Strategy:
+Verify that the database schema changes are applied correctly and the DTO can serialize/deserialize the new fields properly.
