@@ -18,6 +18,7 @@ import tech.jhipster.config.JHipsterConstants;
 import tech.jhipster.config.liquibase.SpringLiquibaseUtil;
 
 @Configuration
+@org.springframework.context.annotation.Profile("!local-postgres-cache")
 public class LiquibaseConfiguration {
 
     private final Logger log = LoggerFactory.getLogger(LiquibaseConfiguration.class);
@@ -30,22 +31,22 @@ public class LiquibaseConfiguration {
 
     @Bean
     public SpringLiquibase liquibase(
-        @Qualifier("taskExecutor") Executor executor,
-        LiquibaseProperties liquibaseProperties,
-        @LiquibaseDataSource ObjectProvider<DataSource> liquibaseDataSource,
-        ObjectProvider<DataSource> dataSource,
-        DataSourceProperties dataSourceProperties
-    ) {
+            @Qualifier("taskExecutor") Executor executor,
+            LiquibaseProperties liquibaseProperties,
+            @LiquibaseDataSource ObjectProvider<DataSource> liquibaseDataSource,
+            ObjectProvider<DataSource> dataSource,
+            DataSourceProperties dataSourceProperties) {
         // If you don't want Liquibase to start asynchronously, substitute by this:
-        // SpringLiquibase liquibase = SpringLiquibaseUtil.createSpringLiquibase(liquibaseDataSource.getIfAvailable(), liquibaseProperties, dataSource.getIfUnique(), dataSourceProperties);
+        // SpringLiquibase liquibase =
+        // SpringLiquibaseUtil.createSpringLiquibase(liquibaseDataSource.getIfAvailable(),
+        // liquibaseProperties, dataSource.getIfUnique(), dataSourceProperties);
         SpringLiquibase liquibase = SpringLiquibaseUtil.createAsyncSpringLiquibase(
-            this.env,
-            executor,
-            liquibaseDataSource.getIfAvailable(),
-            liquibaseProperties,
-            dataSource.getIfUnique(),
-            dataSourceProperties
-        );
+                this.env,
+                executor,
+                liquibaseDataSource.getIfAvailable(),
+                liquibaseProperties,
+                dataSource.getIfUnique(),
+                dataSourceProperties);
         liquibase.setChangeLog("classpath:config/liquibase/master.xml");
         liquibase.setContexts(liquibaseProperties.getContexts());
         liquibase.setDefaultSchema(liquibaseProperties.getDefaultSchema());

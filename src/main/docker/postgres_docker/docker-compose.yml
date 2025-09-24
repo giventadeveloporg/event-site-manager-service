@@ -7,12 +7,16 @@ services:
     #   - ~/volumes/jhipster/nextjs_template_boot/postgresql/:/var/lib/postgresql/data/
     volumes:
       - E:/postgres_docker:/var/lib/postgresql/data/
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf:ro
 
     environment:
       - POSTGRES_USER=giventauser
       - POSTGRES_PASSWORD=giventauser
       - POSTGRES_DB=giventauser_db
       - PGDATA=/var/lib/postgresql/data/pgdata
+
+    # Use custom PostgreSQL configuration for caching optimization
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
 
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER}']

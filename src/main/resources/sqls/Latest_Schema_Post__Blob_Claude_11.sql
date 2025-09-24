@@ -1727,38 +1727,42 @@ COMMENT ON TABLE public.tenant_organization IS 'Multi-tenant organization config
 --
 
 CREATE TABLE public.tenant_settings (
-                                        id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-                                        tenant_id character varying(255) NOT NULL,
-                                        tenant_organization_id bigint,
-                                        allow_user_registration boolean DEFAULT true,
-                                        show_events_section_in_home_page boolean DEFAULT false,
-                                        show_team_members_section_in_home_page boolean DEFAULT false,
-                                        show_sponsors_section_in_home_page boolean DEFAULT false,
-                                        require_admin_approval boolean DEFAULT false,
-                                        enable_whatsapp_integration boolean DEFAULT false,
-                                        enable_email_marketing boolean DEFAULT false,
-                                        whatsapp_api_key character varying(500),
-                                        email_provider_config  VARCHAR(2048),
-                                        custom_css  VARCHAR(8192),
-                                        custom_js  VARCHAR(16384),
-                                        max_events_per_month integer,
-                                        max_attendees_per_event integer,
-                                        enable_guest_registration boolean DEFAULT true,
-                                        max_guests_per_attendee integer DEFAULT 5,
-                                        default_event_capacity integer DEFAULT 100,
-                                        platform_fee_percentage decimal(6,4),
-                                        created_at timestamp without time zone DEFAULT now() NOT NULL,
-                                        updated_at timestamp without time zone DEFAULT now() NOT NULL,
-                                        CONSTRAINT check_default_capacity_positive CHECK (((default_event_capacity IS NULL) OR (default_event_capacity > 0))),
-                                        CONSTRAINT check_max_attendees_positive CHECK (((max_attendees_per_event IS NULL) OR (max_attendees_per_event > 0))),
-                                        CONSTRAINT check_max_events_positive CHECK (((max_events_per_month IS NULL) OR (max_events_per_month > 0))),
-                                        CONSTRAINT check_max_guests_positive CHECK (((max_guests_per_attendee IS NULL) OR (max_guests_per_attendee >= 0))),
-                                        CONSTRAINT tenant_settings_pkey PRIMARY KEY (id),
-                                        CONSTRAINT tenant_settings_tenant_id_key UNIQUE (tenant_id),
-                                        CONSTRAINT fk_tenant_settings__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE,
-                                        CONSTRAINT fk_tenant_settings_organization_id FOREIGN KEY (tenant_organization_id) REFERENCES public.tenant_organization(id) ON DELETE CASCADE
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    tenant_organization_id bigint,
+    allow_user_registration boolean DEFAULT true,
+    show_events_section_in_home_page boolean DEFAULT false,
+    show_team_members_section_in_home_page boolean DEFAULT false,
+    show_sponsors_section_in_home_page boolean DEFAULT false,
+    require_admin_approval boolean DEFAULT false,
+    enable_whatsapp_integration boolean DEFAULT false,
+    whatsapp_api_key character varying(500),
+    twilio_account_sid character varying(500),
+    twilio_auth_token character varying(1048),
+    twilio_whatsapp_from character varying(50),
+    whatsapp_webhook_url character varying(1048),
+    whatsapp_webhook_token character varying(1048),
+    enable_email_marketing boolean DEFAULT false,
+    email_provider_config character varying(2048),
+    custom_css character varying(8192),
+    custom_js character varying(16384),
+    max_events_per_month integer,
+    max_attendees_per_event integer,
+    enable_guest_registration boolean DEFAULT true,
+    max_guests_per_attendee integer DEFAULT 5,
+    default_event_capacity integer DEFAULT 100,
+    platform_fee_percentage decimal(21,2),
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT check_default_capacity_positive CHECK (((default_event_capacity IS NULL) OR (default_event_capacity > 0))),
+    CONSTRAINT check_max_attendees_positive CHECK (((max_attendees_per_event IS NULL) OR (max_attendees_per_event > 0))),
+    CONSTRAINT check_max_events_positive CHECK (((max_events_per_month IS NULL) OR (max_events_per_month > 0))),
+    CONSTRAINT check_max_guests_positive CHECK (((max_guests_per_attendee IS NULL) OR (max_guests_per_attendee >= 0))),
+    CONSTRAINT tenant_settings_pkey PRIMARY KEY (id),
+    CONSTRAINT tenant_settings_tenant_id_key UNIQUE (tenant_id),
+    CONSTRAINT fk_tenant_settings__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE,
+    CONSTRAINT fk_tenant_settings_organization_id FOREIGN KEY (tenant_organization_id) REFERENCES public.tenant_organization(id) ON DELETE CASCADE
 );
-
 
 -- ALTER TABLE public.tenant_settings OWNER TO giventa_event_management;
 
@@ -3206,6 +3210,80 @@ ALTER TABLE ONLY public.event_emails
 -- Foreign key constraints for event_program_directors
 ALTER TABLE ONLY public.event_program_directors
     ADD CONSTRAINT fk_event_program_directors_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+-- =============================================
+-- POSTGRESQL CACHING FEATURES
+-- =============================================
+
+-- Create application cache table (UNLOGGED for better performance)
+CREATE UNLOGGED TABLE IF NOT EXISTS public.app_cache (
+    cache_key TEXT PRIMARY KEY,
+    cache_value TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create session store table
+CREATE TABLE IF NOT EXISTS public.session_store (
+    session_id VARCHAR(255) PRIMARY KEY,
+    session_data BYTEA,
+    last_access_time TIMESTAMP DEFAULT NOW(),
+    max_inactive_interval INTEGER DEFAULT 1800
+);
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_app_cache_expires_at ON public.app_cache(expires_at);
+CREATE INDEX IF NOT EXISTS idx_session_store_last_access ON public.session_store(last_access_time);
+
+-- Create cache cleanup function
+CREATE OR REPLACE FUNCTION public.cleanup_expired_cache()
+RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    DELETE FROM public.app_cache WHERE expires_at < NOW();
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create session cleanup function
+CREATE OR REPLACE FUNCTION public.cleanup_expired_sessions()
+RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    DELETE FROM public.session_store
+    WHERE last_access_time < NOW() - INTERVAL '1 hour' * max_inactive_interval;
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Grant permissions for caching tables to current user and public role
+-- These permissions will work for any user with appropriate database access
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.app_cache TO PUBLIC;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_store TO PUBLIC;
+GRANT EXECUTE ON FUNCTION public.cleanup_expired_cache() TO PUBLIC;
+GRANT EXECUTE ON FUNCTION public.cleanup_expired_sessions() TO PUBLIC;
+
+-- Alternative: Grant to current user explicitly (uncomment if needed)
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON public.app_cache TO CURRENT_USER;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_store TO CURRENT_USER;
+-- GRANT EXECUTE ON FUNCTION public.cleanup_expired_cache() TO CURRENT_USER;
+-- GRANT EXECUTE ON FUNCTION public.cleanup_expired_sessions() TO CURRENT_USER;
+
+-- Add comments for caching tables
+COMMENT ON TABLE public.app_cache IS 'Application-level cache storage using UNLOGGED table for optimal performance';
+COMMENT ON TABLE public.session_store IS 'Session storage for user sessions with automatic cleanup';
+COMMENT ON COLUMN public.app_cache.cache_key IS 'Unique cache key identifier';
+COMMENT ON COLUMN public.app_cache.cache_value IS 'Cached data value';
+COMMENT ON COLUMN public.app_cache.expires_at IS 'Cache expiration timestamp';
+COMMENT ON COLUMN public.session_store.session_id IS 'Unique session identifier';
+COMMENT ON COLUMN public.session_store.session_data IS 'Serialized session data';
+COMMENT ON COLUMN public.session_store.last_access_time IS 'Last time session was accessed';
+COMMENT ON COLUMN public.session_store.max_inactive_interval IS 'Maximum inactive time in seconds before session expires';
 
 -- =============================================
 -- TABLE COMMENTS

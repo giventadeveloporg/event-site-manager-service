@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mermaid Diagrams Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .diagram-container {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 10px;
+        }
+        .mermaid {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>AWS Deployment Architecture Diagrams</h1>
+
+    <div class="diagram-container">
+        <h2>Option 1: EC2 + Auto Scaling (Original)</h2>
+        <div class="mermaid">
+graph TB
+    ALB[Application Load Balancer]
+    ASG[Auto Scaling Group]
+    EC2A[EC2 Instance 1]
+    EC2B[EC2 Instance 2]
+    RDS[RDS PostgreSQL<br/>with Built-in Caching]
+
+    ALB --> ASG
+    ASG --> EC2A
+    ASG --> EC2B
+    EC2A --> RDS
+    EC2B --> RDS
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <h2>Option 2: Fargate (Recommended)</h2>
+        <div class="mermaid">
+graph TB
+    ALB[Application Load Balancer]
+    ECS[ECS Fargate Cluster]
+    TASK1[Fargate Task 1]
+    TASK2[Fargate Task 2]
+    RDS[RDS PostgreSQL<br/>with Built-in Caching]
+
+    ALB --> ECS
+    ECS --> TASK1
+    ECS --> TASK2
+    TASK1 --> RDS
+    TASK2 --> RDS
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <h2>Option 3: EKS (Advanced)</h2>
+        <div class="mermaid">
+graph TB
+    ALB[Application Load Balancer]
+    EKS[EKS Cluster]
+    NODE1[Worker Node 1]
+    NODE2[Worker Node 2]
+    POD1[Pod 1]
+    POD2[Pod 2]
+    RDS[RDS PostgreSQL<br/>with Built-in Caching]
+
+    ALB --> EKS
+    EKS --> NODE1
+    EKS --> NODE2
+    NODE1 --> POD1
+    NODE2 --> POD2
+    POD1 --> RDS
+    POD2 --> RDS
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+    </script>
+</body>
+</html>

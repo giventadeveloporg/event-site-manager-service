@@ -333,12 +333,8 @@ public class TwilioWhatsAppServiceImpl implements TwilioWhatsAppService {
   public TwilioCredentialsDTO getTenantCredentials(String tenantId) {
     LOG.debug("Retrieving credentials for tenant: {}", tenantId);
 
-    Optional<TenantSettings> tenantSettingsOpt = tenantSettingsRepository.findByTenantId(tenantId);
-    if (tenantSettingsOpt.isEmpty()) {
-      throw new RuntimeException("Tenant not found: " + tenantId);
-    }
-
-    TenantSettings tenantSettings = tenantSettingsOpt.get();
+    TenantSettings tenantSettings = tenantSettingsRepository.findByTenantId(tenantId)
+        .orElseThrow(() -> new RuntimeException("Tenant not found: " + tenantId));
 
     if (!Boolean.TRUE.equals(tenantSettings.getEnableWhatsappIntegration())) {
       throw new RuntimeException("WhatsApp integration not enabled for tenant: " + tenantId);
@@ -363,12 +359,8 @@ public class TwilioWhatsAppServiceImpl implements TwilioWhatsAppService {
   public void encryptAndStoreCredentials(String tenantId, TwilioCredentialsDTO credentials) {
     LOG.debug("Storing encrypted credentials for tenant: {}", tenantId);
 
-    Optional<TenantSettings> tenantSettingsOpt = tenantSettingsRepository.findByTenantId(tenantId);
-    if (tenantSettingsOpt.isEmpty()) {
-      throw new RuntimeException("Tenant not found: " + tenantId);
-    }
-
-    TenantSettings tenantSettings = tenantSettingsOpt.get();
+    TenantSettings tenantSettings = tenantSettingsRepository.findByTenantId(tenantId)
+        .orElseThrow(() -> new RuntimeException("Tenant not found: " + tenantId));
 
     // Note: In a real implementation, you would encrypt the credentials before
     // storing

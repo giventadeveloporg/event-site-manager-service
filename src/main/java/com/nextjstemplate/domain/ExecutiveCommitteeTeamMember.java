@@ -6,8 +6,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 /**
  * A ExecutiveCommitteeTeamMember.
@@ -51,9 +49,8 @@ public class ExecutiveCommitteeTeamMember implements Serializable {
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
-    @Size(max = 4096)
-    @Column(name = "expertise", length = 4096)
-    @JdbcTypeCode(SqlTypes.JSON)
+    @Size(max = 500)
+    @Column(name = "expertise", length = 500)
     private String expertise;
 
     @Column(name = "image_background")

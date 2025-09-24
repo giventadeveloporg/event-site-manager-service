@@ -1,0 +1,157 @@
+services:
+
+#  # PostgreSQL Database
+#  postgres:
+#    image: postgres:13
+#    container_name: malayalees-postgres
+#    environment:
+#      POSTGRES_DB: malayalees_us_site
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: password
+#      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
+#      - ./src/main/resources/sqls:/docker-entrypoint-initdb.d
+#      - ./init-scripts:/docker-entrypoint-initdb.d
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U postgres -d malayalees_us_site"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 30s
+#    networks:
+#      - event-mgmnt-site-network
+#
+#  # Redis Cache
+#  redis:
+#    image: redis:6-alpine
+#    container_name: malayalees-redis
+#    ports:
+#      - "6379:6379"
+#    volumes:
+#      - redis_data:/data
+#    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+#    healthcheck:
+#      test: ["CMD", "redis-cli", "ping"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 30s
+#    networks:
+#      - event-mgmnt-site-network
+
+  # Spring Boot Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    container_name: event-mgmnt-site-app
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring Configuration
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      JAVA_OPTS: ${JAVA_OPTS}
+
+      # Database Configuration
+      RDS_ENDPOINT: ${RDS_ENDPOINT}
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      # PostgreSQL Caching Configuration
+      CACHE_TYPE: ${CACHE_TYPE}
+      POSTGRES_CACHE_TABLE: ${POSTGRES_CACHE_TABLE}
+
+      # AWS Configuration
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+
+      # Twilio Configuration
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      TWILIO_WHATSAPP_FROM: ${TWILIO_WHATSAPP_FROM}
+
+      # Application URLs
+      QRCODE_SCAN_HOST_PREFIX: ${QRCODE_SCAN_HOST_PREFIX}
+      EMAIL_HOST_URL_PREFIX: ${EMAIL_HOST_URL_PREFIX}
+
+      # JHipster Security Configuration
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_SECRET: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_SECRET}
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET}
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS}
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS_FOR_REMEMBER_ME: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS_FOR_REMEMBER_ME}
+
+      # JHipster Mail Configuration
+      JHIPSTER_MAIL_FROM: ${JHIPSTER_MAIL_FROM}
+      JHIPSTER_MAIL_BASE_URL: ${JHIPSTER_MAIL_BASE_URL}
+    volumes:
+      - ../../../../logs:/var/log/spring-boot-app
+      - ../../../../target:/app/target
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/management/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - event-mgmnt-site-network
+
+#  # pgAdmin (Database Management UI)
+#  pgadmin:
+#    image: dpage/pgadmin4:latest
+#    container_name: malayalees-pgadmin
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: admin@local.com
+#      PGADMIN_DEFAULT_PASSWORD: admin
+#      PGADMIN_CONFIG_SERVER_MODE: 'False'
+#    ports:
+#      - "5050:80"
+#    volumes:
+#      - pgadmin_data:/var/lib/pgadmin
+#    depends_on:
+#      - postgres
+#    networks:
+#      - event-mgmnt-site-network
+#
+#  # Redis Commander (Redis Management UI)
+#  redis-commander:
+#    image: rediscommander/redis-commander:latest
+#    container_name: malayalees-redis-commander
+#    environment:
+#      REDIS_HOSTS: local:redis:6379
+#      HTTP_USER: admin
+#      HTTP_PASSWORD: admin
+#    ports:
+#      - "8081:8081"
+#    depends_on:
+#      - redis
+#    networks:
+#      - event-mgmnt-site-network
+#
+#  # MailHog (Email Testing)
+#  mailhog:
+#    image: mailhog/mailhog:latest
+#    container_name: malayalees-mailhog
+#    ports:
+#      - "1025:1025"  # SMTP
+#      - "8025:8025"  # Web UI
+#    networks:
+#      - event-mgmnt-site-network
+#
+#volumes:
+#  postgres_data:
+#    driver: local
+#  redis_data:
+#    driver: local
+#  pgadmin_data:
+#    driver: local
+
+networks:
+  event-mgmnt-site-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

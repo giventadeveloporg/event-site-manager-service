@@ -1,11 +1,12 @@
 # ===================================================================
-# Spring Boot configuration for the "local" profile.
+# Spring Boot configuration for the "local-postgres-cache" profile.
 #
-# This configuration is optimized for local development and testing with:
-# - Docker Compose PostgreSQL and Redis
+# This configuration is optimized for local development with:
+# - PostgreSQL with built-in caching (no Redis)
 # - Enhanced logging for debugging
 # - Relaxed security for development
 # - Multi-tenant testing support
+# - PostgreSQL caching tables and functions
 # ===================================================================
 
 logging:
@@ -18,11 +19,14 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.orm.jdbc.bind: TRACE
+    # PostgreSQL caching specific logging
+    org.springframework.cache: DEBUG
+    com.nextjstemplate.cache: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: /var/log/spring-boot-app/application-local.log
+    name: /var/log/spring-boot-app/application-local-postgres-cache.log
     max-size: 100MB
     max-history: 7
 
@@ -40,10 +44,9 @@ management:
   health:
     db:
       enabled: true
-    redis:
-      enabled: true
     diskspace:
       enabled: true
+    # Remove Redis health check since we're using PostgreSQL caching
   info:
     env:
       enabled: true
@@ -52,103 +55,111 @@ spring:
   devtools:
     restart:
       enabled: true
+      additional-exclude: static/**
     livereload:
-      enabled: true
+      enabled: false # we use Webpack dev server + BrowserSync for livereload
+  jackson:
+    serialization:
+      indent-output: true
+  messages:
+    cache-duration: PT1S # 1 second, see the ISO 8601 standard
+  thymeleaf:
+    cache: false
 
-  # Database Configuration - Local PostgreSQL
+  # Database Configuration - Local PostgreSQL with Caching
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://${RDS_ENDPOINT:localhost}:5432/${DB_NAME:malayalees_us_site}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:password}
+    url: jdbc:postgresql://${RDS_ENDPOINT:localhost}:5432/${DB_NAME:giventauser_db}
+    username: ${DB_USERNAME:giventauser}
+    password: ${DB_PASSWORD:giventauser}
     hikari:
-      poolName: HikariCP-Local
+      poolName: HikariCP-Local-PostgresCache
       auto-commit: false
-      # Optimized for local development
-      maximum-pool-size: ${DB_MAX_POOL_SIZE:5}
-      minimum-idle: ${DB_MIN_IDLE:1}
+      # Optimized for PostgreSQL caching
+      maximum-pool-size: ${DB_MAX_POOL_SIZE:10}
+      minimum-idle: ${DB_MIN_IDLE:2}
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
       leak-detection-threshold: 60000
       validation-timeout: 5000
       connection-test-query: SELECT 1
-      # Local development optimizations
+      # PostgreSQL caching optimizations
       data-source-properties:
         socketTimeout: 30
         loginTimeout: 10
         connectTimeout: 10
+        # Enable PostgreSQL caching features
+        applicationName: event-mgmnt-site-postgres-cache
 
-  # JPA/Hibernate Configuration
+  # JPA/Hibernate Configuration with Second-Level Cache
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     database: POSTGRESQL
     show-sql: true
     properties:
       hibernate:
+        # JDBC Configuration
         jdbc:
           time_zone: UTC
-        format_sql: true
-        use_sql_comments: true
-        # Local development settings
+          batch_size: 25
+        # Connection Configuration
         connection:
           provider_disables_autocommit: true
-        jdbc:
-          batch_size: 25
+        # SQL Configuration
+        format_sql: true
+        use_sql_comments: true
         order_inserts: true
         order_updates: true
         generate_statistics: true
+        # Session Configuration
         session:
           events:
             log:
               LOG_QUERIES_SLOWER_THAN_MS: 100
+        # Enable second-level cache
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
     hibernate:
-      ddl-auto: update  # Allow schema updates in local
+      ddl-auto: none  # Don't modify database schema - preserve existing data
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     open-in-view: false
 
-  # Redis Configuration - Local Redis
-  data:
-    redis:
-      host: ${REDIS_ENDPOINT:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      timeout: 2000ms
-      ssl: false
-      lettuce:
-        pool:
-          max-active: ${REDIS_MAX_ACTIVE:5}
-          max-idle: ${REDIS_MAX_IDLE:5}
-          min-idle: ${REDIS_MIN_IDLE:0}
-          max-wait: 2000ms
-        shutdown-timeout: 100ms
-
-  # Cache Configuration
+  # PostgreSQL Cache Configuration (instead of Redis)
   cache:
-    type: redis
-    redis:
+    type: ${CACHE_TYPE:postgresql}
+    postgresql:
+      cache-table: ${POSTGRES_CACHE_TABLE:app_cache}
       time-to-live: 600000 # 10 minutes
       cache-null-values: false
       enable-statistics: true
-      key-prefix: "event-mgmnt-site:local:"
+      key-prefix: "event-mgmnt-site:postgres-cache:"
       use-key-prefix: true
+      # PostgreSQL specific cache settings
+      cleanup-interval: 300000 # 5 minutes
+      max-cache-size: 10000
 
-  # Session Management
+  # Session Management using PostgreSQL
   session:
-    store-type: redis
-    redis:
-      namespace: "event-mgmnt-site:local:session"
+    store-type: postgresql
+    postgresql:
+      namespace: "event-mgmnt-site:postgres-cache:session"
       flush-mode: on_save
       save-mode: on_set_attribute
+      session-table: session_store
+      cleanup-interval: 300000 # 5 minutes
 
-  # Liquibase Configuration
+  # Liquibase Configuration - Disabled for local-postgres-cache profile
   liquibase:
-    enabled: ${LIQUIBASE_ENABLED:true}
-    change-log: classpath:config/liquibase/master.xml
-    contexts: ${LIQUIBASE_CONTEXTS:local}
-    drop-first: false
-    rollback-file: ${java.io.tmpdir}/liquibase-rollback.sql
+    enabled: false
+    # change-log: classpath:config/liquibase/master.xml
+    # contexts: ${LIQUIBASE_CONTEXTS:local-postgres-cache}
+    # drop-first: false
+    # rollback-file: ${java.io.tmpdir}/liquibase-rollback.sql
 
   # Mail Configuration (MailHog for local testing)
   mail:
@@ -182,7 +193,7 @@ server:
     session:
       timeout: ${SESSION_TIMEOUT:30m}
       cookie:
-        name: EVENT_MGMNT_SITE_SESSION_LOCAL
+        name: EVENT_MGMNT_SITE_SESSION_POSTGRES_CACHE
         http-only: false  # Allow JavaScript access for development
         secure: false
         same-site: lax
@@ -205,15 +216,65 @@ jhipster:
         token-validity-in-seconds: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS:86400}
         token-validity-in-seconds-for-remember-me: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS_FOR_REMEMBER_ME:2592000}
   cache:
-    hazelcast:
-      time-to-live-seconds: 3600
-      backup-count: 1
-      eviction:
-        max-size-policy: PER_NODE
-        size: 100
+    ehcache: # Ehcache configuration (for compatibility with dev profile)
+      time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
+      max-entries: 100 # Number of objects in each cache entry
+    # Hazelcast disabled - using PostgreSQL caching instead
+    # hazelcast:
+    #   time-to-live-seconds: 3600
+    #   backup-count: 1
+    #   eviction:
+    #     max-size-policy: PER_NODE
+    #     size: 100
+  # CORS is only enabled by default with the "dev" profile
+  cors:
+    allowed-origins: '*'
+    allowed-methods: 'GET,POST,PUT,DELETE,OPTIONS'
+    allowed-headers: 'Authorization,Content-Type,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers'
+    exposed-headers: 'Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
+    allow-credentials: false
+    max-age: 1800
+  logging:
+    use-json-format: false # By default, logs are not in Json format
+    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+      enabled: false
+      host: localhost
+      port: 5000
+      ring-buffer-size: 512
   mail:
-    from: ${JHIPSTER_MAIL_FROM:malayalees@local.com}
+    from: ${JHIPSTER_MAIL_FROM:event-mgmnt-site@local.com}
     base-url: ${JHIPSTER_MAIL_BASE_URL:http://localhost:8080}
+
+# AWS Configuration
+aws:
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+  region: ${AWS_REGION:us-east-1}
+
+# Twilio Configuration
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  whatsapp-from: ${TWILIO_WHATSAPP_FROM:}
+
+# WhatsApp Configuration
+whatsapp:
+  encryption:
+    key: ${WHATSAPP_ENCRYPTION_KEY:your-32-character-encryption-key-here}
+  webhook:
+    base-url: ${WHATSAPP_WEBHOOK_BASE_URL:http://localhost:8080}
+    encryption-key: ${WHATSAPP_WEBHOOK_ENCRYPTION_KEY:your-webhook-encryption-key-here}
+  rate-limit:
+    messages-per-minute: ${WHATSAPP_RATE_LIMIT_MESSAGES_PER_MINUTE:20}
+    bulk-messages-per-hour: ${WHATSAPP_RATE_LIMIT_BULK_MESSAGES_PER_HOUR:100}
+    retry-attempts: ${WHATSAPP_RATE_LIMIT_RETRY_ATTEMPTS:3}
+    retry-delay-seconds: ${WHATSAPP_RATE_LIMIT_RETRY_DELAY_SECONDS:60}
+  bulk-messaging:
+    max-recipients-per-bulk: ${WHATSAPP_MAX_RECIPIENTS_PER_BULK:1000}
+    template-validation-enabled: ${WHATSAPP_TEMPLATE_VALIDATION_ENABLED:true}
+    delivery-status-check-enabled: ${WHATSAPP_DELIVERY_STATUS_CHECK_ENABLED:true}
+  logging:
+    enabled: ${WHATSAPP_LOGGING_ENABLED:true}
 
 # Multi-tenant Configuration for Local Testing
 tenant:
@@ -250,6 +311,21 @@ application:
     enable-tenant-metrics: ${TENANT_METRICS_ENABLED:true}
     enable-performance-tracking: ${PERFORMANCE_TRACKING_ENABLED:true}
     enable-debug-logging: ${DEBUG_LOGGING_ENABLED:true}
+  # Application URLs Configuration
+  urls:
+    qrcode-scan-host-prefix: ${QRCODE_SCAN_HOST_PREFIX:http://localhost:3000/admin}
+    email-host-url-prefix: ${EMAIL_HOST_URL_PREFIX:http://localhost:3000}
+
+# PostgreSQL Caching Configuration
+postgresql-cache:
+  enabled: true
+  cache-table: ${POSTGRES_CACHE_TABLE:app_cache}
+  session-table: session_store
+  cleanup-interval: 300000 # 5 minutes
+  max-cache-size: 10000
+  statistics:
+    enabled: true
+    log-interval: 60000 # 1 minute
 
 # Local Testing Configuration
 testing:
@@ -277,3 +353,4 @@ development:
     sql-queries: true
     performance-metrics: true
     tenant-isolation: true
+    postgresql-cache: true  # Enable PostgreSQL cache debugging

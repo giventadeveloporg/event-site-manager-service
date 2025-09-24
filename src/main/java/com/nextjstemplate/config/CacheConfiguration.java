@@ -17,6 +17,7 @@ import tech.jhipster.config.cache.PrefixedKeyGenerator;
 
 @Configuration
 @EnableCaching
+@Profile("!local-postgres-cache")
 public class CacheConfiguration {
 
     private GitProperties gitProperties;
@@ -26,13 +27,13 @@ public class CacheConfiguration {
     public CacheConfiguration(JHipsterProperties jHipsterProperties) {
         JHipsterProperties.Cache.Ehcache ehcache = jHipsterProperties.getCache().getEhcache();
 
-        jcacheConfiguration =
-            Eh107Configuration.fromEhcacheCacheConfiguration(
+        jcacheConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(
                 CacheConfigurationBuilder
-                    .newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(ehcache.getMaxEntries()))
-                    .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(ehcache.getTimeToLiveSeconds())))
-                    .build()
-            );
+                        .newCacheConfigurationBuilder(Object.class, Object.class,
+                                ResourcePoolsBuilder.heap(ehcache.getMaxEntries()))
+                        .withExpiry(ExpiryPolicyBuilder
+                                .timeToLiveExpiration(Duration.ofSeconds(ehcache.getTimeToLiveSeconds())))
+                        .build());
     }
 
     @Bean

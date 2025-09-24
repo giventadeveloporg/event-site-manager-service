@@ -3,7 +3,7 @@
 # Optimized for local testing and development
 # ===================================================================
 
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:17-jre
 
 # Install curl for health checks
 RUN apt-get update && \
@@ -18,7 +18,7 @@ RUN groupadd -r spring && useradd -r -g spring spring
 WORKDIR /app
 
 # Copy the JAR file (will be mounted as volume in docker-compose)
-# COPY target/*.jar app.jar
+# The JAR file will be available at /app/target/*.jar via volume mount
 
 # Create logs directory
 RUN mkdir -p /var/log/spring-boot-app && \
@@ -46,4 +46,4 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
     -Dspring.liquibase.enabled=true"
 
 # Run the application
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/target/*.jar"]
+ENTRYPOINT ["sh", "-c", "if [ -f /app/target/*.jar ]; then java $JAVA_OPTS -jar /app/target/*.jar; else echo 'Error: JAR file not found in /app/target/. Please run: mvn clean package -DskipTests'; exit 1; fi"]
