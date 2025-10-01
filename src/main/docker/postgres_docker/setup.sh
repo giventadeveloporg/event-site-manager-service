@@ -47,3 +47,5 @@ echo ""
 echo "Connection URL: jdbc:postgresql://localhost:5432/event_site_manager_db"
 echo ""
 
+
+

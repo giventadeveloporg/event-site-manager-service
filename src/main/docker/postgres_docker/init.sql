@@ -47,3 +47,5 @@ GRANT ALL PRIVILEGES ON DATABASE event_site_manager_db TO event_site_admin;
 -- Output success message
 SELECT 'PostgreSQL initialization completed successfully' AS status;
 
+
+
