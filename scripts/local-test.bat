@@ -9,7 +9,7 @@ REM ===================================================================
 setlocal enabledelayedexpansion
 
 REM Configuration
-set APPLICATION_NAME=malayalees-us-site-boot
+set APPLICATION_NAME=event-site-manager
 set LOCAL_PORT=8080
 set POSTGRES_PORT=5432
 set REDIS_PORT=6379
@@ -207,8 +207,8 @@ echo ==================================
 echo %SUCCESS% Application: http://localhost:%LOCAL_PORT%
 echo %SUCCESS% Database: localhost:%POSTGRES_PORT%
 echo %SUCCESS% Redis: localhost:%REDIS_PORT%
-echo %SUCCESS% pgAdmin: http://localhost:%PGADMIN_PORT% (admin@local.com/admin)
-echo %SUCCESS% Redis Commander: http://localhost:%REDIS_COMMANDER_PORT% (admin/admin)
+echo %SUCCESS% pgAdmin: http://localhost:%PGADMIN_PORT% (%PGADMIN_DEFAULT_EMAIL:-admin@local.com%/%PGADMIN_DEFAULT_PASSWORD:-admin%)
+echo %SUCCESS% Redis Commander: http://localhost:%REDIS_COMMANDER_PORT% (%REDIS_COMMANDER_USER:-admin%/%REDIS_COMMANDER_PASSWORD:-admin%)
 echo %SUCCESS% MailHog: http://localhost:%MAILHOG_PORT%
 echo.
 echo %INFO% API Endpoints:

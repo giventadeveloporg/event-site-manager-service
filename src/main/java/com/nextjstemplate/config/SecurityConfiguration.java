@@ -26,18 +26,16 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(authz ->
-                authz
-                    .requestMatchers(mvc.pattern("/api/authenticate"))
-                    .permitAll()
-                    .requestMatchers(mvc.pattern("/api/**"))
-                    .authenticated()
-                    .anyRequest()
-                    .permitAll()
-            )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(mvc.pattern("/api/authenticate"))
+                        .permitAll()
+                        .requestMatchers(mvc.pattern("/api/**"))
+                        .authenticated()
+                        .anyRequest()
+                        .permitAll())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
         return http.build();
     }
 
@@ -47,17 +45,15 @@ public class SecurityConfiguration {
         configuration.setAllowedOrigins(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(
-            Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With",
-                "Accept",
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers",
-                "X-XSRF-TOKEN"
-            )
-        );
+                Arrays.asList(
+                        "Authorization",
+                        "Content-Type",
+                        "X-Requested-With",
+                        "Accept",
+                        "Origin",
+                        "Access-Control-Request-Method",
+                        "Access-Control-Request-Headers",
+                        "X-XSRF-TOKEN"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Link", "X-Total-Count", "X-XSRF-TOKEN"));
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
@@ -75,6 +71,19 @@ public class SecurityConfiguration {
     @Bean
     public UserDetailsService userDetailsService() {
         PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        return new InMemoryUserDetailsManager(User.withUsername("admin").password(encoder.encode("admin")).roles("ADMIN", "USER").build());
+        String jwtApiAuthUsername = System.getenv("JWT_API_AUTH_USERNAME");
+        String jwtApiAuthPassword = System.getenv("JWT_API_AUTH_PASSWORD");
+
+        // Use environment variables with fallback to defaults for development
+        if (jwtApiAuthUsername == null || jwtApiAuthUsername.isEmpty()) {
+            jwtApiAuthUsername = "admin";
+        }
+        if (jwtApiAuthPassword == null || jwtApiAuthPassword.isEmpty()) {
+            jwtApiAuthPassword = "admin";
+        }
+
+        return new InMemoryUserDetailsManager(
+                User.withUsername(jwtApiAuthUsername).password(encoder.encode(jwtApiAuthPassword))
+                        .roles("ADMIN", "USER").build());
     }
 }

@@ -58,7 +58,7 @@ spring:
   # Database Configuration - Local PostgreSQL
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://${RDS_ENDPOINT:localhost}:5432/${DB_NAME:malayalees_us_site}
+    url: jdbc:postgresql://${RDS_ENDPOINT:localhost}:5432/${DB_NAME:event_site_manager_db}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:password}
     hikari:
@@ -131,14 +131,14 @@ spring:
       time-to-live: 600000 # 10 minutes
       cache-null-values: false
       enable-statistics: true
-      key-prefix: "event-mgmnt-site:local:"
+      key-prefix: "event-site-manager:local:"
       use-key-prefix: true
 
   # Session Management
   session:
     store-type: redis
     redis:
-      namespace: "event-mgmnt-site:local:session"
+      namespace: "event-site-manager:local:session"
       flush-mode: on_save
       save-mode: on_set_attribute
 
@@ -182,7 +182,7 @@ server:
     session:
       timeout: ${SESSION_TIMEOUT:30m}
       cookie:
-        name: EVENT_MGMNT_SITE_SESSION_LOCAL
+        name: EVENT_SITE_MANAGER_SESSION_LOCAL
         http-only: false  # Allow JavaScript access for development
         secure: false
         same-site: lax
@@ -212,7 +212,7 @@ jhipster:
         max-size-policy: PER_NODE
         size: 100
   mail:
-    from: ${JHIPSTER_MAIL_FROM:malayalees@local.com}
+    from: ${JHIPSTER_MAIL_FROM:event-site-manager@local.com}
     base-url: ${JHIPSTER_MAIL_BASE_URL:http://localhost:8080}
 
 # Multi-tenant Configuration for Local Testing

@@ -3216,7 +3216,7 @@ ALTER TABLE ONLY public.event_program_directors
 -- =============================================
 
 -- Create application cache table (UNLOGGED for better performance)
-CREATE UNLOGGED TABLE IF NOT EXISTS public.app_cache (
+CREATE UNLOGGED TABLE IF NOT EXISTS public.event_site_app_cache (
     cache_key TEXT PRIMARY KEY,
     cache_value TEXT NOT NULL,
     expires_at TIMESTAMP NOT NULL,
@@ -3233,7 +3233,7 @@ CREATE TABLE IF NOT EXISTS public.session_store (
     );
 
 -- Create indexes for performance
-CREATE INDEX IF NOT EXISTS idx_app_cache_expires_at ON public.app_cache(expires_at);
+CREATE INDEX IF NOT EXISTS idx_event_site_app_cache_expires_at ON public.event_site_app_cache(expires_at);
 CREATE INDEX IF NOT EXISTS idx_session_store_last_access ON public.session_store(last_access_time);
 
 -- Create cache cleanup function
@@ -3242,7 +3242,7 @@ RETURNS INTEGER AS $$
 DECLARE
 deleted_count INTEGER;
 BEGIN
-DELETE FROM public.app_cache WHERE expires_at < NOW();
+DELETE FROM public.event_site_app_cache WHERE expires_at < NOW();
 GET DIAGNOSTICS deleted_count = ROW_COUNT;
 RETURN deleted_count;
 END;
@@ -3263,27 +3263,116 @@ $$ LANGUAGE plpgsql;
 
 -- Grant permissions for caching tables to current user and public role
 -- These permissions will work for any user with appropriate database access
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.app_cache TO PUBLIC;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.event_site_app_cache TO PUBLIC;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_store TO PUBLIC;
 GRANT EXECUTE ON FUNCTION public.cleanup_expired_cache() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION public.cleanup_expired_sessions() TO PUBLIC;
 
 -- Alternative: Grant to current user explicitly (uncomment if needed)
--- GRANT SELECT, INSERT, UPDATE, DELETE ON public.app_cache TO CURRENT_USER;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON public.event_site_app_cache TO CURRENT_USER;
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_store TO CURRENT_USER;
 -- GRANT EXECUTE ON FUNCTION public.cleanup_expired_cache() TO CURRENT_USER;
 -- GRANT EXECUTE ON FUNCTION public.cleanup_expired_sessions() TO CURRENT_USER;
 
 -- Add comments for caching tables
-COMMENT ON TABLE public.app_cache IS 'Application-level cache storage using UNLOGGED table for optimal performance';
+COMMENT ON TABLE public.event_site_app_cache IS 'Application-level cache storage using UNLOGGED table for optimal performance';
 COMMENT ON TABLE public.session_store IS 'Session storage for user sessions with automatic cleanup';
-COMMENT ON COLUMN public.app_cache.cache_key IS 'Unique cache key identifier';
-COMMENT ON COLUMN public.app_cache.cache_value IS 'Cached data value';
-COMMENT ON COLUMN public.app_cache.expires_at IS 'Cache expiration timestamp';
+COMMENT ON COLUMN public.event_site_app_cache.cache_key IS 'Unique cache key identifier';
+COMMENT ON COLUMN public.event_site_app_cache.cache_value IS 'Cached data value';
+COMMENT ON COLUMN public.event_site_app_cache.expires_at IS 'Cache expiration timestamp';
 COMMENT ON COLUMN public.session_store.session_id IS 'Unique session identifier';
 COMMENT ON COLUMN public.session_store.session_data IS 'Serialized session data';
 COMMENT ON COLUMN public.session_store.last_access_time IS 'Last time session was accessed';
 COMMENT ON COLUMN public.session_store.max_inactive_interval IS 'Maximum inactive time in seconds before session expires';
+
+-- Grant permissions to application user (if exists)
+-- Note: These will only work if event_site_app user has been created
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'event_site_app') THEN
+        GRANT SELECT, INSERT, UPDATE, DELETE ON public.event_site_app_cache TO event_site_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_store TO event_site_app;
+GRANT EXECUTE ON FUNCTION public.cleanup_expired_cache() TO event_site_app;
+        GRANT EXECUTE ON FUNCTION public.cleanup_expired_sessions() TO event_site_app;
+END IF;
+END $$;
+
+-- =============================================
+-- MATERIALIZED VIEWS AND STATISTICS
+-- =============================================
+
+-- Create materialized view for tenant statistics
+CREATE MATERIALIZED VIEW IF NOT EXISTS public.tenant_stats AS
+SELECT
+    tenant_id,
+    COUNT(*) as user_count,
+    MAX(created_at) as last_activity,
+    COUNT(CASE WHEN user_status = 'ACTIVE' THEN 1 END) as active_users
+FROM public.user_profile
+GROUP BY tenant_id;
+
+-- Create index on materialized view
+CREATE INDEX IF NOT EXISTS idx_tenant_stats_tenant_id ON public.tenant_stats(tenant_id);
+
+-- Create function to refresh materialized view
+CREATE OR REPLACE FUNCTION public.refresh_tenant_stats()
+RETURNS VOID AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW public.tenant_stats;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Grant permissions on materialized view
+GRANT SELECT ON public.tenant_stats TO PUBLIC;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'event_site_app') THEN
+        GRANT SELECT ON public.tenant_stats TO event_site_app;
+GRANT EXECUTE ON FUNCTION public.refresh_tenant_stats() TO event_site_app;
+END IF;
+END $$;
+
+-- Add comments for materialized view
+COMMENT ON MATERIALIZED VIEW public.tenant_stats IS 'Materialized view containing tenant statistics for performance optimization';
+COMMENT ON FUNCTION public.refresh_tenant_stats() IS 'Function to refresh tenant statistics materialized view';
+
+-- =============================================
+-- AUTOMATED CLEANUP SCHEDULING (PG_CRON)
+-- =============================================
+
+-- Enable pg_cron extension (requires superuser privileges)
+-- Note: This will only work if pg_cron extension is available and user has superuser privileges
+DO $$
+BEGIN
+    -- Check if pg_cron extension is available
+    IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = 'pg_cron') THEN
+        -- Try to create extension (will fail silently if not superuser)
+BEGIN
+            CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+            -- Schedule cache cleanup every hour (if not already scheduled)
+            IF NOT EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-cache') THEN
+                PERFORM cron.schedule('cleanup-cache', '0 * * * *', 'SELECT public.cleanup_expired_cache();');
+END IF;
+
+            -- Schedule session cleanup every hour (if not already scheduled)
+            IF NOT EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-sessions') THEN
+                PERFORM cron.schedule('cleanup-sessions', '0 * * * *', 'SELECT public.cleanup_expired_sessions();');
+END IF;
+
+            -- Schedule materialized view refresh every 6 hours (if not already scheduled)
+            IF NOT EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'refresh-tenant-stats') THEN
+                PERFORM cron.schedule('refresh-tenant-stats', '0 */6 * * *', 'SELECT public.refresh_tenant_stats();');
+END IF;
+
+EXCEPTION WHEN OTHERS THEN
+            -- Log that pg_cron setup failed (likely due to insufficient privileges)
+            RAISE NOTICE 'pg_cron extension setup failed: %. This is normal if not running as superuser.', SQLERRM;
+END;
+ELSE
+        RAISE NOTICE 'pg_cron extension is not available. Automated scheduling will not be set up.';
+END IF;
+END $$;
 
 -- =============================================
 -- TABLE COMMENTS

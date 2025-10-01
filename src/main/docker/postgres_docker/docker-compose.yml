@@ -1,5 +1,5 @@
 # This configuration is intended for development purpose, it's **your** responsibility to harden it for production
-name: giventauser_db
+name: event_site_manager_db
 services:
   postgresql:
     image: postgres:16.0
@@ -8,18 +8,19 @@ services:
     volumes:
       - E:/postgres_docker:/var/lib/postgresql/data/
       - ./postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
     environment:
-      - POSTGRES_USER=giventauser
-      - POSTGRES_PASSWORD=giventauser
-      - POSTGRES_DB=giventauser_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
       - PGDATA=/var/lib/postgresql/data/pgdata
 
     # Use custom PostgreSQL configuration for caching optimization
     command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
 
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER}']
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 10

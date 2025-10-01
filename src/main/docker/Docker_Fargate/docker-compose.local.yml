@@ -3,9 +3,9 @@ services:
 #  # PostgreSQL Database
 #  postgres:
 #    image: postgres:13
-#    container_name: malayalees-postgres
+#    container_name: event-site-manager-postgres
 #    environment:
-#      POSTGRES_DB: malayalees_us_site
+#      POSTGRES_DB: event_site_manager_db
 #      POSTGRES_USER: postgres
 #      POSTGRES_PASSWORD: password
 #      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
@@ -16,18 +16,18 @@ services:
 #      - ./src/main/resources/sqls:/docker-entrypoint-initdb.d
 #      - ./init-scripts:/docker-entrypoint-initdb.d
 #    healthcheck:
-#      test: ["CMD-SHELL", "pg_isready -U postgres -d malayalees_us_site"]
+#      test: ["CMD-SHELL", "pg_isready -U postgres -d event_site_manager_db"]
 #      interval: 10s
 #      timeout: 5s
 #      retries: 10
 #      start_period: 30s
 #    networks:
-#      - event-mgmnt-site-network
+#      - event-site-manager-network
 #
 #  # Redis Cache
 #  redis:
 #    image: redis:6-alpine
-#    container_name: malayalees-redis
+#    container_name: event-site-manager-redis
 #    ports:
 #      - "6379:6379"
 #    volumes:
@@ -40,14 +40,14 @@ services:
 #      retries: 10
 #      start_period: 30s
 #    networks:
-#      - event-mgmnt-site-network
+#      - event-site-manager-network
 
   # Spring Boot Application
   app:
     build:
       context: .
       dockerfile: Dockerfile.local
-    container_name: event-mgmnt-site-app
+    container_name: event-site-manager-app
     ports:
       - "8080:8080"
     environment:
@@ -87,6 +87,10 @@ services:
       # JHipster Mail Configuration
       JHIPSTER_MAIL_FROM: ${JHIPSTER_MAIL_FROM}
       JHIPSTER_MAIL_BASE_URL: ${JHIPSTER_MAIL_BASE_URL}
+
+      # JWT API Authentication Credentials (Externalized)
+      JWT_API_AUTH_USERNAME: ${JWT_API_AUTH_USERNAME}
+      JWT_API_AUTH_PASSWORD: ${JWT_API_AUTH_PASSWORD}
     volumes:
       - ../../../../logs:/var/log/spring-boot-app
       - ../../../../target:/app/target
@@ -97,15 +101,15 @@ services:
       retries: 5
       start_period: 120s
     networks:
-      - event-mgmnt-site-network
+      - event-site-manager-network
 
 #  # pgAdmin (Database Management UI)
 #  pgadmin:
 #    image: dpage/pgadmin4:latest
-#    container_name: malayalees-pgadmin
+#    container_name: event-site-manager-pgadmin
 #    environment:
-#      PGADMIN_DEFAULT_EMAIL: admin@local.com
-#      PGADMIN_DEFAULT_PASSWORD: admin
+#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:admin@local.com}
+#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:admin}
 #      PGADMIN_CONFIG_SERVER_MODE: 'False'
 #    ports:
 #      - "5050:80"
@@ -114,32 +118,32 @@ services:
 #    depends_on:
 #      - postgres
 #    networks:
-#      - event-mgmnt-site-network
+#      - event-site-manager-network
 #
 #  # Redis Commander (Redis Management UI)
 #  redis-commander:
 #    image: rediscommander/redis-commander:latest
-#    container_name: malayalees-redis-commander
+#    container_name: event-site-manager-redis-commander
 #    environment:
 #      REDIS_HOSTS: local:redis:6379
-#      HTTP_USER: admin
-#      HTTP_PASSWORD: admin
+#      HTTP_USER: ${REDIS_COMMANDER_USER:admin}
+#      HTTP_PASSWORD: ${REDIS_COMMANDER_PASSWORD:admin}
 #    ports:
 #      - "8081:8081"
 #    depends_on:
 #      - redis
 #    networks:
-#      - event-mgmnt-site-network
+#      - event-site-manager-network
 #
 #  # MailHog (Email Testing)
 #  mailhog:
 #    image: mailhog/mailhog:latest
-#    container_name: malayalees-mailhog
+#    container_name: event-site-manager-mailhog
 #    ports:
 #      - "1025:1025"  # SMTP
 #      - "8025:8025"  # Web UI
 #    networks:
-#      - event-mgmnt-site-network
+#      - event-site-manager-network
 #
 #volumes:
 #  postgres_data:
@@ -150,7 +154,7 @@ services:
 #    driver: local
 
 networks:
-  event-mgmnt-site-network:
+  event-site-manager-network:
     driver: bridge
     ipam:
       config:

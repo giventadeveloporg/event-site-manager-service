@@ -40,7 +40,7 @@ services:
     environment:
       - _JAVA_OPTIONS=-Xmx512m -Xms256m
       - SPRING_PROFILES_ACTIVE=prod,api-docs,static
-      - SPRING_SECURITY_USER_PASSWORD=admin
+      - SPRING_SECURITY_USER_PASSWORD=${JHIPSTER_CONTROL_CENTER_PASSWORD:admin}
       # The token should have the same value than the one declared in you Spring configuration under the jhipster.security.authentication.jwt.base64-secret configuration's entry
       - JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET=ZjYxNDM3YjkzNzIwNWQ3YTI5ZDU2MWI1NjAzYTQ3M2U4YTk4NGM4MmNkZGExZWQ3MmE3NTkyNzJjODNjYTg1YmMyYmNiNzdhZWQ3MTU0ZGIyZGRkMDgxMDE3ZWM5ZWM0ZjViNzVhNmNiM2I0OTJhZGU3ZmY1NWRlZWVjMTM4MjY=
       - SPRING_CLOUD_DISCOVERY_CLIENT_SIMPLE_INSTANCES_NEXTJS_TEMPLATE_BOOT_0_URI=http://host.docker.internal:8080

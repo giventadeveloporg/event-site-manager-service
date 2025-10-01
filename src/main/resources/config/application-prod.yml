@@ -1,5 +1,6 @@
 # ===================================================================
 # Spring Boot configuration for the "prod" profile.
+# Optimized for AWS Fargate deployment with PostgreSQL RDS
 #
 # This configuration overrides the application.yml file.
 #
@@ -18,12 +19,37 @@ logging:
     ROOT: INFO
     tech.jhipster: INFO
     com.nextjstemplate: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /var/log/event-site-manager/application-prod.log
+    max-size: 100MB
+    max-history: 7
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,prometheus"
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+      probes:
+        enabled: true
+  health:
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+  info:
+    env:
+      enabled: true
   prometheus:
     metrics:
       export:
-        enabled: false
+        enabled: true
 
 spring:
   devtools:
@@ -31,22 +57,38 @@ spring:
       enabled: false
     livereload:
       enabled: false
+  jackson:
+    serialization:
+      indent-output: false
+  messages:
+    cache-duration: PT1H # 1 hour for production
+  thymeleaf:
+    cache: true
+
+  # Database Configuration - Production PostgreSQL RDS
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://ca8lne8pi75f88.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d221u0ntossr05
-    username: u5d04t28ki9v5f
-    password: pf271740519d1b65ef0f07156ffd73598fa623cda8bea469b9a5757ffd5489300
+    url: jdbc:postgresql://${RDS_ENDPOINT:event-site-manager-postgres-prod.cwffi3ch4r75.us-east-1.rds.amazonaws.com}:5432/${DB_NAME:event_site_manager_db}
+    username: ${DB_USERNAME:event_site_app}
+    password: ${DB_PASSWORD:}
     hikari:
-      poolName: Hikari
+      poolName: HikariCP-Prod-Fargate
       auto-commit: false
-      maximum-pool-size: 2
-      # LOB-optimized connection pool settings
+      # Optimized for Fargate with PostgreSQL
+      maximum-pool-size: ${DB_MAX_POOL_SIZE:10}
+      minimum-idle: ${DB_MIN_IDLE:2}
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
       leak-detection-threshold: 60000
       validation-timeout: 5000
       connection-test-query: SELECT 1
+      # PostgreSQL optimizations for production
+      data-source-properties:
+        socketTimeout: 30
+        loginTimeout: 10
+        connectTimeout: 10
+        applicationName: event-site-manager-fargate-prod
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
@@ -97,46 +139,96 @@ spring:
 #     # The ciphers suite enforce the security by deactivating some old and deprecated SSL cipher, this list was tested against SSL Labs (https://www.ssllabs.com/ssltest/)
 #     ciphers: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 ,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
 # ===================================================================
+  # JPA/Hibernate Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database: POSTGRESQL
+    show-sql: false
+    properties:
+      hibernate:
+        # JDBC Configuration
+        jdbc:
+          time_zone: UTC
+          batch_size: 25
+        # Connection Configuration
+        connection:
+          provider_disables_autocommit: true
+        # SQL Configuration
+        format_sql: false
+        use_sql_comments: false
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
+        # Session Configuration
+        session:
+          events:
+            log:
+              LOG_QUERIES_SLOWER_THAN_MS: 1000
+        # Enable second-level cache for production
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+    hibernate:
+      ddl-auto: validate  # Don't modify database schema in production
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    open-in-view: false
+
+  # Liquibase Configuration - Enabled for production migrations
+  liquibase:
+    enabled: true
+    change-log: classpath:config/liquibase/master.xml
+    contexts: prod
+    drop-first: false
+    rollback-file: ${java.io.tmpdir}/liquibase-rollback.sql
+
+  # Mail Configuration (AWS SES for production)
+  mail:
+    host: ${MAIL_HOST:email-smtp.us-east-1.amazonaws.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    protocol: smtp
+    tls: true
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+  # File Storage Configuration (AWS S3 for production)
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:10MB}
+      max-request-size: ${MAX_REQUEST_SIZE:100MB}
+      enabled: true
+      location: ${java.io.tmpdir}
+
+# Server Configuration
 server:
-  port: 8080
-  shutdown: graceful # see https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-graceful-shutdown
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${SERVER_CONTEXT_PATH:/}
+    session:
+      timeout: ${SESSION_TIMEOUT:30m}
+      cookie:
+        name: EVENT_SITE_MANAGER_SESSION_PROD
+        http-only: true  # Secure for production
+        secure: true     # HTTPS only
+        same-site: strict
   compression:
     enabled: true
-    mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json,image/svg+xml
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
     min-response-size: 1024
+  error:
+    include-stacktrace: never  # Hide stack traces in production
+    include-message: always
+    include-binding-errors: always
 
-# ===================================================================
-# JHipster specific properties
-#
-# Full reference is available at: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-jhipster:
-  http:
-    cache: # Used by the CachingHttpHeadersFilter
-      timeToLiveInDays: 1461
-  cache: # Cache configuration
-    ehcache: # Ehcache configuration
-      time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
-      max-entries: 1000 # Number of objects in each cache entry
-  security:
-    authentication:
-      jwt:
-        # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
-        # As this is the PRODUCTION configuration, you MUST change the default key, and store it securely:
-        # - In the Heroku deployment, you can add it to the application configuration variables.
-        # - In your application, you can add it to the application properties file.
-        base64-secret: OTBjY2UxOWE1NjI4YWU4ZmJkZjliNzYwOTBiM2Y3MmJkMzRlZGVhNTE0MDFjNWZkZTM4MDk4MzkxZmEzMDg3NzEzMTk3YjZiYTVhNTAzZmE0NjQ5ODFjMjcyYTIxOTZiMGQ4ZDE5ODIwMTI1Yzk2YjMzNmY4ZDdkM2U4Mzk0MWU=
-        # Token is valid 24 hours
-        token-validity-in-seconds: 86400
-        token-validity-in-seconds-for-remember-me: 2592000
-  logging:
-    use-json-format: false # By default, logs are not in Json format
-    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
-      enabled: false
-      host: localhost
-      port: 5000
-      ring-buffer-size: 512
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class
@@ -146,4 +238,109 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+# JHipster specific configuration
+jhipster:
+  security:
+    authentication:
+      jwt:
+        secret: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_SECRET:}
+        base64-secret: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET:OTBjY2UxOWE1NjI4YWU4ZmJkZjliNzYwOTBiM2Y3MmJkMzRlZGVhNTE0MDFjNWZkZTM4MDk4MzkxZmEzMDg3NzEzMTk3YjZiYTVhNTAzZmE0NjQ5ODFjMjcyYTIxOTZiMGQ4ZDE5ODIwMTI1Yzk2YjMzNmY4ZDdkM2U4Mzk0MWU=}
+        token-validity-in-seconds: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS:86400}
+        token-validity-in-seconds-for-remember-me: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS_FOR_REMEMBER_ME:2592000}
+  cache:
+    ehcache: # Ehcache configuration for production
+      time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
+      max-entries: 1000 # Number of objects in each cache entry
+  logging:
+    use-json-format: true # JSON format for production logging
+    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+      enabled: false
+      host: localhost
+      port: 5000
+      ring-buffer-size: 512
+  mail:
+    from: ${JHIPSTER_MAIL_FROM:event-site-manager@yourdomain.com}
+    base-url: ${JHIPSTER_MAIL_BASE_URL:https://yourdomain.com}
+
+# AWS Configuration
+aws:
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+  region: ${AWS_REGION:us-east-1}
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME:event-site-manager-prod}
+
+# Twilio Configuration
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  whatsapp-from: ${TWILIO_WHATSAPP_FROM:}
+
+# WhatsApp Configuration
+whatsapp:
+  encryption:
+    key: ${WHATSAPP_ENCRYPTION_KEY:}
+  webhook:
+    base-url: ${WHATSAPP_WEBHOOK_BASE_URL:https://yourdomain.com}
+    encryption-key: ${WHATSAPP_WEBHOOK_ENCRYPTION_KEY:}
+  rate-limit:
+    messages-per-minute: ${WHATSAPP_RATE_LIMIT_MESSAGES_PER_MINUTE:20}
+    bulk-messages-per-hour: ${WHATSAPP_RATE_LIMIT_BULK_MESSAGES_PER_HOUR:100}
+    retry-attempts: ${WHATSAPP_RATE_LIMIT_RETRY_ATTEMPTS:3}
+    retry-delay-seconds: ${WHATSAPP_RATE_LIMIT_RETRY_DELAY_SECONDS:60}
+  bulk-messaging:
+    max-recipients-per-bulk: ${WHATSAPP_MAX_RECIPIENTS_PER_BULK:1000}
+    template-validation-enabled: ${WHATSAPP_TEMPLATE_VALIDATION_ENABLED:true}
+    delivery-status-check-enabled: ${WHATSAPP_DELIVERY_STATUS_CHECK_ENABLED:true}
+  logging:
+    enabled: ${WHATSAPP_LOGGING_ENABLED:true}
+
+# JWT API Authentication Credentials (Externalized for Security)
+jwt-api-auth:
+  username: ${JWT_API_AUTH_USERNAME:admin}
+  password: ${JWT_API_AUTH_PASSWORD:admin}
+
+# Multi-tenant Configuration for Production
+tenant:
+  isolation:
+    strategy: ${TENANT_ISOLATION_STRATEGY:DATABASE_PER_TENANT}
+    default-tenant: ${DEFAULT_TENANT:tenant_demo_001}
+  security:
+    enable-tenant-validation: ${TENANT_VALIDATION_ENABLED:true}
+    allowed-domains: ${ALLOWED_DOMAINS:yourdomain.com,www.yourdomain.com}
+    test-tenants: []
+
+# Production Configuration
+application:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://yourdomain.com,https://www.yourdomain.com}
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS,HEAD,PATCH
+    allowed-headers: "*"
+    allow-credentials: true
+    max-age: 3600
+  security:
+    rate-limiting:
+      enabled: ${RATE_LIMITING_ENABLED:true}
+      requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:100}
+  monitoring:
+    enable-tenant-metrics: ${TENANT_METRICS_ENABLED:true}
+    enable-performance-tracking: ${PERFORMANCE_TRACKING_ENABLED:true}
+    enable-debug-logging: ${DEBUG_LOGGING_ENABLED:false}
+  # Application URLs Configuration
+  urls:
+    qrcode-scan-host-prefix: ${QRCODE_SCAN_HOST_PREFIX:https://yourdomain.com/admin}
+    email-host-url-prefix: ${EMAIL_HOST_URL_PREFIX:https://yourdomain.com}
+
+# Production Environment Configuration
+environment:
+  name: production
+  fargate:
+    enabled: true
+    cluster-name: ${FARGATE_CLUSTER_NAME:event-site-manager-cluster}
+    service-name: ${FARGATE_SERVICE_NAME:event-site-manager-service}
+  database:
+    connection-pool-size: ${DB_CONNECTION_POOL_SIZE:10}
+    query-timeout: ${DB_QUERY_TIMEOUT:30}
+  performance:
+    enable-caching: true
+    cache-ttl: ${CACHE_TTL:3600}
