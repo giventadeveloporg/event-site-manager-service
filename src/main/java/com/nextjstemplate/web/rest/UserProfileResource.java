@@ -50,12 +50,11 @@ public class UserProfileResource {
     private final JwtEncoder jwtEncoder;
 
     public UserProfileResource(
-        UserProfileService userProfileService,
-        UserProfileRepository userProfileRepository,
-        UserProfileQueryService userProfileQueryService,
-        JwtDecoder jwtDecoder,
-        JwtEncoder jwtEncoder
-    ) {
+            UserProfileService userProfileService,
+            UserProfileRepository userProfileRepository,
+            UserProfileQueryService userProfileQueryService,
+            JwtDecoder jwtDecoder,
+            JwtEncoder jwtEncoder) {
         this.userProfileService = userProfileService;
         this.userProfileRepository = userProfileRepository;
         this.userProfileQueryService = userProfileQueryService;
@@ -73,26 +72,30 @@ public class UserProfileResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<UserProfileDTO> createUserProfile(@Valid @RequestBody UserProfileDTO userProfileDTO) throws URISyntaxException {
+    public ResponseEntity<UserProfileDTO> createUserProfile(@Valid @RequestBody UserProfileDTO userProfileDTO)
+            throws URISyntaxException {
         log.debug("REST request to save UserProfile : {}", userProfileDTO);
         if (userProfileDTO.getId() != null) {
             throw new BadRequestAlertException("A new userProfile cannot already have an ID", ENTITY_NAME, "idexists");
         }
         JwtClaimsSet claims = JwtClaimsSet.builder().subject(userProfileDTO.getEmail()).build();
-        JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS512).build();
+        JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256).build();
         String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
         userProfileDTO.setEmailSubscriptionToken(token);
         userProfileDTO.setIsEmailSubscribed(true);
         UserProfileDTO result = userProfileService.save(userProfileDTO);
         return ResponseEntity
-            .created(new URI("/api/user-profiles/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+                .created(new URI("/api/user-profiles/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME,
+                        result.getId().toString()))
+                .body(result);
     }
 
     /**
      * {@code POST  /user-profiles} : Create a new userProfile.
-     * Used by the excel bulk upload template to insert multiple users at the same time in the user profile table
+     * Used by the excel bulk upload template to insert multiple users at the same
+     * time in the user profile table
+     * 
      * @param users the userProfileDTOs to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
      *         body the new userProfileDTO, or with status {@code 400 (Bad Request)}
@@ -120,9 +123,8 @@ public class UserProfileResource {
      */
     @PutMapping("/{id}")
     public ResponseEntity<UserProfileDTO> updateUserProfile(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody UserProfileDTO userProfileDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @Valid @RequestBody UserProfileDTO userProfileDTO) throws URISyntaxException {
         log.debug("REST request to update UserProfile : {}, {}", id, userProfileDTO);
         if (userProfileDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -137,9 +139,10 @@ public class UserProfileResource {
 
         UserProfileDTO result = userProfileService.update(userProfileDTO);
         return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, userProfileDTO.getId().toString()))
-            .body(result);
+                .ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        userProfileDTO.getId().toString()))
+                .body(result);
     }
 
     /**
@@ -160,9 +163,8 @@ public class UserProfileResource {
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<UserProfileDTO> partialUpdateUserProfile(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody UserProfileDTO userProfileDTO
-    ) throws URISyntaxException {
+            @PathVariable(value = "id", required = false) final Long id,
+            @NotNull @RequestBody UserProfileDTO userProfileDTO) throws URISyntaxException {
         log.debug("REST request to partial update UserProfile partially : {}, {}", id, userProfileDTO);
         if (userProfileDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -178,9 +180,9 @@ public class UserProfileResource {
         Optional<UserProfileDTO> result = userProfileService.partialUpdate(userProfileDTO);
 
         return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, userProfileDTO.getId().toString())
-        );
+                result,
+                HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME,
+                        userProfileDTO.getId().toString()));
     }
 
     /**
@@ -193,13 +195,13 @@ public class UserProfileResource {
      */
     @GetMapping("")
     public ResponseEntity<List<UserProfileDTO>> getAllUserProfiles(
-        UserProfileCriteria criteria,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
-    ) {
+            UserProfileCriteria criteria,
+            @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         log.debug("REST request to get UserProfiles by criteria: {}", criteria);
 
         Page<UserProfileDTO> page = userProfileQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        HttpHeaders headers = PaginationUtil
+                .generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
@@ -242,9 +244,9 @@ public class UserProfileResource {
         log.debug("REST request to delete UserProfile : {}", id);
         userProfileService.delete(id);
         return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+                .noContent()
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+                .build();
     }
 
     /**
@@ -264,7 +266,8 @@ public class UserProfileResource {
      * Unsubscribe endpoint: /api/unsubscribe-email?email=...&token=...
      */
     @GetMapping("/unsubscribe-email")
-    public ResponseEntity<Map<String, Object>> unsubscribeEmail(@RequestParam String email, @RequestParam String token) {
+    public ResponseEntity<Map<String, Object>> unsubscribeEmail(@RequestParam String email,
+            @RequestParam String token) {
         Map<String, Object> response = new HashMap<>();
         Optional<UserProfileDTO> userOpt = userProfileService.findByEmail(email);
         if (userOpt.isEmpty()) {
@@ -303,7 +306,8 @@ public class UserProfileResource {
      * Resubscribe endpoint: /api/resubscribe-email?email=...&token=...
      */
     @GetMapping("/resubscribe-email")
-    public ResponseEntity<Map<String, Object>> resubscribeEmail(@RequestParam String email, @RequestParam String tenantId) {
+    public ResponseEntity<Map<String, Object>> resubscribeEmail(@RequestParam String email,
+            @RequestParam String tenantId) {
         Map<String, Object> response = new HashMap<>();
         Optional<UserProfileDTO> userProfileDTO = userProfileService.findByEmailAndTenantId(email, tenantId);
         if (userProfileDTO.isEmpty()) {
@@ -314,7 +318,8 @@ public class UserProfileResource {
         UserProfileDTO user = userProfileDTO.orElseThrow();
         try {
             JwtClaimsSet claims = JwtClaimsSet.builder().subject(user.getEmail()).build();
-            JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS512).build();
+            JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256)
+                    .build();
             String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
             user.setEmailSubscriptionToken(token);
             user.setIsEmailSubscribed(true);

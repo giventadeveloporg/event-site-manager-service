@@ -127,4 +127,9 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
+# JWT API Authentication Credentials (Externalized for Security)
+jwt-api-auth:
+  username: ${JWT_API_AUTH_USERNAME:jwtprod}
+  password: ${JWT_API_AUTH_PASSWORD:jwt$prod2024!}
+
 # application:

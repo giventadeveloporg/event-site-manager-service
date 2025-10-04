@@ -264,6 +264,11 @@ testing:
     sms: ${MOCK_SMS_SERVICE:true}
     payment: ${MOCK_PAYMENT_SERVICE:true}
 
+# JWT API Authentication Credentials (Externalized for Security)
+jwt-api-auth:
+  username: ${JWT_API_AUTH_USERNAME:jwtlocal}
+  password: ${JWT_API_AUTH_PASSWORD:jwt#local123}
+
 # Development Tools Configuration
 development:
   h2-console:

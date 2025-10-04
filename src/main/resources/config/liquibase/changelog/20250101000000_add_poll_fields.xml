@@ -51,15 +51,15 @@
     <changeSet id="20250101-03-add-poll-constraints" author="claude">
         <comment>Add check constraints for event_poll table to ensure data integrity</comment>
 
-        <addCheckConstraint
-            tableName="event_poll"
-            constraintName="check_max_responses_positive"
-            checkCondition="max_responses_per_user > 0"/>
+        <sql>
+            ALTER TABLE event_poll ADD CONSTRAINT check_max_responses_positive
+            CHECK (max_responses_per_user > 0);
+        </sql>
 
-        <addCheckConstraint
-            tableName="event_poll"
-            constraintName="check_poll_dates"
-            checkCondition="(end_date IS NULL) OR (end_date >= start_date)"/>
+        <sql>
+            ALTER TABLE event_poll ADD CONSTRAINT check_poll_dates
+            CHECK ((end_date IS NULL) OR (end_date >= start_date));
+        </sql>
     </changeSet>
 
 </databaseChangeLog>

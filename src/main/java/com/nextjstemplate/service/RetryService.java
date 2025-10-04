@@ -1,9 +1,9 @@
 package com.nextjstemplate.service;
 
-import com.nextjstemplate.config.WhatsAppProperties;
 import com.nextjstemplate.service.exception.WhatsAppRateLimitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.function.Supplier;
@@ -16,10 +16,14 @@ public class RetryService {
 
   private static final Logger LOG = LoggerFactory.getLogger(RetryService.class);
 
-  private final WhatsAppProperties whatsAppProperties;
+  private final int retryAttempts;
+  private final int retryDelaySeconds;
 
-  public RetryService(WhatsAppProperties whatsAppProperties) {
-    this.whatsAppProperties = whatsAppProperties;
+  public RetryService(
+      @Value("${whatsapp.rate-limit.retry-attempts:3}") int retryAttempts,
+      @Value("${whatsapp.rate-limit.retry-delay-seconds:60}") int retryDelaySeconds) {
+    this.retryAttempts = retryAttempts;
+    this.retryDelaySeconds = retryDelaySeconds;
   }
 
   /**
@@ -32,22 +36,19 @@ public class RetryService {
    * @throws Exception if all retry attempts fail
    */
   public <T> T executeWithRetry(Supplier<T> supplier, String operationName) throws Exception {
-    int maxAttempts = whatsAppProperties.getRateLimit().getRetryAttempts();
-    int retryDelaySeconds = whatsAppProperties.getRateLimit().getRetryDelaySeconds();
-
     Exception lastException = null;
 
-    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+    for (int attempt = 1; attempt <= retryAttempts; attempt++) {
       try {
-        LOG.debug("Executing {} (attempt {}/{})", operationName, attempt, maxAttempts);
+        LOG.debug("Executing {} (attempt {}/{})", operationName, attempt, retryAttempts);
         return supplier.get();
 
       } catch (WhatsAppRateLimitException e) {
         lastException = e;
         LOG.warn("Rate limit hit for {} (attempt {}/{}): {}",
-            operationName, attempt, maxAttempts, e.getMessage());
+            operationName, attempt, retryAttempts, e.getMessage());
 
-        if (attempt < maxAttempts) {
+        if (attempt < retryAttempts) {
           int delaySeconds = e.getRetryAfterSeconds() > 0 ? e.getRetryAfterSeconds() : retryDelaySeconds;
           LOG.info("Waiting {} seconds before retry for {}", delaySeconds, operationName);
           sleep(delaySeconds * 1000);
@@ -56,9 +57,9 @@ public class RetryService {
       } catch (Exception e) {
         lastException = e;
         LOG.error("Error executing {} (attempt {}/{}): {}",
-            operationName, attempt, maxAttempts, e.getMessage(), e);
+            operationName, attempt, retryAttempts, e.getMessage(), e);
 
-        if (attempt < maxAttempts) {
+        if (attempt < retryAttempts) {
           // For non-rate-limit errors, use exponential backoff
           int delaySeconds = retryDelaySeconds * (int) Math.pow(2, attempt - 1);
           LOG.info("Waiting {} seconds before retry for {}", delaySeconds, operationName);
@@ -81,22 +82,19 @@ public class RetryService {
    * @throws Exception if all retry attempts fail
    */
   public <T> T executeBulkWithRetry(Supplier<T> supplier, String operationName) throws Exception {
-    int maxAttempts = whatsAppProperties.getRateLimit().getRetryAttempts();
-    int retryDelaySeconds = whatsAppProperties.getRateLimit().getRetryDelaySeconds();
-
     Exception lastException = null;
 
-    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+    for (int attempt = 1; attempt <= retryAttempts; attempt++) {
       try {
-        LOG.debug("Executing bulk {} (attempt {}/{})", operationName, attempt, maxAttempts);
+        LOG.debug("Executing bulk {} (attempt {}/{})", operationName, attempt, retryAttempts);
         return supplier.get();
 
       } catch (WhatsAppRateLimitException e) {
         lastException = e;
         LOG.warn("Rate limit hit for bulk {} (attempt {}/{}): {}",
-            operationName, attempt, maxAttempts, e.getMessage());
+            operationName, attempt, retryAttempts, e.getMessage());
 
-        if (attempt < maxAttempts) {
+        if (attempt < retryAttempts) {
           // For bulk operations, use longer delays
           int delaySeconds = e.getRetryAfterSeconds() > 0 ? e.getRetryAfterSeconds() * 2 : retryDelaySeconds * 2;
           LOG.info("Waiting {} seconds before retry for bulk {}", delaySeconds, operationName);
@@ -106,9 +104,9 @@ public class RetryService {
       } catch (Exception e) {
         lastException = e;
         LOG.error("Error executing bulk {} (attempt {}/{}): {}",
-            operationName, attempt, maxAttempts, e.getMessage(), e);
+            operationName, attempt, retryAttempts, e.getMessage(), e);
 
-        if (attempt < maxAttempts) {
+        if (attempt < retryAttempts) {
           // For bulk operations, use longer exponential backoff
           int delaySeconds = retryDelaySeconds * 2 * (int) Math.pow(2, attempt - 1);
           LOG.info("Waiting {} seconds before retry for bulk {}", delaySeconds, operationName);

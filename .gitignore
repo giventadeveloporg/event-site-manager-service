@@ -45,9 +45,10 @@ local.properties
 .env.local
 .env.development
 .env.production
+.env.*
 .env.production.*
 .env.local*
-
+env-template.txt
 # External tool builders
 .externalToolBuilders/**
 

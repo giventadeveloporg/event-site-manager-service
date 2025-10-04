@@ -167,6 +167,7 @@ class TwilioWhatsAppServiceTest {
     logEntry.setMessageBody("Test message");
     logEntry.setStatus("SENT");
     logEntry.setType("TRANSACTIONAL");
+    logEntry.setMetadata(Map.of("key", "value")); // Add metadata to ensure objectMapper is called
 
     when(objectMapper.writeValueAsString(any())).thenReturn("{}");
     when(whatsAppLogService.save(any())).thenReturn(new WhatsAppLogDTO());

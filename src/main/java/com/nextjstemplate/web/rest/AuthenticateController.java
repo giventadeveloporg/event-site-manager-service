@@ -41,9 +41,8 @@ public class AuthenticateController {
     @PostMapping("/authenticate")
     public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-            loginVM.getUsername(),
-            loginVM.getPassword()
-        );
+                loginVM.getUsername(),
+                loginVM.getPassword());
 
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         String jwt = this.createToken(authentication, loginVM.isRememberMe());
@@ -53,22 +52,23 @@ public class AuthenticateController {
     }
 
     private String createToken(Authentication authentication, boolean rememberMe) {
-        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" "));
+        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(" "));
 
         Instant now = Instant.now();
         Instant validity = rememberMe
-            ? now.plus(this.tokenValidityInSecondsForRememberMe, ChronoUnit.SECONDS)
-            : now.plus(this.tokenValidityInSeconds, ChronoUnit.SECONDS);
+                ? now.plus(this.tokenValidityInSecondsForRememberMe, ChronoUnit.SECONDS)
+                : now.plus(this.tokenValidityInSeconds, ChronoUnit.SECONDS);
 
         JwtClaimsSet claims = JwtClaimsSet
-            .builder()
-            .issuedAt(now)
-            .expiresAt(validity)
-            .subject(authentication.getName())
-            .claim("auth", authorities)
-            .build();
+                .builder()
+                .issuedAt(now)
+                .expiresAt(validity)
+                .subject(authentication.getName())
+                .claim("auth", authorities)
+                .build();
 
-        JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS512).build();
+        JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256).build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
     }
 

@@ -1,9 +1,9 @@
 package com.nextjstemplate.service;
 
-import com.nextjstemplate.config.WhatsAppProperties;
 import com.nextjstemplate.service.exception.WhatsAppRateLimitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,11 +18,18 @@ public class RateLimitService {
 
   private static final Logger LOG = LoggerFactory.getLogger(RateLimitService.class);
 
-  private final WhatsAppProperties whatsAppProperties;
+  private final int messagesPerMinute;
+  private final int bulkMessagesPerHour;
+  private final int retryDelaySeconds;
   private final ConcurrentHashMap<String, RateLimitInfo> rateLimitMap = new ConcurrentHashMap<>();
 
-  public RateLimitService(WhatsAppProperties whatsAppProperties) {
-    this.whatsAppProperties = whatsAppProperties;
+  public RateLimitService(
+      @Value("${whatsapp.rate-limit.messages-per-minute:20}") int messagesPerMinute,
+      @Value("${whatsapp.rate-limit.bulk-messages-per-hour:100}") int bulkMessagesPerHour,
+      @Value("${whatsapp.rate-limit.retry-delay-seconds:60}") int retryDelaySeconds) {
+    this.messagesPerMinute = messagesPerMinute;
+    this.bulkMessagesPerHour = bulkMessagesPerHour;
+    this.retryDelaySeconds = retryDelaySeconds;
   }
 
   /**
@@ -42,16 +49,14 @@ public class RateLimitService {
     // Clean up old entries
     rateLimitInfo.cleanupOldEntries(windowStart);
 
-    int limit = isBulk ? whatsAppProperties.getRateLimit().getBulkMessagesPerHour()
-        : whatsAppProperties.getRateLimit().getMessagesPerMinute();
+    int limit = isBulk ? bulkMessagesPerHour : messagesPerMinute;
 
     if (rateLimitInfo.getMessageCount() >= limit) {
-      int retryAfterSeconds = whatsAppProperties.getRateLimit().getRetryDelaySeconds();
       LOG.warn("Rate limit exceeded for tenant: {}, isBulk: {}, limit: {}",
           tenantId, isBulk, limit);
       throw new WhatsAppRateLimitException(
           "Rate limit exceeded. Try again later.",
-          retryAfterSeconds);
+          retryDelaySeconds);
     }
 
     rateLimitInfo.addMessage(now);
@@ -71,16 +76,14 @@ public class RateLimitService {
     RateLimitInfo rateLimitInfo = rateLimitMap.get(key);
 
     if (rateLimitInfo == null) {
-      return isBulk ? whatsAppProperties.getRateLimit().getBulkMessagesPerHour()
-          : whatsAppProperties.getRateLimit().getMessagesPerMinute();
+      return isBulk ? bulkMessagesPerHour : messagesPerMinute;
     }
 
     LocalDateTime now = LocalDateTime.now();
     LocalDateTime windowStart = now.minusMinutes(1);
     rateLimitInfo.cleanupOldEntries(windowStart);
 
-    int limit = isBulk ? whatsAppProperties.getRateLimit().getBulkMessagesPerHour()
-        : whatsAppProperties.getRateLimit().getMessagesPerMinute();
+    int limit = isBulk ? bulkMessagesPerHour : messagesPerMinute;
 
     return Math.max(0, limit - rateLimitInfo.getMessageCount());
   }

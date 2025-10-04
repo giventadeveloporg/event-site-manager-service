@@ -1,10 +1,8 @@
 package com.nextjstemplate.service;
 
-import com.nextjstemplate.config.AwsProperties;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -25,17 +23,17 @@ public class EmailSenderService {
     private final SesClient sesClient;
     private final String fromAddress;
 
-    @Autowired
-    public EmailSenderService(AwsProperties awsProperties, @Value("${jhipster.mail.from}") String fromAddress) {
-        this.sesClient =
-            SesClient
+    public EmailSenderService(
+            @Value("${aws.s3.access-key}") String accessKey,
+            @Value("${aws.s3.secret-key}") String secretKey,
+            @Value("${aws.s3.region}") String region,
+            @Value("${jhipster.mail.from}") String fromAddress) {
+        this.sesClient = SesClient
                 .builder()
-                .region(Region.of(awsProperties.getS3().getRegion()))
+                .region(Region.of(region))
                 .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(awsProperties.getS3().getAccessKey(), awsProperties.getS3().getSecretKey())
-                    )
-                )
+                        StaticCredentialsProvider.create(
+                                AwsBasicCredentials.create(accessKey, secretKey)))
                 .build();
         this.fromAddress = fromAddress;
     }
@@ -49,15 +47,14 @@ public class EmailSenderService {
                 emailBody = Body.builder().text(Content.builder().data(body).build()).build();
             }
             SendEmailRequest.Builder emailRequestBuilder = SendEmailRequest
-                .builder()
-                .destination(Destination.builder().toAddresses(to).build())
-                .message(Message.builder().subject(Content.builder().data(subject).build()).body(emailBody).build())
-                .source(fromAddress);
+                    .builder()
+                    .destination(Destination.builder().toAddresses(to).build())
+                    .message(Message.builder().subject(Content.builder().data(subject).build()).body(emailBody).build())
+                    .source(fromAddress);
             if (headers != null && !headers.isEmpty()) {
-                emailRequestBuilder =
-                    emailRequestBuilder.overrideConfiguration(cfg -> {
-                        headers.forEach(cfg::putHeader);
-                    });
+                emailRequestBuilder = emailRequestBuilder.overrideConfiguration(cfg -> {
+                    headers.forEach(cfg::putHeader);
+                });
             }
             SendEmailRequest emailRequest = emailRequestBuilder.build();
             SendEmailResponse response = sesClient.sendEmail(emailRequest);
@@ -83,7 +80,8 @@ public class EmailSenderService {
     }
 
     // Batch email sending for better performance
-    public void sendBatchEmails(List<String> toAddresses, String subject, String body, boolean isHtml, Map<String, String> headers) {
+    public void sendBatchEmails(List<String> toAddresses, String subject, String body, boolean isHtml,
+            Map<String, String> headers) {
         try {
             Body emailBody;
             if (isHtml) {
@@ -99,16 +97,16 @@ public class EmailSenderService {
                 List<String> batch = toAddresses.subList(i, endIndex);
 
                 SendEmailRequest.Builder emailRequestBuilder = SendEmailRequest
-                    .builder()
-                    .destination(Destination.builder().toAddresses(batch).build())
-                    .message(Message.builder().subject(Content.builder().data(subject).build()).body(emailBody).build())
-                    .source(fromAddress);
+                        .builder()
+                        .destination(Destination.builder().toAddresses(batch).build())
+                        .message(Message.builder().subject(Content.builder().data(subject).build()).body(emailBody)
+                                .build())
+                        .source(fromAddress);
 
                 if (headers != null && !headers.isEmpty()) {
-                    emailRequestBuilder =
-                        emailRequestBuilder.overrideConfiguration(cfg -> {
-                            headers.forEach(cfg::putHeader);
-                        });
+                    emailRequestBuilder = emailRequestBuilder.overrideConfiguration(cfg -> {
+                        headers.forEach(cfg::putHeader);
+                    });
                 }
 
                 SendEmailRequest emailRequest = emailRequestBuilder.build();

@@ -20,17 +20,17 @@ public class JwtConfiguration {
     @Bean
     public JwtEncoder jwtEncoder() {
         byte[] secretBytes = java.util.Base64.getDecoder().decode(base64Secret);
-        SecretKey secretKey = new SecretKeySpec(secretBytes, 0, secretBytes.length, "HmacSHA512");
+        SecretKey secretKey = new SecretKeySpec(secretBytes, 0, secretBytes.length, "HmacSHA256");
         return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey));
     }
 
     @Bean
     public JwtDecoder jwtDecoder() {
         byte[] secretBytes = java.util.Base64.getDecoder().decode(base64Secret);
-        SecretKey secretKey = new SecretKeySpec(secretBytes, 0, secretBytes.length, "HmacSHA512");
+        SecretKey secretKey = new SecretKeySpec(secretBytes, 0, secretBytes.length, "HmacSHA256");
         return NimbusJwtDecoder
-            .withSecretKey(secretKey)
-            .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS512)
-            .build();
+                .withSecretKey(secretKey)
+                .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256)
+                .build();
     }
 }

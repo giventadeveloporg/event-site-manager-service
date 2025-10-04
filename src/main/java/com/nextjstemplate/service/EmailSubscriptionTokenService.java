@@ -61,7 +61,7 @@ public class EmailSubscriptionTokenService {
 
     JwtClaimsSet claims = claimsBuilder.build();
 
-    JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS512).build();
+    JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256).build();
     String token = this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
 
     log.debug("Successfully generated email subscription token for email: {}", email);

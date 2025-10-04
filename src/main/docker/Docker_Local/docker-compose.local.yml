@@ -44,6 +44,8 @@ services:
 
   # Spring Boot Application
   app:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile.local
@@ -52,8 +54,11 @@ services:
       - "8080:8080"
     environment:
       # Spring Configuration
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      JAVA_OPTS: ${JAVA_OPTS}
+      SPRING_PROFILES_ACTIVE: dev
+      JAVA_OPTS: ${JAVA_OPTS:-Xmx512m -Xms256m}
+
+      # Disable Liquibase
+      SPRING_LIQUIBASE_ENABLED: false
 
       # Database Configuration
       RDS_ENDPOINT: ${RDS_ENDPOINT}
@@ -65,9 +70,15 @@ services:
       CACHE_TYPE: ${CACHE_TYPE}
       POSTGRES_CACHE_TABLE: ${POSTGRES_CACHE_TABLE}
 
-      # AWS Configuration
+      # JWT Authentication Configuration
+      JWT_API_AUTH_USERNAME: ${JWT_API_AUTH_USERNAME}
+      JWT_API_AUTH_PASSWORD: ${JWT_API_AUTH_PASSWORD}
+
+      # AWS Configuration (Direct Assignment for Docker Development)
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
 
       # Twilio Configuration
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}

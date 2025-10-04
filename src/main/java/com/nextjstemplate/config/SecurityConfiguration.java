@@ -3,9 +3,9 @@ package com.nextjstemplate.config;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
@@ -22,6 +22,12 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 @Configuration
 public class SecurityConfiguration {
+
+    @Value("${jwt-api-auth.username:admin}")
+    private String jwtApiAuthUsername;
+
+    @Value("${jwt-api-auth.password:admin}")
+    private String jwtApiAuthPassword;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {
@@ -71,16 +77,6 @@ public class SecurityConfiguration {
     @Bean
     public UserDetailsService userDetailsService() {
         PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        String jwtApiAuthUsername = System.getenv("JWT_API_AUTH_USERNAME");
-        String jwtApiAuthPassword = System.getenv("JWT_API_AUTH_PASSWORD");
-
-        // Use environment variables with fallback to defaults for development
-        if (jwtApiAuthUsername == null || jwtApiAuthUsername.isEmpty()) {
-            jwtApiAuthUsername = "admin";
-        }
-        if (jwtApiAuthPassword == null || jwtApiAuthPassword.isEmpty()) {
-            jwtApiAuthPassword = "admin";
-        }
 
         return new InMemoryUserDetailsManager(
                 User.withUsername(jwtApiAuthUsername).password(encoder.encode(jwtApiAuthPassword))

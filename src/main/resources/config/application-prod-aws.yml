@@ -271,6 +271,11 @@ management:
       slo:
         http.server.requests: 50ms, 100ms, 200ms, 500ms
 
+# JWT API Authentication Credentials (Externalized for Security)
+jwt-api-auth:
+  username: ${JWT_API_AUTH_USERNAME:jwtprod}
+  password: ${JWT_API_AUTH_PASSWORD:jwt$prod2024!}
+
 # Application specific configuration
 application:
   cors:

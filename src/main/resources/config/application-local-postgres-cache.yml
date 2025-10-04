@@ -133,7 +133,7 @@ spring:
   cache:
     type: ${CACHE_TYPE:postgresql}
     postgresql:
-      cache-table: ${POSTGRES_CACHE_TABLE:app_cache}
+      cache-table: ${POSTGRES_CACHE_TABLE:event_site_app_cache}
       time-to-live: 600000 # 10 minutes
       cache-null-values: false
       enable-statistics: true
@@ -319,7 +319,7 @@ application:
 # PostgreSQL Caching Configuration
 postgresql-cache:
   enabled: true
-  cache-table: ${POSTGRES_CACHE_TABLE:app_cache}
+  cache-table: ${POSTGRES_CACHE_TABLE:event_site_app_cache}
   session-table: session_store
   cleanup-interval: 300000 # 5 minutes
   max-cache-size: 10000
@@ -339,6 +339,11 @@ testing:
     email: ${MOCK_EMAIL_SERVICE:true}
     sms: ${MOCK_SMS_SERVICE:true}
     payment: ${MOCK_PAYMENT_SERVICE:true}
+
+# JWT API Authentication Credentials (Externalized for Security)
+jwt-api-auth:
+  username: ${JWT_API_AUTH_USERNAME:jwtcache}
+  password: ${JWT_API_AUTH_PASSWORD:jwt$cache123!}
 
 # Development Tools Configuration
 development:
