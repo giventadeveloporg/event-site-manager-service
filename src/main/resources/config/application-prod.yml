@@ -20,8 +20,8 @@ logging:
     tech.jhipster: INFO
     com.nextjstemplate: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
   file:
     name: /var/log/event-site-manager/application-prod.log
     max-size: 100MB
@@ -31,7 +31,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info,metrics,prometheus"
+        include: 'health,info,metrics,prometheus'
   endpoint:
     health:
       show-details: when-authorized
@@ -90,25 +90,25 @@ spring:
         connectTimeout: 10
         applicationName: event-site-manager-fargate-prod
 
-# ===================================================================
-# To enable TLS in production, generate a certificate using:
-# keytool -genkey -alias nextjstemplate -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
-#
-# You can also use Let's Encrypt:
-# See details in topic "Create a Java Keystore (.JKS) from Let's Encrypt Certificates" on https://maximilian-boehm.com/en-gb/blog
-#
-# Then, modify the server.ssl properties so your "server" configuration looks like:
-#
-# server:
-#   port: 443
-#   ssl:
-#     key-store: classpath:config/tls/keystore.p12
-#     key-store-password: password
-#     key-store-type: PKCS12
-#     key-alias: selfsigned
-#     # The ciphers suite enforce the security by deactivating some old and deprecated SSL cipher, this list was tested against SSL Labs (https://www.ssllabs.com/ssltest/)
-#     ciphers: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 ,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
-# ===================================================================
+  # ===================================================================
+  # To enable TLS in production, generate a certificate using:
+  # keytool -genkey -alias nextjstemplate -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
+  #
+  # You can also use Let's Encrypt:
+  # See details in topic "Create a Java Keystore (.JKS) from Let's Encrypt Certificates" on https://maximilian-boehm.com/en-gb/blog
+  #
+  # Then, modify the server.ssl properties so your "server" configuration looks like:
+  #
+  # server:
+  #   port: 443
+  #   ssl:
+  #     key-store: classpath:config/tls/keystore.p12
+  #     key-store-password: password
+  #     key-store-type: PKCS12
+  #     key-alias: selfsigned
+  #     # The ciphers suite enforce the security by deactivating some old and deprecated SSL cipher, this list was tested against SSL Labs (https://www.ssllabs.com/ssltest/)
+  #     ciphers: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 ,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
+  # ===================================================================
   # JPA/Hibernate Configuration
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -141,7 +141,7 @@ spring:
           region:
             factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
     hibernate:
-      ddl-auto: validate  # Don't modify database schema in production
+      ddl-auto: validate # Don't modify database schema in production
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     open-in-view: false
@@ -154,7 +154,7 @@ spring:
       time-to-live: 600000 # 10 minutes
       cache-null-values: false
       enable-statistics: true
-      key-prefix: "event-site-manager:postgres-cache:"
+      key-prefix: 'event-site-manager:postgres-cache:'
       cleanup-interval: 300000 # 5 minutes
       max-cache-size: 10000
 
@@ -162,7 +162,7 @@ spring:
   session:
     store-type: postgresql
     postgresql:
-      namespace: "event-site-manager:postgres-cache:session"
+      namespace: 'event-site-manager:postgres-cache:session'
       flush-mode: on_save
       save-mode: on_set_attribute
       session-table: session_store
@@ -209,15 +209,15 @@ server:
       timeout: ${SESSION_TIMEOUT:30m}
       cookie:
         name: EVENT_SITE_MANAGER_SESSION_PROD
-        http-only: true  # Secure for production
-        secure: true     # HTTPS only
+        http-only: true # Secure for production
+        secure: true # HTTPS only
         same-site: strict
   compression:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
     min-response-size: 1024
   error:
-    include-stacktrace: never  # Hide stack traces in production
+    include-stacktrace: never # Hide stack traces in production
     include-message: always
     include-binding-errors: always
 
@@ -247,10 +247,10 @@ jhipster:
     exposed-headers: 'Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
     allow-credentials: false
     max-age: 1800
-  cache:
-    ehcache: # Ehcache configuration for production (compatibility)
+  cache: # Cache configuration
+    ehcache: # Ehcache configuration
       time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
-      max-entries: 1000 # Number of objects in each cache entry
+      max-entries: 100 # Number of objects in each cache entry
     # PostgreSQL caching enabled in Spring cache configuration above
   logging:
     use-json-format: true # JSON format for production logging
@@ -316,8 +316,8 @@ application:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
     allowed-methods: GET,POST,PUT,DELETE,OPTIONS,HEAD,PATCH
-    allowed-headers: "*"
-    allow-credentials: false  # Must be false for * origins (security)
+    allowed-headers: '*'
+    allow-credentials: false # Must be false for * origins (security)
     max-age: 3600
   security:
     rate-limiting:
