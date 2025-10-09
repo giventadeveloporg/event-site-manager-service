@@ -19,6 +19,7 @@ spring:
   config:
     activate:
       on-profile: '!api-docs'
+    ignore-unknown-fields: true
   application:
     name: nextjs_template_boot
   jmx:

@@ -30,19 +30,38 @@ spring:
   jackson:
     serialization:
       indent-output: true
-#  datasource:
-#    type: com.zaxxer.hikari.HikariDataSource
-#    url: jdbc:postgresql://localhost:5432/event_site_manager_db
-##    url: jdbc:postgresql://event-site-manager-postgres-prod.cwffi3ch4r75.us-east-1.rds.amazonaws.com:5432/event_site_manager_db
-##    username: giventauser
-##    password: giventauser
-#    username: event_site_app
-#    password: event_site_app!
-#
-#    hikari:
-#      poolName: Hikari
-#      auto-commit: false
-#      maximum-pool-size: 5
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=3600s
+  #  datasource:
+  #    type: com.zaxxer.hikari.HikariDataSource
+  #    # Use H2 in-memory database for local development (no external DB required)
+  #    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+  #    username: sa
+  #    password: ""
+  #    driver-class-name: org.h2.Driver
+  #    hikari:
+  #      maximum-pool-size: 5
+  #      minimum-idle: 1
+  #      connection-timeout: 20000
+  #      idle-timeout: 300000
+  #      max-lifetime: 1200000
+  #      auto-commit: false
+
+  #  datasource:
+  #    type: com.zaxxer.hikari.HikariDataSource
+  #    url: jdbc:postgresql://localhost:5432/event_site_manager_db
+  ##    url: jdbc:postgresql://event-site-manager-postgres-prod.cwffi3ch4r75.us-east-1.rds.amazonaws.com:5432/event_site_manager_db
+  ##    username: giventauser
+  ##    password: giventauser
+  #    username: event_site_app
+  #    password: event_site_app!
+  #
+  #    hikari:
+  #      poolName: Hikari
+  #      auto-commit: false
+  #      maximum-pool-size: 5
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:postgresql://${RDS_ENDPOINT:localhost}:5432/${DB_NAME:event_site_manager_db}
@@ -55,6 +74,12 @@ spring:
       idle-timeout: 300000
       max-lifetime: 1200000
       auto-commit: false
+  #  jpa:
+  #    open-in-view: false
+  #    database-platform: org.hibernate.dialect.H2Dialect
+  #    show-sql: true
+  #    properties:
+  #      hibernate.dialect: org.hibernate.dialect.H2Dialectjpa:
   jpa:
     open-in-view: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -67,7 +92,7 @@ spring:
       hibernate.type.preferred_instant_jdbc_type: TIMESTAMP
       hibernate.id.new_generator_mappings: true
       hibernate.connection.provider_disables_autocommit: true
-      hibernate.cache.use_second_level_cache: true
+      hibernate.cache.use_second_level_cache: false
       hibernate.cache.use_query_cache: false
       hibernate.generate_statistics: false
       hibernate.jdbc.batch_size: 25
@@ -81,8 +106,9 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
   liquibase:
-    # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev, faker
+    # Completely disable Liquibase for dev profile
+    enabled: false
+    contexts: ''
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
@@ -99,9 +125,10 @@ server:
 # ===================================================================
 
 jhipster:
-  cache: # Cache configuration
-    ehcache: # Ehcache configuration
-      time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
+  cache:
+    #    type: caffeine
+    ehcache:
+      time-to-live-seconds: 3600
       max-entries: 100 # Number of objects in each cache entry
   # CORS is only enabled by default with the "dev" profile
   cors:
@@ -126,6 +153,7 @@ jhipster:
       host: localhost
       port: 5000
       ring-buffer-size: 512
+
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class
@@ -140,4 +168,10 @@ jwt-api-auth:
   username: ${JWT_API_AUTH_USERNAME:admin}
   password: ${JWT_API_AUTH_PASSWORD:admin}
 
-# application:
+# AWS Configuration (with defaults for local development)
+aws:
+  s3:
+    access-key: ${AWS_ACCESS_KEY_ID:local-dev-key}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:local-dev-secret}
+    region: ${AWS_REGION:us-east-1}
+    bucket-name: ${AWS_S3_BUCKET_NAME:local-dev-bucket}
