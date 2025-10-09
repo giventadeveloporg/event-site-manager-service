@@ -40,33 +40,52 @@ public class AuthenticateController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                loginVM.getUsername(),
-                loginVM.getPassword());
+        System.out.println("=== AUTHENTICATION ATTEMPT DEBUG ===");
+        System.out.println("Attempting authentication for username: " + loginVM.getUsername());
+        System.out.println(
+            "Password provided: " + (loginVM.getPassword() != null ? "YES (length=" + loginVM.getPassword().length() + ")" : "NO")
+        );
+        if (loginVM.getPassword() != null && loginVM.getPassword().length() > 2) {
+            System.out.println("Password prefix: " + loginVM.getPassword().substring(0, 2) + "***");
+        }
+        System.out.println("Remember me: " + loginVM.isRememberMe());
 
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        String jwt = this.createToken(authentication, loginVM.isRememberMe());
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setBearerAuth(jwt);
-        return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+            loginVM.getUsername(),
+            loginVM.getPassword()
+        );
+
+        try {
+            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+            System.out.println("Authentication successful for: " + authentication.getName());
+            String jwt = this.createToken(authentication, loginVM.isRememberMe());
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.setBearerAuth(jwt);
+            System.out.println("=== AUTHENTICATION SUCCESS ===");
+            return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println("Authentication failed: " + e.getMessage());
+            System.out.println("Exception type: " + e.getClass().getName());
+            System.out.println("=== AUTHENTICATION FAILED ===");
+            throw e;
+        }
     }
 
     private String createToken(Authentication authentication, boolean rememberMe) {
-        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
+        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" "));
 
         Instant now = Instant.now();
         Instant validity = rememberMe
-                ? now.plus(this.tokenValidityInSecondsForRememberMe, ChronoUnit.SECONDS)
-                : now.plus(this.tokenValidityInSeconds, ChronoUnit.SECONDS);
+            ? now.plus(this.tokenValidityInSecondsForRememberMe, ChronoUnit.SECONDS)
+            : now.plus(this.tokenValidityInSeconds, ChronoUnit.SECONDS);
 
         JwtClaimsSet claims = JwtClaimsSet
-                .builder()
-                .issuedAt(now)
-                .expiresAt(validity)
-                .subject(authentication.getName())
-                .claim("auth", authorities)
-                .build();
+            .builder()
+            .issuedAt(now)
+            .expiresAt(validity)
+            .subject(authentication.getName())
+            .claim("auth", authorities)
+            .build();
 
         JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256).build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();

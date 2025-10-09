@@ -1,71 +1,11 @@
-# ===================================================================
-# Multi-stage Dockerfile for Spring Boot Application
-# Optimized for AWS deployment with minimal image size
-# ===================================================================
+FROM eclipse-temurin:17-jre
 
-# Stage 1: Build the application
-FROM openjdk:11-jdk-slim AS builder
+# Copy JAR file
+COPY target/nextjs-template-boot-0.0.1-SNAPSHOT.jar /app.jar
 
-# Set working directory
-WORKDIR /app
+# Expose port 80 (ALB expects this)
+EXPOSE 80
 
-# Copy Maven wrapper and pom.xml
-COPY mvnw .
-COPY mvnw.cmd .
-COPY .mvn .mvn
-COPY pom.xml .
-
-# Download dependencies (this layer will be cached if pom.xml doesn't change)
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
-
-# Copy source code
-COPY src src
-
-# Build the application
-RUN ./mvnw clean package -Pprod-aws -DskipTests -q
-
-# Stage 2: Runtime image
-FROM openjdk:11-jre-slim
-
-# Install necessary packages
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create non-root user for security
-RUN groupadd -r spring && useradd -r -g spring spring
-
-# Set working directory
-WORKDIR /app
-
-# Copy the JAR file from builder stage
-COPY --from=builder /app/target/*.jar app.jar
-
-# Create logs directory
-RUN mkdir -p /var/log/spring-boot-app && \
-    chown -R spring:spring /var/log/spring-boot-app
-
-# Change ownership of the application
-RUN chown -R spring:spring /app
-
-# Switch to non-root user
-USER spring
-
-# Expose port
-EXPOSE 8080
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/management/health || exit 1
-
-# JVM optimization for containers
-ENV JAVA_OPTS="-XX:+UseContainerSupport \
-    -XX:MaxRAMPercentage=75.0 \
-    -XX:+UseG1GC \
-    -XX:+UseStringDeduplication \
-    -Djava.security.egd=file:/dev/./urandom \
-    -Dspring.profiles.active=prod-aws"
-
-# Run the application
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+# Run the application on port 80
+# Configuration is provided via environment variables from ECS task definition
+ENTRYPOINT ["java", "-jar", "/app.jar"]

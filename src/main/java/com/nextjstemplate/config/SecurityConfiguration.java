@@ -32,16 +32,18 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(mvc.pattern("/api/authenticate"))
-                        .permitAll()
-                        .requestMatchers(mvc.pattern("/api/**"))
-                        .authenticated()
-                        .anyRequest()
-                        .permitAll())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(authz ->
+                authz
+                    .requestMatchers(mvc.pattern("/api/authenticate"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/api/**"))
+                    .authenticated()
+                    .anyRequest()
+                    .permitAll()
+            )
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
         return http.build();
     }
 
@@ -51,15 +53,17 @@ public class SecurityConfiguration {
         configuration.setAllowedOrigins(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(
-                Arrays.asList(
-                        "Authorization",
-                        "Content-Type",
-                        "X-Requested-With",
-                        "Accept",
-                        "Origin",
-                        "Access-Control-Request-Method",
-                        "Access-Control-Request-Headers",
-                        "X-XSRF-TOKEN"));
+            Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With",
+                "Accept",
+                "Origin",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers",
+                "X-XSRF-TOKEN"
+            )
+        );
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Link", "X-Total-Count", "X-XSRF-TOKEN"));
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
@@ -78,8 +82,27 @@ public class SecurityConfiguration {
     public UserDetailsService userDetailsService() {
         PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
+        // Enhanced logging for debugging
+        System.out.println("=== JWT API AUTH CREDENTIALS DEBUG ===");
+        System.out.println("JWT_API_AUTH_USERNAME loaded: " + jwtApiAuthUsername);
+        System.out.println("JWT_API_AUTH_USERNAME length: " + (jwtApiAuthUsername != null ? jwtApiAuthUsername.length() : "null"));
+        System.out.println("JWT_API_AUTH_PASSWORD loaded: " + jwtApiAuthPassword);
+        System.out.println("JWT_API_AUTH_PASSWORD length: " + (jwtApiAuthPassword != null ? jwtApiAuthPassword.length() : "null"));
+        System.out.println("JWT_API_AUTH_PASSWORD is null: " + (jwtApiAuthPassword == null));
+        System.out.println("JWT_API_AUTH_PASSWORD is empty: " + (jwtApiAuthPassword != null && jwtApiAuthPassword.isEmpty()));
+
+        // Mask password for security (show first 2 chars only)
+        if (jwtApiAuthPassword != null && jwtApiAuthPassword.length() > 2) {
+            System.out.println("JWT_API_AUTH_PASSWORD prefix: " + jwtApiAuthPassword.substring(0, 2) + "***");
+        }
+
+        String encodedPassword = encoder.encode(jwtApiAuthPassword);
+        System.out.println("Encoded password length: " + encodedPassword.length());
+        System.out.println("Encoded password prefix: " + encodedPassword.substring(0, 8) + "...");
+        System.out.println("=== END DEBUG ===");
+
         return new InMemoryUserDetailsManager(
-                User.withUsername(jwtApiAuthUsername).password(encoder.encode(jwtApiAuthPassword))
-                        .roles("ADMIN", "USER").build());
+            User.withUsername(jwtApiAuthUsername).password(encodedPassword).roles("ADMIN", "USER").build()
+        );
     }
 }
