@@ -2,6 +2,8 @@ package com.nextjstemplate.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import com.nextjstemplate.security.ClerkJwtAuthenticationFilter;
+import com.nextjstemplate.security.TenantContextFilter;
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -29,6 +32,14 @@ public class SecurityConfiguration {
     @Value("${jwt-api-auth.password:admin}")
     private String jwtApiAuthPassword;
 
+    private final ClerkJwtAuthenticationFilter clerkJwtAuthenticationFilter;
+    private final TenantContextFilter tenantContextFilter;
+
+    public SecurityConfiguration(ClerkJwtAuthenticationFilter clerkJwtAuthenticationFilter, TenantContextFilter tenantContextFilter) {
+        this.clerkJwtAuthenticationFilter = clerkJwtAuthenticationFilter;
+        this.tenantContextFilter = tenantContextFilter;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {
         http
@@ -36,13 +47,29 @@ public class SecurityConfiguration {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authz ->
                 authz
+                    // Public endpoints for authentication
                     .requestMatchers(mvc.pattern("/api/authenticate"))
                     .permitAll()
+                    .requestMatchers(mvc.pattern("/api/auth/sign-up"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/api/auth/sign-in"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/api/auth/sign-in/social"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/api/auth/sign-out"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/api/auth/verify-token"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/api/auth/refresh-token"))
+                    .permitAll()
+                    // All other /api/** endpoints require authentication
                     .requestMatchers(mvc.pattern("/api/**"))
                     .authenticated()
                     .anyRequest()
                     .permitAll()
             )
+            .addFilterBefore(tenantContextFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(clerkJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
         return http.build();
     }

@@ -10,10 +10,13 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * A UserProfile.
+ * A UserProfile with Clerk authentication integration support.
  */
 @Entity
-@Table(name = "user_profile")
+@Table(
+    name = "user_profile",
+    uniqueConstraints = { @UniqueConstraint(name = "uq_user_profile_email_tenant", columnNames = { "email", "tenant_id" }) }
+)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class UserProfile implements Serializable {
@@ -32,7 +35,7 @@ public class UserProfile implements Serializable {
 
     @NotNull
     @Size(max = 255)
-    @Column(name = "user_id", length = 255, nullable = false, unique = true)
+    @Column(name = "user_id", length = 255, nullable = false)
     private String userId;
 
     @Size(max = 255)
@@ -155,6 +158,44 @@ public class UserProfile implements Serializable {
     @NotNull
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
+
+    // Clerk Authentication Integration Fields
+    @Size(max = 255)
+    @Column(name = "clerk_user_id", length = 255)
+    private String clerkUserId;
+
+    @Size(max = 255)
+    @Column(name = "clerk_session_id", length = 255)
+    private String clerkSessionId;
+
+    @Size(max = 255)
+    @Column(name = "clerk_org_id", length = 255)
+    private String clerkOrgId;
+
+    @Size(max = 100)
+    @Column(name = "clerk_org_role", length = 100)
+    private String clerkOrgRole;
+
+    @Size(max = 50)
+    @Column(name = "auth_provider", length = 50)
+    private String authProvider;
+
+    @Size(max = 255)
+    @Column(name = "auth_provider_user_id", length = 255)
+    private String authProviderUserId;
+
+    @Column(name = "email_verified")
+    private Boolean emailVerified;
+
+    @Size(max = 1024)
+    @Column(name = "profile_image_url_clerk", length = 1024)
+    private String profileImageUrlClerk;
+
+    @Column(name = "last_sign_in_at")
+    private ZonedDateTime lastSignInAt;
+
+    @Column(name = "clerk_metadata", columnDefinition = "jsonb")
+    private String clerkMetadata;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "reviewedByAdmin", "userSubscription" }, allowSetters = true)
@@ -653,6 +694,138 @@ public class UserProfile implements Serializable {
         return this;
     }
 
+    // Clerk Authentication Integration - Getters and Setters
+
+    public String getClerkUserId() {
+        return this.clerkUserId;
+    }
+
+    public UserProfile clerkUserId(String clerkUserId) {
+        this.setClerkUserId(clerkUserId);
+        return this;
+    }
+
+    public void setClerkUserId(String clerkUserId) {
+        this.clerkUserId = clerkUserId;
+    }
+
+    public String getClerkSessionId() {
+        return this.clerkSessionId;
+    }
+
+    public UserProfile clerkSessionId(String clerkSessionId) {
+        this.setClerkSessionId(clerkSessionId);
+        return this;
+    }
+
+    public void setClerkSessionId(String clerkSessionId) {
+        this.clerkSessionId = clerkSessionId;
+    }
+
+    public String getClerkOrgId() {
+        return this.clerkOrgId;
+    }
+
+    public UserProfile clerkOrgId(String clerkOrgId) {
+        this.setClerkOrgId(clerkOrgId);
+        return this;
+    }
+
+    public void setClerkOrgId(String clerkOrgId) {
+        this.clerkOrgId = clerkOrgId;
+    }
+
+    public String getClerkOrgRole() {
+        return this.clerkOrgRole;
+    }
+
+    public UserProfile clerkOrgRole(String clerkOrgRole) {
+        this.setClerkOrgRole(clerkOrgRole);
+        return this;
+    }
+
+    public void setClerkOrgRole(String clerkOrgRole) {
+        this.clerkOrgRole = clerkOrgRole;
+    }
+
+    public String getAuthProvider() {
+        return this.authProvider;
+    }
+
+    public UserProfile authProvider(String authProvider) {
+        this.setAuthProvider(authProvider);
+        return this;
+    }
+
+    public void setAuthProvider(String authProvider) {
+        this.authProvider = authProvider;
+    }
+
+    public String getAuthProviderUserId() {
+        return this.authProviderUserId;
+    }
+
+    public UserProfile authProviderUserId(String authProviderUserId) {
+        this.setAuthProviderUserId(authProviderUserId);
+        return this;
+    }
+
+    public void setAuthProviderUserId(String authProviderUserId) {
+        this.authProviderUserId = authProviderUserId;
+    }
+
+    public Boolean getEmailVerified() {
+        return this.emailVerified;
+    }
+
+    public UserProfile emailVerified(Boolean emailVerified) {
+        this.setEmailVerified(emailVerified);
+        return this;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public String getProfileImageUrlClerk() {
+        return this.profileImageUrlClerk;
+    }
+
+    public UserProfile profileImageUrlClerk(String profileImageUrlClerk) {
+        this.setProfileImageUrlClerk(profileImageUrlClerk);
+        return this;
+    }
+
+    public void setProfileImageUrlClerk(String profileImageUrlClerk) {
+        this.profileImageUrlClerk = profileImageUrlClerk;
+    }
+
+    public ZonedDateTime getLastSignInAt() {
+        return this.lastSignInAt;
+    }
+
+    public UserProfile lastSignInAt(ZonedDateTime lastSignInAt) {
+        this.setLastSignInAt(lastSignInAt);
+        return this;
+    }
+
+    public void setLastSignInAt(ZonedDateTime lastSignInAt) {
+        this.lastSignInAt = lastSignInAt;
+    }
+
+    public String getClerkMetadata() {
+        return this.clerkMetadata;
+    }
+
+    public UserProfile clerkMetadata(String clerkMetadata) {
+        this.setClerkMetadata(clerkMetadata);
+        return this;
+    }
+
+    public void setClerkMetadata(String clerkMetadata) {
+        this.clerkMetadata = clerkMetadata;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -711,6 +884,16 @@ public class UserProfile implements Serializable {
             ", rejectedAt='" + getRejectedAt() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
+            ", clerkUserId='" + getClerkUserId() + "'" +
+            ", clerkSessionId='" + getClerkSessionId() + "'" +
+            ", clerkOrgId='" + getClerkOrgId() + "'" +
+            ", clerkOrgRole='" + getClerkOrgRole() + "'" +
+            ", authProvider='" + getAuthProvider() + "'" +
+            ", authProviderUserId='" + getAuthProviderUserId() + "'" +
+            ", emailVerified='" + getEmailVerified() + "'" +
+            ", profileImageUrlClerk='" + getProfileImageUrlClerk() + "'" +
+            ", lastSignInAt='" + getLastSignInAt() + "'" +
+            ", clerkMetadata='" + getClerkMetadata() + "'" +
             "}";
     }
 }
