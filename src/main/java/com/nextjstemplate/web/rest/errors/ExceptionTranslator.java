@@ -37,8 +37,10 @@ import tech.jhipster.web.rest.errors.ProblemDetailWithCause.ProblemDetailWithCau
 import tech.jhipster.web.util.HeaderUtil;
 
 /**
- * Controller advice to translate the server side exceptions to client-friendly json structures.
- * The error response follows RFC7807 - Problem Details for HTTP APIs (https://tools.ietf.org/html/rfc7807).
+ * Controller advice to translate the server side exceptions to client-friendly
+ * json structures.
+ * The error response follows RFC7807 - Problem Details for HTTP APIs
+ * (https://tools.ietf.org/html/rfc7807).
  */
 @ControllerAdvice
 public class ExceptionTranslator extends ResponseEntityExceptionHandler {
@@ -173,6 +175,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
     private URI getMappedType(Throwable err) {
         if (err instanceof MethodArgumentNotValidException) return ErrorConstants.CONSTRAINT_VIOLATION_TYPE;
+        if (err instanceof ClerkAuthenticationException) return ClerkErrorConstants.CLERK_ERROR_TYPE;
         return ErrorConstants.DEFAULT_TYPE;
     }
 
@@ -181,12 +184,31 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
             return ErrorConstants.ERR_VALIDATION;
         } else if (err instanceof ConcurrencyFailureException || err.getCause() instanceof ConcurrencyFailureException) {
             return ErrorConstants.ERR_CONCURRENCY_FAILURE;
+        } else if (err instanceof ClerkAuthenticationException clerkEx) {
+            return getClerkErrorMessageKey(clerkEx.getErrorCode());
         }
         return null;
     }
 
+    private String getClerkErrorMessageKey(String errorCode) {
+        return switch (errorCode) {
+            case ClerkErrorConstants.AUTH_001 -> ClerkErrorConstants.ERR_INVALID_CREDENTIALS;
+            case ClerkErrorConstants.AUTH_002 -> ClerkErrorConstants.ERR_TOKEN_EXPIRED;
+            case ClerkErrorConstants.AUTH_003 -> ClerkErrorConstants.ERR_TOKEN_INVALID;
+            case ClerkErrorConstants.AUTH_004 -> ClerkErrorConstants.ERR_USER_NOT_FOUND;
+            case ClerkErrorConstants.AUTH_005 -> ClerkErrorConstants.ERR_EMAIL_EXISTS;
+            case ClerkErrorConstants.AUTH_006 -> ClerkErrorConstants.ERR_INVALID_TENANT;
+            case ClerkErrorConstants.AUTH_007 -> ClerkErrorConstants.ERR_UNAUTHORIZED;
+            case ClerkErrorConstants.AUTH_008 -> ClerkErrorConstants.ERR_RATE_LIMIT;
+            case ClerkErrorConstants.AUTH_009 -> ClerkErrorConstants.ERR_WEBHOOK_SIGNATURE;
+            case ClerkErrorConstants.AUTH_010 -> ClerkErrorConstants.ERR_SOCIAL_PROVIDER;
+            default -> ClerkErrorConstants.ERR_CLERK_AUTH;
+        };
+    }
+
     private String getCustomizedTitle(Throwable err) {
         if (err instanceof MethodArgumentNotValidException) return "Method argument not valid";
+        if (err instanceof ClerkAuthenticationException) return "Clerk Authentication Error";
         return null;
     }
 
@@ -205,6 +227,10 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
         if (err instanceof AccessDeniedException) return HttpStatus.FORBIDDEN;
         if (err instanceof ConcurrencyFailureException) return HttpStatus.CONFLICT;
         if (err instanceof BadCredentialsException) return HttpStatus.UNAUTHORIZED;
+        // Clerk authentication exceptions
+        if (err instanceof ClerkAuthenticationException clerkEx) {
+            return HttpStatus.valueOf(clerkEx.getStatusCode().value());
+        }
         return null;
     }
 

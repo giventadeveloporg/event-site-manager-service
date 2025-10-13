@@ -18,7 +18,7 @@ public class OpenApiConfiguration {
             .info(
                 new Info()
                     .title("Nextjs Template Boot API")
-                    .description("API Documentation for all REST endpoints")
+                    .description("API Documentation for all REST endpoints including Clerk Authentication, Admin Management, and Webhooks")
                     .version("1.0")
                     .license(new License().name("Unlicensed"))
             )
@@ -31,12 +31,37 @@ public class OpenApiConfiguration {
                     .scheme("bearer")
                     .bearerFormat("JWT")
                     .in(SecurityScheme.In.HEADER)
-                    .description("Enter 'Bearer <JWT token>' to authenticate.")
+                    .description("JWT token obtained from /api/auth/sign-in or /api/auth/sign-in/social. Format: Bearer <token>")
             );
     }
 
     @Bean
     public GroupedOpenApi allApi() {
         return GroupedOpenApi.builder().group("all-apis").packagesToScan("com.nextjstemplate.web.rest").pathsToMatch("/**").build();
+    }
+
+    @Bean
+    public GroupedOpenApi authenticationApi() {
+        return GroupedOpenApi
+            .builder()
+            .group("authentication")
+            .packagesToScan("com.nextjstemplate.web.rest")
+            .pathsToMatch("/api/auth/**")
+            .build();
+    }
+
+    @Bean
+    public GroupedOpenApi adminApi() {
+        return GroupedOpenApi.builder().group("admin").packagesToScan("com.nextjstemplate.web.rest").pathsToMatch("/api/admin/**").build();
+    }
+
+    @Bean
+    public GroupedOpenApi webhooksApi() {
+        return GroupedOpenApi
+            .builder()
+            .group("webhooks")
+            .packagesToScan("com.nextjstemplate.web.rest")
+            .pathsToMatch("/api/webhooks/**")
+            .build();
     }
 }

@@ -170,31 +170,22 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
 
         try {
             // Verify JWT token with Clerk
-            Optional<Map<String, Object>> claimsOpt = clerkIntegrationService.verifyJwtToken(request.getToken());
+            Map<String, Object> claims = clerkIntegrationService
+                .verifyJwtToken(request.getToken())
+                .orElseThrow(() -> {
+                    log.debug("Token validation failed");
+                    return new RuntimeException("Invalid or expired token");
+                });
 
-            if (claimsOpt.isEmpty()) {
-                log.debug("Token validation failed");
-                TokenValidationResponse response = new TokenValidationResponse();
-                response.setValid(false);
-                response.setError("Invalid or expired token");
-                return Optional.of(response);
-            }
-
-            Map<String, Object> claims = claimsOpt.get();
             String clerkUserId = (String) claims.get("sub");
 
             // Load user from database
-            Optional<UserProfile> userProfileOpt = userProfileRepository.findByUserId(clerkUserId);
-
-            if (userProfileOpt.isEmpty()) {
-                log.warn("User not found in database for Clerk ID: {}", clerkUserId);
-                TokenValidationResponse response = new TokenValidationResponse();
-                response.setValid(false);
-                response.setError("User not found");
-                return Optional.of(response);
-            }
-
-            UserProfile userProfile = userProfileOpt.get();
+            UserProfile userProfile = userProfileRepository
+                .findByUserId(clerkUserId)
+                .orElseThrow(() -> {
+                    log.warn("User not found in database for Clerk ID: {}", clerkUserId);
+                    return new RuntimeException("User not found");
+                });
 
             // Get user organizations
             List<Map<String, Object>> organizations = clerkIntegrationService.getUserOrganizations(clerkUserId);
@@ -228,14 +219,12 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
         log.debug("Fetching user by Clerk ID: {}", clerkUserId);
 
         try {
-            Optional<UserProfile> userProfileOpt = userProfileRepository.findByUserId(clerkUserId);
-
-            if (userProfileOpt.isEmpty()) {
-                log.warn("User not found in database for Clerk ID: {}", clerkUserId);
-                return Optional.empty();
-            }
-
-            UserProfile userProfile = userProfileOpt.get();
+            UserProfile userProfile = userProfileRepository
+                .findByUserId(clerkUserId)
+                .orElseThrow(() -> {
+                    log.warn("User not found in database for Clerk ID: {}", clerkUserId);
+                    return new RuntimeException("User not found");
+                });
 
             // Get user organizations
             List<Map<String, Object>> organizations = clerkIntegrationService.getUserOrganizations(clerkUserId);
@@ -363,7 +352,11 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
             }
 
             // Extract user ID from session
-            String clerkUserId = (String) sessionData.get().get("user_id");
+            Map<String, Object> sessionDataMap = sessionData.orElseThrow(() -> {
+                log.warn("Session data is empty");
+                return new RuntimeException("Invalid session data");
+            });
+            String clerkUserId = (String) sessionDataMap.get("user_id");
             if (clerkUserId == null) {
                 log.warn("No user ID found in session data");
                 return Optional.empty();
@@ -412,7 +405,7 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
                 log.info("Created new user profile for social sign-in: {}", savedProfile.getId());
             } else {
                 // Update existing user profile
-                userProfile = userProfileOpt.get();
+                userProfile = userProfileOpt.orElseThrow(() -> new RuntimeException("User profile not found"));
                 userProfile.setUserId(clerkUserId);
                 if (profileImageUrl != null) {
                     userProfile.setProfileImageUrl(profileImageUrl);

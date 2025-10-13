@@ -62,6 +62,8 @@ public class SecurityConfiguration {
                     .permitAll()
                     .requestMatchers(mvc.pattern("/api/auth/refresh-token"))
                     .permitAll()
+                    .requestMatchers(mvc.pattern("/api/webhooks/clerk"))
+                    .permitAll()
                     // All other /api/** endpoints require authentication
                     .requestMatchers(mvc.pattern("/api/**"))
                     .authenticated()
@@ -77,7 +79,8 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        // Allow all origins using patterns (supports wildcards properly)
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(
             Arrays.asList(
@@ -88,11 +91,12 @@ public class SecurityConfiguration {
                 "Origin",
                 "Access-Control-Request-Method",
                 "Access-Control-Request-Headers",
-                "X-XSRF-TOKEN"
+                "X-XSRF-TOKEN",
+                "X-Tenant-ID"
             )
-        );
+        ); // Added for multi-tenant support
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Link", "X-Total-Count", "X-XSRF-TOKEN"));
-        configuration.setAllowCredentials(false);
+        configuration.setAllowCredentials(false); // Must be false when using "*" origin pattern
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
