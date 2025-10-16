@@ -219,21 +219,19 @@ public class ClerkIntegrationServiceImpl implements ClerkIntegrationService {
         log.debug("Verifying JWT token");
 
         try {
-            // First, get the JWKS from Clerk
-            Map<String, Object> jwks = getJwks();
-
-            // Parse the token (without verification for now - you'd need to implement full
-            // JWKS verification)
-            // For production, use a proper JWT library with JWKS support
-            Claims claims = Jwts.parser().build().parseUnsecuredClaims(token.replace("Bearer ", "")).getPayload();
+            // For self-signed JWTs issued by this backend, just parse without verification
+            // The actual verification happens in ClerkJwtAuthenticationFilter using JwtDecoder
+            // This method is only for extracting claims from already-validated tokens
+            String cleanToken = token.replace("Bearer ", "").trim();
+            Claims claims = Jwts.parser().build().parseUnsecuredClaims(cleanToken).getPayload();
 
             Map<String, Object> claimsMap = new HashMap<>();
             claims.forEach(claimsMap::put);
 
-            log.debug("JWT token verified successfully");
+            log.debug("JWT token parsed successfully");
             return Optional.of(claimsMap);
         } catch (Exception e) {
-            log.error("Error verifying JWT token", e);
+            log.debug("Error parsing JWT token: {}", e.getMessage());
             return Optional.empty();
         }
     }
@@ -251,7 +249,10 @@ public class ClerkIntegrationServiceImpl implements ClerkIntegrationService {
                 .timeout(REQUEST_TIMEOUT)
                 .block();
 
-            List<Map<String, Object>> memberships = objectMapper.readValue(response, new TypeReference<List<Map<String, Object>>>() {});
+            // FIX: Clerk API returns {"data": [...], "total_count": N}, not a direct array
+            // First deserialize to wrapper object, then extract the data array
+            Map<String, Object> wrapper = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
+            List<Map<String, Object>> memberships = (List<Map<String, Object>>) wrapper.get("data");
 
             // Extract organization details from memberships
             List<Map<String, Object>> organizations = new ArrayList<>();
@@ -287,8 +288,16 @@ public class ClerkIntegrationServiceImpl implements ClerkIntegrationService {
                 .timeout(REQUEST_TIMEOUT)
                 .block();
 
-            List<Map<String, Object>> memberships = objectMapper.readValue(response, new TypeReference<List<Map<String, Object>>>() {});
-            log.debug("Successfully fetched {} organization memberships for user: {}", memberships.size(), clerkUserId);
+            // FIX: Clerk API returns {"data": [...], "total_count": N}, not a direct array
+            // First deserialize to wrapper object, then extract the data array
+            Map<String, Object> wrapper = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
+            List<Map<String, Object>> memberships = (List<Map<String, Object>>) wrapper.get("data");
+
+            log.debug(
+                "Successfully fetched {} organization memberships for user: {}",
+                memberships != null ? memberships.size() : 0,
+                clerkUserId
+            );
             return memberships != null ? memberships : new ArrayList<>();
         } catch (WebClientResponseException e) {
             log.error("Error fetching organization memberships from Clerk: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
@@ -385,13 +394,69 @@ public class ClerkIntegrationServiceImpl implements ClerkIntegrationService {
     public Optional<Map<String, Object>> authenticateUser(String email, String password) {
         log.debug("Authenticating user with email: {}", email);
 
-        // Note: Clerk doesn't typically expose a direct email/password authentication
-        // endpoint
-        // This would normally be handled by Clerk's frontend SDK
-        // For backend validation, you'd typically validate the session token
-        log.warn("Direct email/password authentication should be handled by Clerk's frontend SDK");
+        try {
+            // Step 1: Fetch user by email to verify user exists
+            Optional<Map<String, Object>> userOpt = getUserByEmail(email);
+            if (!userOpt.isPresent()) {
+                log.debug("User not found in Clerk with email: {}", email);
+                return Optional.empty();
+            }
 
-        return Optional.empty();
+            // Modernizer-compliant: Use orElseThrow instead of isEmpty() + get()
+            Map<String, Object> user = userOpt.orElseThrow(() -> new IllegalStateException("User should be present after isPresent() check")
+            );
+
+            String userId = (String) user.get("id");
+            log.debug("Found user in Clerk: {}", userId);
+
+            // Step 2: Verify password using Clerk's password verification endpoint
+            // Clerk Backend API provides a password verification endpoint for server-side validation
+            Map<String, Object> verifyRequest = new HashMap<>();
+            verifyRequest.put("password", password);
+
+            try {
+                String response = webClient
+                    .post()
+                    .uri("/users/{userId}/verify_password", userId)
+                    .bodyValue(verifyRequest)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(REQUEST_TIMEOUT)
+                    .block();
+
+                Map<String, Object> verifyResponse = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
+
+                // Check if password verification was successful
+                Boolean verified = (Boolean) verifyResponse.get("verified");
+                if (Boolean.TRUE.equals(verified)) {
+                    log.info("Successfully authenticated user: {}", email);
+                    // Return user data with authentication confirmation
+                    Map<String, Object> result = new HashMap<>(user);
+                    result.put("authenticated", true);
+                    result.put("verified_at", System.currentTimeMillis());
+                    return Optional.of(result);
+                } else {
+                    log.warn("Password verification failed for user: {}", email);
+                    return Optional.empty();
+                }
+            } catch (WebClientResponseException e) {
+                // 401, 403, or 422 means invalid credentials or verification failed
+                if (
+                    e.getStatusCode() == HttpStatus.UNAUTHORIZED ||
+                    e.getStatusCode() == HttpStatus.FORBIDDEN ||
+                    e.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY
+                ) {
+                    log.debug("Invalid credentials for email: {} - Status: {}", email, e.getStatusCode());
+                    return Optional.empty();
+                }
+                // For other errors, log and return empty
+                log.error("Error during password verification: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+                return Optional.empty();
+            }
+        } catch (Exception e) {
+            log.error("Unexpected error authenticating user: {}", e.getMessage(), e);
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -455,26 +520,125 @@ public class ClerkIntegrationServiceImpl implements ClerkIntegrationService {
 
     @Override
     public Map<String, Object> getJwks() {
-        log.debug("Fetching JWKS from Clerk");
+        log.debug("JWKS not used for self-signed JWT tokens");
+
+        // This method is not used for self-signed JWTs issued by this backend
+        // If you need to verify Clerk-issued tokens in the future, implement actual JWKS fetching
+        // For now, return empty map to avoid unnecessary API calls
+        return new HashMap<>();
+    }
+
+    @Override
+    public String generateOAuthUrl(String provider, String redirectUri, String state) {
+        log.debug("Generating OAuth URL for provider: {} with redirect: {}", provider, redirectUri);
+
+        // FIXED: Use Frontend API URL instead of API URL
+        String clerkFrontendApi = clerkProperties.getFrontendApi();
+
+        log.debug("Raw Frontend API from properties: {}", clerkFrontendApi);
+
+        // Ensure URL has https:// prefix
+        if (!clerkFrontendApi.startsWith("http://") && !clerkFrontendApi.startsWith("https://")) {
+            clerkFrontendApi = "https://" + clerkFrontendApi;
+            log.debug("Added https:// prefix: {}", clerkFrontendApi);
+        }
+
+        // Remove trailing slash if present
+        if (clerkFrontendApi.endsWith("/")) {
+            clerkFrontendApi = clerkFrontendApi.substring(0, clerkFrontendApi.length() - 1);
+            log.debug("Removed trailing slash: {}", clerkFrontendApi);
+        }
+
+        // Build OAuth URL using Frontend API
+        String clerkOAuthBaseUrl = clerkFrontendApi + "/oauth/authorize";
+
+        log.debug("Using Clerk Frontend API: {}", clerkFrontendApi);
+        log.debug("OAuth base URL: {}", clerkOAuthBaseUrl);
+
+        StringBuilder urlBuilder = new StringBuilder(clerkOAuthBaseUrl);
+        urlBuilder.append("?provider=").append(provider);
+        urlBuilder.append("&redirect_uri=").append(java.net.URLEncoder.encode(redirectUri, java.nio.charset.StandardCharsets.UTF_8));
+        urlBuilder.append("&state=").append(state);
+
+        String oauthUrl = urlBuilder.toString();
+        log.debug("Generated OAuth URL: {}", oauthUrl);
+
+        return oauthUrl;
+    }
+
+    @Override
+    public Optional<String> exchangeOAuthCode(String provider, String code) {
+        log.debug("Exchanging OAuth code for session token, provider: {}", provider);
 
         try {
+            // Clerk OAuth token exchange endpoint
+            // POST /v1/oauth/token
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("code", code);
+            requestBody.put("grant_type", "authorization_code");
+
             String response = webClient
-                .get()
-                .uri("/.well-known/jwks.json")
+                .post()
+                .uri("/oauth/token")
+                .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(String.class)
                 .timeout(REQUEST_TIMEOUT)
                 .block();
 
-            Map<String, Object> jwks = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
-            log.debug("Successfully fetched JWKS from Clerk");
-            return jwks;
+            Map<String, Object> tokenResponse = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
+
+            // Extract session token or access token from response
+            String sessionToken = (String) tokenResponse.get("session_token");
+            if (sessionToken == null) {
+                sessionToken = (String) tokenResponse.get("access_token");
+            }
+
+            if (sessionToken != null) {
+                log.info("Successfully exchanged OAuth code for session token");
+                return Optional.of(sessionToken);
+            } else {
+                log.warn("No session token found in OAuth token response");
+                return Optional.empty();
+            }
         } catch (WebClientResponseException e) {
-            log.error("Error fetching JWKS from Clerk: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
-            throw new RuntimeException("Failed to fetch JWKS from Clerk: " + e.getMessage(), e);
+            log.error("Error exchanging OAuth code: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            return Optional.empty();
         } catch (Exception e) {
-            log.error("Unexpected error fetching JWKS from Clerk", e);
-            throw new RuntimeException("Failed to fetch JWKS from Clerk: " + e.getMessage(), e);
+            log.error("Unexpected error exchanging OAuth code", e);
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<Map<String, Object>> getUserFromSessionToken(String sessionToken) {
+        log.debug("Getting user details from session token");
+
+        try {
+            // First, validate the session token to get session details
+            Optional<Map<String, Object>> sessionDataOpt = validateSessionToken(sessionToken);
+
+            if (sessionDataOpt.isEmpty()) {
+                log.warn("Invalid session token");
+                return Optional.empty();
+            }
+
+            Map<String, Object> sessionData = sessionDataOpt.orElseThrow(() ->
+                new IllegalStateException("Session data should be present after isEmpty() check")
+            );
+
+            // Extract user ID from session
+            String userId = (String) sessionData.get("user_id");
+            if (userId == null) {
+                log.warn("No user ID found in session data");
+                return Optional.empty();
+            }
+
+            // Fetch user details
+            return getUserById(userId);
+        } catch (Exception e) {
+            log.error("Error getting user from session token", e);
+            return Optional.empty();
         }
     }
 }

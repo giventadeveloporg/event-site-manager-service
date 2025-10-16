@@ -550,6 +550,16 @@ CREATE TABLE public.user_profile (
                                      user_role character varying(50),
                                      reviewed_by_admin_at timestamp without time zone,
                                      reviewed_by_admin_id bigint,
+                                     clerk_user_id VARCHAR(255),
+								     clerk_session_id VARCHAR(255),
+								     clerk_org_id VARCHAR(255),
+								     clerk_org_role VARCHAR(100),
+								     auth_provider VARCHAR(50),
+								     auth_provider_user_id VARCHAR(255),
+								     email_verified BOOLEAN DEFAULT FALSE,
+								     profile_image_url_clerk VARCHAR(1024),
+								     last_sign_in_at TIMESTAMP WITHOUT TIME ZONE,
+								     clerk_metadata TEXT,
                                      created_at timestamp without time zone DEFAULT now() NOT NULL,
                                      updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                      CONSTRAINT check_email_format CHECK (((email IS NULL) OR ((email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text))),
@@ -997,8 +1007,8 @@ CREATE TABLE public.event_admin_audit_log (
                                               table_name character varying(255) NOT NULL,
                                               record_id character varying(255) NOT NULL,
                                               changes VARCHAR(8192) NULL,
-                                              old_values jsonb,
-                                              new_values jsonb,
+                                              old_values text,
+                                              new_values text,
                                               ip_address inet,
                                               user_agent text,
                                               session_id character varying(255),
@@ -1848,7 +1858,7 @@ CREATE TABLE public.user_payment_transaction (
                                                  tenant_amount numeric(21,2) DEFAULT 0,
                                                  status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
                                                  processing_fee numeric(21,2) DEFAULT 0,
-                                                 metadata jsonb,
+                                                 metadata text,
                                                  external_transaction_id character varying(255),
                                                  payment_method character varying(100),
                                                  failure_reason text,
@@ -3467,18 +3477,6 @@ COMMENT ON COLUMN public.event_program_directors.bio IS 'Program director biogra
 -- Adding new columns to support Clerk authentication integration
 -- These columns store Clerk-specific data for user authentication
 
-ALTER TABLE public.user_profile
-    ADD COLUMN IF NOT EXISTS clerk_user_id VARCHAR(255),
-    ADD COLUMN IF NOT EXISTS clerk_session_id VARCHAR(255),
-    ADD COLUMN IF NOT EXISTS clerk_org_id VARCHAR(255),
-    ADD COLUMN IF NOT EXISTS clerk_org_role VARCHAR(100),
-    ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(50),
-    ADD COLUMN IF NOT EXISTS auth_provider_user_id VARCHAR(255),
-    ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE,
-    ADD COLUMN IF NOT EXISTS profile_image_url_clerk VARCHAR(1024),
-    ADD COLUMN IF NOT EXISTS last_sign_in_at TIMESTAMP WITHOUT TIME ZONE,
-    ADD COLUMN IF NOT EXISTS clerk_metadata JSONB;
-
 -- Add column comments for documentation
 COMMENT ON COLUMN public.user_profile.clerk_user_id IS 'Clerk unique user identifier (e.g., user_2abc123def456)';
 COMMENT ON COLUMN public.user_profile.clerk_session_id IS 'Current active Clerk session identifier';
@@ -3601,7 +3599,7 @@ CREATE TABLE IF NOT EXISTS public.clerk_organization_role (
     clerk_org_id VARCHAR(255) NOT NULL,
     clerk_role_name VARCHAR(100) NOT NULL,
     application_role VARCHAR(100) NOT NULL,
-    permissions JSONB,
+    permissions TEXT,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT clerk_organization_role_pkey PRIMARY KEY (id),
@@ -3641,7 +3639,7 @@ CREATE TABLE IF NOT EXISTS public.clerk_webhook_event (
     event_id VARCHAR(255) UNIQUE NOT NULL,
     event_type VARCHAR(100) NOT NULL,
     clerk_user_id VARCHAR(255),
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
     processed BOOLEAN DEFAULT FALSE,
     processed_at TIMESTAMP WITHOUT TIME ZONE,
     error_message TEXT,

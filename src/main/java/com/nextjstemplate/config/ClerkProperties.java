@@ -15,6 +15,7 @@ public class ClerkProperties {
     private String webhookSecret;
     private String apiVersion = "v1";
     private String baseUrl = "https://api.clerk.com";
+    private String frontendApi; // Frontend API URL for OAuth
 
     public String getPublishableKey() {
         return publishableKey;
@@ -58,5 +59,17 @@ public class ClerkProperties {
 
     public String getApiUrl() {
         return baseUrl + "/" + apiVersion;
+    }
+
+    /**
+     * Clerk Frontend API URL (for OAuth and user-facing operations)
+     * Example: https://humble-monkey-3.clerk.accounts.dev
+     */
+    public String getFrontendApi() {
+        return frontendApi;
+    }
+
+    public void setFrontendApi(String frontendApi) {
+        this.frontendApi = frontendApi;
     }
 }

@@ -40,7 +40,7 @@ public class ClerkWebhookEvent implements Serializable {
     private String clerkUserId;
 
     @NotNull
-    @Column(name = "payload", columnDefinition = "jsonb", nullable = false)
+    @Column(name = "payload", columnDefinition = "text", nullable = false)
     private String payload;
 
     @Column(name = "processed")

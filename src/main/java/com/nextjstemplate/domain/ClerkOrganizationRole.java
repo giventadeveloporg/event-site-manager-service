@@ -42,7 +42,7 @@ public class ClerkOrganizationRole implements Serializable {
     @Column(name = "application_role", length = 100, nullable = false)
     private String applicationRole;
 
-    @Column(name = "permissions", columnDefinition = "jsonb")
+    @Column(name = "permissions", columnDefinition = "text")
     private String permissions;
 
     @NotNull

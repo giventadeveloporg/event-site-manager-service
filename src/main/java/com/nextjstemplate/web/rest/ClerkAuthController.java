@@ -2,6 +2,8 @@ package com.nextjstemplate.web.rest;
 
 import com.nextjstemplate.service.ClerkAuthService;
 import com.nextjstemplate.service.dto.*;
+import com.nextjstemplate.web.rest.errors.InvalidCredentialsException;
+import com.nextjstemplate.web.rest.errors.TokenInvalidException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -91,7 +93,7 @@ public class ClerkAuthController {
             .signIn(request)
             .orElseThrow(() -> {
                 log.warn("Sign-in failed for email: {}", request.getEmail());
-                return new RuntimeException("Invalid credentials");
+                return new InvalidCredentialsException("Invalid credentials");
             });
 
         return ResponseEntity.ok(response);
@@ -122,7 +124,7 @@ public class ClerkAuthController {
             .validateToken(request)
             .orElseThrow(() -> {
                 log.warn("Token validation failed");
-                return new RuntimeException("Token validation failed");
+                return new TokenInvalidException("Token validation failed");
             });
 
         return ResponseEntity.ok(response);
@@ -154,7 +156,7 @@ public class ClerkAuthController {
             .refreshToken(request)
             .orElseThrow(() -> {
                 log.warn("Token refresh failed");
-                return new RuntimeException("Token refresh failed");
+                return new TokenInvalidException("Token refresh failed");
             });
 
         return ResponseEntity.ok(response);
@@ -163,7 +165,6 @@ public class ClerkAuthController {
     /**
      * GET /api/auth/user : Get current authenticated user details
      *
-     * @param authorization the authorization header with JWT token
      * @return the ResponseEntity with status 200 (OK) and user details
      */
     @GetMapping("/user")
@@ -179,26 +180,17 @@ public class ClerkAuthController {
             @ApiResponse(responseCode = "404", description = "User not found"),
         }
     )
-    public ResponseEntity<TokenValidationResponse> getCurrentUser(@RequestHeader("Authorization") String authorization) {
+    public ResponseEntity<TokenValidationResponse> getCurrentUser() {
         log.debug("REST request to get current user");
 
-        // Extract token from Authorization header
-        String token = authorization.replace("Bearer ", "");
-
-        TokenValidationRequest request = new TokenValidationRequest();
-        request.setToken(token);
-
+        // Get the authenticated user from Spring Security context
+        // The ClerkJwtAuthenticationFilter has already validated the token
         TokenValidationResponse response = clerkAuthService
-            .validateToken(request)
+            .getCurrentAuthenticatedUser()
             .orElseThrow(() -> {
-                log.warn("Invalid token or user not found");
-                return new RuntimeException("Invalid token");
+                log.warn("No authenticated user found in security context");
+                return new TokenInvalidException("User not authenticated");
             });
-
-        if (!response.isValid()) {
-            log.warn("Token validation failed");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
 
         return ResponseEntity.ok(response);
     }
@@ -254,7 +246,7 @@ public class ClerkAuthController {
             .socialSignIn(request)
             .orElseThrow(() -> {
                 log.warn("Social sign-in failed");
-                return new RuntimeException("Social sign-in failed");
+                return new InvalidCredentialsException("Social sign-in failed");
             });
 
         return ResponseEntity.ok(response);

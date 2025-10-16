@@ -194,7 +194,7 @@ public class UserProfile implements Serializable {
     @Column(name = "last_sign_in_at")
     private ZonedDateTime lastSignInAt;
 
-    @Column(name = "clerk_metadata", columnDefinition = "jsonb")
+    @Column(name = "clerk_metadata", columnDefinition = "text")
     private String clerkMetadata;
 
     @ManyToOne(fetch = FetchType.LAZY)

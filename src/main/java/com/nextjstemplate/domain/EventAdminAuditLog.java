@@ -48,6 +48,12 @@ public class EventAdminAuditLog implements Serializable {
     @Column(name = "changes", length = 8192)
     private String changes;
 
+    @Column(name = "old_values", columnDefinition = "text")
+    private String oldValues;
+
+    @Column(name = "new_values", columnDefinition = "text")
+    private String newValues;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -149,6 +155,32 @@ public class EventAdminAuditLog implements Serializable {
         this.createdAt = createdAt;
     }
 
+    public String getOldValues() {
+        return this.oldValues;
+    }
+
+    public EventAdminAuditLog oldValues(String oldValues) {
+        this.setOldValues(oldValues);
+        return this;
+    }
+
+    public void setOldValues(String oldValues) {
+        this.oldValues = oldValues;
+    }
+
+    public String getNewValues() {
+        return this.newValues;
+    }
+
+    public EventAdminAuditLog newValues(String newValues) {
+        this.setNewValues(newValues);
+        return this;
+    }
+
+    public void setNewValues(String newValues) {
+        this.newValues = newValues;
+    }
+
     public UserProfile getAdmin() {
         return this.admin;
     }
@@ -191,6 +223,8 @@ public class EventAdminAuditLog implements Serializable {
             ", tableName='" + getTableName() + "'" +
             ", recordId='" + getRecordId() + "'" +
             ", changes='" + getChanges() + "'" +
+            ", oldValues='" + getOldValues() + "'" +
+            ", newValues='" + getNewValues() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             "}";
     }

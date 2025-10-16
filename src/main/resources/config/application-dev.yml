@@ -115,9 +115,6 @@ spring:
     mode: HTML
     cache: false
 
-server:
-  port: 8080
-
 # ===================================================================
 # JHipster specific properties
 #
@@ -180,3 +177,13 @@ clerk:
   publishable-key: ${CLERK_PUBLISHABLE_KEY}
   secret-key: ${CLERK_SECRET_KEY}
   webhook-secret: ${CLERK_WEBHOOK_SECRET}
+  frontend-api: ${CLERK_FRONTEND_API:https://humble-monkey-3.clerk.accounts.dev}
+
+# OAuth Configuration
+
+server:
+  port: 8080
+  base-url: ${SERVER_BASE_URL:http://localhost:8080}
+
+frontend:
+  url: ${FRONTEND_URL:http://localhost:3000}

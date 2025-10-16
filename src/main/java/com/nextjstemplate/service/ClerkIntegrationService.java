@@ -150,4 +150,31 @@ public interface ClerkIntegrationService {
      * @return the JWKS data
      */
     Map<String, Object> getJwks();
+
+    /**
+     * Generate OAuth authorization URL for social provider.
+     *
+     * @param provider     the OAuth provider (google, facebook, github, etc.)
+     * @param redirectUri  the callback URL after OAuth completes
+     * @param state        the state parameter for CSRF protection
+     * @return the OAuth authorization URL
+     */
+    String generateOAuthUrl(String provider, String redirectUri, String state);
+
+    /**
+     * Exchange OAuth authorization code for Clerk session token.
+     *
+     * @param provider the OAuth provider
+     * @param code     the authorization code from OAuth callback
+     * @return the Clerk session token if successful
+     */
+    Optional<String> exchangeOAuthCode(String provider, String code);
+
+    /**
+     * Get user details from Clerk using session token.
+     *
+     * @param sessionToken the Clerk session token
+     * @return the user details if token is valid
+     */
+    Optional<Map<String, Object>> getUserFromSessionToken(String sessionToken);
 }

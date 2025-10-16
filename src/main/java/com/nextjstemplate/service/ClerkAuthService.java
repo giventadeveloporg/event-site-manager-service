@@ -43,6 +43,15 @@ public interface ClerkAuthService {
     Optional<TokenValidationResponse> validateToken(TokenValidationRequest request);
 
     /**
+     * Get the currently authenticated user from Spring Security context.
+     * This method retrieves user details from the authentication object
+     * that was set by ClerkJwtAuthenticationFilter.
+     *
+     * @return the validation response with user details if authenticated
+     */
+    Optional<TokenValidationResponse> getCurrentAuthenticatedUser();
+
+    /**
      * Get user by Clerk user ID.
      *
      * @param clerkUserId the Clerk user ID

@@ -62,6 +62,9 @@ public class UserPaymentTransaction implements Serializable {
     @Column(name = "status", length = 20)
     private String status;
 
+    @Column(name = "metadata", columnDefinition = "text")
+    private String metadata;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -210,6 +213,19 @@ public class UserPaymentTransaction implements Serializable {
         this.status = status;
     }
 
+    public String getMetadata() {
+        return this.metadata;
+    }
+
+    public UserPaymentTransaction metadata(String metadata) {
+        this.setMetadata(metadata);
+        return this;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return this.createdAt;
     }
@@ -295,6 +311,7 @@ public class UserPaymentTransaction implements Serializable {
             ", platformFeeAmount=" + getPlatformFeeAmount() +
             ", tenantAmount=" + getTenantAmount() +
             ", status='" + getStatus() + "'" +
+            ", metadata='" + getMetadata() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             "}";

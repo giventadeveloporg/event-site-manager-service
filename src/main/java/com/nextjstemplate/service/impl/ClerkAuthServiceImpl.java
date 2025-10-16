@@ -123,22 +123,46 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
                 .findByEmailAndTenantId(request.getEmail(), request.getTenantId())
                 .orElseThrow(() -> {
                     log.warn("User not found for email: {} and tenant: {}", request.getEmail(), request.getTenantId());
-                    return new RuntimeException("User not found");
+                    return new RuntimeException("Invalid email or password");
                 });
 
-            // Verify user with Clerk
-            clerkIntegrationService
-                .getUserById(userProfile.getUserId())
-                .orElseThrow(() -> {
-                    log.warn("User not found in Clerk: {}", userProfile.getUserId());
-                    return new RuntimeException("User not found in Clerk");
-                });
+            // CRITICAL SECURITY: Check if this is a social login user
+            // Social login users don't have passwords and should use /api/auth/sign-in/social endpoint
+            if (
+                userProfile.getAuthProvider() != null &&
+                !"clerk".equals(userProfile.getAuthProvider()) &&
+                !"email".equals(userProfile.getAuthProvider())
+            ) {
+                log.warn("Social login user attempting password login: {}", userProfile.getEmail());
+                throw new RuntimeException(
+                    "This account uses social login (" + userProfile.getAuthProvider() + "). Please sign in with your social provider."
+                );
+            }
 
-            // Generate JWT token
+            // CRITICAL SECURITY: Validate password with Clerk
+            // This is the authentication step - without this, anyone can login!
+            Optional<Map<String, Object>> authResult = clerkIntegrationService.authenticateUser(
+                userProfile.getEmail(),
+                request.getPassword()
+            );
+
+            if (authResult.isEmpty()) {
+                log.warn("Invalid password attempt for email: {}", request.getEmail());
+                throw new RuntimeException("Invalid email or password");
+            }
+
+            // Check if user is active
+            if (!"ACTIVE".equals(userProfile.getUserStatus())) {
+                log.warn("Inactive user attempting login: {}", userProfile.getEmail());
+                throw new RuntimeException("Account is not active. Please contact support.");
+            }
+
+            // Generate JWT token - only reached if password is correct
             String jwtToken = generateJwtToken(userProfile.getUserId(), userProfile.getEmail(), userProfile.getTenantId());
 
             // Update last sign-in timestamp
             ZonedDateTime now = ZonedDateTime.now();
+            userProfile.setLastSignInAt(now);
             userProfile.setUpdatedAt(now);
             userProfileRepository.save(userProfile);
 
@@ -211,6 +235,55 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
             response.setValid(false);
             response.setError("Token validation failed: " + e.getMessage());
             return Optional.of(response);
+        }
+    }
+
+    @Override
+    public Optional<TokenValidationResponse> getCurrentAuthenticatedUser() {
+        log.debug("Fetching current authenticated user from Spring Security context");
+
+        try {
+            // Get the authentication from Spring Security context
+            org.springframework.security.core.Authentication authentication =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.debug("No authenticated user found in security context");
+                return Optional.empty();
+            }
+
+            // Get the Clerk user ID from the principal
+            String clerkUserId = authentication.getName();
+            log.debug("Found authenticated user in security context: {}", clerkUserId);
+
+            // Load user from database
+            UserProfile userProfile = userProfileRepository
+                .findByUserId(clerkUserId)
+                .orElseThrow(() -> {
+                    log.warn("User not found in database for Clerk ID: {}", clerkUserId);
+                    return new RuntimeException("User not found");
+                });
+
+            // Get user organizations
+            List<Map<String, Object>> organizations = clerkIntegrationService.getUserOrganizations(clerkUserId);
+
+            // Prepare response
+            TokenValidationResponse response = new TokenValidationResponse();
+            response.setValid(true);
+            response.setId(userProfile.getId());
+            response.setClerkUserId(userProfile.getUserId());
+            response.setEmail(userProfile.getEmail());
+            response.setFirstName(userProfile.getFirstName());
+            response.setLastName(userProfile.getLastName());
+            response.setTenantId(userProfile.getTenantId());
+            response.setRoles(Arrays.asList(userProfile.getUserRole()));
+            response.setOrganizations(organizations);
+
+            log.debug("Current user fetched successfully: {}", clerkUserId);
+            return Optional.of(response);
+        } catch (Exception e) {
+            log.error("Error fetching current authenticated user", e);
+            return Optional.empty();
         }
     }
 
