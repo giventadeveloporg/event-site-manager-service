@@ -32,4 +32,13 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long>,
         "SELECT u FROM UserProfile u WHERE u.tenantId = :tenantId AND u.isEmailSubscribed = true AND u.email IS NOT NULL AND u.emailSubscriptionToken IS NOT NULL"
     )
     Page<UserProfile> findSubscribedUsersByTenantIdWithPagination(@Param("tenantId") String tenantId, Pageable pageable);
+
+    // Multi-tenant support: Find user by Clerk User ID (globally unique across all tenants)
+    Optional<UserProfile> findByClerkUserId(String clerkUserId);
+
+    // Multi-tenant support: Find user by Clerk User ID and tenant
+    Optional<UserProfile> findByClerkUserIdAndTenantId(String clerkUserId, String tenantId);
+
+    // Multi-tenant support: Check if user with Clerk ID exists
+    boolean existsByClerkUserId(String clerkUserId);
 }

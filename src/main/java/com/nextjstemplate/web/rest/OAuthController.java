@@ -1,7 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.domain.ClerkUserTenant;
+import com.nextjstemplate.domain.UserProfile;
+import com.nextjstemplate.repository.UserProfileRepository;
 import com.nextjstemplate.service.ClerkAuthService;
 import com.nextjstemplate.service.ClerkIntegrationService;
+import com.nextjstemplate.service.ClerkUserTenantService;
 import com.nextjstemplate.service.OAuthStateService;
 import com.nextjstemplate.service.dto.OAuthStateData;
 import com.nextjstemplate.service.dto.SignInResponse;
@@ -14,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -38,6 +43,8 @@ public class OAuthController {
     private final ClerkIntegrationService clerkIntegrationService;
     private final ClerkAuthService clerkAuthService;
     private final OAuthStateService oauthStateService;
+    private final ClerkUserTenantService clerkUserTenantService;
+    private final UserProfileRepository userProfileRepository;
 
     @Value("${server.port:8080}")
     private int serverPort;
@@ -51,11 +58,15 @@ public class OAuthController {
     public OAuthController(
         ClerkIntegrationService clerkIntegrationService,
         ClerkAuthService clerkAuthService,
-        OAuthStateService oauthStateService
+        OAuthStateService oauthStateService,
+        ClerkUserTenantService clerkUserTenantService,
+        UserProfileRepository userProfileRepository
     ) {
         this.clerkIntegrationService = clerkIntegrationService;
         this.clerkAuthService = clerkAuthService;
         this.oauthStateService = oauthStateService;
+        this.clerkUserTenantService = clerkUserTenantService;
+        this.userProfileRepository = userProfileRepository;
     }
 
     /**
@@ -200,15 +211,38 @@ public class OAuthController {
             String email = extractEmail(userData);
             String firstName = (String) userData.get("first_name");
             String lastName = (String) userData.get("last_name");
+            String tenantId = stateData.getTenantId();
 
-            log.info("Successfully authenticated user via OAuth: {} ({})", email, provider);
+            log.info("Successfully authenticated user via OAuth: {} ({}) for tenant: {}", email, provider, tenantId);
 
-            // Create JWT token using ClerkAuthService
-            // This would typically call an internal method to create user session and JWT
-            // For now, we'll return a success redirect with user info
+            // Multi-tenant membership handling: Get or create user profile and tenant membership
+            UserProfile userProfile = getOrCreateUserProfile(clerkUserId, email, firstName, lastName, provider);
 
-            // Build success redirect URL to frontend
-            String successRedirectUrl = buildFrontendSuccessUrl(clerkUserId, email, firstName, lastName, stateData.getRedirectUrl());
+            // Get or create tenant membership for this user
+            ClerkUserTenant tenantMembership = clerkUserTenantService.getOrCreateMembership(
+                userProfile,
+                tenantId,
+                "member" // Default role for OAuth sign-ups
+            );
+
+            log.info(
+                "User {} has {} access to tenant {} with role: {}",
+                userProfile.getId(),
+                tenantMembership.getStatus(),
+                tenantId,
+                tenantMembership.getRole()
+            );
+
+            // Build success redirect URL to frontend with tenant context
+            String successRedirectUrl = buildFrontendSuccessUrl(
+                clerkUserId,
+                email,
+                firstName,
+                lastName,
+                tenantId,
+                tenantMembership.getRole(),
+                stateData.getRedirectUrl()
+            );
 
             return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(successRedirectUrl)).build();
         } catch (Exception e) {
@@ -254,15 +288,25 @@ public class OAuthController {
     }
 
     /**
-     * Build frontend success redirect URL with user info.
+     * Build frontend success redirect URL with user info and tenant context.
      */
-    private String buildFrontendSuccessUrl(String userId, String email, String firstName, String lastName, String redirectUrl) {
+    private String buildFrontendSuccessUrl(
+        String userId,
+        String email,
+        String firstName,
+        String lastName,
+        String tenantId,
+        String role,
+        String redirectUrl
+    ) {
         try {
             StringBuilder url = new StringBuilder(frontendUrl);
             url.append("/auth/callback");
             url.append("?success=true");
             url.append("&user_id=").append(URLEncoder.encode(userId, StandardCharsets.UTF_8));
             url.append("&email=").append(URLEncoder.encode(email, StandardCharsets.UTF_8));
+            url.append("&tenant_id=").append(URLEncoder.encode(tenantId, StandardCharsets.UTF_8));
+            url.append("&role=").append(URLEncoder.encode(role, StandardCharsets.UTF_8));
 
             if (firstName != null) {
                 url.append("&first_name=").append(URLEncoder.encode(firstName, StandardCharsets.UTF_8));
@@ -298,5 +342,68 @@ public class OAuthController {
 
         // Fallback to direct email field
         return (String) userData.get("email");
+    }
+
+    /**
+     * Get or create UserProfile for OAuth authentication.
+     * This implements the multi-tenant shared user pool pattern where one user
+     * can belong to multiple tenants.
+     *
+     * @param clerkUserId Clerk user ID (globally unique)
+     * @param email User email
+     * @param firstName User first name
+     * @param lastName User last name
+     * @param provider OAuth provider name
+     * @return UserProfile entity
+     */
+    private UserProfile getOrCreateUserProfile(String clerkUserId, String email, String firstName, String lastName, String provider) {
+        log.debug("Getting or creating UserProfile for Clerk user ID: {}", clerkUserId);
+
+        // Check if user already exists by Clerk User ID (tenant-agnostic lookup)
+        return userProfileRepository
+            .findByClerkUserId(clerkUserId)
+            .map(userProfile -> {
+                log.debug("Found existing UserProfile: {}", userProfile.getId());
+
+                // Update last sign-in timestamp
+                userProfile.setLastSignInAt(ZonedDateTime.now());
+                userProfile.setUpdatedAt(ZonedDateTime.now());
+
+                // Update basic info if changed (email, name might have been updated in Clerk)
+                if (email != null && !email.equals(userProfile.getEmail())) {
+                    log.info("Updating email for user {} from {} to {}", userProfile.getId(), userProfile.getEmail(), email);
+                    userProfile.setEmail(email);
+                }
+                if (firstName != null && !firstName.equals(userProfile.getFirstName())) {
+                    userProfile.setFirstName(firstName);
+                }
+                if (lastName != null && !lastName.equals(userProfile.getLastName())) {
+                    userProfile.setLastName(lastName);
+                }
+
+                return userProfileRepository.save(userProfile);
+            })
+            .orElseGet(() -> {
+                // Create new user profile (tenant-agnostic - no single tenant_id)
+                log.info("Creating new UserProfile for Clerk user ID: {}", clerkUserId);
+
+                UserProfile newUser = new UserProfile();
+                newUser.setClerkUserId(clerkUserId);
+                newUser.setEmail(email);
+                newUser.setFirstName(firstName);
+                newUser.setLastName(lastName);
+                newUser.setAuthProvider(provider);
+                newUser.setEmailVerified(true); // OAuth users are email verified
+                newUser.setUserStatus("active");
+                newUser.setUserRole("member");
+                newUser.setCreatedAt(ZonedDateTime.now());
+                newUser.setUpdatedAt(ZonedDateTime.now());
+                newUser.setLastSignInAt(ZonedDateTime.now());
+
+                // Generate a unique userId if needed
+                newUser.setUserId(java.util.UUID.randomUUID().toString());
+
+                return userProfileRepository.save(newUser);
+            });
     }
 }

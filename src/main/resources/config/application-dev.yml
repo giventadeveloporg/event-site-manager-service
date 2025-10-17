@@ -180,6 +180,10 @@ clerk:
   frontend-api: ${CLERK_FRONTEND_API:https://humble-monkey-3.clerk.accounts.dev}
 
 # OAuth Configuration
+# NOTE: Direct Google OAuth is DISABLED - we use Clerk SDK on frontend
+google:
+  oauth:
+    enabled: false
 
 server:
   port: 8080

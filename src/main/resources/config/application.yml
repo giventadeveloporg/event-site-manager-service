@@ -252,3 +252,11 @@ whatsapp:
     log-level: ${WHATSAPP_LOGGING_LEVEL:INFO}
     log-message-content: ${WHATSAPP_LOG_MESSAGE_CONTENT:false}
     log-personal-data: ${WHATSAPP_LOG_PERSONAL_DATA:false}
+
+# ===================================================================
+# OAuth Configuration
+# ===================================================================
+# NOTE: Direct Google OAuth is DISABLED - we use Clerk SDK on frontend
+google:
+  oauth:
+    enabled: ${GOOGLE_OAUTH_ENABLED:false}

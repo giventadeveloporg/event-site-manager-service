@@ -3751,4 +3751,13 @@ CREATE TRIGGER trg_clerk_organization_role_updated_at
 -- ===================================================
 -- END OF CLERK AUTHENTICATION INTEGRATION SCHEMA
 -- ===================================================
-
+-- =====================================================
+-- NOTE: Multi-Tenant Membership System
+-- =====================================================
+-- The clerk_user_tenant table (created above around line 3557) already provides
+-- multi-tenant membership functionality. It correctly references user_profile table
+-- and supports users belonging to multiple tenants with tenant-specific roles.
+--
+-- No additional tenant_memberships table is needed.
+-- All multi-tenant logic uses the existing clerk_user_tenant table.
+-- =====================================================

@@ -1,6 +1,10 @@
 package com.nextjstemplate.web.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nextjstemplate.domain.ClerkUserTenant;
+import com.nextjstemplate.domain.UserProfile;
+import com.nextjstemplate.repository.UserProfileRepository;
+import com.nextjstemplate.service.ClerkUserTenantService;
 import com.nextjstemplate.service.WebhookEventHandlerService;
 import com.nextjstemplate.service.WebhookSignatureService;
 import com.nextjstemplate.service.dto.ClerkWebhookRequest;
@@ -11,6 +15,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,26 +25,32 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * REST controller for receiving Clerk webhook events.
+ * REST controller for receiving Clerk webhook events and user synchronization.
  */
 @RestController
-@RequestMapping("/api/webhooks")
-@Tag(name = "Clerk Webhooks", description = "Endpoints for receiving Clerk webhook events")
+@RequestMapping("/api")
+@Tag(name = "Clerk Webhooks", description = "Endpoints for Clerk webhooks and user sync")
 public class ClerkWebhookController {
 
     private final Logger log = LoggerFactory.getLogger(ClerkWebhookController.class);
 
     private final WebhookSignatureService webhookSignatureService;
     private final WebhookEventHandlerService webhookEventHandlerService;
+    private final UserProfileRepository userProfileRepository;
+    private final ClerkUserTenantService clerkUserTenantService;
     private final ObjectMapper objectMapper;
 
     public ClerkWebhookController(
         WebhookSignatureService webhookSignatureService,
         WebhookEventHandlerService webhookEventHandlerService,
+        UserProfileRepository userProfileRepository,
+        ClerkUserTenantService clerkUserTenantService,
         ObjectMapper objectMapper
     ) {
         this.webhookSignatureService = webhookSignatureService;
         this.webhookEventHandlerService = webhookEventHandlerService;
+        this.userProfileRepository = userProfileRepository;
+        this.clerkUserTenantService = clerkUserTenantService;
         this.objectMapper = objectMapper;
     }
 
@@ -112,5 +125,100 @@ public class ClerkWebhookController {
             response.setProcessingTimeMs(System.currentTimeMillis() - startTime);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+    }
+
+    /**
+     * POST /api/clerk/sync-user : Sync Clerk user to backend multi-tenant system
+     *
+     * @param userData Map containing clerkUserId, email, firstName, lastName, tenantId
+     * @return 200 OK if sync successful
+     */
+    @PostMapping("/clerk/sync-user")
+    @Operation(summary = "Sync Clerk user", description = "Syncs Clerk-authenticated user to multi-tenant system")
+    public ResponseEntity<Map<String, Object>> syncClerkUser(@RequestBody Map<String, Object> userData) {
+        try {
+            String clerkUserId = (String) userData.get("clerkUserId");
+            String email = (String) userData.get("email");
+            String firstName = (String) userData.get("firstName");
+            String lastName = (String) userData.get("lastName");
+            String tenantId = (String) userData.get("tenantId");
+
+            log.info("Syncing Clerk user {} to tenant {}", email, tenantId);
+
+            // Get or create user profile
+            UserProfile userProfile = getOrCreateUserProfile(clerkUserId, email, firstName, lastName);
+
+            // Get or create tenant membership
+            ClerkUserTenant tenantMembership = clerkUserTenantService.getOrCreateMembership(userProfile, tenantId, "member");
+
+            log.info("User {} synced successfully to tenant {} with role: {}", userProfile.getId(), tenantId, tenantMembership.getRole());
+
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("success", true);
+            responseMap.put("userId", userProfile.getId());
+            responseMap.put("tenantId", tenantId);
+            responseMap.put("role", tenantMembership.getRole());
+
+            return ResponseEntity.ok(responseMap);
+        } catch (Exception e) {
+            log.error("Error syncing Clerk user", e);
+            Map<String, Object> errorMap = new HashMap<>();
+            errorMap.put("success", false);
+            errorMap.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(errorMap);
+        }
+    }
+
+    /**
+     * Get or create UserProfile for Clerk user.
+     * Implements multi-tenant shared user pool pattern.
+     */
+    private UserProfile getOrCreateUserProfile(String clerkUserId, String email, String firstName, String lastName) {
+        log.debug("Getting or creating UserProfile for Clerk user ID: {}", clerkUserId);
+
+        return userProfileRepository
+            .findByClerkUserId(clerkUserId)
+            .map(userProfile -> {
+                log.debug("Found existing UserProfile: {}", userProfile.getId());
+
+                // Update last sign-in timestamp
+                userProfile.setLastSignInAt(ZonedDateTime.now());
+                userProfile.setUpdatedAt(ZonedDateTime.now());
+
+                // Update basic info if changed
+                if (email != null && !email.equals(userProfile.getEmail())) {
+                    log.info("Updating email for user {} from {} to {}", userProfile.getId(), userProfile.getEmail(), email);
+                    userProfile.setEmail(email);
+                }
+                if (firstName != null && !firstName.equals(userProfile.getFirstName())) {
+                    userProfile.setFirstName(firstName);
+                }
+                if (lastName != null && !lastName.equals(userProfile.getLastName())) {
+                    userProfile.setLastName(lastName);
+                }
+
+                return userProfileRepository.save(userProfile);
+            })
+            .orElseGet(() -> {
+                log.info("Creating new UserProfile for Clerk user ID: {}", clerkUserId);
+
+                UserProfile newUser = new UserProfile();
+                newUser.setClerkUserId(clerkUserId);
+                newUser.setEmail(email);
+                newUser.setFirstName(firstName);
+                newUser.setLastName(lastName);
+                newUser.setAuthProvider("clerk");
+                newUser.setEmailVerified(true); // Clerk OAuth users are email verified
+                newUser.setUserStatus("active");
+                newUser.setUserRole("member");
+                newUser.setCreatedAt(ZonedDateTime.now());
+                newUser.setUpdatedAt(ZonedDateTime.now());
+                newUser.setLastSignInAt(ZonedDateTime.now());
+
+                // Generate a unique userId
+                newUser.setUserId(java.util.UUID.randomUUID().toString());
+
+                return userProfileRepository.save(newUser);
+            });
     }
 }
