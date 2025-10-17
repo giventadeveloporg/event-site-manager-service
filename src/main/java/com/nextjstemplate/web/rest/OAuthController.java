@@ -215,8 +215,8 @@ public class OAuthController {
 
             log.info("Successfully authenticated user via OAuth: {} ({}) for tenant: {}", email, provider, tenantId);
 
-            // Multi-tenant membership handling: Get or create user profile and tenant membership
-            UserProfile userProfile = getOrCreateUserProfile(clerkUserId, email, firstName, lastName, provider);
+            // Multi-tenant membership handling: Get or create user profile with tenant ID
+            UserProfile userProfile = getOrCreateUserProfile(clerkUserId, email, firstName, lastName, provider, tenantId);
 
             // Get or create tenant membership for this user
             ClerkUserTenant tenantMembership = clerkUserTenantService.getOrCreateMembership(
@@ -348,16 +348,25 @@ public class OAuthController {
      * Get or create UserProfile for OAuth authentication.
      * This implements the multi-tenant shared user pool pattern where one user
      * can belong to multiple tenants.
+     * CRITICAL: Always sets tenantId on new profiles to comply with multi-tenant architecture.
      *
      * @param clerkUserId Clerk user ID (globally unique)
      * @param email User email
      * @param firstName User first name
      * @param lastName User last name
      * @param provider OAuth provider name
+     * @param tenantId Tenant ID for multi-tenant support
      * @return UserProfile entity
      */
-    private UserProfile getOrCreateUserProfile(String clerkUserId, String email, String firstName, String lastName, String provider) {
-        log.debug("Getting or creating UserProfile for Clerk user ID: {}", clerkUserId);
+    private UserProfile getOrCreateUserProfile(
+        String clerkUserId,
+        String email,
+        String firstName,
+        String lastName,
+        String provider,
+        String tenantId
+    ) {
+        log.debug("Getting or creating UserProfile for Clerk user ID: {} with tenantId: {}", clerkUserId, tenantId);
 
         // Check if user already exists by Clerk User ID (tenant-agnostic lookup)
         return userProfileRepository
@@ -381,17 +390,27 @@ public class OAuthController {
                     userProfile.setLastName(lastName);
                 }
 
+                // Update tenantId if it's null (for legacy profiles)
+                if (userProfile.getTenantId() == null && tenantId != null) {
+                    log.info("Updating tenantId for user {} from NULL to {}", userProfile.getId(), tenantId);
+                    userProfile.setTenantId(tenantId);
+                }
+
                 return userProfileRepository.save(userProfile);
             })
             .orElseGet(() -> {
-                // Create new user profile (tenant-agnostic - no single tenant_id)
-                log.info("Creating new UserProfile for Clerk user ID: {}", clerkUserId);
+                // Create new user profile with tenantId
+                log.info("Creating new UserProfile for Clerk user ID: {} with tenantId: {}", clerkUserId, tenantId);
 
                 UserProfile newUser = new UserProfile();
                 newUser.setClerkUserId(clerkUserId);
                 newUser.setEmail(email);
                 newUser.setFirstName(firstName);
                 newUser.setLastName(lastName);
+                // CRITICAL: Use clerkUserId as userId so frontend lookups work
+                newUser.setUserId(clerkUserId);
+                // CRITICAL: Set tenantId for multi-tenant support
+                newUser.setTenantId(tenantId);
                 newUser.setAuthProvider(provider);
                 newUser.setEmailVerified(true); // OAuth users are email verified
                 newUser.setUserStatus("active");
@@ -400,8 +419,7 @@ public class OAuthController {
                 newUser.setUpdatedAt(ZonedDateTime.now());
                 newUser.setLastSignInAt(ZonedDateTime.now());
 
-                // Generate a unique userId if needed
-                newUser.setUserId(java.util.UUID.randomUUID().toString());
+                log.info("Creating UserProfile with userId={}, tenantId={} for consistent lookups", clerkUserId, tenantId);
 
                 return userProfileRepository.save(newUser);
             });

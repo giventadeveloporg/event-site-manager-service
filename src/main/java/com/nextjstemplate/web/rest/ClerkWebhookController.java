@@ -145,8 +145,8 @@ public class ClerkWebhookController {
 
             log.info("Syncing Clerk user {} to tenant {}", email, tenantId);
 
-            // Get or create user profile
-            UserProfile userProfile = getOrCreateUserProfile(clerkUserId, email, firstName, lastName);
+            // Get or create user profile with tenant ID
+            UserProfile userProfile = getOrCreateUserProfile(clerkUserId, email, firstName, lastName, tenantId);
 
             // Get or create tenant membership
             ClerkUserTenant tenantMembership = clerkUserTenantService.getOrCreateMembership(userProfile, tenantId, "member");
@@ -172,9 +172,10 @@ public class ClerkWebhookController {
     /**
      * Get or create UserProfile for Clerk user.
      * Implements multi-tenant shared user pool pattern.
+     * CRITICAL: Always sets tenantId on new profiles to comply with multi-tenant architecture.
      */
-    private UserProfile getOrCreateUserProfile(String clerkUserId, String email, String firstName, String lastName) {
-        log.debug("Getting or creating UserProfile for Clerk user ID: {}", clerkUserId);
+    private UserProfile getOrCreateUserProfile(String clerkUserId, String email, String firstName, String lastName, String tenantId) {
+        log.debug("Getting or creating UserProfile for Clerk user ID: {} with tenantId: {}", clerkUserId, tenantId);
 
         return userProfileRepository
             .findByClerkUserId(clerkUserId)
@@ -197,16 +198,26 @@ public class ClerkWebhookController {
                     userProfile.setLastName(lastName);
                 }
 
+                // Update tenantId if it's null (for legacy profiles)
+                if (userProfile.getTenantId() == null && tenantId != null) {
+                    log.info("Updating tenantId for user {} from NULL to {}", userProfile.getId(), tenantId);
+                    userProfile.setTenantId(tenantId);
+                }
+
                 return userProfileRepository.save(userProfile);
             })
             .orElseGet(() -> {
-                log.info("Creating new UserProfile for Clerk user ID: {}", clerkUserId);
+                log.info("Creating new UserProfile for Clerk user ID: {} with tenantId: {}", clerkUserId, tenantId);
 
                 UserProfile newUser = new UserProfile();
+                // CRITICAL: Use clerkUserId as userId so frontend lookups work
+                newUser.setUserId(clerkUserId);
                 newUser.setClerkUserId(clerkUserId);
                 newUser.setEmail(email);
                 newUser.setFirstName(firstName);
                 newUser.setLastName(lastName);
+                // CRITICAL: Set tenantId for multi-tenant support
+                newUser.setTenantId(tenantId);
                 newUser.setAuthProvider("clerk");
                 newUser.setEmailVerified(true); // Clerk OAuth users are email verified
                 newUser.setUserStatus("active");
@@ -215,8 +226,7 @@ public class ClerkWebhookController {
                 newUser.setUpdatedAt(ZonedDateTime.now());
                 newUser.setLastSignInAt(ZonedDateTime.now());
 
-                // Generate a unique userId
-                newUser.setUserId(java.util.UUID.randomUUID().toString());
+                log.info("Creating UserProfile with userId={}, tenantId={} for consistent lookups", clerkUserId, tenantId);
 
                 return userProfileRepository.save(newUser);
             });
