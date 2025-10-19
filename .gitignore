@@ -60,7 +60,7 @@ env-template.txt
 
 # PDT-specific
 .buildpath
-
+/document/
 # STS-specific
 /.sts4-cache/*
 
