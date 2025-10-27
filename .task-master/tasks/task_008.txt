@@ -1,0 +1,16 @@
+# Task ID: 8
+# Title: Implement Get Current User Endpoint
+# Status: done
+# Dependencies: 6 ✅
+# Priority: medium
+# Description: Create endpoint to retrieve authenticated user profile.
+# Details:
+- Create UserResponse DTO
+- Implement GET /api/auth/user endpoint
+- Load user from database by JWT claims
+- Include organizations and roles
+- Include tenant memberships
+- Document API in Swagger
+
+# Test Strategy:
+Test that the endpoint returns complete user info including organizations and tenants for authenticated users.

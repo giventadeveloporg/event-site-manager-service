@@ -1,0 +1,16 @@
+# Task ID: 16
+# Title: Implement Permission Checking Service
+# Status: pending
+# Dependencies: 15 ⏱️
+# Priority: low
+# Description: Create service for verifying user permissions and roles.
+# Details:
+- Create PermissionService interface
+- Implement PermissionServiceImpl
+- Implement permission checking methods
+- Implement role verification methods
+- Implement resource access methods
+- Add tenant-aware permission checks
+
+# Test Strategy:
+Test that permission checking works correctly, role-based access control functions properly, and tenant-aware permissions are enforced.

@@ -1,0 +1,16 @@
+# Task ID: 15
+# Title: Configure Role Mapping
+# Status: pending
+# Dependencies: 14 ⏱️
+# Priority: low
+# Description: Create configuration for mapping Clerk roles to application roles.
+# Details:
+- Create RoleMappingConfiguration class
+- Define role mapping rules
+- Seed clerk_organization_role table
+- Implement getRoleForClerkRole method
+- Add configuration properties
+- Support the role hierarchy defined in the PRD
+
+# Test Strategy:
+Test that role mappings are correctly configured, database is seeded with appropriate values, and mappings work as expected.

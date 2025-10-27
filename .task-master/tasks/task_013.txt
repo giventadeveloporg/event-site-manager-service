@@ -1,0 +1,16 @@
+# Task ID: 13
+# Title: Create Tenant Context Filter
+# Status: pending
+# Dependencies: 12 ⏱️
+# Priority: medium
+# Description: Implement filter to extract and validate tenant context from requests.
+# Details:
+- Create TenantContextFilter
+- Extract tenant ID from request (header, param, or JWT)
+- Validate tenant ID
+- Set tenant in ThreadLocal context
+- Clear context after request
+- Add filter to security filter chain
+
+# Test Strategy:
+Test that tenant context is available in all requests, invalid tenant IDs return 403, and context is cleaned up after each request.

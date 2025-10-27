@@ -1,0 +1,17 @@
+# Task ID: 21
+# Title: Implement Admin User Role Management
+# Status: pending
+# Dependencies: 20 ⏱️
+# Priority: low
+# Description: Create endpoint for administrators to update user roles.
+# Details:
+- Create UpdateRoleRequest DTO
+- Implement PUT /api/admin/users/{userId}/role endpoint
+- Validate role value
+- Update user_profile.user_role
+- Update clerk_user_tenant records
+- Add admin authorization check
+- Document API in Swagger
+
+# Test Strategy:
+Test that user roles are updated successfully, validation works correctly, and only administrators can access the endpoint.

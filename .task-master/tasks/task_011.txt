@@ -1,0 +1,18 @@
+# Task ID: 11
+# Title: Implement Social Sign-In API
+# Status: pending
+# Dependencies: 10 ⏱️, 5 ✅
+# Priority: medium
+# Description: Create endpoint for authenticating with social providers.
+# Details:
+- Create SocialSignInRequest and SocialSignInResponse DTOs
+- Implement POST /api/auth/sign-in/social endpoint
+- Validate OAuth token with Clerk
+- Extract user info from Clerk
+- Create or update user_profile
+- Handle account linking
+- Update auth_provider field
+- Document API in Swagger
+
+# Test Strategy:
+Test that social sign-in works for all configured providers, account linking functions correctly, and user profiles are properly updated.

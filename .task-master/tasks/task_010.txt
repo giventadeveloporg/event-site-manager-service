@@ -1,0 +1,16 @@
+# Task ID: 10
+# Title: Configure Social Login Providers
+# Status: pending
+# Dependencies: 1 ⏱️
+# Priority: medium
+# Description: Set up social login providers in Clerk dashboard.
+# Details:
+- Configure Google OAuth in Clerk
+- Configure GitHub OAuth in Clerk
+- Configure Facebook OAuth in Clerk
+- Configure Apple Sign In in Clerk
+- Set redirect URLs
+- Configure OAuth scopes for each provider
+
+# Test Strategy:
+Manually test each provider to ensure OAuth flows work correctly and users can sign in with each provider.

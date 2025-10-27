@@ -1,0 +1,18 @@
+# Task ID: 5
+# Title: Implement Sign-In API
+# Status: done
+# Dependencies: 3 ✅
+# Priority: high
+# Description: Create REST endpoint for user authentication with Clerk.
+# Details:
+- Create SignInRequest and SignInResponse DTOs
+- Implement POST /api/auth/sign-in endpoint
+- Validate credentials with Clerk
+- Load user_profile from database
+- Generate JWT token
+- Update last_sign_in_at timestamp
+- Handle invalid credentials
+- Document API in Swagger
+
+# Test Strategy:
+Test that the endpoint returns 200 on success with a valid JWT token, returns 401 for invalid credentials, and updates the last sign-in timestamp.

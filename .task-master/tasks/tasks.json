@@ -1,0 +1,292 @@
+{
+  "meta": {
+    "projectName": "Task Master",
+    "version": "1.5.0",
+    "source": ".task-master/PRD.txt",
+    "description": "Tasks generated from PRD",
+    "totalTasksGenerated": 28,
+    "tasksIncluded": 28
+  },
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Project Setup",
+      "description": "Integrate Clerk SDK into the existing Spring Boot project and configure credentials.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "- Add Clerk Maven dependency to existing pom.xml\n- Add Clerk configuration to application-dev.yml\n- Verify the provided Clerk credentials (publishable key, secret key, webhook secret)\n- Extend existing error handling framework for Clerk errors",
+      "testStrategy": "Verify that the application starts successfully without errors and that the Clerk SDK initializes correctly."
+    },
+    {
+      "id": 2,
+      "title": "Database Schema Migration",
+      "description": "Create Liquibase migrations to add new columns to existing tables and create new tables required for Clerk integration.",
+      "status": "pending",
+      "dependencies": [1],
+      "priority": "high",
+      "details": "- Add new Clerk-related columns to existing user_profile table\n- Create new clerk_user_tenant junction table\n- Create new clerk_organization_role table\n- Create new clerk_webhook_event table\n- Create new clerk_session table\n- Add indexes and constraints to optimize queries\n- Update unique constraint to support multi-tenant (email, tenant_id)",
+      "testStrategy": "Ensure migrations run successfully on the existing database, preserve existing user_profile data, and that the application starts without migration errors."
+    },
+    {
+      "id": 3,
+      "title": "Implement ClerkIntegrationService",
+      "description": "Create service layer for interacting with Clerk SDK.",
+      "status": "done",
+      "dependencies": [1, 2],
+      "priority": "high",
+      "details": "- Create ClerkIntegrationService interface\n- Implement ClerkIntegrationServiceImpl\n- Initialize Clerk SDK with credentials\n- Implement user management methods (createUser, getUserById, updateUser)\n- Implement token validation methods\n- Implement organization management methods\n- Add comprehensive error handling and logging",
+      "testStrategy": "Write unit tests with >80% coverage ensuring the service successfully calls Clerk APIs and handles errors appropriately."
+    },
+    {
+      "id": 4,
+      "title": "Implement Sign-Up API",
+      "description": "Create REST endpoint for user registration with Clerk.",
+      "status": "done",
+      "dependencies": [3],
+      "priority": "high",
+      "details": "- Create SignUpRequest and SignUpResponse DTOs\n- Implement POST /api/auth/sign-up endpoint\n- Validate input parameters\n- Call ClerkIntegrationService to create user in Clerk\n- Create user_profile record in database\n- Generate JWT token\n- Handle validation errors\n- Document API in Swagger",
+      "testStrategy": "Test that the endpoint returns 201 on success, creates a user in both Clerk and database, returns a valid JWT token, and properly handles validation errors."
+    },
+    {
+      "id": 5,
+      "title": "Implement Sign-In API",
+      "description": "Create REST endpoint for user authentication with Clerk.",
+      "status": "done",
+      "dependencies": [3],
+      "priority": "high",
+      "details": "- Create SignInRequest and SignInResponse DTOs\n- Implement POST /api/auth/sign-in endpoint\n- Validate credentials with Clerk\n- Load user_profile from database\n- Generate JWT token\n- Update last_sign_in_at timestamp\n- Handle invalid credentials\n- Document API in Swagger",
+      "testStrategy": "Test that the endpoint returns 200 on success with a valid JWT token, returns 401 for invalid credentials, and updates the last sign-in timestamp."
+    },
+    {
+      "id": 6,
+      "title": "Implement Token Validation",
+      "description": "Create token validation endpoint and JWT authentication filter.",
+      "status": "done",
+      "dependencies": [3],
+      "priority": "high",
+      "details": "- Create TokenValidationRequest and TokenValidationResponse DTOs\n- Implement POST /api/auth/verify-token endpoint\n- Implement JWT validation logic with Clerk\n- Create JwtAuthenticationFilter\n- Extract token from Authorization header\n- Load user from database\n- Populate Spring Security context\n- Handle expired/invalid tokens",
+      "testStrategy": "Test that valid tokens return user info, invalid tokens return 401, and the JWT filter works on protected endpoints with user context available in controllers."
+    },
+    {
+      "id": 7,
+      "title": "Implement Refresh Token Endpoint",
+      "description": "Create endpoint for refreshing expired JWT tokens.",
+      "status": "done",
+      "dependencies": [6],
+      "priority": "medium",
+      "details": "- Create RefreshTokenRequest and RefreshTokenResponse DTOs\n- Implement POST /api/auth/refresh-token endpoint\n- Validate refresh token with Clerk\n- Generate new access token\n- Return new tokens\n- Document API in Swagger",
+      "testStrategy": "Test that refresh tokens successfully return new access tokens, invalid refresh tokens return 401, and token rotation works correctly."
+    },
+    {
+      "id": 8,
+      "title": "Implement Get Current User Endpoint",
+      "description": "Create endpoint to retrieve authenticated user profile.",
+      "status": "done",
+      "dependencies": [6],
+      "priority": "medium",
+      "details": "- Create UserResponse DTO\n- Implement GET /api/auth/user endpoint\n- Load user from database by JWT claims\n- Include organizations and roles\n- Include tenant memberships\n- Document API in Swagger",
+      "testStrategy": "Test that the endpoint returns complete user info including organizations and tenants for authenticated users."
+    },
+    {
+      "id": 9,
+      "title": "Implement Sign-Out Endpoint",
+      "description": "Create endpoint for user sign-out and session revocation.",
+      "status": "pending",
+      "dependencies": [6],
+      "priority": "medium",
+      "details": "- Create SignOutRequest DTO\n- Implement POST /api/auth/sign-out endpoint\n- Revoke session in Clerk\n- Update session status in database\n- Clear security context\n- Document API in Swagger",
+      "testStrategy": "Test that the session is revoked in Clerk, marked inactive in database, and subsequent requests with the token fail."
+    },
+    {
+      "id": 10,
+      "title": "Configure Social Login Providers",
+      "description": "Set up social login providers in Clerk dashboard.",
+      "status": "pending",
+      "dependencies": [1],
+      "priority": "medium",
+      "details": "- Configure Google OAuth in Clerk\n- Configure GitHub OAuth in Clerk\n- Configure Facebook OAuth in Clerk\n- Configure Apple Sign In in Clerk\n- Set redirect URLs\n- Configure OAuth scopes for each provider",
+      "testStrategy": "Manually test each provider to ensure OAuth flows work correctly and users can sign in with each provider."
+    },
+    {
+      "id": 11,
+      "title": "Implement Social Sign-In API",
+      "description": "Create endpoint for authenticating with social providers.",
+      "status": "pending",
+      "dependencies": [10, 5],
+      "priority": "medium",
+      "details": "- Create SocialSignInRequest and SocialSignInResponse DTOs\n- Implement POST /api/auth/sign-in/social endpoint\n- Validate OAuth token with Clerk\n- Extract user info from Clerk\n- Create or update user_profile\n- Handle account linking\n- Update auth_provider field\n- Document API in Swagger",
+      "testStrategy": "Test that social sign-in works for all configured providers, account linking functions correctly, and user profiles are properly updated."
+    },
+    {
+      "id": 12,
+      "title": "Implement Multi-Tenant Service",
+      "description": "Create service for handling multi-tenant operations.",
+      "status": "pending",
+      "dependencies": [2],
+      "priority": "medium",
+      "details": "- Create TenantService interface\n- Implement TenantServiceImpl\n- Implement tenant validation methods\n- Implement methods for adding/removing users from tenants\n- Implement methods for retrieving user tenants\n- Implement tenant switching functionality\n- Add tenant isolation to queries",
+      "testStrategy": "Test that users can belong to multiple tenants, tenant validation works, tenant switching functions correctly, and data isolation is enforced."
+    },
+    {
+      "id": 13,
+      "title": "Create Tenant Context Filter",
+      "description": "Implement filter to extract and validate tenant context from requests.",
+      "status": "pending",
+      "dependencies": [12],
+      "priority": "medium",
+      "details": "- Create TenantContextFilter\n- Extract tenant ID from request (header, param, or JWT)\n- Validate tenant ID\n- Set tenant in ThreadLocal context\n- Clear context after request\n- Add filter to security filter chain",
+      "testStrategy": "Test that tenant context is available in all requests, invalid tenant IDs return 403, and context is cleaned up after each request."
+    },
+    {
+      "id": 14,
+      "title": "Implement Organization Sync Service",
+      "description": "Create service to synchronize Clerk Organizations with application roles.",
+      "status": "pending",
+      "dependencies": [3],
+      "priority": "medium",
+      "details": "- Create OrganizationSyncService interface\n- Implement OrganizationSyncServiceImpl\n- Implement syncUserOrganizations method\n- Fetch organizations from Clerk\n- Map Clerk roles to application roles\n- Update user_profile.user_role\n- Update clerk_user_tenant records",
+      "testStrategy": "Test that organizations are correctly synced from Clerk, roles are properly mapped, and user permissions are updated accordingly."
+    },
+    {
+      "id": 15,
+      "title": "Configure Role Mapping",
+      "description": "Create configuration for mapping Clerk roles to application roles.",
+      "status": "pending",
+      "dependencies": [14],
+      "priority": "low",
+      "details": "- Create RoleMappingConfiguration class\n- Define role mapping rules\n- Seed clerk_organization_role table\n- Implement getRoleForClerkRole method\n- Add configuration properties\n- Support the role hierarchy defined in the PRD",
+      "testStrategy": "Test that role mappings are correctly configured, database is seeded with appropriate values, and mappings work as expected."
+    },
+    {
+      "id": 16,
+      "title": "Implement Permission Checking Service",
+      "description": "Create service for verifying user permissions and roles.",
+      "status": "pending",
+      "dependencies": [15],
+      "priority": "low",
+      "details": "- Create PermissionService interface\n- Implement PermissionServiceImpl\n- Implement permission checking methods\n- Implement role verification methods\n- Implement resource access methods\n- Add tenant-aware permission checks",
+      "testStrategy": "Test that permission checking works correctly, role-based access control functions properly, and tenant-aware permissions are enforced."
+    },
+    {
+      "id": 17,
+      "title": "Implement Webhook Endpoint",
+      "description": "Create endpoint for receiving Clerk webhook events.",
+      "status": "pending",
+      "dependencies": [3],
+      "priority": "low",
+      "details": "- Create WebhookController\n- Implement POST /api/webhooks/clerk endpoint\n- Verify webhook signature using webhook secret\n- Parse webhook payload\n- Route to appropriate event handler\n- Return appropriate response\n- Handle errors gracefully",
+      "testStrategy": "Test that the webhook endpoint correctly receives events, validates signatures, and routes events to the appropriate handlers."
+    },
+    {
+      "id": 18,
+      "title": "Implement Webhook Event Handlers",
+      "description": "Create handlers for different types of webhook events.",
+      "status": "pending",
+      "dependencies": [17],
+      "priority": "medium",
+      "details": "- Create WebhookEventHandler interface\n- Implement handlers for user events (created, updated, deleted)\n- Implement handlers for session events\n- Implement handlers for organization membership events\n- Add idempotency checking to prevent duplicate processing\n- Implement retry logic for failed events",
+      "testStrategy": "Test that all event types are handled correctly, user data is synced properly, and idempotency checks prevent duplicate processing."
+    },
+    {
+      "id": 19,
+      "title": "Add Webhook Audit Logging",
+      "description": "Implement audit logging for webhook events.",
+      "status": "pending",
+      "dependencies": [18],
+      "priority": "low",
+      "details": "- Create WebhookAuditService\n- Save events to clerk_webhook_event table\n- Log processing results\n- Track retry attempts\n- Implement cleanup job for old events",
+      "testStrategy": "Test that all events are logged, processing status is tracked, and the cleanup job works correctly."
+    },
+    {
+      "id": 20,
+      "title": "Implement Admin List Users API",
+      "description": "Create endpoint for administrators to list and search users.",
+      "status": "pending",
+      "dependencies": [6],
+      "priority": "low",
+      "details": "- Create AdminController\n- Implement GET /api/admin/users endpoint\n- Add pagination support\n- Add filtering by tenant\n- Add sorting options\n- Add admin authorization check\n- Document API in Swagger",
+      "testStrategy": "Test that the endpoint returns paginated users, filtering works correctly, and only administrators can access the endpoint."
+    },
+    {
+      "id": 21,
+      "title": "Implement Admin User Role Management",
+      "description": "Create endpoint for administrators to update user roles.",
+      "status": "pending",
+      "dependencies": [20],
+      "priority": "low",
+      "details": "- Create UpdateRoleRequest DTO\n- Implement PUT /api/admin/users/{userId}/role endpoint\n- Validate role value\n- Update user_profile.user_role\n- Update clerk_user_tenant records\n- Add admin authorization check\n- Document API in Swagger",
+      "testStrategy": "Test that user roles are updated successfully, validation works correctly, and only administrators can access the endpoint."
+    },
+    {
+      "id": 22,
+      "title": "Implement Admin User Status Management",
+      "description": "Create endpoint for administrators to suspend or activate users.",
+      "status": "pending",
+      "dependencies": [20],
+      "priority": "low",
+      "details": "- Create UpdateStatusRequest DTO\n- Implement PUT /api/admin/users/{userId}/status endpoint\n- Validate status value\n- Update user_profile.user_status\n- Revoke sessions if suspended\n- Add admin authorization check\n- Document API in Swagger",
+      "testStrategy": "Test that user status is updated successfully, sessions are revoked when suspended, and only administrators can access the endpoint."
+    },
+    {
+      "id": 23,
+      "title": "Update Security Configuration",
+      "description": "Update existing security configuration to use Clerk JWT validation.",
+      "status": "pending",
+      "dependencies": [6],
+      "priority": "high",
+      "details": "- Configure JWT decoder for Clerk tokens\n- Update CORS configuration\n- Add rate limiting configuration\n- Update security filter chain\n- Remove in-memory user details manager\n- Configure security for new endpoints",
+      "testStrategy": "Test that Clerk JWT validation works correctly, CORS is properly configured, rate limiting works as expected, and the security filter chain functions properly."
+    },
+    {
+      "id": 24,
+      "title": "Enhance Error Handling",
+      "description": "Implement comprehensive error handling for authentication flows.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "- Create custom exception classes\n- Extend GlobalExceptionHandler\n- Handle Clerk API exceptions\n- Handle validation exceptions\n- Handle authentication exceptions\n- Standardize error responses\n- Implement the error codes defined in the PRD",
+      "testStrategy": "Test that all exceptions are handled gracefully, error responses are standardized, and Clerk errors are properly mapped to application errors."
+    },
+    {
+      "id": 25,
+      "title": "Create API Documentation",
+      "description": "Generate comprehensive API documentation for all authentication endpoints.",
+      "status": "pending",
+      "dependencies": [4, 5, 6, 7, 8, 9, 11, 17, 20, 21, 22],
+      "priority": "low",
+      "details": "- Configure Swagger/OpenAPI\n- Add API descriptions\n- Add request/response examples\n- Document authentication flows\n- Document error codes\n- Generate Postman collection\n- Create integration guide",
+      "testStrategy": "Verify that Swagger UI is accessible, all endpoints are documented with examples, and the Postman collection works correctly."
+    },
+    {
+      "id": 26,
+      "title": "Write Integration Tests",
+      "description": "Create comprehensive integration tests for all authentication flows.",
+      "status": "pending",
+      "dependencies": [4, 5, 6, 7, 8, 9, 11, 17, 20, 21, 22],
+      "priority": "medium",
+      "details": "- Set up test database with TestContainers\n- Write authentication flow tests\n- Write social login tests\n- Write multi-tenant tests\n- Write webhook tests\n- Write admin API tests\n- Write security tests\n- Achieve >80% code coverage",
+      "testStrategy": "Run all integration tests in CI/CD pipeline and verify that they pass with >80% code coverage."
+    },
+    {
+      "id": 27,
+      "title": "Perform Security Audit",
+      "description": "Conduct security testing to identify and fix vulnerabilities.",
+      "status": "pending",
+      "dependencies": [26],
+      "priority": "medium",
+      "details": "- Run OWASP ZAP scan\n- Test for SQL injection vulnerabilities\n- Test for XSS vulnerabilities\n- Test for CSRF vulnerabilities\n- Test authentication bypass scenarios\n- Test authorization bypass scenarios\n- Test rate limiting effectiveness",
+      "testStrategy": "Verify that there are no critical or high vulnerabilities, all findings are documented and fixed, and a security report is generated."
+    },
+    {
+      "id": 28,
+      "title": "Prepare for Production Deployment",
+      "description": "Configure application for production environment.",
+      "status": "pending",
+      "dependencies": [27],
+      "priority": "high",
+      "details": "- Configure production environment variables\n- Set up production Clerk account and credentials\n- Configure production Clerk webhook endpoints\n- Update CORS for production domains\n- Configure SSL/TLS certificates\n- Set up monitoring and alerting\n- Create deployment scripts",
+      "testStrategy": "Verify that the production environment is correctly configured, database is ready, webhooks are configured, and deployment scripts are tested."
+    }
+  ]
+}

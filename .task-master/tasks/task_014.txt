@@ -1,0 +1,17 @@
+# Task ID: 14
+# Title: Implement Organization Sync Service
+# Status: pending
+# Dependencies: 3 ✅
+# Priority: medium
+# Description: Create service to synchronize Clerk Organizations with application roles.
+# Details:
+- Create OrganizationSyncService interface
+- Implement OrganizationSyncServiceImpl
+- Implement syncUserOrganizations method
+- Fetch organizations from Clerk
+- Map Clerk roles to application roles
+- Update user_profile.user_role
+- Update clerk_user_tenant records
+
+# Test Strategy:
+Test that organizations are correctly synced from Clerk, roles are properly mapped, and user permissions are updated accordingly.

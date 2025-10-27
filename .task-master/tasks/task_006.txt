@@ -1,0 +1,18 @@
+# Task ID: 6
+# Title: Implement Token Validation
+# Status: done
+# Dependencies: 3 ✅
+# Priority: high
+# Description: Create token validation endpoint and JWT authentication filter.
+# Details:
+- Create TokenValidationRequest and TokenValidationResponse DTOs
+- Implement POST /api/auth/verify-token endpoint
+- Implement JWT validation logic with Clerk
+- Create JwtAuthenticationFilter
+- Extract token from Authorization header
+- Load user from database
+- Populate Spring Security context
+- Handle expired/invalid tokens
+
+# Test Strategy:
+Test that valid tokens return user info, invalid tokens return 401, and the JWT filter works on protected endpoints with user context available in controllers.

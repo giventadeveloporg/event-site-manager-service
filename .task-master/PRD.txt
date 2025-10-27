@@ -1,790 +1,2943 @@
-# WhatsApp Integration Backend PRD
-## Malayalees US Site - Backend Services for Twilio WhatsApp Business API Integration
+================================================================================
+PRODUCT REQUIREMENTS DOCUMENT (PRD)
+CLERK AUTHENTICATION BACKEND INTEGRATION
+Multi-Tenant Spring Boot Application
+================================================================================
 
-### Executive Summary
-This PRD outlines the backend implementation of a comprehensive WhatsApp integration system using Twilio's WhatsApp Business API for the Malayalees US Site. The backend will provide secure API endpoints, Twilio service integration, webhook handling, and comprehensive logging for WhatsApp messaging capabilities.
+Document Version: 1.0
+Date: October 12, 2025
+Author: Development Team
+Status: Draft - Ready for Implementation
 
-### Current State Analysis
+================================================================================
+TABLE OF CONTENTS
+================================================================================
 
-#### ✅ **Existing Infrastructure**
-1. **Database Schema** - Partially Ready:
-   - `tenant_settings` table exists with basic WhatsApp fields:
-     - `enable_whatsapp_integration` (boolean)
-     - `whatsapp_api_key` (varchar 500) - Currently stores single key
-   - `whatsapp_log` table exists with comprehensive logging:
-     - `recipient_phone`, `message_body`, `sent_at`, `status`, `type`, `campaign_id`, `metadata`
-   - `communication_campaign` table supports both EMAIL and WHATSAPP types
+1. EXECUTIVE SUMMARY
+2. CURRENT STATE ANALYSIS
+3. PROBLEM STATEMENT
+4. GOALS AND OBJECTIVES
+5. TECHNICAL ARCHITECTURE
+6. DATABASE SCHEMA CHANGES
+7. API ENDPOINTS SPECIFICATION
+8. AUTHENTICATION FLOW
+9. MULTI-TENANT SUPPORT
+10. ROLE AND PERMISSIONS MANAGEMENT
+11. SOCIAL LOGIN INTEGRATION
+12. WEBHOOK INTEGRATION
+13. SECURITY CONSIDERATIONS
+14. IMPLEMENTATION PHASES
+15. TASK BREAKDOWN
+16. SUCCESS CRITERIA
+17. TESTING STRATEGY
+18. DEPLOYMENT STRATEGY
+19. ROLLBACK PLAN
+20. APPENDICES
 
-2. **Backend API** - Partially Ready:
-   - WhatsApp log endpoints exist (`/api/whats-app-logs`)
-   - Tenant settings endpoints support WhatsApp configuration
-   - Communication campaign endpoints support WhatsApp campaigns
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
 
-#### ❌ **Missing Components**
-1. **Database Fields** - Need Twilio-specific credentials:
-   - `twilio_account_sid` (varchar 255)
-   - `twilio_auth_token` (varchar 255) - Encrypted
-   - `twilio_whatsapp_from` (varchar 50)
-   - `whatsapp_webhook_url` (varchar 500)
-   - `whatsapp_webhook_token` (varchar 255) - Encrypted
+This document outlines the requirements for centralizing Clerk authentication
+in the Spring Boot backend to serve multiple frontend applications (Next.js)
+using a single set of Clerk API credentials.
 
-2. **Backend Services** - Need Twilio integration:
-   - Twilio WhatsApp service layer
-   - Webhook handling for delivery receipts
-   - Message template management
-   - Bulk messaging capabilities
+⚠️ IMPORTANT: PROJECT CONTEXT
+-----------------------------
+This integration is being built ON TOP OF AN EXISTING, FULLY-FUNCTIONAL codebase:
 
-### Backend Requirements
+✅ ALREADY IN PLACE:
+- Spring Boot 3.x backend application (JHipster-based)
+- PostgreSQL database with complete schema
+- AWS Fargate deployment infrastructure
+- user_profile table with tenant support
+- JWT authentication framework
+- Security configuration
+- Multi-tenant architecture foundation
+- CI/CD pipelines
+- Development, staging, and production environments
 
-#### 1. **Database Schema Updates**
+🎯 WHAT WE'RE ADDING:
+- Clerk SDK integration into existing backend
+- New authentication endpoints alongside existing ones
+- Enhanced user_profile table (add columns, not rebuild)
+- Webhook handler components
+- Organization/role mapping logic
 
-##### 1.1 Add Twilio Credential Fields to tenant_settings
-```sql
-ALTER TABLE public.tenant_settings
-ADD COLUMN twilio_account_sid VARCHAR(255),
-ADD COLUMN twilio_auth_token VARCHAR(500), -- Encrypted
-ADD COLUMN twilio_whatsapp_from VARCHAR(50),
-ADD COLUMN whatsapp_webhook_url VARCHAR(500),
-ADD COLUMN whatsapp_webhook_token VARCHAR(255); -- Encrypted
+This is an ENHANCEMENT project, not a greenfield build. We will integrate Clerk
+authentication while preserving all existing functionality and infrastructure.
 
--- Add comments
-COMMENT ON COLUMN public.tenant_settings.twilio_account_sid IS 'Twilio Account SID for WhatsApp Business API';
-COMMENT ON COLUMN public.tenant_settings.twilio_auth_token IS 'Encrypted Twilio Auth Token for WhatsApp Business API';
-COMMENT ON COLUMN public.tenant_settings.twilio_whatsapp_from IS 'Twilio WhatsApp Business number (e.g., whatsapp:+14155238886)';
-COMMENT ON COLUMN public.tenant_settings.whatsapp_webhook_url IS 'Webhook URL for receiving WhatsApp delivery receipts';
-COMMENT ON COLUMN public.tenant_settings.whatsapp_webhook_token IS 'Encrypted webhook verification token';
+KEY BENEFITS:
+- Centralized authentication across multiple domains
+- Single source of truth for user authentication
+- Unified role and permission management
+- Support for social login providers
+- Multi-tenant architecture support
+- Reduced frontend complexity
+- Enhanced security and compliance
+
+SCOPE:
+- Integrate Clerk SDK into EXISTING Spring Boot backend
+- Create RESTful APIs for authentication operations
+- Support JWT token validation and refresh
+- ENHANCE existing multi-tenant user management
+- Support social login providers (Google, GitHub, Facebook, Apple, etc.)
+- Integrate Organization roles from Clerk
+- Webhook support for user synchronization
+- Comprehensive error handling and logging
+
+OUT OF SCOPE (Phase 1):
+- Migration of existing frontend authentication code
+- Custom UI components for authentication
+- Mobile app SDKs (future phase)
+- Two-factor authentication customization (use Clerk default)
+- Rebuilding existing infrastructure
+- Changing current database schema structure
+
+================================================================================
+2. CURRENT STATE ANALYSIS
+================================================================================
+
+2.1 CURRENT AUTHENTICATION ARCHITECTURE
+---------------------------------------
+BACKEND (Spring Boot):
+- Custom JWT authentication using JHipster security
+- In-memory user details manager
+- JWT credentials: username/password
+- OAuth2 resource server with JWT decoder
+- Base64-encoded secret key
+- Token validity: 24 hours (86400 seconds)
+- Remember-me token: 30 days (2592000 seconds)
+
+FRONTEND (Next.js - Multiple Domains):
+- Each domain has separate Clerk integration
+- Domain-specific Clerk publishable keys
+- Domain-specific Clerk secret keys
+- Frontend-managed authentication state
+- Direct Clerk API calls from browser
+- No centralized user management
+
+DATABASE (PostgreSQL):
+- Table: user_profile
+- Key Fields:
+  * id (Long) - Primary key
+  * tenant_id (String) - Tenant identifier
+  * user_id (String) - Clerk user ID
+  * email (String) - User email
+  * first_name, last_name (String)
+  * user_role (String) - User role
+  * user_status (String) - Account status
+  * profile_image_url (String)
+  * phone, address fields
+  * timestamps (created_at, updated_at)
+
+UNIQUE CONSTRAINT:
+- user_id is unique (but should be email + tenant_id for multi-tenant)
+
+CURRENT SECURITY CONFIGURATION:
+- SecurityFilterChain with OAuth2 JWT
+- CorsConfiguration permitting all origins in dev
+- InMemoryUserDetailsManager for API authentication
+- Swagger UI publicly accessible
+
+2.2 CURRENT LIMITATIONS
+-----------------------
+1. Multiple Clerk accounts required (one per domain)
+2. Increased operational cost (multiple subscriptions)
+3. Inconsistent user experience across domains
+4. Difficult to manage roles and permissions
+5. User data scattered across multiple Clerk instances
+6. Complex frontend authentication logic
+7. No centralized audit trail
+8. Difficult to implement cross-domain features
+
+2.3 CURRENT CLERK CREDENTIALS (DEV ENVIRONMENT)
+-----------------------------------------------
+⚠️ THESE ARE ACTUAL DEV ENVIRONMENT CREDENTIALS - HANDLE WITH CARE
+
+DEVELOPMENT ENVIRONMENT:
+CLERK_PUBLISHABLE_KEY=pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
+CLERK_SECRET_KEY=sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq
+CLERK_WEBHOOK_SECRET=whsec_O4lDgeWJHaO8WWiTjpwyXdbEwmCWmskX
+CLERK_SIGN_IN_URL=/sign-in
+CLERK_SIGN_UP_URL=/sign-up
+CLERK_AFTER_SIGN_IN_URL=/
+CLERK_AFTER_SIGN_UP_URL=/
+
+CONFIGURATION NOTES:
+- These credentials are for Clerk TEST MODE
+- Publishable key starts with pk_test_ (safe for frontend)
+- Secret key starts with sk_test_ (backend only - NEVER expose)
+- Webhook secret starts with whsec_ (for signature verification)
+- All URLs are relative paths (frontend handles full URLs)
+
+PRODUCTION CREDENTIALS:
+- Will be different (pk_live_, sk_live_)
+- Must be stored in AWS Secrets Manager or Parameter Store
+- Never commit production credentials to code
+- Separate Clerk account/project for production
+
+WHERE TO ADD IN APPLICATION:
+File: src/main/resources/config/application-dev.yml
+```yaml
+clerk:
+  publishable-key: ${CLERK_PUBLISHABLE_KEY:pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ}
+  secret-key: ${CLERK_SECRET_KEY:sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq}
+  webhook-secret: ${CLERK_WEBHOOK_SECRET:whsec_O4lDgeWJHaO8WWiTjpwyXdbEwmCWmskX}
+  sign-in-url: ${CLERK_SIGN_IN_URL:/sign-in}
+  sign-up-url: ${CLERK_SIGN_UP_URL:/sign-up}
+  after-sign-in-url: ${CLERK_AFTER_SIGN_IN_URL:/}
+  after-sign-up-url: ${CLERK_AFTER_SIGN_UP_URL:/}
 ```
 
-##### 1.2 Update TenantSettingsDTO Schema
-```json
+================================================================================
+3. PROBLEM STATEMENT
+================================================================================
+
+3.1 PRIMARY PROBLEM
+-------------------
+Currently, each frontend domain requires separate Clerk configuration and
+credentials, leading to:
+- Increased costs (multiple Clerk subscriptions)
+- Management overhead (multiple configurations)
+- User fragmentation (users can't move between domains seamlessly)
+- Inconsistent authentication flows
+- Difficult role management across domains
+
+3.2 BUSINESS IMPACT
+-------------------
+- Higher operational costs ($25-99/month per domain)
+- Slower feature development (implement auth in each frontend)
+- Poor user experience (re-authentication across domains)
+- Security risks (inconsistent security implementations)
+- Compliance challenges (multiple audit trails)
+
+3.3 TECHNICAL CHALLENGES
+------------------------
+1. Multi-tenant user identification (email + tenant_id uniqueness)
+2. Token validation and refresh across domains
+3. Role synchronization from Clerk Organizations
+4. Social login provider configuration
+5. Session management across multiple frontends
+6. Webhook event handling for user updates
+7. Migration of existing users from frontend-managed Clerk
+
+================================================================================
+4. GOALS AND OBJECTIVES
+================================================================================
+
+4.1 PRIMARY GOALS
+-----------------
+1. Centralize all authentication in Spring Boot backend
+2. Use single Clerk account for all domains
+3. Expose RESTful APIs for all authentication operations
+4. Support multi-tenant architecture
+5. Integrate Clerk Organizations for role management
+6. Support all major social login providers
+7. Maintain backward compatibility during migration
+
+4.2 SUCCESS CRITERIA
+--------------------
+✓ Single Clerk account serves all frontend applications
+✓ All authentication flows work through backend APIs
+✓ User data synchronized with Clerk via webhooks
+✓ Social login works for Google, GitHub, Facebook, Apple
+✓ Roles from Clerk Organizations properly mapped
+✓ Multi-tenant support with email + tenant_id uniqueness
+✓ Token validation and refresh work seamlessly
+✓ Comprehensive error handling and logging
+✓ Security audit passes with no critical vulnerabilities
+✓ Performance: <200ms average response time for auth APIs
+✓ 99.9% uptime for authentication services
+
+4.3 KEY PERFORMANCE INDICATORS (KPIs)
+--------------------------------------
+- Authentication API response time: <200ms (p95)
+- Token validation time: <50ms (p95)
+- User profile sync latency: <1 second
+- Webhook processing time: <500ms
+- API error rate: <0.1%
+- Authentication success rate: >99.5%
+- Concurrent users supported: 10,000+
+
+================================================================================
+5. TECHNICAL ARCHITECTURE
+================================================================================
+
+5.1 HIGH-LEVEL ARCHITECTURE
+----------------------------
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    FRONTEND APPLICATIONS                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │ Domain A    │  │ Domain B    │  │ Domain C    │             │
+│  │ (Next.js)   │  │ (Next.js)   │  │ (Next.js)   │             │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘             │
+│         │                 │                 │                     │
+└─────────┼─────────────────┼─────────────────┼─────────────────────┘
+          │                 │                 │
+          │   REST API      │    REST API     │   REST API
+          ▼                 ▼                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              SPRING BOOT BACKEND (Centralized Auth)              │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  Authentication Controller (REST APIs)                    │   │
+│  │  - POST /api/auth/sign-up                                │   │
+│  │  - POST /api/auth/sign-in                                │   │
+│  │  - POST /api/auth/sign-out                               │   │
+│  │  - POST /api/auth/refresh-token                          │   │
+│  │  - GET  /api/auth/user                                   │   │
+│  │  - POST /api/auth/verify-token                           │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  Clerk Integration Service                                │   │
+│  │  - Clerk SDK wrapper                                      │   │
+│  │  - Token validation                                       │   │
+│  │  - User management                                        │   │
+│  │  - Organization/Role sync                                 │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  Webhook Handler                                          │   │
+│  │  - user.created                                           │   │
+│  │  - user.updated                                           │   │
+│  │  - user.deleted                                           │   │
+│  │  - session.created                                        │   │
+│  │  - organizationMembership.created/updated                │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  Multi-Tenant User Service                                │   │
+│  │  - User profile management                                │   │
+│  │  - Tenant isolation                                       │   │
+│  │  - Role assignment                                        │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└──────────────────┬──────────────────────────────────────────────┘
+                   │
+                   │ Clerk Backend API
+                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLERK PLATFORM                            │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  User Management                                          │   │
+│  │  - User authentication                                    │   │
+│  │  - Social login providers                                 │   │
+│  │  - Session management                                     │   │
+│  │  - Organizations & Roles                                  │   │
+│  │  - Webhooks                                               │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    POSTGRESQL DATABASE                           │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  Tables:                                                  │   │
+│  │  - user_profile (enhanced with Clerk fields)             │   │
+│  │  - clerk_user_tenant (new - junction table)              │   │
+│  │  - clerk_organization_role (new)                         │   │
+│  │  - clerk_webhook_event (new - audit trail)               │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+
+5.2 COMPONENT DESCRIPTIONS
+---------------------------
+
+A. CLERK INTEGRATION SERVICE
+   Purpose: Centralized service for all Clerk API interactions
+   Responsibilities:
+   - Initialize Clerk SDK with credentials
+   - Validate JWT tokens from frontend
+   - Create/update users in Clerk
+   - Fetch user details from Clerk
+   - Manage user sessions
+   - Handle organization membership
+   - Error handling and retry logic
+
+B. AUTHENTICATION CONTROLLER
+   Purpose: Expose RESTful APIs for frontend authentication
+   Responsibilities:
+   - Handle sign-up requests
+   - Handle sign-in requests (email/password & social)
+   - Token validation and refresh
+   - User profile retrieval
+   - Sign-out/session termination
+   - Rate limiting and security
+
+C. WEBHOOK HANDLER
+   Purpose: Receive and process Clerk webhook events
+   Responsibilities:
+   - Verify webhook signatures
+   - Process user lifecycle events
+   - Synchronize user data with database
+   - Handle organization membership changes
+   - Audit trail logging
+   - Idempotency handling
+
+D. MULTI-TENANT USER SERVICE
+   Purpose: Manage user profiles with tenant isolation
+   Responsibilities:
+   - Create/update user profiles
+   - Enforce email + tenant_id uniqueness
+   - Role assignment and validation
+   - User search and filtering by tenant
+   - Profile enrichment
+
+E. SECURITY FILTER CHAIN
+   Purpose: Secure API endpoints with Clerk token validation
+   Responsibilities:
+   - Extract Clerk JWT from Authorization header
+   - Validate token with Clerk
+   - Load user context and permissions
+   - Enforce role-based access control
+   - Handle authentication failures
+
+5.3 TECHNOLOGY STACK
+--------------------
+- Java 17
+- Spring Boot 3.x
+- Spring Security
+- Clerk Java SDK (https://github.com/clerk/clerk-sdk-java)
+- PostgreSQL 16
+- Liquibase (database migrations)
+- JWT (JSON Web Tokens)
+- RestTemplate/WebClient for HTTP calls
+- MapStruct (DTO mapping)
+- Lombok (boilerplate reduction)
+- JUnit 5 + Mockito (testing)
+
+================================================================================
+6. DATABASE SCHEMA CHANGES
+================================================================================
+
+6.1 ENHANCED user_profile TABLE
+--------------------------------
+⚠️ IMPORTANT: user_profile TABLE ALREADY EXISTS
+We are ADDING COLUMNS to the existing table, not creating a new one.
+
+EXISTING COLUMNS (from current schema):
+- id, tenant_id, user_id, first_name, last_name, email, phone
+- address_line_1, address_line_2, city, state, zip_code, country
+- notes, family_name, city_town, district, educational_institution
+- profile_image_url, is_email_subscribed, email_subscription_token
+- is_email_subscription_token_used, user_status, user_role
+- reviewed_by_admin_at, request_id, request_reason, status
+- admin_comments, submitted_at, reviewed_at, approved_at, rejected_at
+- created_at, updated_at
+
+NEW COLUMNS TO ADD (Clerk integration):
+-- Add new Clerk-related fields to EXISTING user_profile table
+
+ALTER TABLE user_profile
+ADD COLUMN IF NOT EXISTS clerk_user_id VARCHAR(255),
+ADD COLUMN IF NOT EXISTS clerk_session_id VARCHAR(255),
+ADD COLUMN IF NOT EXISTS clerk_org_id VARCHAR(255),
+ADD COLUMN IF NOT EXISTS clerk_org_role VARCHAR(100),
+ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(50), -- 'email', 'google', 'github', etc.
+ADD COLUMN IF NOT EXISTS auth_provider_user_id VARCHAR(255),
+ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS profile_image_url_clerk VARCHAR(1024), -- Clerk profile image
+ADD COLUMN IF NOT EXISTS last_sign_in_at TIMESTAMP,
+ADD COLUMN IF NOT EXISTS clerk_metadata JSONB; -- Store additional Clerk metadata
+
+-- Update unique constraint to support multi-tenant
+-- NOTE: user_id is currently unique, we need to adjust this
+-- Remove old unique constraint on user_id
+ALTER TABLE user_profile DROP CONSTRAINT IF EXISTS user_profile_user_id_key;
+
+-- Add composite unique constraint
+ALTER TABLE user_profile
+ADD CONSTRAINT uq_user_profile_email_tenant
+UNIQUE (email, tenant_id);
+
+-- Add index for Clerk user ID lookups
+CREATE INDEX IF NOT EXISTS idx_user_profile_clerk_user_id
+ON user_profile(clerk_user_id);
+
+-- Add index for tenant + email lookups
+CREATE INDEX IF NOT EXISTS idx_user_profile_tenant_email
+ON user_profile(tenant_id, email);
+
+-- Add index for organization lookups
+CREATE INDEX IF NOT EXISTS idx_user_profile_clerk_org_id
+ON user_profile(clerk_org_id);
+
+COMMENT ON COLUMN user_profile.clerk_user_id IS 'Clerk unique user identifier';
+COMMENT ON COLUMN user_profile.clerk_org_id IS 'Clerk Organization ID for role management';
+COMMENT ON COLUMN user_profile.auth_provider IS 'Authentication provider: email, google, github, facebook, apple';
+COMMENT ON COLUMN user_profile.clerk_metadata IS 'Additional Clerk user metadata stored as JSON';
+
+6.2 NEW TABLE: clerk_user_tenant
+---------------------------------
+-- Junction table to support users belonging to multiple tenants
+
+CREATE TABLE IF NOT EXISTS clerk_user_tenant (
+    id BIGSERIAL PRIMARY KEY,
+    user_profile_id BIGINT NOT NULL REFERENCES user_profile(id) ON DELETE CASCADE,
+    tenant_id VARCHAR(255) NOT NULL,
+    role VARCHAR(100), -- Tenant-specific role
+    status VARCHAR(50) DEFAULT 'ACTIVE', -- ACTIVE, SUSPENDED, PENDING
+    joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_clerk_user_tenant UNIQUE (user_profile_id, tenant_id)
+);
+
+CREATE INDEX idx_clerk_user_tenant_user ON clerk_user_tenant(user_profile_id);
+CREATE INDEX idx_clerk_user_tenant_tenant ON clerk_user_tenant(tenant_id);
+CREATE INDEX idx_clerk_user_tenant_status ON clerk_user_tenant(status);
+
+COMMENT ON TABLE clerk_user_tenant IS 'Junction table for multi-tenant user relationships';
+COMMENT ON COLUMN clerk_user_tenant.role IS 'Tenant-specific role (may differ from global user_role)';
+
+6.3 NEW TABLE: clerk_organization_role
+---------------------------------------
+-- Map Clerk Organization roles to application roles
+
+CREATE TABLE IF NOT EXISTS clerk_organization_role (
+    id BIGSERIAL PRIMARY KEY,
+    clerk_org_id VARCHAR(255) NOT NULL,
+    clerk_role_name VARCHAR(100) NOT NULL, -- From Clerk Organizations
+    application_role VARCHAR(100) NOT NULL, -- Mapped application role
+    permissions JSONB, -- Role permissions as JSON
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_clerk_org_role UNIQUE (clerk_org_id, clerk_role_name)
+);
+
+CREATE INDEX idx_clerk_org_role_org ON clerk_organization_role(clerk_org_id);
+CREATE INDEX idx_clerk_org_role_app_role ON clerk_organization_role(application_role);
+
+COMMENT ON TABLE clerk_organization_role IS 'Maps Clerk Organization roles to application roles';
+
+-- Example role mappings
+INSERT INTO clerk_organization_role (clerk_org_id, clerk_role_name, application_role, permissions)
+VALUES
+('org_default', 'org:admin', 'ROLE_ORG_ADMIN', '{"canManageUsers": true, "canManageEvents": true, "canViewReports": true}'),
+('org_default', 'org:member', 'ROLE_ORG_MEMBER', '{"canRegisterEvents": true, "canViewEvents": true}'),
+('org_default', 'org:viewer', 'ROLE_VIEWER', '{"canViewEvents": true}')
+ON CONFLICT (clerk_org_id, clerk_role_name) DO NOTHING;
+
+6.4 NEW TABLE: clerk_webhook_event
+-----------------------------------
+-- Audit trail for all Clerk webhook events
+
+CREATE TABLE IF NOT EXISTS clerk_webhook_event (
+    id BIGSERIAL PRIMARY KEY,
+    event_id VARCHAR(255) UNIQUE NOT NULL, -- Clerk event ID
+    event_type VARCHAR(100) NOT NULL, -- user.created, user.updated, etc.
+    clerk_user_id VARCHAR(255),
+    payload JSONB NOT NULL, -- Full webhook payload
+    processed BOOLEAN DEFAULT FALSE,
+    processed_at TIMESTAMP,
+    error_message TEXT,
+    retry_count INTEGER DEFAULT 0,
+    received_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_clerk_webhook_event_type ON clerk_webhook_event(event_type);
+CREATE INDEX idx_clerk_webhook_event_user ON clerk_webhook_event(clerk_user_id);
+CREATE INDEX idx_clerk_webhook_processed ON clerk_webhook_event(processed);
+CREATE INDEX idx_clerk_webhook_received_at ON clerk_webhook_event(received_at DESC);
+
+COMMENT ON TABLE clerk_webhook_event IS 'Audit trail and processing queue for Clerk webhooks';
+
+6.5 NEW TABLE: clerk_session
+-----------------------------
+-- Track active user sessions from Clerk
+
+CREATE TABLE IF NOT EXISTS clerk_session (
+    id BIGSERIAL PRIMARY KEY,
+    session_id VARCHAR(255) UNIQUE NOT NULL, -- Clerk session ID
+    clerk_user_id VARCHAR(255) NOT NULL,
+    user_profile_id BIGINT REFERENCES user_profile(id) ON DELETE CASCADE,
+    tenant_id VARCHAR(255),
+    client_id VARCHAR(255), -- Device/client identifier
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    status VARCHAR(50) DEFAULT 'ACTIVE', -- ACTIVE, EXPIRED, REVOKED
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    last_active_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_clerk_session_user ON clerk_session(clerk_user_id);
+CREATE INDEX idx_clerk_session_profile ON clerk_session(user_profile_id);
+CREATE INDEX idx_clerk_session_tenant ON clerk_session(tenant_id);
+CREATE INDEX idx_clerk_session_status ON clerk_session(status);
+CREATE INDEX idx_clerk_session_expires_at ON clerk_session(expires_at);
+
+COMMENT ON TABLE clerk_session IS 'Tracks active user sessions from Clerk';
+
+================================================================================
+7. API ENDPOINTS SPECIFICATION
+================================================================================
+
+7.1 AUTHENTICATION ENDPOINTS
+-----------------------------
+
+7.1.1 Sign Up (Email/Password)
+-------------------------------
+POST /api/auth/sign-up
+Content-Type: application/json
+
+REQUEST BODY:
 {
-  "twilioAccountSid": {
-    "maxLength": 255,
-    "minLength": 0,
-    "type": "string"
+  "email": "user@example.com",
+  "password": "SecurePassword123!",
+  "firstName": "John",
+  "lastName": "Doe",
+  "tenantId": "tenant_001",
+  "phoneNumber": "+1234567890" (optional)
+}
+
+RESPONSE (201 Created):
+{
+  "success": true,
+  "data": {
+    "userId": "user_2abc123def456",
+    "clerkUserId": "user_2abc123def456",
+    "email": "user@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "tenantId": "tenant_001",
+    "emailVerified": false,
+    "createdAt": "2025-10-12T18:30:00Z",
+    "token": {
+      "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "refreshToken": "refresh_token_here",
+      "expiresIn": 3600,
+      "tokenType": "Bearer"
+    }
   },
-  "twilioAuthToken": {
-    "maxLength": 500,
-    "minLength": 0,
-    "type": "string"
-  },
-  "twilioWhatsappFrom": {
-    "maxLength": 50,
-    "minLength": 0,
-    "type": "string"
-  },
-  "whatsappWebhookUrl": {
-    "maxLength": 500,
-    "minLength": 0,
-    "type": "string"
-  },
-  "whatsappWebhookToken": {
-    "maxLength": 255,
-    "minLength": 0,
-    "type": "string"
+  "message": "User registered successfully. Please verify your email."
+}
+
+ERROR RESPONSE (400 Bad Request):
+{
+  "success": false,
+  "error": {
+    "code": "USER_ALREADY_EXISTS",
+    "message": "A user with this email already exists in this tenant",
+    "details": {
+      "email": "user@example.com",
+      "tenantId": "tenant_001"
+    }
   }
 }
-```
 
-#### 2. **Backend API Enhancements**
+7.1.2 Sign In (Email/Password)
+-------------------------------
+POST /api/auth/sign-in
+Content-Type: application/json
 
-##### 2.1 New WhatsApp Service Endpoints
-- `POST /api/whatsapp/send-message` - Send individual WhatsApp message
-- `POST /api/whatsapp/send-bulk` - Send bulk WhatsApp messages
-- `GET /api/whatsapp/templates` - Get approved message templates
-- `POST /api/whatsapp/templates` - Create message template
-- `GET /api/whatsapp/delivery-status/{messageId}` - Check delivery status
-- `POST /api/whatsapp/webhook` - Handle Twilio webhooks
-- `POST /api/whatsapp/test-connection` - Test Twilio credentials
-- `GET /api/whatsapp/analytics` - Get usage analytics
+REQUEST BODY:
+{
+  "email": "user@example.com",
+  "password": "SecurePassword123!",
+  "tenantId": "tenant_001"
+}
 
-##### 2.2 Twilio Integration Service
+RESPONSE (200 OK):
+{
+  "success": true,
+  "data": {
+    "user": {
+      "userId": "user_2abc123def456",
+      "clerkUserId": "user_2abc123def456",
+      "email": "user@example.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "tenantId": "tenant_001",
+      "role": "ROLE_USER",
+      "emailVerified": true,
+      "profileImageUrl": "https://clerk.com/...",
+      "authProvider": "email"
+    },
+    "token": {
+      "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "refreshToken": "refresh_token_here",
+      "expiresIn": 3600,
+      "tokenType": "Bearer"
+    },
+    "session": {
+      "sessionId": "sess_2xyz789abc012",
+      "expiresAt": "2025-10-13T18:30:00Z"
+    }
+  },
+  "message": "Sign in successful"
+}
+
+ERROR RESPONSE (401 Unauthorized):
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_CREDENTIALS",
+    "message": "Invalid email or password",
+    "details": null
+  }
+}
+
+7.1.3 Sign In (Social OAuth)
+-----------------------------
+POST /api/auth/sign-in/social
+Content-Type: application/json
+
+REQUEST BODY:
+{
+  "provider": "google", // google, github, facebook, apple
+  "token": "oauth_token_from_frontend",
+  "tenantId": "tenant_001"
+}
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "data": {
+    "user": {
+      "userId": "user_2abc123def456",
+      "clerkUserId": "user_2abc123def456",
+      "email": "user@gmail.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "tenantId": "tenant_001",
+      "role": "ROLE_USER",
+      "emailVerified": true,
+      "profileImageUrl": "https://lh3.googleusercontent.com/...",
+      "authProvider": "google",
+      "authProviderUserId": "google_oauth2|123456789"
+    },
+    "token": {
+      "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "refreshToken": "refresh_token_here",
+      "expiresIn": 3600,
+      "tokenType": "Bearer"
+    },
+    "isNewUser": false
+  },
+  "message": "Social sign-in successful"
+}
+
+7.1.4 Verify Token
+-------------------
+POST /api/auth/verify-token
+Content-Type: application/json
+Authorization: Bearer <token>
+
+REQUEST BODY:
+{
+  "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "userId": "user_2abc123def456",
+    "email": "user@example.com",
+    "tenantId": "tenant_001",
+    "role": "ROLE_USER",
+    "expiresAt": "2025-10-13T18:30:00Z",
+    "sessionId": "sess_2xyz789abc012"
+  }
+}
+
+ERROR RESPONSE (401 Unauthorized):
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_TOKEN",
+    "message": "Token is invalid or expired",
+    "details": null
+  }
+}
+
+7.1.5 Refresh Token
+--------------------
+POST /api/auth/refresh-token
+Content-Type: application/json
+
+REQUEST BODY:
+{
+  "refreshToken": "refresh_token_here"
+}
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "new_refresh_token_here",
+    "expiresIn": 3600,
+    "tokenType": "Bearer"
+  },
+  "message": "Token refreshed successfully"
+}
+
+7.1.6 Get Current User
+-----------------------
+GET /api/auth/user
+Authorization: Bearer <token>
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "data": {
+    "userId": "user_2abc123def456",
+    "clerkUserId": "user_2abc123def456",
+    "email": "user@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "tenantId": "tenant_001",
+    "role": "ROLE_ORG_ADMIN",
+    "userStatus": "ACTIVE",
+    "emailVerified": true,
+    "profileImageUrl": "https://clerk.com/...",
+    "authProvider": "email",
+    "organizations": [
+      {
+        "orgId": "org_2abc123",
+        "orgName": "Acme Corporation",
+        "role": "org:admin",
+        "permissions": ["canManageUsers", "canManageEvents"]
+      }
+    ],
+    "tenants": [
+      {
+        "tenantId": "tenant_001",
+        "role": "ROLE_ORG_ADMIN",
+        "status": "ACTIVE"
+      },
+      {
+        "tenantId": "tenant_002",
+        "role": "ROLE_USER",
+        "status": "ACTIVE"
+      }
+    ],
+    "lastSignInAt": "2025-10-12T16:45:00Z",
+    "createdAt": "2025-01-15T10:00:00Z"
+  }
+}
+
+7.1.7 Sign Out
+---------------
+POST /api/auth/sign-out
+Authorization: Bearer <token>
+
+REQUEST BODY:
+{
+  "sessionId": "sess_2xyz789abc012"
+}
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "Signed out successfully"
+}
+
+7.1.8 Update User Profile
+--------------------------
+PUT /api/auth/user/profile
+Authorization: Bearer <token>
+Content-Type: application/json
+
+REQUEST BODY:
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "phone": "+1234567890",
+  "profileImageUrl": "https://...",
+  "addressLine1": "123 Main St",
+  "city": "New York",
+  "state": "NY",
+  "zipCode": "10001",
+  "country": "USA"
+}
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "data": {
+    "userId": "user_2abc123def456",
+    "email": "user@example.com",
+    "firstName": "John",
+    "lastName": "Smith",
+    // ... other fields
+    "updatedAt": "2025-10-12T18:45:00Z"
+  },
+  "message": "Profile updated successfully"
+}
+
+7.2 WEBHOOK ENDPOINTS
+----------------------
+
+7.2.1 Clerk Webhook Receiver
+------------------------------
+POST /api/webhooks/clerk
+Content-Type: application/json
+X-Clerk-Signature: <signature>
+
+REQUEST BODY (Example - user.created):
+{
+  "type": "user.created",
+  "data": {
+    "id": "user_2abc123def456",
+    "email_addresses": [
+      {
+        "id": "idn_123",
+        "email_address": "user@example.com",
+        "verification": {
+          "status": "verified"
+        }
+      }
+    ],
+    "first_name": "John",
+    "last_name": "Doe",
+    "profile_image_url": "https://...",
+    "created_at": 1697123456000,
+    "updated_at": 1697123456000
+  },
+  "object": "event",
+  "timestamp": 1697123456
+}
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "Webhook processed successfully"
+}
+
+SUPPORTED WEBHOOK EVENTS:
+- user.created
+- user.updated
+- user.deleted
+- session.created
+- session.ended
+- session.revoked
+- organizationMembership.created
+- organizationMembership.updated
+- organizationMembership.deleted
+
+7.3 ADMIN ENDPOINTS
+--------------------
+
+7.3.1 List Users (Admin Only)
+-------------------------------
+GET /api/admin/users?tenantId=tenant_001&page=0&size=20
+Authorization: Bearer <admin_token>
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "data": {
+    "users": [
+      {
+        "userId": "user_2abc123def456",
+        "email": "user@example.com",
+        "firstName": "John",
+        "lastName": "Doe",
+        "tenantId": "tenant_001",
+        "role": "ROLE_USER",
+        "status": "ACTIVE",
+        "emailVerified": true,
+        "lastSignInAt": "2025-10-12T16:45:00Z",
+        "createdAt": "2025-01-15T10:00:00Z"
+      }
+    ],
+    "pagination": {
+      "page": 0,
+      "size": 20,
+      "totalElements": 150,
+      "totalPages": 8
+    }
+  }
+}
+
+7.3.2 Update User Role (Admin Only)
+-------------------------------------
+PUT /api/admin/users/{userId}/role
+Authorization: Bearer <admin_token>
+Content-Type: application/json
+
+REQUEST BODY:
+{
+  "role": "ROLE_ORG_ADMIN",
+  "tenantId": "tenant_001"
+}
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "User role updated successfully"
+}
+
+7.3.3 Suspend/Activate User (Admin Only)
+------------------------------------------
+PUT /api/admin/users/{userId}/status
+Authorization: Bearer <admin_token>
+Content-Type: application/json
+
+REQUEST BODY:
+{
+  "status": "SUSPENDED", // ACTIVE, SUSPENDED, BANNED
+  "reason": "Policy violation"
+}
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "User status updated successfully"
+}
+
+================================================================================
+8. AUTHENTICATION FLOW
+================================================================================
+
+8.1 EMAIL/PASSWORD SIGN-UP FLOW
+--------------------------------
+FRONTEND                    BACKEND                      CLERK API
+   │                           │                             │
+   │ 1. POST /api/auth/sign-up │                             │
+   ├──────────────────────────>│                             │
+   │                           │ 2. Create user in Clerk     │
+   │                           ├────────────────────────────>│
+   │                           │                             │
+   │                           │ 3. User created response    │
+   │                           │<────────────────────────────┤
+   │                           │                             │
+   │                           │ 4. Create user_profile      │
+   │                           │    in PostgreSQL            │
+   │                           │                             │
+   │ 5. Return JWT + user data │                             │
+   │<──────────────────────────┤                             │
+   │                           │                             │
+   │ 6. (Clerk sends email     │                             │
+   │     verification)         │                             │
+   │<──────────────────────────┼─────────────────────────────┤
+   │                           │                             │
+
+8.2 SOCIAL LOGIN FLOW (Google Example)
+---------------------------------------
+FRONTEND                    BACKEND                      CLERK API
+   │                           │                             │
+   │ 1. Click "Sign in with    │                             │
+   │    Google"                │                             │
+   │                           │                             │
+   │ 2. Redirect to Clerk      │                             │
+   │    OAuth page             │                             │
+   ├──────────────────────────>│                             │
+   │                           │                             │
+   │ 3. User authorizes Google │                             │
+   ├──────────────────────────────────────────────────────>│
+   │                           │                             │
+   │ 4. Callback with OAuth    │                             │
+   │    token                  │                             │
+   │<──────────────────────────────────────────────────────┤
+   │                           │                             │
+   │ 5. POST /api/auth/sign-in/social                       │
+   │    with OAuth token       │                             │
+   ├──────────────────────────>│                             │
+   │                           │ 6. Validate token with Clerk│
+   │                           ├────────────────────────────>│
+   │                           │                             │
+   │                           │ 7. User info response       │
+   │                           │<────────────────────────────┤
+   │                           │                             │
+   │                           │ 8. Create/update user_profile
+   │                           │    in PostgreSQL            │
+   │                           │                             │
+   │ 9. Return JWT + user data │                             │
+   │<──────────────────────────┤                             │
+   │                           │                             │
+
+8.3 TOKEN VALIDATION FLOW
+--------------------------
+FRONTEND                    BACKEND                      CLERK API
+   │                           │                             │
+   │ 1. API request with JWT   │                             │
+   │    in Authorization header│                             │
+   ├──────────────────────────>│                             │
+   │                           │                             │
+   │                           │ 2. Extract JWT from header  │
+   │                           │                             │
+   │                           │ 3. Validate JWT signature   │
+   │                           │    using Clerk public key   │
+   │                           │                             │
+   │                           │ 4. Decode JWT claims        │
+   │                           │    (userId, email, etc.)    │
+   │                           │                             │
+   │                           │ 5. Load user from database  │
+   │                           │    by clerk_user_id         │
+   │                           │                             │
+   │                           │ 6. Check user status/role   │
+   │                           │                             │
+   │ 7. API response with data │                             │
+   │<──────────────────────────┤                             │
+   │                           │                             │
+
+8.4 WEBHOOK SYNC FLOW
+----------------------
+CLERK API                   BACKEND                      DATABASE
+   │                           │                             │
+   │ 1. User event             │                             │
+   │    (created/updated)      │                             │
+   │                           │                             │
+   │ 2. POST /api/webhooks/clerk                            │
+   ├──────────────────────────>│                             │
+   │                           │                             │
+   │                           │ 3. Verify webhook signature │
+   │                           │                             │
+   │                           │ 4. Parse event payload      │
+   │                           │                             │
+   │                           │ 5. Check idempotency        │
+   │                           │    (event_id exists?)       │
+   │                           ├────────────────────────────>│
+   │                           │<────────────────────────────┤
+   │                           │                             │
+   │                           │ 6. Process event            │
+   │                           │    (create/update user)     │
+   │                           ├────────────────────────────>│
+   │                           │<────────────────────────────┤
+   │                           │                             │
+   │                           │ 7. Save webhook event       │
+   │                           │    to audit trail           │
+   │                           ├────────────────────────────>│
+   │                           │                             │
+   │ 8. Return 200 OK          │                             │
+   │<──────────────────────────┤                             │
+   │                           │                             │
+
+================================================================================
+9. MULTI-TENANT SUPPORT
+================================================================================
+
+9.1 TENANT IDENTIFICATION
+--------------------------
+Each request must include tenant identification:
+
+OPTION 1: Tenant ID in Request Body/Query Parameter
+---------------------------------------------------
+POST /api/auth/sign-in
+{
+  "email": "user@example.com",
+  "password": "password",
+  "tenantId": "tenant_001"
+}
+
+OPTION 2: Tenant ID in Custom Header
+-------------------------------------
+POST /api/auth/sign-in
+X-Tenant-ID: tenant_001
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+
+OPTION 3: Tenant ID from JWT Token
+-----------------------------------
+After initial authentication, tenant context extracted from JWT:
+Authorization: Bearer <token_with_tenant_claim>
+
+9.2 TENANT ISOLATION STRATEGY
+------------------------------
+
+DATA ISOLATION:
+- All queries filtered by tenant_id
+- Row-level security (RLS) in PostgreSQL
+- Tenant-specific roles and permissions
+- Separate audit trails per tenant
+
+USER UNIQUENESS:
+- Composite unique constraint: (email, tenant_id)
+- Users can belong to multiple tenants
+- clerk_user_tenant junction table tracks memberships
+- Same email can exist across different tenants
+
+SECURITY:
+- Tenant validation on every request
+- Tenant switching requires re-authentication
+- Cross-tenant data access blocked
+- Audit logging of tenant access
+
+9.3 MULTI-TENANT USER SCENARIOS
+--------------------------------
+
+SCENARIO 1: User belongs to single tenant
+------------------------------------------
+User: john@example.com
+Tenant: tenant_001
+Clerk User ID: user_2abc123
+
+user_profile table:
+┌────┬──────────────┬───────────────────┬────────────────┬───────────┐
+│ id │ clerk_user_id│ email             │ tenant_id      │ role      │
+├────┼──────────────┼───────────────────┼────────────────┼───────────┤
+│ 1  │ user_2abc123 │ john@example.com  │ tenant_001     │ ROLE_USER │
+└────┴──────────────┴───────────────────┴────────────────┴───────────┘
+
+clerk_user_tenant table:
+┌────┬─────────────────┬────────────┬────────────┬────────┐
+│ id │ user_profile_id │ tenant_id  │ role       │ status │
+├────┼─────────────────┼────────────┼────────────┼────────┤
+│ 1  │ 1               │ tenant_001 │ ROLE_USER  │ ACTIVE │
+└────┴─────────────────┴────────────┴────────────┴────────┘
+
+SCENARIO 2: User belongs to multiple tenants
+---------------------------------------------
+User: jane@example.com
+Clerk User ID: user_2xyz789
+
+user_profile table:
+┌────┬──────────────┬────────────────────┬────────────┬──────────────┐
+│ id │ clerk_user_id│ email              │ tenant_id  │ role         │
+├────┼──────────────┼────────────────────┼────────────┼──────────────┤
+│ 2  │ user_2xyz789 │ jane@example.com   │ tenant_001 │ ROLE_ADMIN   │
+│ 3  │ user_2xyz789 │ jane@example.com   │ tenant_002 │ ROLE_USER    │
+└────┴──────────────┴────────────────────┴────────────┴──────────────┘
+
+clerk_user_tenant table:
+┌────┬─────────────────┬────────────┬──────────────┬────────┐
+│ id │ user_profile_id │ tenant_id  │ role         │ status │
+├────┼─────────────────┼────────────┼──────────────┼────────┤
+│ 2  │ 2               │ tenant_001 │ ROLE_ADMIN   │ ACTIVE │
+│ 3  │ 3               │ tenant_002 │ ROLE_USER    │ ACTIVE │
+└────┴─────────────────┴────────────┴──────────────┴────────┘
+
+NOTE: Same clerk_user_id, different user_profile records per tenant
+
+================================================================================
+10. ROLE AND PERMISSIONS MANAGEMENT
+================================================================================
+
+10.1 ROLE HIERARCHY
+-------------------
+SYSTEM_ADMIN > ORG_ADMIN > ORG_MANAGER > ORG_MEMBER > USER > VIEWER
+
+ROLE DEFINITIONS:
+1. ROLE_SYSTEM_ADMIN
+   - Full system access
+   - Manage all tenants
+   - View all data
+   - System configuration
+
+2. ROLE_ORG_ADMIN (from Clerk Organization: org:admin)
+   - Manage organization members
+   - Manage events and content
+   - View reports and analytics
+   - Configure organization settings
+
+3. ROLE_ORG_MANAGER (from Clerk Organization: org:manager)
+   - Create and manage events
+   - Approve user registrations
+   - View team reports
+   - Manage content
+
+4. ROLE_ORG_MEMBER (from Clerk Organization: org:member)
+   - Register for events
+   - View organization events
+   - Update own profile
+   - Submit requests
+
+5. ROLE_USER (default)
+   - View public events
+   - Register for events
+   - Update own profile
+   - Basic access
+
+6. ROLE_VIEWER
+   - Read-only access
+   - View public content only
+   - No write permissions
+
+10.2 CLERK ORGANIZATION INTEGRATION
+------------------------------------
+
+CLERK ORGANIZATIONS:
+- Organizations represent groups/companies
+- Each organization has members
+- Members have organization-specific roles
+- Roles: org:admin, org:member, org:viewer (customizable)
+
+MAPPING PROCESS:
+1. User signs in via Clerk
+2. Backend fetches user's organizations and roles
+3. Roles mapped using clerk_organization_role table
+4. Application permissions applied based on mapped role
+
+EXAMPLE MAPPING:
+┌─────────────────────┬───────────────────┬───────────────┐
+│ Clerk Org Role      │ Application Role  │ Permissions   │
+├─────────────────────┼───────────────────┼───────────────┤
+│ org:admin           │ ROLE_ORG_ADMIN    │ Full org      │
+│ org:manager         │ ROLE_ORG_MANAGER  │ Manage events │
+│ org:member          │ ROLE_ORG_MEMBER   │ Basic access  │
+│ org:viewer          │ ROLE_VIEWER       │ Read-only     │
+└─────────────────────┴───────────────────┴───────────────┘
+
+10.3 PERMISSION CHECKING
+-------------------------
+
+IN CODE:
+@PreAuthorize("hasRole('ORG_ADMIN')")
+public void manageEvent(@PathVariable Long eventId) {
+    // Only ORG_ADMIN can access
+}
+
+@PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_MANAGER')")
+public void createEvent(@RequestBody EventDTO event) {
+    // ORG_ADMIN or ORG_MANAGER can access
+}
+
+@PreAuthorize("@tenantSecurityService.canAccessEvent(#eventId)")
+public void viewEvent(@PathVariable Long eventId) {
+    // Custom security check via service
+}
+
+IN SECURITY FILTER:
+- Extract Clerk JWT
+- Decode user claims
+- Load user from database with roles
+- Populate Spring Security context
+- Apply method-level security
+
+================================================================================
+11. SOCIAL LOGIN INTEGRATION
+================================================================================
+
+11.1 SUPPORTED PROVIDERS
+-------------------------
+1. Google (OAuth 2.0)
+2. GitHub (OAuth 2.0)
+3. Facebook (OAuth 2.0)
+4. Apple (Sign in with Apple)
+5. Microsoft (Azure AD)
+6. Twitter/X (OAuth 2.0)
+7. LinkedIn (OAuth 2.0)
+
+11.2 CLERK SOCIAL CONFIGURATION
+--------------------------------
+Clerk handles all OAuth flows:
+- Configure providers in Clerk Dashboard
+- Enable desired providers
+- Set redirect URLs
+- Configure OAuth scopes
+
+REQUIRED SCOPES:
+- Google: email, profile, openid
+- GitHub: user:email, read:user
+- Facebook: email, public_profile
+- Apple: email, name
+
+11.3 BACKEND IMPLEMENTATION
+----------------------------
+
+FLOW:
+1. Frontend initiates social login via Clerk
+2. User authorizes on provider (Google, GitHub, etc.)
+3. Clerk creates user and generates session
+4. Frontend receives Clerk session token
+5. Frontend calls backend: POST /api/auth/sign-in/social
+6. Backend validates token with Clerk
+7. Backend creates/updates user in database
+8. Backend returns application JWT
+
+DATA MAPPING:
+- Clerk user ID → clerk_user_id
+- Email → email
+- First/Last name → first_name, last_name
+- Profile image → profile_image_url_clerk
+- Provider → auth_provider (google, github, etc.)
+- Provider user ID → auth_provider_user_id
+
+11.4 ACCOUNT LINKING
+---------------------
+If user signs in with email then later with Google (same email):
+- Clerk automatically links accounts
+- Backend updates auth_provider field
+- User can sign in with either method
+- Single user_profile maintained
+
+================================================================================
+12. WEBHOOK INTEGRATION
+================================================================================
+
+12.1 WEBHOOK CONFIGURATION
+---------------------------
+Clerk Dashboard → Webhooks → Create Endpoint
+
+ENDPOINT URL: https://your-backend.com/api/webhooks/clerk
+SECRET: whsec_O4lDgeWJHaO8WWiTjpwyXdbEwmCWmskX
+
+EVENTS TO SUBSCRIBE:
+☑ user.created
+☑ user.updated
+☑ user.deleted
+☑ session.created
+☑ session.ended
+☑ session.revoked
+☑ organizationMembership.created
+☑ organizationMembership.updated
+☑ organizationMembership.deleted
+
+12.2 WEBHOOK SECURITY
+----------------------
+SIGNATURE VERIFICATION:
+1. Clerk sends X-Clerk-Signature header
+2. Backend verifies signature using webhook secret
+3. Reject requests with invalid signature
+
+IMPLEMENTATION:
 ```java
-@Service
-public class TwilioWhatsAppService {
-
-    @Autowired
-    private TenantSettingsRepository tenantSettingsRepository;
-
-    @Autowired
-    private WhatsAppLogRepository whatsAppLogRepository;
-
-    @Autowired
-    private EncryptionService encryptionService;
-
-    public WhatsAppMessageResponse sendMessage(String tenantId, WhatsAppMessageRequest request) {
-        // Get tenant credentials
-        TwilioCredentials credentials = getTenantCredentials(tenantId);
-
-        // Initialize Twilio client
-        Twilio.init(credentials.getAccountSid(), credentials.getAuthToken());
-
-        // Send message
-        Message message = Message.creator(
-            new PhoneNumber(request.getRecipientPhone()),
-            new PhoneNumber(credentials.getWhatsappFrom()),
-            request.getMessageBody()
-        ).create();
-
-        // Log message
-        logMessage(tenantId, request, message.getSid(), "SENT");
-
-        return new WhatsAppMessageResponse(
-            message.getSid(),
-            message.getStatus().toString(),
-            message.getDateCreated().toInstant()
+public boolean verifyWebhookSignature(
+    String payload,
+    String signature,
+    String secret
+) {
+    try {
+        String expectedSignature = computeHmacSha256(payload, secret);
+        return MessageDigest.isEqual(
+            signature.getBytes(),
+            expectedSignature.getBytes()
         );
-    }
-
-    public BulkWhatsAppResponse sendBulkMessages(String tenantId, BulkWhatsAppRequest request) {
-        List<WhatsAppMessageResponse> responses = new ArrayList<>();
-        List<String> errors = new ArrayList<>();
-
-        for (BulkRecipient recipient : request.getRecipients()) {
-            try {
-                WhatsAppMessageRequest messageRequest = new WhatsAppMessageRequest(
-                    recipient.getPhone(),
-                    request.getMessageBody(),
-                    request.getTemplateName(),
-                    recipient.getCustomParams(),
-                    request.getType()
-                );
-
-                WhatsAppMessageResponse response = sendMessage(tenantId, messageRequest);
-                responses.add(response);
-
-                // Rate limiting
-                Thread.sleep(1000); // 1 second delay between messages
-
-            } catch (Exception e) {
-                errors.add("Failed to send to " + recipient.getPhone() + ": " + e.getMessage());
-            }
-        }
-
-        return new BulkWhatsAppResponse(responses, errors);
-    }
-
-    public DeliveryStatus checkDeliveryStatus(String tenantId, String messageId) {
-        TwilioCredentials credentials = getTenantCredentials(tenantId);
-        Twilio.init(credentials.getAccountSid(), credentials.getAuthToken());
-
-        Message message = Message.fetcher(messageId).fetch();
-
-        return new DeliveryStatus(
-            messageId,
-            message.getStatus().toString(),
-            message.getDateUpdated().toInstant(),
-            message.getErrorCode(),
-            message.getErrorMessage()
-        );
-    }
-
-    public List<MessageTemplate> getApprovedTemplates(String tenantId) {
-        TwilioCredentials credentials = getTenantCredentials(tenantId);
-        Twilio.init(credentials.getAccountSid(), credentials.getAuthToken());
-
-        List<MessageTemplate> templates = new ArrayList<>();
-
-        // Fetch templates from Twilio
-        // This would require Twilio's Content API integration
-
-        return templates;
-    }
-
-    public MessageTemplate createTemplate(String tenantId, CreateTemplateRequest request) {
-        TwilioCredentials credentials = getTenantCredentials(tenantId);
-        Twilio.init(credentials.getAccountSid(), credentials.getAuthToken());
-
-        // Create template via Twilio Content API
-        // Implementation depends on Twilio Content API availability
-
-        return new MessageTemplate();
-    }
-
-    public void handleWebhook(String tenantId, WebhookPayload payload) {
-        // Update message status in database
-        WhatsAppLog logEntry = whatsAppLogRepository.findByMessageId(payload.getMessageId());
-
-        if (logEntry != null) {
-            logEntry.setStatus(payload.getStatus());
-            logEntry.setDeliveredAt(payload.getTimestamp());
-            logEntry.setMetadata(payload.getMetadata());
-            whatsAppLogRepository.save(logEntry);
-        }
-
-        // Trigger any follow-up actions based on status
-        if ("delivered".equals(payload.getStatus())) {
-            // Handle delivered status
-        } else if ("failed".equals(payload.getStatus())) {
-            // Handle failed status
-        }
-    }
-
-    public ConnectionTestResult testConnection(String tenantId) {
-        try {
-            TwilioCredentials credentials = getTenantCredentials(tenantId);
-            Twilio.init(credentials.getAccountSid(), credentials.getAuthToken());
-
-            // Test account access
-            Account account = Account.fetcher(credentials.getAccountSid()).fetch();
-
-            // Test WhatsApp service
-            // This would require specific WhatsApp API testing
-
-            return new ConnectionTestResult(true, "Connection successful", Instant.now());
-
-        } catch (Exception e) {
-            return new ConnectionTestResult(false, "Connection failed: " + e.getMessage(), Instant.now());
-        }
-    }
-
-    private TwilioCredentials getTenantCredentials(String tenantId) {
-        TenantSettings settings = tenantSettingsRepository.findByTenantId(tenantId);
-
-        if (settings == null || !settings.getEnableWhatsappIntegration()) {
-            throw new WhatsAppNotEnabledException("WhatsApp integration not enabled for tenant: " + tenantId);
-        }
-
-        return new TwilioCredentials(
-            settings.getTwilioAccountSid(),
-            encryptionService.decrypt(settings.getTwilioAuthToken()),
-            settings.getTwilioWhatsappFrom(),
-            settings.getWhatsappWebhookUrl(),
-            encryptionService.decrypt(settings.getWhatsappWebhookToken())
-        );
-    }
-
-    private void logMessage(String tenantId, WhatsAppMessageRequest request, String messageId, String status) {
-        WhatsAppLog logEntry = new WhatsAppLog();
-        logEntry.setTenantId(tenantId);
-        logEntry.setMessageId(messageId);
-        logEntry.setRecipientPhone(request.getRecipientPhone());
-        logEntry.setMessageBody(request.getMessageBody());
-        logEntry.setStatus(status);
-        logEntry.setType(request.getType());
-        logEntry.setSentAt(Instant.now());
-        logEntry.setMetadata(JsonUtils.toJson(request.getTemplateParams()));
-
-        whatsAppLogRepository.save(logEntry);
+    } catch (Exception e) {
+        return false;
     }
 }
 ```
 
-##### 2.3 Webhook Handler
+12.3 IDEMPOTENCY
+----------------
+PROBLEM: Webhooks may be delivered multiple times
+SOLUTION: Track processed events by event_id
+
+IMPLEMENTATION:
+1. Extract event_id from webhook payload
+2. Check if event_id exists in clerk_webhook_event table
+3. If exists, return 200 OK (already processed)
+4. If not, process event and save to table
+
+12.4 EVENT HANDLING
+--------------------
+
+EVENT: user.created
+-------------------
+ACTION:
+1. Extract user data from payload
+2. Create user_profile record
+3. Assign default role
+4. Send welcome email
+5. Log event
+
+EVENT: user.updated
+-------------------
+ACTION:
+1. Extract updated fields
+2. Update user_profile record
+3. Sync profile image, name, email
+4. Log event
+
+EVENT: user.deleted
+-------------------
+ACTION:
+1. Mark user as deleted (soft delete)
+2. Revoke all sessions
+3. Anonymize personal data (GDPR compliance)
+4. Log event
+
+EVENT: organizationMembership.created
+--------------------------------------
+ACTION:
+1. Extract organization ID and role
+2. Create clerk_user_tenant record
+3. Map Clerk role to application role
+4. Update user permissions
+5. Log event
+
+12.5 RETRY LOGIC
+----------------
+If webhook processing fails:
+1. Return 5xx status to Clerk
+2. Clerk automatically retries
+3. Exponential backoff: 5s, 25s, 125s, 625s
+4. Maximum 5 retry attempts
+5. Track retry_count in clerk_webhook_event table
+
+================================================================================
+13. SECURITY CONSIDERATIONS
+================================================================================
+
+13.1 TOKEN SECURITY
+-------------------
+JWT TOKENS:
+- Short-lived access tokens (1 hour)
+- Long-lived refresh tokens (30 days)
+- Secure storage on client (httpOnly cookies preferred)
+- Token rotation on refresh
+- Revoke tokens on sign-out
+
+VALIDATION:
+- Verify token signature with Clerk public key
+- Check token expiration
+- Validate issuer and audience claims
+- Check user status (not suspended/banned)
+- Rate limit token validation endpoints
+
+13.2 API SECURITY
+-----------------
+RATE LIMITING:
+- Authentication endpoints: 5 requests/minute per IP
+- API endpoints: 100 requests/minute per user
+- Webhook endpoint: 1000 requests/minute
+
+CORS CONFIGURATION:
+- Allow specific origins only (no wildcard in production)
+- Allow credentials for cookie-based auth
+- Restrict HTTP methods
+- Set max age for preflight caching
+
+INPUT VALIDATION:
+- Validate all request parameters
+- Sanitize user inputs
+- Maximum length checks
+- Email format validation
+- Password complexity requirements
+
+SQL INJECTION PREVENTION:
+- Use prepared statements
+- Never concatenate SQL queries
+- ORM/JPA query builders
+- Input sanitization
+
+13.3 DATA SECURITY
+------------------
+ENCRYPTION AT REST:
+- PostgreSQL database encryption
+- Encrypt sensitive fields (SSN, credit cards)
+- Use AWS KMS for key management
+
+ENCRYPTION IN TRANSIT:
+- HTTPS/TLS 1.3 only
+- Strong cipher suites
+- Certificate pinning
+- HSTS headers
+
+SENSITIVE DATA:
+- Never log passwords
+- Mask sensitive data in logs
+- PII data encryption
+- Secure credential storage (AWS Secrets Manager)
+
+13.4 COMPLIANCE
+---------------
+GDPR:
+- User consent management
+- Right to be forgotten (user deletion)
+- Data export capability
+- Privacy policy
+
+SOC 2:
+- Audit logging
+- Access controls
+- Incident response
+- Regular security audits
+
+HIPAA (if applicable):
+- PHI encryption
+- Access logging
+- BAA with Clerk
+- Regular risk assessments
+
+================================================================================
+14. IMPLEMENTATION PHASES
+================================================================================
+
+PHASE 1: FOUNDATION (Weeks 1-2)
+--------------------------------
+⚠️ NOTE: Infrastructure already exists, focusing on Clerk-specific setup
+
+TASKS:
+□ Set up Clerk account and configure (ALREADY DONE - credentials provided)
+□ Install Clerk SDK in EXISTING Spring Boot project
+□ Create database migrations for NEW COLUMNS in existing tables (Liquibase)
+□ Implement ClerkIntegrationService in existing service layer
+□ Add Clerk credentials to EXISTING application-dev.yml
+□ Leverage EXISTING API response structures (ApiResponse, ErrorResponse)
+□ Extend EXISTING error handling framework for Clerk errors
+□ Update EXISTING CORS and security configuration
+
+DELIVERABLES:
+✓ Clerk SDK integrated into existing project
+✓ Database schema enhanced (new columns added)
+✓ ClerkIntegrationService created
+✓ Security configuration updated to support Clerk JWT
+
+EXISTING INFRASTRUCTURE TO LEVERAGE:
+✓ Spring Boot 3.x project structure
+✓ PostgreSQL database on AWS RDS
+✓ Liquibase migrations framework
+✓ SecurityConfiguration class
+✓ JwtConfiguration class
+✓ Global exception handling
+✓ Logging framework
+✓ AWS Fargate deployment
+
+PHASE 2: CORE AUTHENTICATION (Weeks 3-4)
+-----------------------------------------
+TASKS:
+□ Implement sign-up endpoint
+□ Implement sign-in endpoint
+□ Implement token validation
+□ Implement refresh token endpoint
+□ Implement sign-out endpoint
+□ Implement get current user endpoint
+□ Create JWT filter for request authentication
+□ Add unit tests for all endpoints
+
+DELIVERABLES:
+✓ All authentication APIs working
+✓ JWT validation working
+✓ Unit tests passing (>80% coverage)
+
+PHASE 3: SOCIAL LOGIN (Week 5)
+-------------------------------
+TASKS:
+□ Configure social providers in Clerk
+□ Implement social sign-in endpoint
+□ Handle OAuth callback processing
+□ Implement account linking logic
+□ Test with Google, GitHub, Facebook
+□ Add provider-specific error handling
+
+DELIVERABLES:
+✓ Social login working for all providers
+✓ Account linking functional
+✓ Integration tests passing
+
+PHASE 4: MULTI-TENANT SUPPORT (Week 6)
+---------------------------------------
+TASKS:
+□ Implement tenant validation service
+□ Add tenant context to security context
+□ Create clerk_user_tenant CRUD operations
+□ Implement tenant switching API
+□ Add tenant-level access controls
+□ Create tenant-specific queries
+
+DELIVERABLES:
+✓ Multi-tenant isolation working
+✓ Users can belong to multiple tenants
+✓ Tenant switching functional
+
+PHASE 5: ROLE MANAGEMENT (Week 7)
+----------------------------------
+TASKS:
+□ Configure Clerk Organizations
+□ Implement organization sync service
+□ Create role mapping configuration
+□ Implement permission checking
+□ Add role-based endpoints
+□ Test all permission scenarios
+
+DELIVERABLES:
+✓ Clerk Organizations integrated
+✓ Role mapping working
+✓ Permission checking functional
+
+PHASE 6: WEBHOOK INTEGRATION (Week 8) - OPTIONAL FOR LOCAL DEV
+---------------------------------------------------------------
+⚠️ IMPORTANT: Webhooks are NOT required for local development!
+
+WEBHOOK NECESSITY:
+- ❌ NOT needed for: Sign up, sign in, token validation, user CRUD
+- ✅ ONLY needed for: Real-time sync from Clerk Dashboard/external changes
+- 💡 RECOMMENDATION: Skip webhooks in local dev, test in staging/production
+
+LOCAL DEVELOPMENT OPTIONS:
+
+OPTION 1: Skip Webhooks Entirely (Recommended for Local)
+---------------------------------------------------------
+- Implement all authentication APIs without webhooks
+- Backend creates/updates users directly via Clerk API
+- Test with Postman/Thunder Client
+- No ngrok required
+- Faster development cycle
+- Test webhooks in staging environment later
+
+OPTION 2: Test Webhooks with ngrok (Optional)
+----------------------------------------------
+If you need to test webhooks locally:
+1. Install ngrok: https://ngrok.com/download
+2. Run your Spring Boot app: mvn spring-boot:run
+3. Start ngrok: ngrok http 8080
+4. Copy ngrok HTTPS URL: https://abc123.ngrok.io
+5. Configure in Clerk Dashboard:
+   - Webhook URL: https://abc123.ngrok.io/api/webhooks/clerk
+   - Events: user.created, user.updated, etc.
+6. Test webhook events from Clerk Dashboard
+
+OPTION 3: Test Webhooks in Staging Only (Recommended)
+------------------------------------------------------
+- Develop all authentication APIs locally without webhooks
+- Deploy to AWS staging environment
+- Configure webhook URL: https://staging-api.yourdomain.com/api/webhooks/clerk
+- Test webhooks in staging
+- Much more realistic than ngrok
+
+TASKS:
+□ Implement webhook endpoint
+□ Add signature verification
+□ Implement idempotency checking
+□ Create event handlers for each event type
+□ Add retry logic
+□ Implement audit logging
+
+DELIVERABLES:
+✓ Webhooks receiving and processing (staging/production)
+✓ User data automatically synced
+✓ Audit trail complete
+
+LOCAL DEVELOPMENT WORKFLOW (No Webhooks):
+-----------------------------------------
+1. Start PostgreSQL database
+2. Run Spring Boot app: mvn spring-boot:run
+3. Use Postman to test APIs:
+   - POST /api/auth/sign-up → Creates user in Clerk + Database
+   - POST /api/auth/sign-in → Validates with Clerk, returns JWT
+   - GET /api/auth/user → Returns user info from database
+4. No ngrok needed
+5. No webhook configuration needed
+6. Everything works perfectly!
+
+PHASE 7: ADMIN APIs (Week 9)
+-----------------------------
+TASKS:
+□ Implement list users endpoint
+□ Implement user search/filtering
+□ Implement update user role endpoint
+□ Implement suspend/activate user endpoints
+□ Add admin authorization checks
+□ Create admin dashboard APIs
+
+DELIVERABLES:
+✓ Admin APIs functional
+✓ Admin access controls working
+✓ User management complete
+
+PHASE 8: TESTING & DOCUMENTATION (Week 10)
+-------------------------------------------
+TASKS:
+□ Write integration tests
+□ Perform load testing
+□ Security penetration testing
+□ Create API documentation (Swagger/OpenAPI)
+□ Write deployment guide
+□ Create runbook for operations
+
+DELIVERABLES:
+✓ All tests passing
+✓ API documentation complete
+✓ Deployment guide ready
+✓ Security audit passed
+
+PHASE 9: FRONTEND INTEGRATION (Week 11)
+----------------------------------------
+TASKS:
+□ Update Next.js frontends to use backend APIs
+□ Remove frontend Clerk SDKs
+□ Implement token storage in frontend
+□ Update authentication flows
+□ Test all domains
+□ Fix any integration issues
+
+DELIVERABLES:
+✓ All frontends using backend auth
+✓ Authentication working across all domains
+✓ User experience improved
+
+PHASE 10: PRODUCTION DEPLOYMENT (Week 12)
+------------------------------------------
+TASKS:
+□ Deploy to staging environment
+□ Perform final testing
+□ Configure production Clerk webhooks
+□ Update DNS and load balancers
+□ Deploy to production
+□ Monitor for issues
+□ Hot fixes if needed
+
+DELIVERABLES:
+✓ Production deployment successful
+✓ All systems operational
+✓ Monitoring in place
+
+================================================================================
+15. TASK BREAKDOWN
+================================================================================
+
+TASK_001: Project Setup
+-----------------------
+DESCRIPTION: Integrate Clerk SDK into EXISTING Spring Boot project
+ESTIMATED TIME: 2 hours (reduced - infrastructure exists)
+DEPENDENCIES: None
+PRIORITY: P0 (Critical)
+
+⚠️ PROJECT CONTEXT:
+- Spring Boot project ALREADY EXISTS and is running
+- Database and infrastructure ALREADY DEPLOYED
+- We are ADDING Clerk integration, not building from scratch
+
+SUBTASKS:
+1.1: Verify Clerk account and credentials (ALREADY PROVIDED)
+    Dev Credentials:
+    - CLERK_PUBLISHABLE_KEY=pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
+    - CLERK_SECRET_KEY=sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq
+    - CLERK_WEBHOOK_SECRET=whsec_O4lDgeWJHaO8WWiTjpwyXdbEwmCWmskX
+
+1.2: Add Clerk Maven dependency to EXISTING pom.xml
+    ```xml
+    <dependency>
+        <groupId>com.clerk</groupId>
+        <artifactId>clerk-sdk-java</artifactId>
+        <version>latest</version>
+    </dependency>
+    ```
+
+1.3: Add Clerk configuration to EXISTING application-dev.yml
+    Location: src/main/resources/config/application-dev.yml
+    Add under root:
+    ```yaml
+    clerk:
+      publishable-key: ${CLERK_PUBLISHABLE_KEY:pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ}
+      secret-key: ${CLERK_SECRET_KEY:sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq}
+      webhook-secret: ${CLERK_WEBHOOK_SECRET:whsec_O4lDgeWJHaO8WWiTjpwyXdbEwmCWmskX}
+    ```
+
+1.4: Logging framework ALREADY EXISTS - just add Clerk package logging
+1.5: Error handling framework ALREADY EXISTS - extend for Clerk errors
+
+EXISTING RESOURCES TO USE:
+✓ Package: com.nextjstemplate
+✓ Config location: src/main/resources/config/
+✓ Security: src/main/java/com/nextjstemplate/config/SecurityConfiguration.java
+✓ JWT Config: src/main/java/com/nextjstemplate/config/JwtConfiguration.java
+✓ Database: PostgreSQL already running on AWS RDS
+✓ Tables: user_profile table already exists
+
+ACCEPTANCE CRITERIA:
+✓ Clerk SDK dependency added to pom.xml
+✓ Credentials added to application-dev.yml
+✓ Application starts successfully without errors
+✓ Clerk SDK initializes correctly
+
+TASK_002: Database Schema Migration
+------------------------------------
+DESCRIPTION: Create Liquibase migrations for NEW COLUMNS and NEW TABLES
+ESTIMATED TIME: 4 hours (using existing Liquibase framework)
+DEPENDENCIES: TASK_001
+PRIORITY: P0 (Critical)
+
+⚠️ DATABASE CONTEXT:
+- PostgreSQL database ALREADY EXISTS
+- user_profile table ALREADY EXISTS with data
+- Liquibase framework ALREADY CONFIGURED
+- We are ADDING to existing schema, not creating from scratch
+- Location: src/main/resources/config/liquibase/changelog/
+
+SUBTASKS:
+2.1: Create migration to ADD NEW COLUMNS to EXISTING user_profile table
+    File: src/main/resources/config/liquibase/changelog/YYYYMMDDHHMMSS_add_clerk_columns_to_user_profile.xml
+    - clerk_user_id VARCHAR(255)
+    - clerk_session_id VARCHAR(255)
+    - clerk_org_id VARCHAR(255)
+    - clerk_org_role VARCHAR(100)
+    - auth_provider VARCHAR(50)
+    - auth_provider_user_id VARCHAR(255)
+    - email_verified BOOLEAN
+    - profile_image_url_clerk VARCHAR(1024)
+    - last_sign_in_at TIMESTAMP
+    - clerk_metadata JSONB
+
+2.2: Create migration for NEW clerk_user_tenant table
+2.3: Create migration for NEW clerk_organization_role table
+2.4: Create migration for NEW clerk_webhook_event table
+2.5: Create migration for NEW clerk_session table
+2.6: Add indexes and constraints to new columns/tables
+2.7: Test migrations on LOCAL database first
+2.8: Test rollback scripts
+
+IMPORTANT NOTES:
+- Use ALTER TABLE ADD COLUMN IF NOT EXISTS for safety
+- Ensure backward compatibility (nullable columns)
+- Test with existing user_profile data
+- Don't break existing application functionality
+
+EXISTING LIQUIBASE STRUCTURE:
+✓ Master changelog: src/main/resources/config/liquibase/master.xml
+✓ Changelog directory exists
+✓ Liquibase runs on application startup
+✓ Database connection configured
+
+ACCEPTANCE CRITERIA:
+✓ All migrations run successfully on existing database
+✓ Existing user_profile data preserved
+✓ New columns added to user_profile table
+✓ New tables created successfully
+✓ Indexes created for performance
+✓ Constraints working
+✓ Rollback scripts tested and working
+✓ Application starts without migration errors
+
+TASK_003: ClerkIntegrationService Implementation
+-------------------------------------------------
+DESCRIPTION: Create service layer for Clerk SDK integration
+ESTIMATED TIME: 8 hours
+DEPENDENCIES: TASK_001, TASK_002
+PRIORITY: P0 (Critical)
+
+SUBTASKS:
+3.1: Create ClerkIntegrationService interface
+3.2: Implement ClerkIntegrationServiceImpl
+3.3: Initialize Clerk SDK with credentials
+3.4: Implement createUser method
+3.5: Implement getUserById method
+3.6: Implement updateUser method
+3.7: Implement validateToken method
+3.8: Implement getUserOrganizations method
+3.9: Add error handling and logging
+3.10: Write unit tests (>80% coverage)
+
+ACCEPTANCE CRITERIA:
+✓ Service successfully calls Clerk APIs
+✓ Error handling working
+✓ Unit tests passing
+✓ Logging comprehensive
+
+TASK_004: Sign-Up API Implementation
+-------------------------------------
+DESCRIPTION: Implement POST /api/auth/sign-up endpoint
+ESTIMATED TIME: 6 hours
+DEPENDENCIES: TASK_003
+PRIORITY: P0 (Critical)
+
+SUBTASKS:
+4.1: Create SignUpRequest DTO
+4.2: Create SignUpResponse DTO
+4.3: Implement AuthenticationController.signUp method
+4.4: Validate input parameters
+4.5: Call ClerkIntegrationService.createUser
+4.6: Create user_profile record in database
+4.7: Generate JWT token
+4.8: Add validation error handling
+4.9: Write integration tests
+4.10: Document API in Swagger
+
+ACCEPTANCE CRITERIA:
+✓ Endpoint returns 201 on success
+✓ User created in Clerk and database
+✓ JWT token returned
+✓ Validation errors handled
+✓ Tests passing
+
+TASK_005: Sign-In API Implementation
+-------------------------------------
+DESCRIPTION: Implement POST /api/auth/sign-in endpoint
+ESTIMATED TIME: 6 hours
+DEPENDENCIES: TASK_003
+PRIORITY: P0 (Critical)
+
+SUBTASKS:
+5.1: Create SignInRequest DTO
+5.2: Create SignInResponse DTO
+5.3: Implement AuthenticationController.signIn method
+5.4: Validate credentials with Clerk
+5.5: Load user_profile from database
+5.6: Generate JWT token
+5.7: Update last_sign_in_at timestamp
+5.8: Handle invalid credentials
+5.9: Write integration tests
+5.10: Document API in Swagger
+
+ACCEPTANCE CRITERIA:
+✓ Endpoint returns 200 on success
+✓ Invalid credentials return 401
+✓ JWT token returned
+✓ Last sign-in updated
+✓ Tests passing
+
+TASK_006: Token Validation Implementation
+------------------------------------------
+DESCRIPTION: Implement POST /api/auth/verify-token endpoint and JWT filter
+ESTIMATED TIME: 8 hours
+DEPENDENCIES: TASK_003
+PRIORITY: P0 (Critical)
+
+SUBTASKS:
+6.1: Create TokenValidationRequest DTO
+6.2: Create TokenValidationResponse DTO
+6.3: Implement AuthenticationController.verifyToken method
+6.4: Implement JWT validation logic with Clerk
+6.5: Create JwtAuthenticationFilter
+6.6: Extract token from Authorization header
+6.7: Load user from database
+6.8: Populate Spring Security context
+6.9: Handle expired/invalid tokens
+6.10: Write unit and integration tests
+
+ACCEPTANCE CRITERIA:
+✓ Valid tokens return user info
+✓ Invalid tokens return 401
+✓ JWT filter working on all endpoints
+✓ User context available in controllers
+✓ Tests passing
+
+TASK_007: Refresh Token Implementation
+---------------------------------------
+DESCRIPTION: Implement POST /api/auth/refresh-token endpoint
+ESTIMATED TIME: 4 hours
+DEPENDENCIES: TASK_006
+PRIORITY: P1 (High)
+
+SUBTASKS:
+7.1: Create RefreshTokenRequest DTO
+7.2: Create RefreshTokenResponse DTO
+7.3: Implement AuthenticationController.refreshToken method
+7.4: Validate refresh token with Clerk
+7.5: Generate new access token
+7.6: Return new tokens
+7.7: Write integration tests
+7.8: Document API in Swagger
+
+ACCEPTANCE CRITERIA:
+✓ Refresh token returns new access token
+✓ Invalid refresh token returns 401
+✓ Token rotation working
+✓ Tests passing
+
+TASK_008: Get Current User Implementation
+------------------------------------------
+DESCRIPTION: Implement GET /api/auth/user endpoint
+ESTIMATED TIME: 4 hours
+DEPENDENCIES: TASK_006
+PRIORITY: P1 (High)
+
+SUBTASKS:
+8.1: Create UserResponse DTO
+8.2: Implement AuthenticationController.getCurrentUser method
+8.3: Load user from database by JWT claims
+8.4: Include organizations and roles
+8.5: Include all tenant memberships
+8.6: Write integration tests
+8.7: Document API in Swagger
+
+ACCEPTANCE CRITERIA:
+✓ Endpoint returns complete user info
+✓ Organizations included
+✓ Tenants included
+✓ Tests passing
+
+TASK_009: Sign-Out Implementation
+----------------------------------
+DESCRIPTION: Implement POST /api/auth/sign-out endpoint
+ESTIMATED TIME: 4 hours
+DEPENDENCIES: TASK_006
+PRIORITY: P1 (High)
+
+SUBTASKS:
+9.1: Create SignOutRequest DTO
+9.2: Implement AuthenticationController.signOut method
+9.3: Revoke session in Clerk
+9.4: Update session status in database
+9.5: Clear security context
+9.6: Write integration tests
+9.7: Document API in Swagger
+
+ACCEPTANCE CRITERIA:
+✓ Session revoked in Clerk
+✓ Session marked inactive in database
+✓ Subsequent requests with token fail
+✓ Tests passing
+
+TASK_010: Social Login Configuration
+-------------------------------------
+DESCRIPTION: Configure social login providers in Clerk
+ESTIMATED TIME: 3 hours
+DEPENDENCIES: TASK_001
+PRIORITY: P1 (High)
+
+SUBTASKS:
+10.1: Configure Google OAuth in Clerk
+10.2: Configure GitHub OAuth in Clerk
+10.3: Configure Facebook OAuth in Clerk
+10.4: Configure Apple Sign In in Clerk
+10.5: Set redirect URLs
+10.6: Test each provider manually
+
+ACCEPTANCE CRITERIA:
+✓ All providers configured
+✓ OAuth flows working
+✓ Users can sign in with each provider
+
+TASK_011: Social Sign-In API Implementation
+--------------------------------------------
+DESCRIPTION: Implement POST /api/auth/sign-in/social endpoint
+ESTIMATED TIME: 6 hours
+DEPENDENCIES: TASK_010
+PRIORITY: P1 (High)
+
+SUBTASKS:
+11.1: Create SocialSignInRequest DTO
+11.2: Create SocialSignInResponse DTO
+11.3: Implement AuthenticationController.socialSignIn method
+11.4: Validate OAuth token with Clerk
+11.5: Extract user info from Clerk
+11.6: Create or update user_profile
+11.7: Handle account linking
+11.8: Update auth_provider field
+11.9: Write integration tests
+11.10: Document API in Swagger
+
+ACCEPTANCE CRITERIA:
+✓ Social sign-in working for all providers
+✓ Account linking functional
+✓ User profile properly updated
+✓ Tests passing
+
+TASK_012: Multi-Tenant Service Implementation
+----------------------------------------------
+DESCRIPTION: Create service for multi-tenant operations
+ESTIMATED TIME: 8 hours
+DEPENDENCIES: TASK_002
+PRIORITY: P1 (High)
+
+SUBTASKS:
+12.1: Create TenantService interface
+12.2: Implement TenantServiceImpl
+12.3: Implement validateTenant method
+12.4: Implement addUserToTenant method
+12.5: Implement removeUserFromTenant method
+12.6: Implement getUserTenants method
+12.7: Implement switchTenant method
+12.8: Add tenant isolation to queries
+12.9: Write unit tests
+12.10: Add integration tests
+
+ACCEPTANCE CRITERIA:
+✓ Users can belong to multiple tenants
+✓ Tenant validation working
+✓ Tenant switching functional
+✓ Data isolation enforced
+✓ Tests passing
+
+TASK_013: Tenant Context Filter
+--------------------------------
+DESCRIPTION: Create filter to extract and validate tenant context
+ESTIMATED TIME: 4 hours
+DEPENDENCIES: TASK_012
+PRIORITY: P1 (High)
+
+SUBTASKS:
+13.1: Create TenantContextFilter
+13.2: Extract tenant ID from request
+13.3: Validate tenant ID
+13.4: Set tenant in ThreadLocal context
+13.5: Clear context after request
+13.6: Add to filter chain
+13.7: Write unit tests
+
+ACCEPTANCE CRITERIA:
+✓ Tenant context available in all requests
+✓ Invalid tenant returns 403
+✓ Context cleaned up after request
+✓ Tests passing
+
+TASK_014: Organization Sync Service
+------------------------------------
+DESCRIPTION: Create service to sync Clerk Organizations
+ESTIMATED TIME: 6 hours
+DEPENDENCIES: TASK_003
+PRIORITY: P1 (High)
+
+SUBTASKS:
+14.1: Create OrganizationSyncService interface
+14.2: Implement OrganizationSyncServiceImpl
+14.3: Implement syncUserOrganizations method
+14.4: Fetch organizations from Clerk
+14.5: Map Clerk roles to application roles
+14.6: Update user_profile.user_role
+14.7: Update clerk_user_tenant records
+14.8: Write unit tests
+
+ACCEPTANCE CRITERIA:
+✓ Organizations synced from Clerk
+✓ Roles properly mapped
+✓ User permissions updated
+✓ Tests passing
+
+TASK_015: Role Mapping Configuration
+-------------------------------------
+DESCRIPTION: Create configuration for role mapping
+ESTIMATED TIME: 4 hours
+DEPENDENCIES: TASK_014
+PRIORITY: P2 (Medium)
+
+SUBTASKS:
+15.1: Create RoleMappingConfiguration class
+15.2: Define role mapping rules
+15.3: Seed clerk_organization_role table
+15.4: Implement getRoleForClerkRole method
+15.5: Add configuration properties
+15.6: Write unit tests
+
+ACCEPTANCE CRITERIA:
+✓ Role mappings configured
+✓ Mappings work correctly
+✓ Database seeded
+✓ Tests passing
+
+TASK_016: Permission Checking Service
+--------------------------------------
+DESCRIPTION: Create service for permission checking
+ESTIMATED TIME: 6 hours
+DEPENDENCIES: TASK_015
+PRIORITY: P2 (Medium)
+
+SUBTASKS:
+16.1: Create PermissionService interface
+16.2: Implement PermissionServiceImpl
+16.3: Implement hasPermission method
+16.4: Implement hasRole method
+16.5: Implement canAccessResource method
+16.6: Add tenant-aware permission checks
+16.7: Write unit tests
+16.8: Add integration tests
+
+ACCEPTANCE CRITERIA:
+✓ Permission checking working
+✓ Role-based access control functional
+✓ Tenant-aware permissions enforced
+✓ Tests passing
+
+TASK_017: Webhook Endpoint Implementation
+------------------------------------------
+DESCRIPTION: Implement POST /api/webhooks/clerk endpoint
+ESTIMATED TIME: 8 hours
+DEPENDENCIES: TASK_003
+PRIORITY: P2 (Medium) - NOT REQUIRED FOR LOCAL DEVELOPMENT
+
+⚠️ LOCAL DEVELOPMENT NOTE:
+- This task can be SKIPPED during initial local development
+- Webhooks are NOT required for authentication APIs to work
+- Test webhooks in staging environment instead
+- Or use ngrok if you specifically need to test webhooks locally
+
+SUBTASKS:
+17.1: Create WebhookController
+17.2: Implement webhook receiver method
+17.3: Verify webhook signature
+17.4: Parse webhook payload
+17.5: Route to appropriate event handler
+17.6: Return 200 OK response
+17.7: Handle errors gracefully
+17.8: Write integration tests
+17.9: Configure webhook in Clerk Dashboard
+
+ACCEPTANCE CRITERIA:
+✓ Webhook endpoint receiving events
+✓ Signature verification working
+✓ Events routed correctly
+✓ Tests passing
+
+TASK_018: Webhook Event Handlers
+---------------------------------
+DESCRIPTION: Implement handlers for each webhook event type
+ESTIMATED TIME: 10 hours
+DEPENDENCIES: TASK_017
+PRIORITY: P1 (High)
+
+SUBTASKS:
+18.1: Create WebhookEventHandler interface
+18.2: Implement UserCreatedHandler
+18.3: Implement UserUpdatedHandler
+18.4: Implement UserDeletedHandler
+18.5: Implement SessionCreatedHandler
+18.6: Implement SessionEndedHandler
+18.7: Implement OrganizationMembershipCreatedHandler
+18.8: Implement OrganizationMembershipUpdatedHandler
+18.9: Add idempotency checking
+18.10: Write unit tests for each handler
+
+ACCEPTANCE CRITERIA:
+✓ All event types handled
+✓ User data synced correctly
+✓ Idempotency working
+✓ Tests passing
+
+TASK_019: Webhook Audit Logging
+--------------------------------
+DESCRIPTION: Implement audit logging for webhook events
+ESTIMATED TIME: 4 hours
+DEPENDENCIES: TASK_018
+PRIORITY: P2 (Medium)
+
+SUBTASKS:
+19.1: Create WebhookAuditService
+19.2: Save events to clerk_webhook_event table
+19.3: Log processing results
+19.4: Track retry attempts
+19.5: Implement cleanup job (delete old events)
+19.6: Write unit tests
+
+ACCEPTANCE CRITERIA:
+✓ All events logged
+✓ Processing status tracked
+✓ Cleanup job working
+✓ Tests passing
+
+TASK_020: Admin List Users API
+-------------------------------
+DESCRIPTION: Implement GET /api/admin/users endpoint
+ESTIMATED TIME: 6 hours
+DEPENDENCIES: TASK_006
+PRIORITY: P2 (Medium)
+
+SUBTASKS:
+20.1: Create AdminController
+20.2: Implement listUsers method
+20.3: Add pagination support
+20.4: Add filtering by tenant
+20.5: Add sorting options
+20.6: Add admin authorization check
+20.7: Write integration tests
+20.8: Document API in Swagger
+
+ACCEPTANCE CRITERIA:
+✓ Endpoint returns paginated users
+✓ Filtering working
+✓ Only admins can access
+✓ Tests passing
+
+TASK_021: Admin Update User Role API
+-------------------------------------
+DESCRIPTION: Implement PUT /api/admin/users/{userId}/role endpoint
+ESTIMATED TIME: 4 hours
+DEPENDENCIES: TASK_020
+PRIORITY: P2 (Medium)
+
+SUBTASKS:
+21.1: Create UpdateRoleRequest DTO
+21.2: Implement updateUserRole method
+21.3: Validate role value
+21.4: Update user_profile.user_role
+21.5: Update clerk_user_tenant records
+21.6: Add admin authorization check
+21.7: Write integration tests
+21.8: Document API in Swagger
+
+ACCEPTANCE CRITERIA:
+✓ User role updated successfully
+✓ Validation working
+✓ Only admins can access
+✓ Tests passing
+
+TASK_022: Admin User Status Management API
+-------------------------------------------
+DESCRIPTION: Implement PUT /api/admin/users/{userId}/status endpoint
+ESTIMATED TIME: 4 hours
+DEPENDENCIES: TASK_020
+PRIORITY: P2 (Medium)
+
+SUBTASKS:
+22.1: Create UpdateStatusRequest DTO
+22.2: Implement updateUserStatus method
+22.3: Validate status value
+22.4: Update user_profile.user_status
+22.5: Revoke sessions if suspended
+22.6: Add admin authorization check
+22.7: Write integration tests
+22.8: Document API in Swagger
+
+ACCEPTANCE CRITERIA:
+✓ User status updated successfully
+✓ Sessions revoked on suspension
+✓ Only admins can access
+✓ Tests passing
+
+TASK_023: Security Configuration Update
+----------------------------------------
+DESCRIPTION: Update SecurityConfiguration to use Clerk JWT
+ESTIMATED TIME: 6 hours
+DEPENDENCIES: TASK_006
+PRIORITY: P0 (Critical)
+
+SUBTASKS:
+23.1: Remove in-memory user details manager
+23.2: Configure JWT decoder for Clerk tokens
+23.3: Update CORS configuration
+23.4: Add rate limiting configuration
+23.5: Update security filter chain
+23.6: Test authentication flow end-to-end
+23.7: Write security tests
+
+ACCEPTANCE CRITERIA:
+✓ Clerk JWT validation working
+✓ CORS properly configured
+✓ Rate limiting working
+✓ Security tests passing
+
+TASK_024: Error Handling Enhancement
+-------------------------------------
+DESCRIPTION: Implement comprehensive error handling
+ESTIMATED TIME: 4 hours
+DEPENDENCIES: None
+PRIORITY: P1 (High)
+
+SUBTASKS:
+24.1: Create custom exception classes
+24.2: Create GlobalExceptionHandler
+24.3: Handle Clerk API exceptions
+24.4: Handle validation exceptions
+24.5: Handle authentication exceptions
+24.6: Add error response standardization
+24.7: Write unit tests
+
+ACCEPTANCE CRITERIA:
+✓ All exceptions handled gracefully
+✓ Error responses standardized
+✓ Clerk errors properly mapped
+✓ Tests passing
+
+TASK_025: API Documentation
+----------------------------
+DESCRIPTION: Create comprehensive API documentation
+ESTIMATED TIME: 8 hours
+DEPENDENCIES: All API tasks complete
+PRIORITY: P2 (Medium)
+
+SUBTASKS:
+25.1: Configure Swagger/OpenAPI
+25.2: Add API descriptions
+25.3: Add request/response examples
+25.4: Add authentication documentation
+25.5: Add error code documentation
+25.6: Generate Postman collection
+25.7: Write integration guide
+25.8: Review and publish
+
+ACCEPTANCE CRITERIA:
+✓ Swagger UI accessible
+✓ All endpoints documented
+✓ Examples provided
+✓ Postman collection available
+
+TASK_026: Integration Testing
+------------------------------
+DESCRIPTION: Write comprehensive integration tests
+ESTIMATED TIME: 12 hours
+DEPENDENCIES: All implementation tasks complete
+PRIORITY: P1 (High)
+
+SUBTASKS:
+26.1: Set up test database
+26.2: Write authentication flow tests
+26.3: Write social login tests
+26.4: Write multi-tenant tests
+26.5: Write webhook tests
+26.6: Write admin API tests
+26.7: Write security tests
+26.8: Achieve >80% code coverage
+26.9: Run all tests in CI/CD
+
+ACCEPTANCE CRITERIA:
+✓ All integration tests passing
+✓ Code coverage >80%
+✓ CI/CD pipeline green
+
+TASK_027: Performance Testing
+------------------------------
+DESCRIPTION: Conduct performance and load testing
+ESTIMATED TIME: 8 hours
+DEPENDENCIES: TASK_026
+PRIORITY: P2 (Medium)
+
+SUBTASKS:
+27.1: Set up JMeter or Gatling
+27.2: Create load test scenarios
+27.3: Test authentication endpoints
+27.4: Test token validation performance
+27.5: Test concurrent users
+27.6: Measure response times
+27.7: Identify bottlenecks
+27.8: Optimize slow endpoints
+
+ACCEPTANCE CRITERIA:
+✓ <200ms p95 response time for auth APIs
+✓ <50ms p95 for token validation
+✓ Support 1000 concurrent users
+✓ No errors under load
+
+TASK_028: Security Audit
+-------------------------
+DESCRIPTION: Conduct security penetration testing
+ESTIMATED TIME: 8 hours
+DEPENDENCIES: TASK_026
+PRIORITY: P1 (High)
+
+SUBTASKS:
+28.1: Run OWASP ZAP scan
+28.2: Test for SQL injection
+28.3: Test for XSS vulnerabilities
+28.4: Test for CSRF vulnerabilities
+28.5: Test authentication bypass
+28.6: Test authorization bypass
+28.7: Test rate limiting
+28.8: Fix all findings
+
+ACCEPTANCE CRITERIA:
+✓ No critical vulnerabilities
+✓ No high vulnerabilities
+✓ All findings documented and fixed
+✓ Security report generated
+
+TASK_029: Deployment Preparation
+---------------------------------
+DESCRIPTION: Prepare application for production deployment
+ESTIMATED TIME: 6 hours
+DEPENDENCIES: TASK_028
+PRIORITY: P0 (Critical)
+
+SUBTASKS:
+29.1: Configure production environment variables
+29.2: Set up production database
+29.3: Configure Clerk production webhook
+29.4: Update CORS for production domains
+29.5: Configure SSL/TLS certificates
+29.6: Set up monitoring and alerting
+29.7: Create deployment scripts
+29.8: Write deployment runbook
+
+ACCEPTANCE CRITERIA:
+✓ Production environment configured
+✓ Database ready
+✓ Webhooks configured
+✓ Deployment scripts tested
+
+TASK_030: Production Deployment
+--------------------------------
+DESCRIPTION: Deploy to production environment
+ESTIMATED TIME: 4 hours
+DEPENDENCIES: TASK_029
+PRIORITY: P0 (Critical)
+
+SUBTASKS:
+30.1: Run database migrations
+30.2: Deploy application to AWS Fargate
+30.3: Verify health checks
+30.4: Test authentication flow
+30.5: Test webhook delivery
+30.6: Monitor for errors
+30.7: Update DNS if needed
+30.8: Communicate deployment status
+
+ACCEPTANCE CRITERIA:
+✓ Application deployed successfully
+✓ All health checks passing
+✓ Authentication working
+✓ Webhooks processing
+✓ No errors in logs
+
+================================================================================
+16. SUCCESS CRITERIA
+================================================================================
+
+FUNCTIONAL REQUIREMENTS:
+✓ All authentication APIs functional
+✓ Social login working for Google, GitHub, Facebook, Apple
+✓ Multi-tenant support with email + tenant_id uniqueness
+✓ Clerk Organizations integrated with role mapping
+✓ Webhooks receiving and processing events
+✓ Admin APIs for user management
+✓ Token validation and refresh working
+
+NON-FUNCTIONAL REQUIREMENTS:
+✓ API response time <200ms (p95)
+✓ Token validation <50ms (p95)
+✓ 99.9% uptime
+✓ Support 10,000+ concurrent users
+✓ Code coverage >80%
+✓ Zero critical security vulnerabilities
+✓ GDPR compliant
+
+BUSINESS REQUIREMENTS:
+✓ Single Clerk account for all domains
+✓ Reduced operational costs
+✓ Improved user experience
+✓ Centralized user management
+✓ Comprehensive audit trail
+✓ Easy to maintain and extend
+
+================================================================================
+17. TESTING STRATEGY
+================================================================================
+
+17.1 UNIT TESTING
+-----------------
+FRAMEWORK: JUnit 5 + Mockito
+SCOPE:
+- Service layer methods
+- Controller methods
+- Utility classes
+- Validation logic
+
+COVERAGE TARGET: >80%
+
+EXAMPLE:
 ```java
-@RestController
-@RequestMapping("/api/whatsapp")
-public class WhatsAppWebhookController {
+@Test
+void testSignUp_Success() {
+    // Arrange
+    SignUpRequest request = new SignUpRequest();
+    request.setEmail("test@example.com");
+    request.setPassword("Password123!");
 
-    @Autowired
-    private TwilioWhatsAppService whatsAppService;
+    when(clerkService.createUser(any())).thenReturn(clerkUser);
 
-    @Autowired
-    private WebhookSignatureValidator signatureValidator;
+    // Act
+    SignUpResponse response = authService.signUp(request);
 
-    @PostMapping("/webhook")
-    public ResponseEntity<?> handleWebhook(
-        @RequestHeader("X-Twilio-Signature") String signature,
-        @RequestBody String payload,
-        HttpServletRequest request
-    ) {
-        try {
-            // Extract tenant ID from webhook URL or payload
-            String tenantId = extractTenantId(request);
-
-            // Verify webhook signature
-            if (!signatureValidator.validate(signature, request.getRequestURL().toString(), payload)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid signature");
-            }
-
-            // Parse webhook payload
-            WebhookPayload webhookPayload = JsonUtils.fromJson(payload, WebhookPayload.class);
-
-            // Process delivery status update
-            whatsAppService.handleWebhook(tenantId, webhookPayload);
-
-            return ResponseEntity.ok().build();
-
-        } catch (Exception e) {
-            log.error("Error processing WhatsApp webhook", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Webhook processing failed");
-        }
-    }
-
-    private String extractTenantId(HttpServletRequest request) {
-        // Extract tenant ID from URL path or headers
-        // Implementation depends on your routing strategy
-        String path = request.getRequestURI();
-        // Extract from path like /api/whatsapp/webhook/{tenantId}
-        return path.split("/")[4]; // Adjust index based on your URL structure
-    }
+    // Assert
+    assertNotNull(response.getAccessToken());
+    assertEquals("test@example.com", response.getEmail());
 }
 ```
 
-##### 2.4 WhatsApp Controller
+17.2 INTEGRATION TESTING
+-------------------------
+FRAMEWORK: Spring Boot Test + TestContainers
+SCOPE:
+- End-to-end API tests
+- Database integration
+- Clerk API integration
+- Security filter chain
+
+EXAMPLE:
 ```java
-@RestController
-@RequestMapping("/api/whatsapp")
-public class WhatsAppController {
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@Testcontainers
+class AuthenticationIntegrationTest {
 
-    @Autowired
-    private TwilioWhatsAppService whatsAppService;
+    @Container
+    static PostgreSQLContainer<?> postgres =
+        new PostgreSQLContainer<>("postgres:16");
 
-    @PostMapping("/send-message")
-    public ResponseEntity<WhatsAppMessageResponse> sendMessage(
-        @RequestHeader("X-Tenant-ID") String tenantId,
-        @RequestBody WhatsAppMessageRequest request
-    ) {
-        try {
-            WhatsAppMessageResponse response = whatsAppService.sendMessage(tenantId, request);
-            return ResponseEntity.ok(response);
-        } catch (WhatsAppNotEnabledException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
-            log.error("Error sending WhatsApp message", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+    @Test
+    void testSignUpAndSignIn() {
+        // Sign up
+        SignUpRequest signUp = new SignUpRequest();
+        signUp.setEmail("test@example.com");
 
-    @PostMapping("/send-bulk")
-    public ResponseEntity<BulkWhatsAppResponse> sendBulkMessages(
-        @RequestHeader("X-Tenant-ID") String tenantId,
-        @RequestBody BulkWhatsAppRequest request
-    ) {
-        try {
-            BulkWhatsAppResponse response = whatsAppService.sendBulkMessages(tenantId, request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Error sending bulk WhatsApp messages", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+        ResponseEntity<SignUpResponse> signUpResponse =
+            restTemplate.postForEntity("/api/auth/sign-up", signUp, SignUpResponse.class);
 
-    @GetMapping("/templates")
-    public ResponseEntity<List<MessageTemplate>> getTemplates(
-        @RequestHeader("X-Tenant-ID") String tenantId
-    ) {
-        try {
-            List<MessageTemplate> templates = whatsAppService.getApprovedTemplates(tenantId);
-            return ResponseEntity.ok(templates);
-        } catch (Exception e) {
-            log.error("Error fetching WhatsApp templates", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+        assertEquals(HttpStatus.CREATED, signUpResponse.getStatusCode());
 
-    @GetMapping("/delivery-status/{messageId}")
-    public ResponseEntity<DeliveryStatus> getDeliveryStatus(
-        @RequestHeader("X-Tenant-ID") String tenantId,
-        @PathVariable String messageId
-    ) {
-        try {
-            DeliveryStatus status = whatsAppService.checkDeliveryStatus(tenantId, messageId);
-            return ResponseEntity.ok(status);
-        } catch (Exception e) {
-            log.error("Error checking delivery status", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+        // Sign in
+        SignInRequest signIn = new SignInRequest();
+        signIn.setEmail("test@example.com");
 
-    @PostMapping("/test-connection")
-    public ResponseEntity<ConnectionTestResult> testConnection(
-        @RequestHeader("X-Tenant-ID") String tenantId
-    ) {
-        try {
-            ConnectionTestResult result = whatsAppService.testConnection(tenantId);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            log.error("Error testing WhatsApp connection", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+        ResponseEntity<SignInResponse> signInResponse =
+            restTemplate.postForEntity("/api/auth/sign-in", signIn, SignInResponse.class);
 
-    @GetMapping("/analytics")
-    public ResponseEntity<WhatsAppAnalytics> getAnalytics(
-        @RequestHeader("X-Tenant-ID") String tenantId,
-        @RequestParam(defaultValue = "30") int days
-    ) {
-        try {
-            WhatsAppAnalytics analytics = whatsAppService.getAnalytics(tenantId, days);
-            return ResponseEntity.ok(analytics);
-        } catch (Exception e) {
-            log.error("Error fetching WhatsApp analytics", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        assertEquals(HttpStatus.OK, signInResponse.getStatusCode());
+        assertNotNull(signInResponse.getBody().getAccessToken());
     }
 }
 ```
 
-#### 3. **Data Transfer Objects (DTOs)**
+17.3 PERFORMANCE TESTING
+-------------------------
+TOOL: Apache JMeter or Gatling
+SCENARIOS:
+- Authentication endpoint load test (1000 concurrent users)
+- Token validation stress test (10,000 requests/second)
+- Webhook processing throughput test
+
+TARGET METRICS:
+- Response time <200ms (p95)
+- Error rate <0.1%
+- Throughput >5000 requests/second
+
+17.4 SECURITY TESTING
+----------------------
+TOOLS: OWASP ZAP, Burp Suite
+TESTS:
+- SQL injection attempts
+- XSS vulnerabilities
+- CSRF protection
+- Authentication bypass attempts
+- Authorization bypass attempts
+- Rate limiting validation
+- Token manipulation tests
+
+ACCEPTANCE: Zero critical/high vulnerabilities
+
+================================================================================
+18. DEPLOYMENT STRATEGY
+================================================================================
+
+18.1 ENVIRONMENT SETUP
+-----------------------
+DEVELOPMENT:
+- Local PostgreSQL database
+- Clerk test mode
+- Debug logging enabled
+- CORS allow all origins
+
+STAGING:
+- AWS RDS PostgreSQL
+- Clerk test mode
+- Info logging
+- CORS specific origins
+- SSL/TLS enabled
+
+PRODUCTION:
+- AWS RDS PostgreSQL (Multi-AZ)
+- Clerk production mode
+- Warn logging
+- CORS production domains only
+- SSL/TLS required
+- Rate limiting enabled
+
+18.2 DEPLOYMENT PIPELINE
+-------------------------
+1. Code commit to Git repository
+2. CI/CD pipeline triggered (GitHub Actions/Jenkins)
+3. Run unit tests
+4. Run integration tests
+5. Build Docker image
+6. Push image to ECR
+7. Update ECS task definition
+8. Deploy to staging
+9. Run smoke tests
+10. Manual approval for production
+11. Deploy to production
+12. Run health checks
+13. Monitor for errors
+
+18.3 BLUE-GREEN DEPLOYMENT
+---------------------------
+1. Deploy new version to green environment
+2. Run health checks on green
+3. Switch load balancer to green
+4. Monitor for errors
+5. Keep blue environment for quick rollback
+6. Decommission blue after 24 hours
+
+18.4 DATABASE MIGRATIONS
+-------------------------
+1. Backup production database
+2. Run Liquibase migrations in transaction
+3. Verify migrations successful
+4. Deploy application
+5. Rollback migrations if issues
+
+================================================================================
+19. ROLLBACK PLAN
+================================================================================
+
+19.1 APPLICATION ROLLBACK
+--------------------------
+IF: Critical bug or performance issue in production
+THEN:
+1. Switch load balancer to previous version (blue environment)
+2. Verify application working
+3. Investigate issue
+4. Fix and redeploy
+
+TIME TO ROLLBACK: <5 minutes
+
+19.2 DATABASE ROLLBACK
+-----------------------
+IF: Database migration causes issues
+THEN:
+1. Stop application
+2. Run Liquibase rollback
+3. Restore database from backup if needed
+4. Redeploy previous application version
+5. Verify system working
+
+TIME TO ROLLBACK: <15 minutes
+
+19.3 CONFIGURATION ROLLBACK
+----------------------------
+IF: Configuration change causes issues
+THEN:
+1. Revert environment variables
+2. Restart application
+3. Verify system working
+
+TIME TO ROLLBACK: <3 minutes
+
+================================================================================
+20. APPENDICES
+================================================================================
+
+APPENDIX A: Clerk API Endpoints
+--------------------------------
+Base URL: https://api.clerk.com/v1
+
+USER MANAGEMENT:
+GET    /users/{user_id}
+POST   /users
+PATCH  /users/{user_id}
+DELETE /users/{user_id}
+
+SESSIONS:
+GET    /sessions/{session_id}
+POST   /sessions/{session_id}/revoke
+
+ORGANIZATIONS:
+GET    /organizations/{org_id}
+GET    /organizations/{org_id}/memberships
+POST   /organizations/{org_id}/memberships
+PATCH  /organizations/{org_id}/memberships/{user_id}
+
+APPENDIX B: Error Codes
+------------------------
+AUTH_001: Invalid credentials
+AUTH_002: Token expired
+AUTH_003: Token invalid
+AUTH_004: User not found
+AUTH_005: Email already exists
+AUTH_006: Invalid tenant
+AUTH_007: Unauthorized access
+AUTH_008: Rate limit exceeded
+AUTH_009: Webhook signature invalid
+AUTH_010: Social provider error
+
+APPENDIX C: Environment Variables
+----------------------------------
+⚠️ ACTUAL DEV ENVIRONMENT CREDENTIALS PROVIDED
+
+CLERK CREDENTIALS (Development/Test Mode):
+-------------------------------------------
+CLERK_PUBLISHABLE_KEY=pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
+CLERK_SECRET_KEY=sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq
+CLERK_WEBHOOK_SECRET=whsec_O4lDgeWJHaO8WWiTjpwyXdbEwmCWmskX
+CLERK_SIGN_IN_URL=/sign-in
+CLERK_SIGN_UP_URL=/sign-up
+CLERK_AFTER_SIGN_IN_URL=/
+CLERK_AFTER_SIGN_UP_URL=/
+
+HOW TO USE:
+-----------
+1. Local Development (.env file):
+   Create .env file in project root with above values
+
+2. Spring Boot Configuration (application-dev.yml):
+   ```yaml
+   clerk:
+     publishable-key: ${CLERK_PUBLISHABLE_KEY}
+     secret-key: ${CLERK_SECRET_KEY}
+     webhook-secret: ${CLERK_WEBHOOK_SECRET}
+     sign-in-url: ${CLERK_SIGN_IN_URL:/sign-in}
+     sign-up-url: ${CLERK_SIGN_UP_URL:/sign-up}
+     after-sign-in-url: ${CLERK_AFTER_SIGN_IN_URL:/}
+     after-sign-up-url: ${CLERK_AFTER_SIGN_UP_URL:/}
+   ```
+
+3. AWS Fargate (ECS Task Definition):
+   Add to environment variables section:
+   ```json
+   {
+     "name": "CLERK_PUBLISHABLE_KEY",
+     "value": "pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ"
+   },
+   {
+     "name": "CLERK_SECRET_KEY",
+     "value": "sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq"
+   },
+   {
+     "name": "CLERK_WEBHOOK_SECRET",
+     "value": "whsec_O4lDgeWJHaO8WWiTjpwyXdbEwmCWmskX"
+   }
+   ```
+
+EXISTING ENVIRONMENT VARIABLES (Already Configured):
+-----------------------------------------------------
+✓ DATABASE_URL - PostgreSQL connection string
+✓ RDS_ENDPOINT - AWS RDS endpoint
+✓ DB_NAME - event_site_manager_db
+✓ DB_USERNAME - event_site_app
+✓ DB_PASSWORD - (in AWS Secrets Manager)
+✓ JWT_SECRET - JHipster JWT secret
+✓ JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET
+✓ AWS_ACCESS_KEY_ID
+✓ AWS_SECRET_ACCESS_KEY
+✓ AWS_S3_BUCKET_NAME
+
+PRODUCTION CREDENTIALS (TO BE OBTAINED):
+-----------------------------------------
+For production deployment, you will need:
+- CLERK_PUBLISHABLE_KEY (starts with pk_live_)
+- CLERK_SECRET_KEY (starts with sk_live_)
+- CLERK_WEBHOOK_SECRET (new secret for production)
+
+Store production credentials in:
+- AWS Secrets Manager (recommended)
+- AWS Systems Manager Parameter Store
+- Never in code or version control
+
+APPENDIX D: Database Indexes
+-----------------------------
+user_profile:
+- idx_user_profile_clerk_user_id
+- idx_user_profile_tenant_email
+- idx_user_profile_clerk_org_id
+
+clerk_user_tenant:
+- idx_clerk_user_tenant_user
+- idx_clerk_user_tenant_tenant
+- idx_clerk_user_tenant_status
+
+clerk_webhook_event:
+- idx_clerk_webhook_event_type
+- idx_clerk_webhook_event_user
+- idx_clerk_webhook_processed
+- idx_clerk_webhook_received_at
+
+clerk_session:
+- idx_clerk_session_user
+- idx_clerk_session_profile
+- idx_clerk_session_tenant
+- idx_clerk_session_status
+- idx_clerk_session_expires_at
+
+APPENDIX E: Monitoring Metrics
+-------------------------------
+APPLICATION METRICS:
+- auth.signup.success.count
+- auth.signup.failure.count
+- auth.signin.success.count
+- auth.signin.failure.count
+- auth.token.validation.time
+- auth.social.login.count
+- webhook.processed.count
+- webhook.failed.count
+
+SYSTEM METRICS:
+- cpu.usage
+- memory.usage
+- database.connections
+- api.response.time
+- api.error.rate
+
+APPENDIX F: Contact Information
+--------------------------------
+Development Team: dev-team@company.com
+DevOps Team: devops@company.com
+Clerk Support: support@clerk.com
+On-Call: oncall@company.com
+
+================================================================================
+END OF DOCUMENT
+================================================================================
 
-##### 3.1 WhatsApp Request DTOs
-```java
-public class WhatsAppMessageRequest {
-    @NotBlank
-    private String recipientPhone;
-
-    @NotBlank
-    private String messageBody;
-
-    private String templateName;
-
-    private Map<String, String> templateParams;
-
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    private MessageType type;
-
-    // Constructors, getters, setters
-}
-
-public class BulkWhatsAppRequest {
-    @NotEmpty
-    private List<BulkRecipient> recipients;
-
-    @NotBlank
-    private String messageBody;
-
-    private String templateName;
-
-    private Instant scheduledAt;
-
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    private MessageType type;
-
-    // Constructors, getters, setters
-}
-
-public class BulkRecipient {
-    @NotBlank
-    private String phone;
-
-    private String name;
-
-    private Map<String, String> customParams;
-
-    // Constructors, getters, setters
-}
-
-public class CreateTemplateRequest {
-    @NotBlank
-    private String name;
-
-    @NotBlank
-    private String category;
-
-    @NotBlank
-    private String language;
-
-    @NotEmpty
-    private List<TemplateComponent> components;
-
-    // Constructors, getters, setters
-}
-```
-
-##### 3.2 WhatsApp Response DTOs
-```java
-public class WhatsAppMessageResponse {
-    private String messageId;
-    private String status;
-    private Instant timestamp;
-
-    // Constructors, getters, setters
-}
-
-public class BulkWhatsAppResponse {
-    private List<WhatsAppMessageResponse> successful;
-    private List<String> errors;
-
-    // Constructors, getters, setters
-}
-
-public class DeliveryStatus {
-    private String messageId;
-    private String status;
-    private Instant timestamp;
-    private Integer errorCode;
-    private String errorMessage;
-
-    // Constructors, getters, setters
-}
-
-public class MessageTemplate {
-    private String id;
-    private String name;
-    private String category;
-    private String language;
-    private TemplateStatus status;
-    private List<TemplateComponent> components;
-
-    // Constructors, getters, setters
-}
-
-public class TemplateComponent {
-    private ComponentType type;
-    private String text;
-    private String format;
-
-    // Constructors, getters, setters
-}
-
-public class ConnectionTestResult {
-    private boolean success;
-    private String message;
-    private Instant timestamp;
-    private Map<String, String> details;
-
-    // Constructors, getters, setters
-}
-
-public class WhatsAppAnalytics {
-    private long totalMessages;
-    private long sentMessages;
-    private long deliveredMessages;
-    private long failedMessages;
-    private long readMessages;
-    private double deliveryRate;
-    private double readRate;
-    private Instant periodStart;
-    private Instant periodEnd;
-
-    // Constructors, getters, setters
-}
-
-public class WebhookPayload {
-    private String messageId;
-    private String status;
-    private Instant timestamp;
-    private Map<String, Object> metadata;
-
-    // Constructors, getters, setters
-}
-```
-
-#### 4. **Security Implementation**
-
-##### 4.1 Encryption Service
-```java
-@Service
-public class EncryptionService {
-
-    @Value("${twilio.encryption.key}")
-    private String encryptionKey;
-
-    public String encrypt(String plaintext) {
-        try {
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            SecretKeySpec keySpec = new SecretKeySpec(encryptionKey.getBytes(), "AES");
-            cipher.init(Cipher.ENCRYPT_MODE, keySpec);
-
-            byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes());
-            return Base64.getEncoder().encodeToString(encryptedBytes);
-
-        } catch (Exception e) {
-            throw new EncryptionException("Failed to encrypt data", e);
-        }
-    }
-
-    public String decrypt(String encryptedText) {
-        try {
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            SecretKeySpec keySpec = new SecretKeySpec(encryptionKey.getBytes(), "AES");
-            cipher.init(Cipher.DECRYPT_MODE, keySpec);
-
-            byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
-            byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
-
-            return new String(decryptedBytes);
-
-        } catch (Exception e) {
-            throw new EncryptionException("Failed to decrypt data", e);
-        }
-    }
-}
-```
-
-##### 4.2 Webhook Signature Validator
-```java
-@Component
-public class WebhookSignatureValidator {
-
-    public boolean validate(String signature, String url, String payload) {
-        try {
-            // Use Twilio's signature validation
-            RequestValidator validator = new RequestValidator("your-webhook-auth-token");
-            return validator.validate(url, payload, signature);
-
-        } catch (Exception e) {
-            log.error("Error validating webhook signature", e);
-            return false;
-        }
-    }
-}
-```
-
-#### 5. **Environment Configuration**
-
-##### 5.1 Application Properties
-```properties
-# Twilio Configuration
-twilio.encryption.key=${TWILIO_ENCRYPTION_KEY:default-32-character-encryption-key}
-webhook.encryption.key=${WEBHOOK_ENCRYPTION_KEY:default-webhook-encryption-key}
-
-# WhatsApp Configuration
-whatsapp.webhook.base-url=${WHATSAPP_WEBHOOK_BASE_URL:https://yourdomain.com}
-whatsapp.rate-limit.delay=1000
-whatsapp.retry.max-attempts=3
-whatsapp.retry.delay=5000
-
-# Logging Configuration
-logging.level.com.yourcompany.whatsapp=DEBUG
-logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} - %msg%n
-```
-
-#### 6. **Exception Handling**
-
-##### 6.1 Custom Exceptions
-```java
-public class WhatsAppNotEnabledException extends RuntimeException {
-    public WhatsAppNotEnabledException(String message) {
-        super(message);
-    }
-}
-
-public class WhatsAppConfigurationException extends RuntimeException {
-    public WhatsAppConfigurationException(String message) {
-        super(message);
-    }
-}
-
-public class WhatsAppRateLimitException extends RuntimeException {
-    public WhatsAppRateLimitException(String message) {
-        super(message);
-    }
-}
-
-public class EncryptionException extends RuntimeException {
-    public EncryptionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-```
-
-##### 6.2 Global Exception Handler
-```java
-@RestControllerAdvice
-public class WhatsAppExceptionHandler {
-
-    @ExceptionHandler(WhatsAppNotEnabledException.class)
-    public ResponseEntity<String> handleWhatsAppNotEnabled(WhatsAppNotEnabledException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-    }
-
-    @ExceptionHandler(WhatsAppConfigurationException.class)
-    public ResponseEntity<String> handleWhatsAppConfiguration(WhatsAppConfigurationException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-    }
-
-    @ExceptionHandler(WhatsAppRateLimitException.class)
-    public ResponseEntity<String> handleWhatsAppRateLimit(WhatsAppRateLimitException e) {
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(e.getMessage());
-    }
-
-    @ExceptionHandler(EncryptionException.class)
-    public ResponseEntity<String> handleEncryption(EncryptionException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Encryption error");
-    }
-}
-```
-
-#### 7. **Implementation Phases**
-
-##### Phase 1: Database & Core Services (Week 1-2)
-1. Update database schema with Twilio credential fields
-2. Implement encryption service for sensitive data
-3. Create Twilio service layer foundation
-4. Implement basic message sending functionality
-
-##### Phase 2: API Endpoints & Webhooks (Week 3-4)
-1. Create WhatsApp REST API endpoints
-2. Implement webhook handler for delivery receipts
-3. Add connection testing functionality
-4. Implement bulk messaging capabilities
-
-##### Phase 3: Template Management (Week 5-6)
-1. Integrate with Twilio Content API for templates
-2. Implement template creation and management
-3. Add template validation and approval workflow
-4. Create template usage tracking
-
-##### Phase 4: Analytics & Monitoring (Week 7-8)
-1. Implement analytics service for usage tracking
-2. Add delivery status monitoring
-3. Create performance metrics collection
-4. Implement alerting for failures and rate limits
-
-##### Phase 5: Testing & Optimization (Week 9-10)
-1. Comprehensive testing with Twilio sandbox
-2. Performance optimization and caching
-3. Error handling and retry mechanisms
-4. Security audit and penetration testing
-
-#### 8. **Success Metrics**
-
-##### 8.1 Technical Metrics
-- Message delivery rate > 95%
-- API response time < 2 seconds
-- Webhook processing time < 1 second
-- System uptime > 99.9%
-- Encryption/decryption performance < 10ms
-
-##### 8.2 Business Metrics
-- Successful message sends > 90%
-- Failed message retry success rate > 80%
-- Template approval rate > 85%
-- Webhook delivery rate > 98%
-
-#### 9. **Risk Mitigation**
-
-##### 9.1 Technical Risks
-- **Twilio API Rate Limits**: Implement queuing and exponential backoff
-- **Message Template Approval Delays**: Create fallback text messages
-- **Webhook Failures**: Implement retry logic and manual status updates
-- **Encryption Key Loss**: Implement key rotation and backup mechanisms
-
-##### 9.2 Security Risks
-- **Credential Exposure**: Encrypt all sensitive data at rest and in transit
-- **Webhook Tampering**: Implement signature validation and rate limiting
-- **Data Breach**: Implement audit logging and access controls
-- **API Abuse**: Implement rate limiting and request validation
-
-#### 10. **Future Enhancements**
-
-##### 10.1 Advanced Features
-- WhatsApp Business API v2.0 integration
-- Rich media message support (images, documents)
-- Interactive message buttons and lists
-- WhatsApp chatbot integration
-- Multi-language template support
-
-##### 10.2 Integration Opportunities
-- Event registration confirmations
-- Ticket delivery via WhatsApp
-- Payment confirmation messages
-- Event reminder notifications
-- Survey and feedback collection
-
-### Conclusion
-
-This backend PRD provides a comprehensive roadmap for implementing the server-side components of the WhatsApp integration system. The implementation follows enterprise-grade patterns with proper security, error handling, and scalability considerations.
-
-The phased approach ensures manageable development while delivering robust functionality that can handle production workloads and scale with business growth.
-
----
-
-**Document Version**: 1.0
-**Last Updated**: January 2025
-**Next Review**: February 2025
-**Status**: Ready for Development

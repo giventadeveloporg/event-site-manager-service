@@ -1,0 +1,17 @@
+# Task ID: 12
+# Title: Implement Multi-Tenant Service
+# Status: pending
+# Dependencies: 2 ⏱️
+# Priority: medium
+# Description: Create service for handling multi-tenant operations.
+# Details:
+- Create TenantService interface
+- Implement TenantServiceImpl
+- Implement tenant validation methods
+- Implement methods for adding/removing users from tenants
+- Implement methods for retrieving user tenants
+- Implement tenant switching functionality
+- Add tenant isolation to queries
+
+# Test Strategy:
+Test that users can belong to multiple tenants, tenant validation works, tenant switching functions correctly, and data isolation is enforced.

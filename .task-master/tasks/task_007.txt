@@ -1,0 +1,16 @@
+# Task ID: 7
+# Title: Implement Refresh Token Endpoint
+# Status: done
+# Dependencies: 6 ✅
+# Priority: medium
+# Description: Create endpoint for refreshing expired JWT tokens.
+# Details:
+- Create RefreshTokenRequest and RefreshTokenResponse DTOs
+- Implement POST /api/auth/refresh-token endpoint
+- Validate refresh token with Clerk
+- Generate new access token
+- Return new tokens
+- Document API in Swagger
+
+# Test Strategy:
+Test that refresh tokens successfully return new access tokens, invalid refresh tokens return 401, and token rotation works correctly.

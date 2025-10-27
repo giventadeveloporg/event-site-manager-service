@@ -1,0 +1,16 @@
+# Task ID: 9
+# Title: Implement Sign-Out Endpoint
+# Status: pending
+# Dependencies: 6 ✅
+# Priority: medium
+# Description: Create endpoint for user sign-out and session revocation.
+# Details:
+- Create SignOutRequest DTO
+- Implement POST /api/auth/sign-out endpoint
+- Revoke session in Clerk
+- Update session status in database
+- Clear security context
+- Document API in Swagger
+
+# Test Strategy:
+Test that the session is revoked in Clerk, marked inactive in database, and subsequent requests with the token fail.

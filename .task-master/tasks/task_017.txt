@@ -1,0 +1,17 @@
+# Task ID: 17
+# Title: Implement Webhook Endpoint
+# Status: pending
+# Dependencies: 3 ✅
+# Priority: low
+# Description: Create endpoint for receiving Clerk webhook events.
+# Details:
+- Create WebhookController
+- Implement POST /api/webhooks/clerk endpoint
+- Verify webhook signature using webhook secret
+- Parse webhook payload
+- Route to appropriate event handler
+- Return appropriate response
+- Handle errors gracefully
+
+# Test Strategy:
+Test that the webhook endpoint correctly receives events, validates signatures, and routes events to the appropriate handlers.
