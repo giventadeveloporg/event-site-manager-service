@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <!--
+        Added constraints for entity FocusGroup.
+    -->
+    <changeSet id="20251028-2" author="jhipster">
+        <addUniqueConstraint
+            tableName="focus_group"
+            columnNames="tenant_id, slug"
+            constraintName="uq_focus_group_tenant_slug"/>
+
+        <addUniqueConstraint
+            tableName="focus_group"
+            columnNames="tenant_id, name"
+            constraintName="uq_focus_group_tenant_name"/>
+    </changeSet>
+</databaseChangeLog>
+
+

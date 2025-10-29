@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <!--
+        Added constraints for entity EventFocusGroup.
+    -->
+    <changeSet id="20251028-6" author="jhipster">
+        <addForeignKeyConstraint baseColumnNames="focus_group_id"
+                                 baseTableName="event_focus_group"
+                                 constraintName="fk_event_focus_group_focus_group_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="focus_group"/>
+
+        <addUniqueConstraint
+            tableName="event_focus_group"
+            columnNames="tenant_id, event_id, focus_group_id"
+            constraintName="uq_event_focus_group"/>
+    </changeSet>
+</databaseChangeLog>
+
+
