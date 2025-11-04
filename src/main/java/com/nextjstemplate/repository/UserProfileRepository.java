@@ -17,6 +17,9 @@ import org.springframework.stereotype.Repository;
 public interface UserProfileRepository extends JpaRepository<UserProfile, Long>, JpaSpecificationExecutor<UserProfile> {
     Optional<UserProfile> findByUserId(String userId);
 
+    // Multi-tenant support: Find user by user ID and tenant (should be used instead of findByUserId)
+    Optional<UserProfile> findByUserIdAndTenantId(String userId, String tenantId);
+
     Optional<UserProfile> findByEmail(String email);
 
     // New: Find by email and tenantId

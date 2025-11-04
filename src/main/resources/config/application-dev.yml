@@ -170,8 +170,8 @@ aws:
   s3:
     access-key: ${AWS_ACCESS_KEY_ID:local-dev-key}
     secret-key: ${AWS_SECRET_ACCESS_KEY:local-dev-secret}
-    region: ${AWS_REGION:us-east-1}
-    bucket-name: ${AWS_S3_BUCKET_NAME:local-dev-bucket}
+    region: ${AWS_REGION:us-east-2}
+    bucket-name: ${AWS_S3_BUCKET_NAME:eventapp-media-bucket}
 # 1. Add Clerk credentials to application-dev.yml (already in PRD)
 clerk:
   publishable-key: ${CLERK_PUBLISHABLE_KEY}
