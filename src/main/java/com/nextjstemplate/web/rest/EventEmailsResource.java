@@ -1,6 +1,7 @@
 package com.nextjstemplate.web.rest;
 
 import com.nextjstemplate.repository.EventEmailsRepository;
+import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.EventEmailsQueryService;
 import com.nextjstemplate.service.EventEmailsService;
 import com.nextjstemplate.service.criteria.EventEmailsCriteria;
@@ -33,218 +34,291 @@ import tech.jhipster.web.util.ResponseUtil;
 @RequestMapping("/api/event-emails")
 public class EventEmailsResource {
 
-  private final Logger log = LoggerFactory.getLogger(EventEmailsResource.class);
+    private final Logger log = LoggerFactory.getLogger(EventEmailsResource.class);
 
-  private static final String ENTITY_NAME = "eventEmails";
+    private static final String ENTITY_NAME = "eventEmails";
 
-  @Value("${jhipster.clientApp.name}")
-  private String applicationName;
+    @Value("${jhipster.clientApp.name}")
+    private String applicationName;
 
-  private final EventEmailsService eventEmailsService;
+    private final EventEmailsService eventEmailsService;
 
-  private final EventEmailsRepository eventEmailsRepository;
+    private final EventEmailsRepository eventEmailsRepository;
 
-  private final EventEmailsQueryService eventEmailsQueryService;
+    private final EventEmailsQueryService eventEmailsQueryService;
 
-  public EventEmailsResource(
-      EventEmailsService eventEmailsService,
-      EventEmailsRepository eventEmailsRepository,
-      EventEmailsQueryService eventEmailsQueryService) {
-    this.eventEmailsService = eventEmailsService;
-    this.eventEmailsRepository = eventEmailsRepository;
-    this.eventEmailsQueryService = eventEmailsQueryService;
-  }
-
-  /**
-   * {@code POST  /event-emails} : Create a new eventEmails.
-   *
-   * @param eventEmailsDTO the eventEmailsDTO to create.
-   * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
-   *         body the new eventEmailsDTO, or with status {@code 400 (Bad Request)}
-   *         if the eventEmails has already an ID.
-   * @throws URISyntaxException if the Location URI syntax is incorrect.
-   */
-  @PostMapping("")
-  public ResponseEntity<EventEmailsDTO> createEventEmails(@Valid @RequestBody EventEmailsDTO eventEmailsDTO)
-      throws URISyntaxException {
-    log.debug("REST request to save EventEmails : {}", eventEmailsDTO);
-    if (eventEmailsDTO.getId() != null) {
-      throw new BadRequestAlertException("A new eventEmails cannot already have an ID", ENTITY_NAME, "idexists");
-    }
-    eventEmailsDTO = eventEmailsService.save(eventEmailsDTO);
-    return ResponseEntity
-        .created(new URI("/api/event-emails/" + eventEmailsDTO.getId()))
-        .headers(
-            HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, eventEmailsDTO.getId().toString()))
-        .body(eventEmailsDTO);
-  }
-
-  /**
-   * {@code PUT  /event-emails/:id} : Updates an existing eventEmails.
-   *
-   * @param id             the id of the eventEmailsDTO to save.
-   * @param eventEmailsDTO the eventEmailsDTO to update.
-   * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
-   *         the updated eventEmailsDTO,
-   *         or with status {@code 400 (Bad Request)} if the eventEmailsDTO is not
-   *         valid,
-   *         or with status {@code 500 (Internal Server Error)} if the
-   *         eventEmailsDTO couldn't be updated.
-   * @throws URISyntaxException if the Location URI syntax is incorrect.
-   */
-  @PutMapping("/{id}")
-  public ResponseEntity<EventEmailsDTO> updateEventEmails(
-      @PathVariable(value = "id", required = false) final Long id,
-      @Valid @RequestBody EventEmailsDTO eventEmailsDTO) throws URISyntaxException {
-    log.debug("REST request to update EventEmails : {}, {}", id, eventEmailsDTO);
-    if (eventEmailsDTO.getId() == null) {
-      throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-    }
-    if (!Objects.equals(id, eventEmailsDTO.getId())) {
-      throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+    public EventEmailsResource(
+        EventEmailsService eventEmailsService,
+        EventEmailsRepository eventEmailsRepository,
+        EventEmailsQueryService eventEmailsQueryService
+    ) {
+        this.eventEmailsService = eventEmailsService;
+        this.eventEmailsRepository = eventEmailsRepository;
+        this.eventEmailsQueryService = eventEmailsQueryService;
     }
 
-    if (!eventEmailsRepository.existsById(id)) {
-      throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+    /**
+     * {@code POST  /event-emails} : Create a new eventEmails.
+     *
+     * @param eventEmailsDTO the eventEmailsDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
+     *         body the new eventEmailsDTO, or with status {@code 400 (Bad Request)}
+     *         if the eventEmails has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("")
+    public ResponseEntity<EventEmailsDTO> createEventEmails(@Valid @RequestBody EventEmailsDTO eventEmailsDTO) throws URISyntaxException {
+        log.debug("REST request to save EventEmails : {}", eventEmailsDTO);
+        if (eventEmailsDTO.getId() != null) {
+            throw new BadRequestAlertException("A new eventEmails cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        eventEmailsDTO = eventEmailsService.save(eventEmailsDTO);
+        return ResponseEntity
+            .created(new URI("/api/event-emails/" + eventEmailsDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, eventEmailsDTO.getId().toString()))
+            .body(eventEmailsDTO);
     }
 
-    eventEmailsDTO = eventEmailsService.update(eventEmailsDTO);
-    return ResponseEntity
-        .ok()
-        .headers(
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventEmailsDTO.getId().toString()))
-        .body(eventEmailsDTO);
-  }
+    /**
+     * {@code PUT  /event-emails/:id} : Updates an existing eventEmails.
+     *
+     * @param id             the id of the eventEmailsDTO to save.
+     * @param eventEmailsDTO the eventEmailsDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated eventEmailsDTO,
+     *         or with status {@code 400 (Bad Request)} if the eventEmailsDTO is not
+     *         valid,
+     *         or with status {@code 500 (Internal Server Error)} if the
+     *         eventEmailsDTO couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<EventEmailsDTO> updateEventEmails(
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody EventEmailsDTO eventEmailsDTO
+    ) throws URISyntaxException {
+        log.debug("REST request to update EventEmails : {}, {}", id, eventEmailsDTO);
+        if (eventEmailsDTO.getId() == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        if (!Objects.equals(id, eventEmailsDTO.getId())) {
+            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+        }
 
-  /**
-   * {@code PATCH  /event-emails/:id} : Partial updates given fields of an
-   * existing eventEmails, field will ignore if it is null
-   *
-   * @param id             the id of the eventEmailsDTO to save.
-   * @param eventEmailsDTO the eventEmailsDTO to update.
-   * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
-   *         the updated eventEmailsDTO,
-   *         or with status {@code 400 (Bad Request)} if the eventEmailsDTO is not
-   *         valid,
-   *         or with status {@code 404 (Not Found)} if the eventEmailsDTO is not
-   *         found,
-   *         or with status {@code 500 (Internal Server Error)} if the
-   *         eventEmailsDTO couldn't be updated.
-   * @throws URISyntaxException if the Location URI syntax is incorrect.
-   */
-  @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-  public ResponseEntity<EventEmailsDTO> partialUpdateEventEmails(
-      @PathVariable(value = "id", required = false) final Long id,
-      @NotNull @RequestBody EventEmailsDTO eventEmailsDTO) throws URISyntaxException {
-    log.debug("REST request to partial update EventEmails partially : {}, {}", id, eventEmailsDTO);
-    if (eventEmailsDTO.getId() == null) {
-      throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-    }
-    if (!Objects.equals(id, eventEmailsDTO.getId())) {
-      throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-    }
+        if (!eventEmailsRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
 
-    if (!eventEmailsRepository.existsById(id)) {
-      throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        eventEmailsDTO = eventEmailsService.update(eventEmailsDTO);
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventEmailsDTO.getId().toString()))
+            .body(eventEmailsDTO);
     }
 
-    Optional<EventEmailsDTO> result = eventEmailsService.partialUpdate(eventEmailsDTO);
+    /**
+     * {@code PATCH  /event-emails/:id} : Partial updates given fields of an
+     * existing eventEmails, field will ignore if it is null
+     *
+     * @param id             the id of the eventEmailsDTO to save.
+     * @param eventEmailsDTO the eventEmailsDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated eventEmailsDTO,
+     *         or with status {@code 400 (Bad Request)} if the eventEmailsDTO is not
+     *         valid,
+     *         or with status {@code 404 (Not Found)} if the eventEmailsDTO is not
+     *         found,
+     *         or with status {@code 500 (Internal Server Error)} if the
+     *         eventEmailsDTO couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    public ResponseEntity<EventEmailsDTO> partialUpdateEventEmails(
+        @PathVariable(value = "id", required = false) final Long id,
+        @NotNull @RequestBody EventEmailsDTO eventEmailsDTO
+    ) throws URISyntaxException {
+        log.debug("REST request to partial update EventEmails partially : {}, {}", id, eventEmailsDTO);
+        if (eventEmailsDTO.getId() == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        if (!Objects.equals(id, eventEmailsDTO.getId())) {
+            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+        }
 
-    return ResponseUtil.wrapOrNotFound(
-        result,
-        HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventEmailsDTO.getId().toString()));
-  }
+        if (!eventEmailsRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
 
-  /**
-   * {@code GET  /event-emails} : get all the eventEmails.
-   *
-   * @param pageable the pagination information.
-   * @param criteria the criteria which the requested entities should match.
-   * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
-   *         of eventEmails in body.
-   */
-  @GetMapping("")
-  public ResponseEntity<List<EventEmailsDTO>> getAllEventEmails(
-      EventEmailsCriteria criteria,
-      @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-    log.debug("REST request to get EventEmails by criteria: {}", criteria);
+        Optional<EventEmailsDTO> result = eventEmailsService.partialUpdate(eventEmailsDTO);
 
-    final Page<EventEmailsDTO> page = eventEmailsQueryService.findByCriteria(criteria, pageable);
-    HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(),
-        page);
-    return ResponseEntity.ok().headers(headers).body(page.getContent());
-  }
+        return ResponseUtil.wrapOrNotFound(
+            result,
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, eventEmailsDTO.getId().toString())
+        );
+    }
 
-  /**
-   * {@code GET  /event-emails/count} : count all the eventEmails.
-   *
-   * @param criteria the criteria which the requested entities should match.
-   * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count
-   *         in body.
-   */
-  @GetMapping("/count")
-  public ResponseEntity<Long> countEventEmails(EventEmailsCriteria criteria) {
-    log.debug("REST request to count EventEmails by criteria: {}", criteria);
-    return ResponseEntity.ok().body(eventEmailsQueryService.countByCriteria(criteria));
-  }
+    /**
+     * {@code GET  /event-emails} : get all the eventEmails.
+     *
+     * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of eventEmails in body.
+     */
+    @GetMapping("")
+    public ResponseEntity<List<EventEmailsDTO>> getAllEventEmails(
+        EventEmailsCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        log.debug("REST request to get EventEmails by criteria: {}", criteria);
 
-  /**
-   * {@code GET  /event-emails/:id} : get the "id" eventEmails.
-   *
-   * @param id the id of the eventEmailsDTO to retrieve.
-   * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
-   *         the eventEmailsDTO, or with status {@code 404 (Not Found)}.
-   */
-  @GetMapping("/{id}")
-  public ResponseEntity<EventEmailsDTO> getEventEmails(@PathVariable("id") Long id) {
-    log.debug("REST request to get EventEmails : {}", id);
-    Optional<EventEmailsDTO> eventEmailsDTO = eventEmailsService.findOne(id);
-    return ResponseUtil.wrapOrNotFound(eventEmailsDTO);
-  }
+        final Page<EventEmailsDTO> page = eventEmailsQueryService.findByCriteria(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
 
-  /**
-   * {@code DELETE  /event-emails/:id} : delete the "id" eventEmails.
-   *
-   * @param id the id of the eventEmailsDTO to delete.
-   * @return the {@link ResponseEntity} with status {@code 204 (No Content)}.
-   */
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteEventEmails(@PathVariable("id") Long id) {
-    log.debug("REST request to delete EventEmails : {}", id);
-    eventEmailsService.delete(id);
-    return ResponseEntity
-        .noContent()
-        .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-        .build();
-  }
+    /**
+     * {@code GET  /event-emails/count} : count all the eventEmails.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count
+     *         in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countEventEmails(EventEmailsCriteria criteria) {
+        log.debug("REST request to count EventEmails by criteria: {}", criteria);
+        return ResponseEntity.ok().body(eventEmailsQueryService.countByCriteria(criteria));
+    }
 
-  /**
-   * {@code GET  /event-emails/event/:eventId} : get all eventEmails for a
-   * specific event.
-   *
-   * @param eventId the id of the event.
-   * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
-   *         of eventEmails in body.
-   */
-  @GetMapping("/event/{eventId}")
-  public ResponseEntity<List<EventEmailsDTO>> getEventEmailsByEventId(@PathVariable("eventId") Long eventId) {
-    log.debug("REST request to get EventEmails for event : {}", eventId);
-    List<EventEmailsDTO> eventEmails = eventEmailsService.findByEventId(eventId);
-    return ResponseEntity.ok().body(eventEmails);
-  }
+    /**
+     * {@code GET  /event-emails/:id} : get the "id" eventEmails.
+     *
+     * @param id the id of the eventEmailsDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the eventEmailsDTO, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<EventEmailsDTO> getEventEmails(@PathVariable("id") Long id) {
+        log.debug("REST request to get EventEmails : {}", id);
+        Optional<EventEmailsDTO> eventEmailsDTO = eventEmailsService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(eventEmailsDTO);
+    }
 
-  /**
-   * {@code GET  /event-emails/event/:eventId/distinct} : get distinct email
-   * addresses for a specific event.
-   *
-   * @param eventId the id of the event.
-   * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
-   *         of distinct email addresses in body.
-   */
-  @GetMapping("/event/{eventId}/distinct")
-  public ResponseEntity<List<String>> getDistinctEmailsByEventId(@PathVariable("eventId") Long eventId) {
-    log.debug("REST request to get distinct emails for event : {}", eventId);
-    List<String> distinctEmails = eventEmailsService.findDistinctEmailsByEventId(eventId);
-    return ResponseEntity.ok().body(distinctEmails);
-  }
+    /**
+     * {@code DELETE  /event-emails/:id} : delete the "id" eventEmails.
+     *
+     * @param id the id of the eventEmailsDTO to delete.
+     * @return the {@link ResponseEntity} with status {@code 204 (No Content)}.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEventEmails(@PathVariable("id") Long id) {
+        log.debug("REST request to delete EventEmails : {}", id);
+        eventEmailsService.delete(id);
+        return ResponseEntity
+            .noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .build();
+    }
+
+    /**
+     * {@code GET  /event-emails/event/:eventId} : get all eventEmails for a
+     * specific event.
+     *
+     * @param eventId the id of the event.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of eventEmails in body.
+     */
+    @GetMapping("/event/{eventId}")
+    public ResponseEntity<List<EventEmailsDTO>> getEventEmailsByEventId(@PathVariable("eventId") Long eventId) {
+        log.debug("REST request to get EventEmails for event : {}", eventId);
+        List<EventEmailsDTO> eventEmails = eventEmailsService.findByEventId(eventId);
+        return ResponseEntity.ok().body(eventEmails);
+    }
+
+    /**
+     * {@code GET  /event-emails/event/:eventId/distinct} : get distinct email
+     * addresses for a specific event.
+     *
+     * @param eventId the id of the event.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of distinct email addresses in body.
+     */
+    @GetMapping("/event/{eventId}/distinct")
+    public ResponseEntity<List<String>> getDistinctEmailsByEventId(@PathVariable("eventId") Long eventId) {
+        log.debug("REST request to get distinct emails for event : {}", eventId);
+        List<String> distinctEmails = eventEmailsService.findDistinctEmailsByEventId(eventId);
+        return ResponseEntity.ok().body(distinctEmails);
+    }
+
+    // ===================================================================
+    // Multi-tenant and nullable event_id support endpoints
+    // ===================================================================
+
+    /**
+     * {@code GET  /event-emails/tenant-level} : get all tenant-level eventEmails
+     * (not associated with any event).
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of tenant-level eventEmails in body.
+     */
+    @GetMapping("/tenant-level")
+    public ResponseEntity<List<EventEmailsDTO>> getTenantLevelEventEmails() {
+        String tenantId = TenantContext.getCurrentTenant();
+        log.debug("REST request to get tenant-level EventEmails for tenant : {}", tenantId);
+        List<EventEmailsDTO> eventEmails = eventEmailsService.findAllTenantLevelEmails(tenantId);
+        return ResponseEntity.ok().body(eventEmails);
+    }
+
+    /**
+     * {@code GET  /event-emails/available-for-event} : get all eventEmails available
+     * for association with a specific event.
+     *
+     * @param eventId the id of the event.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of available eventEmails in body.
+     */
+    @GetMapping("/available-for-event")
+    public ResponseEntity<List<EventEmailsDTO>> getAvailableEventEmailsForEvent(@RequestParam("eventId") Long eventId) {
+        String tenantId = TenantContext.getCurrentTenant();
+        log.debug("REST request to get available EventEmails for tenant : {} and event : {}", tenantId, eventId);
+        List<EventEmailsDTO> eventEmails = eventEmailsService.findAvailableEmailsForEvent(tenantId, eventId);
+        return ResponseEntity.ok().body(eventEmails);
+    }
+
+    /**
+     * {@code PATCH  /event-emails/:id/disassociate} : Disassociate an eventEmail
+     * from its event.
+     *
+     * @param id the id of the eventEmailsDTO to disassociate.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated eventEmailsDTO.
+     */
+    @PatchMapping("/{id}/disassociate")
+    public ResponseEntity<EventEmailsDTO> disassociateEventEmailFromEvent(@PathVariable("id") Long id) {
+        log.debug("REST request to disassociate EventEmails : {} from its event", id);
+        EventEmailsDTO result = eventEmailsService.disassociateFromEvent(id);
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code PATCH  /event-emails/:id/associate/:eventId} : Associate an eventEmail
+     * with a specific event.
+     *
+     * @param id      the id of the eventEmailsDTO to associate.
+     * @param eventId the id of the event to associate with.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated eventEmailsDTO.
+     */
+    @PatchMapping("/{id}/associate/{eventId}")
+    public ResponseEntity<EventEmailsDTO> associateEventEmailWithEvent(@PathVariable("id") Long id, @PathVariable("eventId") Long eventId) {
+        log.debug("REST request to associate EventEmails : {} with event : {}", id, eventId);
+        EventEmailsDTO result = eventEmailsService.associateWithEvent(id, eventId);
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .body(result);
+    }
 }
