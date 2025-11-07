@@ -89,6 +89,22 @@ public class EventMediaDTO implements Serializable {
 
     private LocalDate startDisplayingFromDate;
 
+    private Long sponsorId;
+
+    private Long eventSponsorsJoinId;
+
+    private Long performerId;
+
+    private Long directorId;
+
+    /**
+     * Priority ranking for media files (sponsor or event-sponsor).
+     * Lower values indicate higher priority (0 = highest priority).
+     */
+    @NotNull
+    @Min(value = 0)
+    private Integer priorityRanking = 0;
+
     /* private EventDetailsDTO event;
 
     private UserProfileDTO uploadedBy;*/
@@ -325,6 +341,46 @@ public class EventMediaDTO implements Serializable {
         this.startDisplayingFromDate = startDisplayingFromDate;
     }
 
+    public Long getSponsorId() {
+        return sponsorId;
+    }
+
+    public void setSponsorId(Long sponsorId) {
+        this.sponsorId = sponsorId;
+    }
+
+    public Long getEventSponsorsJoinId() {
+        return eventSponsorsJoinId;
+    }
+
+    public void setEventSponsorsJoinId(Long eventSponsorsJoinId) {
+        this.eventSponsorsJoinId = eventSponsorsJoinId;
+    }
+
+    public Long getPerformerId() {
+        return performerId;
+    }
+
+    public void setPerformerId(Long performerId) {
+        this.performerId = performerId;
+    }
+
+    public Long getDirectorId() {
+        return directorId;
+    }
+
+    public void setDirectorId(Long directorId) {
+        this.directorId = directorId;
+    }
+
+    public Integer getPriorityRanking() {
+        return priorityRanking;
+    }
+
+    public void setPriorityRanking(Integer priorityRanking) {
+        this.priorityRanking = priorityRanking;
+    }
+
     /*public EventDetailsDTO getEvent() {
         return event;
     }
@@ -393,6 +449,11 @@ public class EventMediaDTO implements Serializable {
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", startDisplayingFromDate='" + getStartDisplayingFromDate() + "'" +
+            ", sponsorId=" + getSponsorId() +
+            ", eventSponsorsJoinId=" + getEventSponsorsJoinId() +
+            ", performerId=" + getPerformerId() +
+            ", directorId=" + getDirectorId() +
+            ", priorityRanking=" + getPriorityRanking() +
            /* ", event=" + getEvent() +
             ", uploadedBy=" + getUploadedBy() +*/
             "}";

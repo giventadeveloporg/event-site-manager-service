@@ -160,6 +160,9 @@ public class EventMediaQueryService extends QueryService<EventMedia> {
             if (criteria.getTitle() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getTitle(), EventMedia_.title));
             }
+            if (criteria.getDescription() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getDescription(), EventMedia_.description));
+            }
             if (criteria.getEventMediaType() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getEventMediaType(), EventMedia_.eventMediaType));
             }
@@ -236,6 +239,25 @@ public class EventMediaQueryService extends QueryService<EventMedia> {
             }
             if (criteria.getUploadedById() != null) {
                 specification = specification.and(buildSpecification(criteria.getUploadedById(), EventMedia_.uploadedById));
+            }
+            if (criteria.getStartDisplayingFromDate() != null) {
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getStartDisplayingFromDate(), EventMedia_.startDisplayingFromDate));
+            }
+            if (criteria.getSponsorId() != null) {
+                specification = specification.and(buildSpecification(criteria.getSponsorId(), EventMedia_.sponsorId));
+            }
+            if (criteria.getEventSponsorsJoinId() != null) {
+                specification = specification.and(buildSpecification(criteria.getEventSponsorsJoinId(), EventMedia_.eventSponsorsJoinId));
+            }
+            if (criteria.getPriorityRanking() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getPriorityRanking(), EventMedia_.priorityRanking));
+            }
+            if (criteria.getPerformerId() != null) {
+                specification = specification.and(buildSpecification(criteria.getPerformerId(), EventMedia_.performerId));
+            }
+            if (criteria.getDirectorId() != null) {
+                specification = specification.and(buildSpecification(criteria.getDirectorId(), EventMedia_.directorId));
             }
         }
         return specification;

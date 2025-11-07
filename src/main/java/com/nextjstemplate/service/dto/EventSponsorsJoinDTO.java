@@ -11,85 +11,100 @@ import java.util.Objects;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class EventSponsorsJoinDTO implements Serializable {
 
-  private Long id;
+    private Long id;
 
-  @Size(max = 255)
-  private String tenantId;
+    @Size(max = 255)
+    private String tenantId;
 
-  @NotNull
-  private ZonedDateTime createdAt;
+    @NotNull
+    private ZonedDateTime createdAt;
 
-  private EventDetailsDTO event;
+    private EventDetailsDTO event;
 
-  private EventSponsorsDTO sponsor;
+    private EventSponsorsDTO sponsor;
 
-  public Long getId() {
-    return id;
-  }
+    /**
+     * Custom poster image URL for this specific event-sponsor combination
+     */
+    @Size(max = 1024)
+    private String customPosterUrl;
 
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getTenantId() {
-    return tenantId;
-  }
-
-  public void setTenantId(String tenantId) {
-    this.tenantId = tenantId;
-  }
-
-  public ZonedDateTime getCreatedAt() {
-    return createdAt;
-  }
-
-  public void setCreatedAt(ZonedDateTime createdAt) {
-    this.createdAt = createdAt;
-  }
-
-  public EventDetailsDTO getEvent() {
-    return event;
-  }
-
-  public void setEvent(EventDetailsDTO event) {
-    this.event = event;
-  }
-
-  public EventSponsorsDTO getSponsor() {
-    return sponsor;
-  }
-
-  public void setSponsor(EventSponsorsDTO sponsor) {
-    this.sponsor = sponsor;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof EventSponsorsJoinDTO)) {
-      return false;
+    public Long getId() {
+        return id;
     }
 
-    EventSponsorsJoinDTO eventSponsorsJoinDTO = (EventSponsorsJoinDTO) o;
-    if (this.id == null) {
-      return false;
+    public void setId(Long id) {
+        this.id = id;
     }
-    return Objects.equals(this.id, eventSponsorsJoinDTO.id);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.id);
-  }
+    public String getTenantId() {
+        return tenantId;
+    }
 
-  // prettier-ignore
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public ZonedDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(ZonedDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public EventDetailsDTO getEvent() {
+        return event;
+    }
+
+    public void setEvent(EventDetailsDTO event) {
+        this.event = event;
+    }
+
+    public EventSponsorsDTO getSponsor() {
+        return sponsor;
+    }
+
+    public void setSponsor(EventSponsorsDTO sponsor) {
+        this.sponsor = sponsor;
+    }
+
+    public String getCustomPosterUrl() {
+        return customPosterUrl;
+    }
+
+    public void setCustomPosterUrl(String customPosterUrl) {
+        this.customPosterUrl = customPosterUrl;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof EventSponsorsJoinDTO)) {
+            return false;
+        }
+
+        EventSponsorsJoinDTO eventSponsorsJoinDTO = (EventSponsorsJoinDTO) o;
+        if (this.id == null) {
+            return false;
+        }
+        return Objects.equals(this.id, eventSponsorsJoinDTO.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.id);
+    }
+
+    // prettier-ignore
   @Override
   public String toString() {
     return "EventSponsorsJoinDTO{" +
         "id=" + getId() +
         ", createdAt='" + getCreatedAt() + "'" +
+        ", customPosterUrl='" + getCustomPosterUrl() + "'" +
         ", event=" + getEvent() +
         ", sponsor=" + getSponsor() +
         "}";

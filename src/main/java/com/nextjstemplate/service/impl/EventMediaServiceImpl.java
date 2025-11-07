@@ -1,17 +1,24 @@
 package com.nextjstemplate.service.impl;
 
 import com.nextjstemplate.domain.EventDetails;
+import com.nextjstemplate.domain.EventFeaturedPerformers;
 import com.nextjstemplate.domain.EventMedia;
+import com.nextjstemplate.domain.EventProgramDirectors;
+import com.nextjstemplate.domain.EventSponsors;
+import com.nextjstemplate.domain.EventSponsorsJoin;
 import com.nextjstemplate.domain.ExecutiveCommitteeTeamMember;
 import com.nextjstemplate.repository.EventDetailsRepository;
+import com.nextjstemplate.repository.EventFeaturedPerformersRepository;
 import com.nextjstemplate.repository.EventMediaRepository;
+import com.nextjstemplate.repository.EventProgramDirectorsRepository;
+import com.nextjstemplate.repository.EventSponsorsJoinRepository;
+import com.nextjstemplate.repository.EventSponsorsRepository;
 import com.nextjstemplate.repository.ExecutiveCommitteeTeamMemberRepository;
 import com.nextjstemplate.service.EventMediaService;
 import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.dto.EventMediaDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
 import jakarta.persistence.EntityNotFoundException;
-
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -47,18 +54,35 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     private final ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository;
 
+    private final EventSponsorsRepository eventSponsorsRepository;
+
+    private final EventSponsorsJoinRepository eventSponsorsJoinRepository;
+
+    private final EventFeaturedPerformersRepository eventFeaturedPerformersRepository;
+
+    private final EventProgramDirectorsRepository eventProgramDirectorsRepository;
+
     @Autowired
     public EventMediaServiceImpl(
-            EventMediaRepository eventMediaRepository,
-            EventMediaMapper eventMediaMapper,
-            S3Service s3Service,
-            EventDetailsRepository eventRepository,
-            ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository) {
+        EventMediaRepository eventMediaRepository,
+        EventMediaMapper eventMediaMapper,
+        S3Service s3Service,
+        EventDetailsRepository eventRepository,
+        ExecutiveCommitteeTeamMemberRepository executiveCommitteeTeamMemberRepository,
+        EventSponsorsRepository eventSponsorsRepository,
+        EventSponsorsJoinRepository eventSponsorsJoinRepository,
+        EventFeaturedPerformersRepository eventFeaturedPerformersRepository,
+        EventProgramDirectorsRepository eventProgramDirectorsRepository
+    ) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
         this.s3Service = s3Service;
         this.eventRepository = eventRepository;
         this.executiveCommitteeTeamMemberRepository = executiveCommitteeTeamMemberRepository;
+        this.eventSponsorsRepository = eventSponsorsRepository;
+        this.eventSponsorsJoinRepository = eventSponsorsJoinRepository;
+        this.eventFeaturedPerformersRepository = eventFeaturedPerformersRepository;
+        this.eventProgramDirectorsRepository = eventProgramDirectorsRepository;
     }
 
     @Override
@@ -82,14 +106,14 @@ public class EventMediaServiceImpl implements EventMediaService {
         log.debug("Request to partially update EventMedia : {}", eventMediaDTO);
 
         return eventMediaRepository
-                .findById(eventMediaDTO.getId())
-                .map(existingEventMedia -> {
-                    eventMediaMapper.partialUpdate(existingEventMedia, eventMediaDTO);
+            .findById(eventMediaDTO.getId())
+            .map(existingEventMedia -> {
+                eventMediaMapper.partialUpdate(existingEventMedia, eventMediaDTO);
 
-                    return existingEventMedia;
-                })
-                .map(eventMediaRepository::save)
-                .map(eventMediaMapper::toDto);
+                return existingEventMedia;
+            })
+            .map(eventMediaRepository::save)
+            .map(eventMediaMapper::toDto);
     }
 
     @Override
@@ -113,47 +137,336 @@ public class EventMediaServiceImpl implements EventMediaService {
     }
 
     public EventMediaDTO uploadFile(
-            MultipartFile file,
-            Long eventId,
-            Long userProfileId,
-            String title,
-            String description,
-            String tenantId,
-            boolean isPublic,
-            Boolean eventFlyer,
-            Boolean isEventManagementOfficialDocument,
-            Boolean isHeroImage,
-            Boolean isActiveHeroImage,
-            Boolean isTeamMemberProfileImage,
-            Long executiveTeamMemberID,
-            boolean isHomePageHeroImage,
-            boolean isFeaturedEventImage,
-            boolean isLiveEventImage,
-            LocalDate startDisplayingFromDate,
-            // New entity-specific parameters
-            Boolean isFeaturedPerformerPortrait,
-            Boolean isFeaturedPerformerPerformance,
-            Boolean isFeaturedPerformerGallery,
-            Boolean isSponsorLogo,
-            Boolean isSponsorHero,
-            Boolean isSponsorBanner,
-            Boolean isContactPhoto,
-            Boolean isProgramDirectorPhoto,
-            Long entityId,
-            String entityType,
-            String imageType) {
+        MultipartFile file,
+        Long eventId,
+        Long userProfileId,
+        String title,
+        String description,
+        String tenantId,
+        boolean isPublic,
+        Boolean eventFlyer,
+        Boolean isEventManagementOfficialDocument,
+        Boolean isHeroImage,
+        Boolean isActiveHeroImage,
+        Boolean isTeamMemberProfileImage,
+        Long executiveTeamMemberID,
+        boolean isHomePageHeroImage,
+        boolean isFeaturedEventImage,
+        boolean isLiveEventImage,
+        LocalDate startDisplayingFromDate,
+        // New entity-specific parameters
+        Boolean isFeaturedPerformerPortrait,
+        Boolean isFeaturedPerformerPerformance,
+        Boolean isFeaturedPerformerGallery,
+        Boolean isSponsorLogo,
+        Boolean isSponsorHero,
+        Boolean isSponsorBanner,
+        Boolean isContactPhoto,
+        Boolean isProgramDirectorPhoto,
+        Long entityId,
+        String entityType,
+        String imageType
+    ) {
         // Upload to S3 - use entity-specific path if entity parameters are provided
         String fileUrl;
         if (entityId != null && entityType != null && imageType != null) {
-            // Use entity-specific upload with dynamic path construction
-            fileUrl = s3Service.uploadFileWithEntityPath(file, eventId, entityId, entityType, imageType, title,
-                    tenantId);
+            // For sponsors without event association, use sponsor-specific path generation
+            if (entityType.equalsIgnoreCase("SPONSOR") && (eventId == null || eventId == 0)) {
+                // Use sponsor-specific S3 path (doesn't require eventId)
+                String s3Path = s3Service.generateSponsorImagePath(tenantId, entityId, file.getOriginalFilename());
+                fileUrl = s3Service.uploadFile(s3Path, file);
+            } else if (entityType.equalsIgnoreCase("PERFORMER") && (eventId == null || eventId == 0)) {
+                // Use performer-specific S3 path (doesn't require eventId)
+                String s3Path = s3Service.generatePerformerImagePath(tenantId, entityId, file.getOriginalFilename());
+                fileUrl = s3Service.uploadFile(s3Path, file);
+            } else if (entityType.equalsIgnoreCase("DIRECTOR") && (eventId == null || eventId == 0)) {
+                // Use director-specific S3 path (doesn't require eventId)
+                String s3Path = s3Service.generateDirectorImagePath(tenantId, entityId, file.getOriginalFilename());
+                fileUrl = s3Service.uploadFile(s3Path, file);
+            } else {
+                // Use entity-specific upload with dynamic path construction (for events)
+                fileUrl = s3Service.uploadFileWithEntityPath(file, eventId, entityId, entityType, imageType, title, tenantId);
+            }
         } else {
             // Use existing upload method for backward compatibility
             fileUrl = s3Service.uploadFile(file, eventId, title, tenantId, isTeamMemberProfileImage);
         }
 
-        if (isTeamMemberProfileImage == null || !isTeamMemberProfileImage) {
+        // Handle sponsor image uploads (logo, hero, banner) without event association
+        if (
+            entityType != null &&
+            entityType.equalsIgnoreCase("SPONSOR") &&
+            entityId != null &&
+            (isSponsorLogo != null || isSponsorHero != null || isSponsorBanner != null)
+        ) {
+            log.debug(
+                "Processing sponsor image upload: entityId={}, isSponsorLogo={}, isSponsorHero={}, isSponsorBanner={}",
+                entityId,
+                isSponsorLogo,
+                isSponsorHero,
+                isSponsorBanner
+            );
+
+            // Validate sponsor exists
+            EventSponsors sponsor = eventSponsorsRepository
+                .findById(entityId)
+                .orElseThrow(() -> new RuntimeException("Sponsor not found with ID: " + entityId));
+
+            // Determine image type
+            String imageTypeLower = (imageType != null) ? imageType.toLowerCase() : "";
+            String eventMediaType = null;
+            if (isSponsorLogo != null && isSponsorLogo) {
+                imageTypeLower = "logo";
+                eventMediaType = "SPONSOR_LOGO";
+            } else if (isSponsorHero != null && isSponsorHero) {
+                imageTypeLower = "hero";
+                eventMediaType = "SPONSOR_HERO";
+            } else if (isSponsorBanner != null && isSponsorBanner) {
+                imageTypeLower = "banner";
+                eventMediaType = "SPONSOR_BANNER";
+            }
+
+            // Only update sponsor table URL if this is the first image of this type
+            // This allows multiple images per type while maintaining a "primary" image in the sponsor record
+            if (eventMediaType != null) {
+                // Check if there are existing images of this type
+                long existingCount = eventMediaRepository.countBySponsorIdAndEventMediaType(entityId, eventMediaType);
+
+                // Only update sponsor table if this is the first image of this type
+                if (existingCount == 0) {
+                    if (isSponsorLogo != null && isSponsorLogo) {
+                        sponsor.setLogoUrl(fileUrl);
+                    } else if (isSponsorHero != null && isSponsorHero) {
+                        sponsor.setHeroImageUrl(fileUrl);
+                    } else if (isSponsorBanner != null && isSponsorBanner) {
+                        sponsor.setBannerImageUrl(fileUrl);
+                    }
+                    eventSponsorsRepository.save(sponsor);
+                    log.debug("Updated sponsor table with first {} image URL", imageTypeLower);
+                } else {
+                    log.debug(
+                        "Skipping sponsor table update - {} images of type {} already exist. Creating new EventMedia record only.",
+                        existingCount,
+                        eventMediaType
+                    );
+                }
+            }
+
+            // Create EventMedia record for sponsor image
+            EventMedia eventMedia = new EventMedia();
+            eventMedia.setTitle(title);
+            eventMedia.setDescription(description);
+            eventMedia.setTenantId(tenantId);
+            // Use the determined eventMediaType (already set above)
+            if (eventMediaType != null) {
+                eventMedia.setEventMediaType(eventMediaType);
+            } else {
+                eventMedia.setEventMediaType("SPONSOR_" + imageTypeLower.toUpperCase());
+            }
+            eventMedia.setStorageType("S3");
+            eventMedia.setFileUrl(fileUrl);
+            eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(fileUrl, 1));
+            eventMedia.setFileSize((int) file.getSize());
+            eventMedia.setIsPublic(isPublic);
+            eventMedia.setCreatedAt(ZonedDateTime.now());
+            eventMedia.setUpdatedAt(ZonedDateTime.now());
+            eventMedia.setEventFlyer(eventFlyer);
+            eventMedia.setIsEventManagementOfficialDocument(isEventManagementOfficialDocument);
+            eventMedia.setIsHeroImage(isHeroImage);
+            eventMedia.setIsActiveHeroImage(isActiveHeroImage);
+            eventMedia.setIsHomePageHeroImage(isHomePageHeroImage);
+            eventMedia.setIsFeaturedEventImage(isFeaturedEventImage);
+            eventMedia.setIsLiveEventImage(isLiveEventImage);
+            eventMedia.setStartDisplayingFromDate(startDisplayingFromDate != null ? startDisplayingFromDate : LocalDate.now());
+
+            // Set event_id to null if eventId is 0 or null (sponsor images without event association)
+            if (eventId == null || eventId == 0) {
+                eventMedia.setEventId(null);
+            } else {
+                eventMedia.setEventId(eventId);
+            }
+
+            // Set sponsor_id to link this media to the sponsor
+            eventMedia.setSponsorId(entityId);
+
+            // Set priority ranking (default to 0 for highest priority)
+            eventMedia.setPriorityRanking(0);
+
+            eventMedia.setUploadedById(userProfileId);
+
+            eventMedia = eventMediaRepository.save(eventMedia);
+            log.debug("Successfully created EventMedia record for sponsor image: sponsorId={}, imageType={}", entityId, imageTypeLower);
+            return eventMediaMapper.toDto(eventMedia);
+        } else if (
+            entityType != null &&
+            entityType.equalsIgnoreCase("PERFORMER") &&
+            entityId != null &&
+            (isFeaturedPerformerPortrait != null || isFeaturedPerformerPerformance != null)
+        ) {
+            log.debug(
+                "Processing performer image upload: entityId={}, isFeaturedPerformerPortrait={}, isFeaturedPerformerPerformance={}",
+                entityId,
+                isFeaturedPerformerPortrait,
+                isFeaturedPerformerPerformance
+            );
+
+            // Validate performer exists
+            EventFeaturedPerformers performer = eventFeaturedPerformersRepository
+                .findById(entityId)
+                .orElseThrow(() -> new RuntimeException("Performer not found with ID: " + entityId));
+
+            // Determine image type
+            String imageTypeLower = (imageType != null) ? imageType.toLowerCase() : "";
+            String eventMediaType = null;
+            if (isFeaturedPerformerPortrait != null && isFeaturedPerformerPortrait) {
+                imageTypeLower = "portrait";
+                eventMediaType = "PERFORMER_PORTRAIT";
+            } else if (isFeaturedPerformerPerformance != null && isFeaturedPerformerPerformance) {
+                imageTypeLower = "performance";
+                eventMediaType = "PERFORMER_PERFORMANCE";
+            }
+
+            // Only update performer table URL if this is the first image of this type
+            if (eventMediaType != null) {
+                long existingCount = eventMediaRepository.countByPerformerIdAndEventMediaType(entityId, eventMediaType);
+
+                // Only update performer table if this is the first image of this type
+                if (existingCount == 0) {
+                    if (isFeaturedPerformerPortrait != null && isFeaturedPerformerPortrait) {
+                        performer.setPortraitImageUrl(fileUrl);
+                    } else if (isFeaturedPerformerPerformance != null && isFeaturedPerformerPerformance) {
+                        performer.setPerformanceImageUrl(fileUrl);
+                    }
+                    eventFeaturedPerformersRepository.save(performer);
+                    log.debug("Updated performer table with first {} image URL", imageTypeLower);
+                } else {
+                    log.debug(
+                        "Skipping performer table update - {} images of type {} already exist. Creating new EventMedia record only.",
+                        existingCount,
+                        eventMediaType
+                    );
+                }
+            }
+
+            // Create EventMedia record for performer image
+            EventMedia eventMedia = new EventMedia();
+            eventMedia.setTitle(title);
+            eventMedia.setDescription(description);
+            eventMedia.setTenantId(tenantId);
+            if (eventMediaType != null) {
+                eventMedia.setEventMediaType(eventMediaType);
+            } else {
+                eventMedia.setEventMediaType("PERFORMER_" + imageTypeLower.toUpperCase());
+            }
+            eventMedia.setStorageType("S3");
+            eventMedia.setFileUrl(fileUrl);
+            eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(fileUrl, 1));
+            eventMedia.setFileSize((int) file.getSize());
+            eventMedia.setIsPublic(isPublic);
+            eventMedia.setCreatedAt(ZonedDateTime.now());
+            eventMedia.setUpdatedAt(ZonedDateTime.now());
+            eventMedia.setEventFlyer(eventFlyer);
+            eventMedia.setIsEventManagementOfficialDocument(isEventManagementOfficialDocument);
+            eventMedia.setIsHeroImage(isHeroImage);
+            eventMedia.setIsActiveHeroImage(isActiveHeroImage);
+            eventMedia.setIsHomePageHeroImage(isHomePageHeroImage);
+            eventMedia.setIsFeaturedEventImage(isFeaturedEventImage);
+            eventMedia.setIsLiveEventImage(isLiveEventImage);
+            eventMedia.setStartDisplayingFromDate(startDisplayingFromDate != null ? startDisplayingFromDate : LocalDate.now());
+
+            // Set event_id to null if eventId is 0 or null (performer images without event association)
+            if (eventId == null || eventId == 0) {
+                eventMedia.setEventId(null);
+            } else {
+                eventMedia.setEventId(eventId);
+            }
+
+            // Set performer_id to link this media to the performer
+            eventMedia.setPerformerId(entityId);
+
+            // Set priority ranking (default to 0 for highest priority)
+            eventMedia.setPriorityRanking(0);
+
+            eventMedia.setUploadedById(userProfileId);
+
+            eventMedia = eventMediaRepository.save(eventMedia);
+            log.debug("Successfully created EventMedia record for performer image: performerId={}, imageType={}", entityId, imageTypeLower);
+            return eventMediaMapper.toDto(eventMedia);
+        } else if (
+            entityType != null &&
+            entityType.equalsIgnoreCase("DIRECTOR") &&
+            entityId != null &&
+            isProgramDirectorPhoto != null &&
+            isProgramDirectorPhoto
+        ) {
+            log.debug("Processing director image upload: entityId={}, isProgramDirectorPhoto={}", entityId, isProgramDirectorPhoto);
+
+            // Validate director exists
+            EventProgramDirectors director = eventProgramDirectorsRepository
+                .findById(entityId)
+                .orElseThrow(() -> new RuntimeException("Director not found with ID: " + entityId));
+
+            // Determine image type
+            String imageTypeLower = (imageType != null) ? imageType.toLowerCase() : "photo";
+            String eventMediaType = "DIRECTOR_PHOTO";
+
+            // Only update director table URL if this is the first image of this type
+            long existingCount = eventMediaRepository.countByDirectorIdAndEventMediaType(entityId, eventMediaType);
+
+            // Only update director table if this is the first image of this type
+            if (existingCount == 0) {
+                director.setPhotoUrl(fileUrl);
+                eventProgramDirectorsRepository.save(director);
+                log.debug("Updated director table with first photo image URL");
+            } else {
+                log.debug(
+                    "Skipping director table update - {} images of type {} already exist. Creating new EventMedia record only.",
+                    existingCount,
+                    eventMediaType
+                );
+            }
+
+            // Create EventMedia record for director image
+            EventMedia eventMedia = new EventMedia();
+            eventMedia.setTitle(title);
+            eventMedia.setDescription(description);
+            eventMedia.setTenantId(tenantId);
+            eventMedia.setEventMediaType(eventMediaType);
+            eventMedia.setStorageType("S3");
+            eventMedia.setFileUrl(fileUrl);
+            eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(fileUrl, 1));
+            eventMedia.setFileSize((int) file.getSize());
+            eventMedia.setIsPublic(isPublic);
+            eventMedia.setCreatedAt(ZonedDateTime.now());
+            eventMedia.setUpdatedAt(ZonedDateTime.now());
+            eventMedia.setEventFlyer(eventFlyer);
+            eventMedia.setIsEventManagementOfficialDocument(isEventManagementOfficialDocument);
+            eventMedia.setIsHeroImage(isHeroImage);
+            eventMedia.setIsActiveHeroImage(isActiveHeroImage);
+            eventMedia.setIsHomePageHeroImage(isHomePageHeroImage);
+            eventMedia.setIsFeaturedEventImage(isFeaturedEventImage);
+            eventMedia.setIsLiveEventImage(isLiveEventImage);
+            eventMedia.setStartDisplayingFromDate(startDisplayingFromDate != null ? startDisplayingFromDate : LocalDate.now());
+
+            // Set event_id to null if eventId is 0 or null (director images without event association)
+            if (eventId == null || eventId == 0) {
+                eventMedia.setEventId(null);
+            } else {
+                eventMedia.setEventId(eventId);
+            }
+
+            // Set director_id to link this media to the director
+            eventMedia.setDirectorId(entityId);
+
+            // Set priority ranking (default to 0 for highest priority)
+            eventMedia.setPriorityRanking(0);
+
+            eventMedia.setUploadedById(userProfileId);
+
+            eventMedia = eventMediaRepository.save(eventMedia);
+            log.debug("Successfully created EventMedia record for director image: directorId={}, imageType={}", entityId, imageTypeLower);
+            return eventMediaMapper.toDto(eventMedia);
+        } else if (isTeamMemberProfileImage == null || !isTeamMemberProfileImage) {
             EventMedia eventMedia = new EventMedia();
             // eventMedia.setEvent(event); // Event relationship handled by mapper
             eventMedia.setTitle(title);
@@ -177,8 +490,16 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setIsHomePageHeroImage(isHomePageHeroImage);
             eventMedia.setIsFeaturedEventImage(isFeaturedEventImage);
             eventMedia.setIsLiveEventImage(isLiveEventImage);
-            eventMedia.setStartDisplayingFromDate(startDisplayingFromDate);
-            eventMedia.setEventId(eventId);
+            // Set startDisplayingFromDate (default to today if not provided to satisfy NOT NULL constraint)
+            eventMedia.setStartDisplayingFromDate(startDisplayingFromDate != null ? startDisplayingFromDate : LocalDate.now());
+
+            // Set event_id to null if eventId is 0 or null (for entities without event association)
+            if (eventId == null || eventId == 0) {
+                eventMedia.setEventId(null);
+            } else {
+                eventMedia.setEventId(eventId);
+            }
+
             eventMedia.setUploadedById(userProfileId);
             // Optionally set event and uploadedBy if needed (requires fetching entities)
             // eventMedia.setEvent(...);
@@ -190,13 +511,11 @@ public class EventMediaServiceImpl implements EventMediaService {
             // Handle ExecutiveCommitteeTeamMember profile image update
             log.debug("Updating ExecutiveCommitteeTeamMember profile image for ID: {}", executiveTeamMemberID);
             ExecutiveCommitteeTeamMember teamMember = executiveCommitteeTeamMemberRepository
-                    .findById(executiveTeamMemberID)
-                    .orElseThrow(() -> new RuntimeException(
-                            "ExecutiveCommitteeTeamMember not found with ID: " + executiveTeamMemberID));
+                .findById(executiveTeamMemberID)
+                .orElseThrow(() -> new RuntimeException("ExecutiveCommitteeTeamMember not found with ID: " + executiveTeamMemberID));
             teamMember.setProfileImageUrl(fileUrl);
             executiveCommitteeTeamMemberRepository.save(teamMember);
-            log.debug("Successfully updated profile image URL for ExecutiveCommitteeTeamMember ID: {}",
-                    executiveTeamMemberID);
+            log.debug("Successfully updated profile image URL for ExecutiveCommitteeTeamMember ID: {}", executiveTeamMemberID);
 
             // Create a minimal EventMediaDTO for response (since no EventMedia entity was
             // created)
@@ -216,48 +535,60 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     @Override
     public List<EventMediaDTO> uploadMultipleFiles(
-            List<MultipartFile> files,
-            Long eventId,
-            Long userProfileId,
-            List<String> titles,
-            List<String> descriptions,
-            String tenantId,
-            boolean isPublic,
-            Boolean eventFlyer,
-            Boolean isEventManagementOfficialDocument,
-            Boolean isHeroImage,
-            Boolean isActiveHeroImage,
-            Boolean isTeamMemberProfileImage,
-            Long executiveTeamMemberID,
-            boolean isHomePageHeroImage,
-            boolean isFeaturedEventImage,
-            boolean isLiveEventImage,
-            LocalDate startDisplayingFromDate) {
+        List<MultipartFile> files,
+        Long eventId,
+        Long userProfileId,
+        List<String> titles,
+        List<String> descriptions,
+        String tenantId,
+        boolean isPublic,
+        Boolean eventFlyer,
+        Boolean isEventManagementOfficialDocument,
+        Boolean isHeroImage,
+        Boolean isActiveHeroImage,
+        Boolean isTeamMemberProfileImage,
+        Long executiveTeamMemberID,
+        boolean isHomePageHeroImage,
+        boolean isFeaturedEventImage,
+        boolean isLiveEventImage,
+        LocalDate startDisplayingFromDate
+    ) {
         List<EventMediaDTO> result = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
             String title = (titles != null && i < titles.size()) ? titles.get(i) : file.getOriginalFilename();
             String description = (descriptions != null && i < descriptions.size()) ? descriptions.get(i) : null;
             EventMediaDTO uploadResult = uploadFile(
-                    file,
-                    eventId,
-                    userProfileId,
-                    title,
-                    description,
-                    tenantId,
-                    isPublic,
-                    eventFlyer,
-                    isEventManagementOfficialDocument,
-                    isHeroImage,
-                    isActiveHeroImage,
-                    isTeamMemberProfileImage,
-                    executiveTeamMemberID,
-                    isHomePageHeroImage,
-                    isFeaturedEventImage,
-                    isLiveEventImage,
-                    startDisplayingFromDate,
-                    // New entity-specific parameters - all null for multiple files upload
-                    null, null, null, null, null, null, null, null, null, null, null);
+                file,
+                eventId,
+                userProfileId,
+                title,
+                description,
+                tenantId,
+                isPublic,
+                eventFlyer,
+                isEventManagementOfficialDocument,
+                isHeroImage,
+                isActiveHeroImage,
+                isTeamMemberProfileImage,
+                executiveTeamMemberID,
+                isHomePageHeroImage,
+                isFeaturedEventImage,
+                isLiveEventImage,
+                startDisplayingFromDate,
+                // New entity-specific parameters - all null for multiple files upload
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+            );
             // Only add non-null results to the list
             if (uploadResult != null) {
                 result.add(uploadResult);
@@ -352,8 +683,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         // Handle date/time fields that come as java.sql.Timestamp from database
         if (raw[13] != null) {
             if (raw[13] instanceof java.sql.Timestamp) {
-                dto.setPreSignedUrlExpiresAt(
-                        ((java.sql.Timestamp) raw[13]).toInstant().atZone(java.time.ZoneId.systemDefault()));
+                dto.setPreSignedUrlExpiresAt(((java.sql.Timestamp) raw[13]).toInstant().atZone(java.time.ZoneId.systemDefault()));
             } else {
                 dto.setPreSignedUrlExpiresAt((ZonedDateTime) raw[13]);
             }
@@ -415,6 +745,233 @@ public class EventMediaServiceImpl implements EventMediaService {
             }
         }
 
+        // Handle new fields (sponsorId, eventSponsorsJoinId, priorityRanking)
+        if (raw.length > 29 && raw[29] != null) {
+            dto.setSponsorId((Long) raw[29]);
+        }
+        if (raw.length > 30 && raw[30] != null) {
+            dto.setEventSponsorsJoinId((Long) raw[30]);
+        }
+        if (raw.length > 31 && raw[31] != null) {
+            dto.setPriorityRanking((Integer) raw[31]);
+        }
+
         return dto;
+    }
+
+    @Override
+    public EventMediaDTO uploadSponsorImage(Long sponsorId, Long eventId, String imageType, MultipartFile file, String tenantId) {
+        log.debug("Request to upload sponsor image: sponsorId={}, eventId={}, imageType={}", sponsorId, eventId, imageType);
+
+        // 1. Generate S3 path
+        String s3Path = s3Service.generateSponsorImagePath(tenantId, sponsorId, file.getOriginalFilename());
+
+        // 2. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+
+        // 3. Create EventMedia record
+        EventMediaDTO mediaDTO = new EventMediaDTO();
+        mediaDTO.setSponsorId(sponsorId);
+        mediaDTO.setEventId(eventId != null && eventId > 0 ? eventId : null);
+        mediaDTO.setTitle(imageType + " - " + sponsorId);
+        mediaDTO.setDescription("Sponsor " + imageType + " image");
+        mediaDTO.setFileUrl(s3Url);
+        mediaDTO.setEventMediaType("SPONSOR_" + imageType.toUpperCase());
+        mediaDTO.setStorageType("S3");
+        mediaDTO.setIsPublic(true);
+        mediaDTO.setTenantId(tenantId);
+        mediaDTO.setPriorityRanking(0); // Default to highest priority
+        mediaDTO.setIsHomePageHeroImage(false);
+        mediaDTO.setIsFeaturedEventImage(false);
+        mediaDTO.setIsLiveEventImage(false);
+        mediaDTO.setCreatedAt(ZonedDateTime.now());
+        mediaDTO.setUpdatedAt(ZonedDateTime.now());
+
+        EventMediaDTO savedMedia = save(mediaDTO);
+
+        // 4. Update event_sponsors table
+        EventSponsors sponsor = eventSponsorsRepository
+            .findById(sponsorId)
+            .orElseThrow(() -> new RuntimeException("Sponsor not found: " + sponsorId));
+
+        switch (imageType.toLowerCase()) {
+            case "LOGO_IMAGE":
+                sponsor.setLogoUrl(s3Url);
+                break;
+            case "HERO_IMAGE":
+                sponsor.setHeroImageUrl(s3Url);
+                break;
+            case "BANNER_IMAGE":
+                sponsor.setBannerImageUrl(s3Url);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid image type: " + imageType);
+        }
+        eventSponsorsRepository.save(sponsor);
+
+        return savedMedia;
+    }
+
+    @Override
+    public EventMediaDTO uploadEventSponsorJoinPoster(Long eventId, Long sponsorId, MultipartFile file, String tenantId) {
+        log.debug("Request to upload event-sponsor join poster: eventId={}, sponsorId={}", eventId, sponsorId);
+
+        // 1. Find or create event_sponsors_join record
+        EventSponsorsJoin joinRecord = eventSponsorsJoinRepository
+            .findByEventIdAndSponsorId(eventId, sponsorId)
+            .orElseThrow(() -> new RuntimeException("Event-sponsor association not found: eventId=" + eventId + ", sponsorId=" + sponsorId)
+            );
+
+        // 2. Generate S3 path
+        String s3Path = s3Service.generateEventSponsorJoinImagePath(tenantId, eventId, sponsorId, file.getOriginalFilename());
+
+        // 3. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+
+        // 4. Create EventMedia record
+        EventMediaDTO mediaDTO = new EventMediaDTO();
+        mediaDTO.setEventSponsorsJoinId(joinRecord.getId());
+        mediaDTO.setEventId(eventId);
+        mediaDTO.setSponsorId(sponsorId);
+        mediaDTO.setTitle("Custom Poster - Event " + eventId + " - Sponsor " + sponsorId);
+        mediaDTO.setDescription("Custom poster for event-sponsor combination");
+        mediaDTO.setFileUrl(s3Url);
+        mediaDTO.setEventMediaType("EVENT_SPONSOR_POSTER");
+        mediaDTO.setStorageType("S3");
+        mediaDTO.setIsPublic(true);
+        mediaDTO.setTenantId(tenantId);
+        mediaDTO.setPriorityRanking(0); // Default to highest priority
+        mediaDTO.setIsHomePageHeroImage(false);
+        mediaDTO.setIsFeaturedEventImage(false);
+        mediaDTO.setIsLiveEventImage(false);
+        mediaDTO.setCreatedAt(ZonedDateTime.now());
+        mediaDTO.setUpdatedAt(ZonedDateTime.now());
+
+        EventMediaDTO savedMedia = save(mediaDTO);
+
+        // 5. Update event_sponsors_join table
+        joinRecord.setCustomPosterUrl(s3Url);
+        eventSponsorsJoinRepository.save(joinRecord);
+
+        return savedMedia;
+    }
+
+    @Override
+    public EventMediaDTO uploadSponsorMedia(
+        Long sponsorId,
+        MultipartFile file,
+        String title,
+        String description,
+        String tenantId,
+        Integer priorityRanking
+    ) {
+        log.debug("Request to upload sponsor media: sponsorId={}", sponsorId);
+
+        // 1. Generate S3 path
+        String s3Path = s3Service.generateSponsorImagePath(tenantId, sponsorId, file.getOriginalFilename());
+
+        // 2. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+
+        // 3. Create EventMedia record
+        EventMediaDTO mediaDTO = new EventMediaDTO();
+        mediaDTO.setSponsorId(sponsorId);
+        mediaDTO.setTitle(title != null ? title : "Sponsor Media");
+        mediaDTO.setDescription(description != null ? description : "Sponsor media file");
+        mediaDTO.setFileUrl(s3Url);
+        mediaDTO.setEventMediaType("SPONSOR_MEDIA");
+        mediaDTO.setStorageType("S3");
+        mediaDTO.setIsPublic(true);
+        mediaDTO.setTenantId(tenantId);
+        mediaDTO.setPriorityRanking(priorityRanking != null ? priorityRanking : 0); // Default to highest priority
+        mediaDTO.setIsHomePageHeroImage(false);
+        mediaDTO.setIsFeaturedEventImage(false);
+        mediaDTO.setIsLiveEventImage(false);
+        mediaDTO.setCreatedAt(ZonedDateTime.now());
+        mediaDTO.setUpdatedAt(ZonedDateTime.now());
+
+        return save(mediaDTO);
+    }
+
+    @Override
+    public EventMediaDTO uploadEventSponsorMedia(
+        Long eventId,
+        Long sponsorId,
+        MultipartFile file,
+        String title,
+        String description,
+        String tenantId,
+        Integer priorityRanking
+    ) {
+        log.debug("Request to upload event-sponsor media: eventId={}, sponsorId={}", eventId, sponsorId);
+
+        // 1. Find event_sponsors_join record
+        EventSponsorsJoin joinRecord = eventSponsorsJoinRepository
+            .findByEventIdAndSponsorId(eventId, sponsorId)
+            .orElseThrow(() -> new RuntimeException("Event-sponsor association not found: eventId=" + eventId + ", sponsorId=" + sponsorId)
+            );
+
+        // 2. Generate S3 path
+        String s3Path = s3Service.generateEventSponsorJoinImagePath(tenantId, eventId, sponsorId, file.getOriginalFilename());
+
+        // 3. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+
+        // 4. Create EventMedia record
+        EventMediaDTO mediaDTO = new EventMediaDTO();
+        mediaDTO.setEventSponsorsJoinId(joinRecord.getId());
+        mediaDTO.setEventId(eventId);
+        mediaDTO.setSponsorId(sponsorId);
+        mediaDTO.setTitle(title != null ? title : "Event-Sponsor Media");
+        mediaDTO.setDescription(description != null ? description : "Event-sponsor media file");
+        mediaDTO.setFileUrl(s3Url);
+        mediaDTO.setEventMediaType("EVENT_SPONSOR_MEDIA");
+        mediaDTO.setStorageType("S3");
+        mediaDTO.setIsPublic(true);
+        mediaDTO.setTenantId(tenantId);
+        mediaDTO.setPriorityRanking(priorityRanking != null ? priorityRanking : 0); // Default to highest priority
+        mediaDTO.setIsHomePageHeroImage(false);
+        mediaDTO.setIsFeaturedEventImage(false);
+        mediaDTO.setIsLiveEventImage(false);
+        mediaDTO.setCreatedAt(ZonedDateTime.now());
+        mediaDTO.setUpdatedAt(ZonedDateTime.now());
+
+        return save(mediaDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EventMediaDTO> findBySponsorId(Long sponsorId, String tenantId) {
+        log.debug("Request to get sponsor media: sponsorId={}, tenantId={}", sponsorId, tenantId);
+        List<EventMedia> media;
+        if (tenantId != null && !tenantId.isEmpty()) {
+            media = eventMediaRepository.findBySponsorIdAndTenantId(sponsorId, tenantId);
+        } else {
+            media = eventMediaRepository.findBySponsorId(sponsorId);
+        }
+        return media.stream().map(eventMediaMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EventMediaDTO> findByEventSponsorsJoinId(Long eventSponsorsJoinId, String tenantId) {
+        log.debug("Request to get event-sponsor media: eventSponsorsJoinId={}, tenantId={}", eventSponsorsJoinId, tenantId);
+        List<EventMedia> media;
+        if (tenantId != null && !tenantId.isEmpty()) {
+            media = eventMediaRepository.findByEventSponsorsJoinIdAndTenantId(eventSponsorsJoinId, tenantId);
+        } else {
+            media = eventMediaRepository.findByEventSponsorsJoinId(eventSponsorsJoinId);
+        }
+        return media.stream().map(eventMediaMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public EventMediaDTO updateMediaPriorityRanking(Long mediaId, Integer priorityRanking) {
+        log.debug("Request to update media priority ranking: mediaId={}, priorityRanking={}", mediaId, priorityRanking);
+        EventMedia media = eventMediaRepository.findById(mediaId).orElseThrow(() -> new RuntimeException("Media not found: " + mediaId));
+
+        media.setPriorityRanking(priorityRanking);
+        EventMedia updated = eventMediaRepository.save(media);
+        return eventMediaMapper.toDto(updated);
     }
 }

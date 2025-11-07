@@ -28,6 +28,8 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     private StringFilter title;
 
+    private StringFilter description;
+
     private StringFilter eventMediaType;
 
     private StringFilter storageType;
@@ -77,6 +79,16 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     private LocalDateFilter startDisplayingFromDate;
 
+    private LongFilter sponsorId;
+
+    private LongFilter eventSponsorsJoinId;
+
+    private LongFilter performerId;
+
+    private LongFilter directorId;
+
+    private IntegerFilter priorityRanking;
+
     private Boolean distinct;
 
     public EventMediaCriteria() {}
@@ -85,6 +97,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.id = other.id == null ? null : other.id.copy();
         this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
         this.title = other.title == null ? null : other.title.copy();
+        this.description = other.description == null ? null : other.description.copy();
         this.eventMediaType = other.eventMediaType == null ? null : other.eventMediaType.copy();
         this.storageType = other.storageType == null ? null : other.storageType.copy();
         this.fileUrl = other.fileUrl == null ? null : other.fileUrl.copy();
@@ -111,9 +124,12 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.eventId = other.eventId == null ? null : other.eventId.copy();
         this.uploadedById = other.uploadedById == null ? null : other.uploadedById.copy();
-        this.eventId = other.eventId == null ? null : other.eventId.copy();
-        this.uploadedById = other.uploadedById == null ? null : other.uploadedById.copy();
         this.startDisplayingFromDate = other.startDisplayingFromDate == null ? null : other.startDisplayingFromDate.copy();
+        this.sponsorId = other.sponsorId == null ? null : other.sponsorId.copy();
+        this.eventSponsorsJoinId = other.eventSponsorsJoinId == null ? null : other.eventSponsorsJoinId.copy();
+        this.performerId = other.performerId == null ? null : other.performerId.copy();
+        this.directorId = other.directorId == null ? null : other.directorId.copy();
+        this.priorityRanking = other.priorityRanking == null ? null : other.priorityRanking.copy();
         this.distinct = other.distinct;
     }
 
@@ -165,6 +181,21 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     public void setTitle(StringFilter title) {
         this.title = title;
+    }
+
+    public StringFilter getDescription() {
+        return description;
+    }
+
+    public StringFilter description() {
+        if (description == null) {
+            description = new StringFilter();
+        }
+        return description;
+    }
+
+    public void setDescription(StringFilter description) {
+        this.description = description;
     }
 
     public StringFilter getEventMediaType() {
@@ -554,6 +585,81 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.startDisplayingFromDate = startDisplayingFromDate;
     }
 
+    public LongFilter getSponsorId() {
+        return sponsorId;
+    }
+
+    public LongFilter sponsorId() {
+        if (sponsorId == null) {
+            sponsorId = new LongFilter();
+        }
+        return sponsorId;
+    }
+
+    public void setSponsorId(LongFilter sponsorId) {
+        this.sponsorId = sponsorId;
+    }
+
+    public LongFilter getEventSponsorsJoinId() {
+        return eventSponsorsJoinId;
+    }
+
+    public LongFilter eventSponsorsJoinId() {
+        if (eventSponsorsJoinId == null) {
+            eventSponsorsJoinId = new LongFilter();
+        }
+        return eventSponsorsJoinId;
+    }
+
+    public void setEventSponsorsJoinId(LongFilter eventSponsorsJoinId) {
+        this.eventSponsorsJoinId = eventSponsorsJoinId;
+    }
+
+    public IntegerFilter getPriorityRanking() {
+        return priorityRanking;
+    }
+
+    public IntegerFilter priorityRanking() {
+        if (priorityRanking == null) {
+            priorityRanking = new IntegerFilter();
+        }
+        return priorityRanking;
+    }
+
+    public void setPriorityRanking(IntegerFilter priorityRanking) {
+        this.priorityRanking = priorityRanking;
+    }
+
+    public LongFilter getPerformerId() {
+        return performerId;
+    }
+
+    public LongFilter performerId() {
+        if (performerId == null) {
+            performerId = new LongFilter();
+        }
+        return performerId;
+    }
+
+    public void setPerformerId(LongFilter performerId) {
+        this.performerId = performerId;
+    }
+
+    public LongFilter getDirectorId() {
+        return directorId;
+    }
+
+    public LongFilter directorId() {
+        if (directorId == null) {
+            directorId = new LongFilter();
+        }
+        return directorId;
+    }
+
+    public void setDirectorId(LongFilter directorId) {
+        this.directorId = directorId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -575,6 +681,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             Objects.equals(id, that.id) &&
             Objects.equals(tenantId, that.tenantId) &&
             Objects.equals(title, that.title) &&
+            Objects.equals(description, that.description) &&
             Objects.equals(eventMediaType, that.eventMediaType) &&
             Objects.equals(storageType, that.storageType) &&
             Objects.equals(fileUrl, that.fileUrl) &&
@@ -596,13 +703,15 @@ public class EventMediaCriteria implements Serializable, Criteria {
             Objects.equals(isFeaturedEventImage, that.isFeaturedEventImage) &&
             Objects.equals(isLiveEventImage, that.isLiveEventImage) &&
             Objects.equals(createdAt, that.createdAt) &&
-            Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(eventId, that.eventId) &&
             Objects.equals(uploadedById, that.uploadedById) &&
-            Objects.equals(eventId, that.eventId) &&
-            Objects.equals(uploadedById, that.uploadedById) &&
             Objects.equals(startDisplayingFromDate, that.startDisplayingFromDate) &&
+            Objects.equals(sponsorId, that.sponsorId) &&
+            Objects.equals(eventSponsorsJoinId, that.eventSponsorsJoinId) &&
+            Objects.equals(performerId, that.performerId) &&
+            Objects.equals(directorId, that.directorId) &&
+            Objects.equals(priorityRanking, that.priorityRanking) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -613,6 +722,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             id,
             tenantId,
             title,
+            description,
             eventMediaType,
             storageType,
             fileUrl,
@@ -637,9 +747,12 @@ public class EventMediaCriteria implements Serializable, Criteria {
             updatedAt,
             eventId,
             uploadedById,
-            eventId,
-            uploadedById,
             startDisplayingFromDate,
+            sponsorId,
+            eventSponsorsJoinId,
+            performerId,
+            directorId,
+            priorityRanking,
             distinct
         );
     }
@@ -651,6 +764,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             (id != null ? "id=" + id + ", " : "") +
             (tenantId != null ? "tenantId=" + tenantId + ", " : "") +
             (title != null ? "title=" + title + ", " : "") +
+            (description != null ? "description=" + description + ", " : "") +
             (eventMediaType != null ? "eventMediaType=" + eventMediaType + ", " : "") +
             (storageType != null ? "storageType=" + storageType + ", " : "") +
             (fileUrl != null ? "fileUrl=" + fileUrl + ", " : "") +
@@ -676,9 +790,12 @@ public class EventMediaCriteria implements Serializable, Criteria {
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
             (eventId != null ? "eventId=" + eventId + ", " : "") +
             (uploadedById != null ? "uploadedById=" + uploadedById + ", " : "") +
-            (eventId != null ? "eventId=" + eventId + ", " : "") +
-            (uploadedById != null ? "uploadedById=" + uploadedById + ", " : "") +
             (startDisplayingFromDate != null ? "startDisplayingFromDate=" + startDisplayingFromDate + ", " : "") +
+            (sponsorId != null ? "sponsorId=" + sponsorId + ", " : "") +
+            (eventSponsorsJoinId != null ? "eventSponsorsJoinId=" + eventSponsorsJoinId + ", " : "") +
+            (performerId != null ? "performerId=" + performerId + ", " : "") +
+            (directorId != null ? "directorId=" + directorId + ", " : "") +
+            (priorityRanking != null ? "priorityRanking=" + priorityRanking + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}";
     }

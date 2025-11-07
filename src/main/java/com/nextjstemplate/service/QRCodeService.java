@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,14 +27,16 @@ public class QRCodeService {
 
     private final AmazonS3 amazonS3;
     private final S3Service s3Service;
+    private final Environment environment;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
     @Autowired
-    public QRCodeService(AmazonS3 amazonS3, S3Service s3Service) {
+    public QRCodeService(AmazonS3 amazonS3, S3Service s3Service, Environment environment) {
         this.amazonS3 = amazonS3;
         this.s3Service = s3Service;
+        this.environment = environment;
     }
 
     public String generateAndUploadQRCode(String qrScanUrlContent, Long eventId, String transactionId, String tenantId) throws IOException {
@@ -75,15 +78,31 @@ public class QRCodeService {
         }
     }
 
+    /**
+     * Get the active Spring profile prefix for S3 paths.
+     * Returns the first active profile or "default" if none is set.
+     *
+     * @return the active profile prefix
+     */
+    private String getActiveProfilePrefix() {
+        String[] activeProfiles = environment.getActiveProfiles();
+        if (activeProfiles.length > 0) {
+            return activeProfiles[0];
+        }
+        return "default";
+    }
+
     private String generateUniqueFilename(String tenantId, Long eventId, String originalFilename) {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String extension = getFileExtension(originalFilename);
         String baseName = getBaseFileName(originalFilename);
+        String profilePrefix = getActiveProfilePrefix();
 
         if (eventId != null) {
             return String.format(
-                "events/tenantId/%s/event-id/%d/tickets/%s_%s_%s%s",
+                "%s/events/tenantId/%s/event-id/%d/tickets/%s_%s_%s%s",
+                profilePrefix,
                 tenantId,
                 eventId,
                 baseName,
@@ -92,7 +111,7 @@ public class QRCodeService {
                 extension
             );
         } else {
-            return String.format("media/%s_%s_%s%s", baseName, timestamp, uuid, extension);
+            return String.format("%s/media/%s_%s_%s%s", profilePrefix, baseName, timestamp, uuid, extension);
         }
     }
 

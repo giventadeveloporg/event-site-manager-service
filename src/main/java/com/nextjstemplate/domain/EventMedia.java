@@ -128,6 +128,28 @@ public class EventMedia implements Serializable {
     @Column(name = "start_displaying_from_date")
     private LocalDate startDisplayingFromDate;
 
+    @Column(name = "sponsor_id")
+    private Long sponsorId;
+
+    @Column(name = "event_sponsors_join_id")
+    private Long eventSponsorsJoinId;
+
+    @Column(name = "performer_id")
+    private Long performerId;
+
+    @Column(name = "director_id")
+    private Long directorId;
+
+    /**
+     * Priority ranking for media files (sponsor or event-sponsor).
+     * Lower values indicate higher priority (0 = highest priority).
+     * Used to determine which image to display when multiple files are available.
+     */
+    @NotNull
+    @Min(value = 0)
+    @Column(name = "priority_ranking", nullable = false)
+    private Integer priorityRanking = 0;
+
     /*
      * @ManyToOne(fetch = FetchType.LAZY)
      *
@@ -521,6 +543,71 @@ public class EventMedia implements Serializable {
         this.startDisplayingFromDate = startDisplayingFromDate;
     }
 
+    public Long getSponsorId() {
+        return this.sponsorId;
+    }
+
+    public EventMedia sponsorId(Long sponsorId) {
+        this.setSponsorId(sponsorId);
+        return this;
+    }
+
+    public void setSponsorId(Long sponsorId) {
+        this.sponsorId = sponsorId;
+    }
+
+    public Long getEventSponsorsJoinId() {
+        return this.eventSponsorsJoinId;
+    }
+
+    public EventMedia eventSponsorsJoinId(Long eventSponsorsJoinId) {
+        this.setEventSponsorsJoinId(eventSponsorsJoinId);
+        return this;
+    }
+
+    public void setEventSponsorsJoinId(Long eventSponsorsJoinId) {
+        this.eventSponsorsJoinId = eventSponsorsJoinId;
+    }
+
+    public Long getPerformerId() {
+        return this.performerId;
+    }
+
+    public EventMedia performerId(Long performerId) {
+        this.setPerformerId(performerId);
+        return this;
+    }
+
+    public void setPerformerId(Long performerId) {
+        this.performerId = performerId;
+    }
+
+    public Long getDirectorId() {
+        return this.directorId;
+    }
+
+    public EventMedia directorId(Long directorId) {
+        this.setDirectorId(directorId);
+        return this;
+    }
+
+    public void setDirectorId(Long directorId) {
+        this.directorId = directorId;
+    }
+
+    public Integer getPriorityRanking() {
+        return this.priorityRanking;
+    }
+
+    public EventMedia priorityRanking(Integer priorityRanking) {
+        this.setPriorityRanking(priorityRanking);
+        return this;
+    }
+
+    public void setPriorityRanking(Integer priorityRanking) {
+        this.priorityRanking = priorityRanking;
+    }
+
     /*
      * public EventDetails getEvent() {
      * return this.event;
@@ -603,6 +690,11 @@ public class EventMedia implements Serializable {
             ", eventId=" + getEventId() +
             ", uploadedById=" + getUploadedById() +
             ", startDisplayingFromDate='" + getStartDisplayingFromDate() + "'" +
+            ", sponsorId=" + getSponsorId() +
+            ", eventSponsorsJoinId=" + getEventSponsorsJoinId() +
+            ", performerId=" + getPerformerId() +
+            ", directorId=" + getDirectorId() +
+            ", priorityRanking=" + getPriorityRanking() +
             "}";
     }
 }
