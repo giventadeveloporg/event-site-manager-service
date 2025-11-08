@@ -92,14 +92,28 @@ public interface S3Service {
 
     /**
      * Generate S3 path for sponsor images.
-     * Path format: {profile}/media/tenantId/{tenantId}/sponsor/sponsor_id/{sponsorId}/{filename}
+     * Path format: {profilePrefix}/media/tenantId/{tenantId}/sponsor/sponsor_id/{sponsorId}/{imageType}_{timestamp}_{uuid}.{ext}
+     *
+     * @param tenantId the tenant ID.
+     * @param sponsorId the sponsor ID.
+     * @param originalFilename the original filename (used for extension).
+     * @param imageType optional image type (logo, hero, banner, LOGO_IMAGE, HERO_IMAGE, BANNER_IMAGE) - if provided, used as filename base instead of original filename.
+     * @return the S3 path for the sponsor image.
+     */
+    String generateSponsorImagePath(String tenantId, Long sponsorId, String originalFilename, String imageType);
+
+    /**
+     * Generate S3 path for sponsor images (backward compatibility - uses original filename).
+     * Path format: {profilePrefix}/media/tenantId/{tenantId}/sponsor/sponsor_id/{sponsorId}/{filename}_{timestamp}_{uuid}.{ext}
      *
      * @param tenantId the tenant ID.
      * @param sponsorId the sponsor ID.
      * @param originalFilename the original filename.
      * @return the S3 path for the sponsor image.
      */
-    String generateSponsorImagePath(String tenantId, Long sponsorId, String originalFilename);
+    default String generateSponsorImagePath(String tenantId, Long sponsorId, String originalFilename) {
+        return generateSponsorImagePath(tenantId, sponsorId, originalFilename, null);
+    }
 
     /**
      * Generate S3 path for event-sponsor join images.

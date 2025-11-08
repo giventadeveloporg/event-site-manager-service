@@ -348,6 +348,10 @@ public class EventMediaResource {
         @RequestParam(value = "entityId", required = false) Long entityId,
         @RequestParam(value = "entityType", required = false) String entityType,
         @RequestParam(value = "imageType", required = false) String imageType,
+        @RequestParam(value = "eventSponsorsJoinId", required = false) Long eventSponsorsJoinId,
+        @RequestParam(value = "sponsorId", required = false) Long sponsorId,
+        @RequestParam(value = "eventMediaType", required = false) String eventMediaType,
+        @RequestParam(value = "storageType", required = false) String storageType,
         Authentication authentication
     ) throws URISyntaxException {
         log.debug("REST request to upload EventMedia file: {} for event: {}", file.getOriginalFilename(), eventId);
@@ -406,7 +410,11 @@ public class EventMediaResource {
             isProgramDirectorPhoto,
             entityId,
             entityType,
-            imageType
+            imageType,
+            eventSponsorsJoinId,
+            sponsorId,
+            eventMediaType,
+            storageType
         );
 
         // For team member profile images, return OK status instead of CREATED since no
@@ -490,7 +498,11 @@ public class EventMediaResource {
             null,
             entityId,
             "featured-performer",
-            imageType
+            imageType,
+            null, // eventSponsorsJoinId
+            null, // sponsorId
+            null, // eventMediaType
+            null // storageType
         );
 
         // Update the EventFeaturedPerformers entity with the appropriate image URL
@@ -550,8 +562,11 @@ public class EventMediaResource {
     ) throws URISyntaxException {
         log.debug("REST request to upload Sponsor {} image for entity: {}", imageType, entityId);
 
-        // Validate image type
-        if (!isValidImageType(imageType, "sponsor")) {
+        // Normalize imageType: convert LOGO_IMAGE -> logo, HERO_IMAGE -> hero, BANNER_IMAGE -> banner
+        String normalizedImageType = normalizeSponsorImageType(imageType);
+
+        // Validate image type (using normalized value)
+        if (!isValidImageType(normalizedImageType, "sponsor")) {
             throw new BadRequestAlertException("Invalid image type for sponsor: " + imageType, ENTITY_NAME, "invalidImageType");
         }
 
@@ -579,14 +594,18 @@ public class EventMediaResource {
             null,
             null,
             null,
-            imageType.equals("logo"),
-            imageType.equals("hero"),
-            imageType.equals("banner"),
+            normalizedImageType.equals("logo"),
+            normalizedImageType.equals("hero"),
+            normalizedImageType.equals("banner"),
             null,
             null,
             entityId,
             "sponsor",
-            imageType
+            normalizedImageType,
+            null, // eventSponsorsJoinId
+            null, // sponsorId
+            null, // eventMediaType
+            null // storageType
         );
 
         // Update the EventSponsors entity with the appropriate image URL
@@ -594,7 +613,7 @@ public class EventMediaResource {
             try {
                 EventSponsorsDTO sponsor = eventSponsorsService.findOne(entityId).orElse(null);
                 if (sponsor != null) {
-                    switch (imageType) {
+                    switch (normalizedImageType) {
                         case "logo":
                             sponsor.setLogoUrl(result.getFileUrl());
                             break;
@@ -606,12 +625,12 @@ public class EventMediaResource {
                             break;
                     }
                     eventSponsorsService.update(sponsor);
-                    log.debug("Updated EventSponsors ID {} with {} image URL: {}", entityId, imageType, result.getFileUrl());
+                    log.debug("Updated EventSponsors ID {} with {} image URL: {}", entityId, normalizedImageType, result.getFileUrl());
                 } else {
-                    log.warn("EventSponsors with ID {} not found, cannot update {} image URL", entityId, imageType);
+                    log.warn("EventSponsors with ID {} not found, cannot update {} image URL", entityId, normalizedImageType);
                 }
             } catch (Exception e) {
-                log.error("Failed to update EventSponsors {} image URL for ID {}: {}", imageType, entityId, e.getMessage());
+                log.error("Failed to update EventSponsors {} image URL for ID {}: {}", normalizedImageType, entityId, e.getMessage());
                 // Don't fail the upload if we can't update the sponsor record
             }
         }
@@ -669,7 +688,11 @@ public class EventMediaResource {
             null,
             entityId,
             "contact",
-            "photo"
+            "photo",
+            null, // eventSponsorsJoinId
+            null, // sponsorId
+            null, // eventMediaType
+            null // storageType
         );
 
         // Note: Photo is uploaded and stored as EventMedia, linked via entityId and
@@ -730,7 +753,11 @@ public class EventMediaResource {
             true,
             entityId,
             "program-director",
-            "photo"
+            "photo",
+            null, // eventSponsorsJoinId
+            null, // sponsorId
+            null, // eventMediaType
+            null // storageType
         );
 
         // Update the EventProgramDirectors entity with the photo URL
@@ -757,7 +784,26 @@ public class EventMediaResource {
     }
 
     /**
+     * Helper method to normalize sponsor image type.
+     * Converts LOGO_IMAGE -> logo, HERO_IMAGE -> hero, BANNER_IMAGE -> banner
+     * Also handles lowercase versions for backward compatibility.
+     */
+    private String normalizeSponsorImageType(String imageType) {
+        if (imageType == null) {
+            return imageType;
+        }
+        String upper = imageType.toUpperCase();
+        return switch (upper) {
+            case "LOGO_IMAGE" -> "logo";
+            case "HERO_IMAGE" -> "hero";
+            case "BANNER_IMAGE" -> "banner";
+            default -> imageType.toLowerCase(); // Return lowercase for backward compatibility
+        };
+    }
+
+    /**
      * Helper method to validate image type for specific entity type.
+     * Note: For sponsor types, validation happens after normalization, so only lowercase values are checked.
      */
     private boolean isValidImageType(String imageType, String entityType) {
         return switch (entityType) {

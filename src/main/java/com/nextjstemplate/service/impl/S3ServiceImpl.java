@@ -170,26 +170,36 @@ public class S3ServiceImpl implements S3Service {
 
     /**
      * Get the active Spring profile prefix for S3 paths.
-     * Returns the first active profile or "default" if none is set.
+     * Returns the first active profile, "dev" for development, or "prod" for production.
+     * Defaults to "dev" if no profile is set (for local development).
      *
      * @return the active profile prefix
      */
     private String getActiveProfilePrefix() {
         String[] activeProfiles = environment.getActiveProfiles();
         if (activeProfiles.length > 0) {
-            return activeProfiles[0];
+            String profile = activeProfiles[0];
+            // Map common profile names to S3 path prefixes
+            if ("prod".equalsIgnoreCase(profile) || "production".equalsIgnoreCase(profile)) {
+                return "prod";
+            }
+            // Default to "dev" for dev, local, or any other profile
+            return "dev";
         }
-        return "default";
+        // Default to "dev" for local development when no profile is set
+        return "dev";
     }
 
     private String generateUniqueFilename(String tenantId, Long eventId, String originalFilename, Boolean isTeamMemberProfileImage) {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String extension = getFileExtension(originalFilename);
-        String baseName = getBaseFileName(originalFilename);
         String profilePrefix = getActiveProfilePrefix();
 
         if (eventId != null && eventId > 0) {
+            // For general event media uploads (from /admin/events/[id]/media page), use "event_media" prefix
+            // instead of original filename to avoid exposing user's file naming conventions
+            String baseName = "event_media";
             return String.format(
                 "%s/events/tenantId/%s/event-id/%d/%s_%s_%s%s",
                 profilePrefix,
@@ -201,6 +211,7 @@ public class S3ServiceImpl implements S3Service {
                 extension
             );
         } else {
+            String baseName = getBaseFileName(originalFilename);
             if (isTeamMemberProfileImage != null && isTeamMemberProfileImage) {
                 return String.format(
                     "%s/media/tenantId/%s/executive-team-members/%s_%s_%s%s",
@@ -227,8 +238,17 @@ public class S3ServiceImpl implements S3Service {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String extension = getFileExtension(originalFilename);
-        String baseName = getBaseFileName(originalFilename);
         String profilePrefix = getActiveProfilePrefix();
+
+        // Determine base name based on entity type and image type
+        String baseName;
+        if (entityType != null && entityType.equalsIgnoreCase("contact") && imageType != null && imageType.equalsIgnoreCase("photo")) {
+            // For contact photos (email header images), use "event_media" prefix instead of original filename
+            baseName = "event_media";
+        } else {
+            // For other entity types, use sanitized original filename
+            baseName = getBaseFileName(originalFilename);
+        }
 
         // Build the path structure with profile prefix:
         // {profile}/events/tenantId/{tenantId}/event-id/{eventId}/{entityType}/{entityId}/{imageType}/{filename}
@@ -296,12 +316,34 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
-    public String generateSponsorImagePath(String tenantId, Long sponsorId, String originalFilename) {
+    public String generateSponsorImagePath(String tenantId, Long sponsorId, String originalFilename, String imageType) {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String extension = getFileExtension(originalFilename);
-        String baseName = sanitizeFilename(getBaseFileName(originalFilename));
         String profilePrefix = getActiveProfilePrefix();
+
+        // Use imageType if provided (logo, hero, banner), otherwise use sanitized original filename
+        String baseName;
+        if (imageType != null && !imageType.isEmpty()) {
+            // Normalize imageType: convert LOGO_IMAGE -> logo, HERO_IMAGE -> hero, BANNER_IMAGE -> banner
+            String normalizedImageType = imageType.toUpperCase();
+            String imageTypeBase;
+            if (normalizedImageType.equals("LOGO_IMAGE")) {
+                imageTypeBase = "logo";
+            } else if (normalizedImageType.equals("HERO_IMAGE")) {
+                imageTypeBase = "hero";
+            } else if (normalizedImageType.equals("BANNER_IMAGE")) {
+                imageTypeBase = "banner";
+            } else {
+                // Already normalized (logo, hero, banner) or other value
+                imageTypeBase = sanitizeFilename(imageType.toLowerCase());
+            }
+            // Prefix with "sponsor_" for clarity: sponsor_logo, sponsor_banner, sponsor_hero
+            baseName = "sponsor_" + imageTypeBase;
+        } else {
+            // Fallback to original filename base
+            baseName = sanitizeFilename(getBaseFileName(originalFilename));
+        }
 
         return String.format(
             "%s/media/tenantId/%s/sponsor/sponsor_id/%d/%s_%s_%s%s",
@@ -313,6 +355,11 @@ public class S3ServiceImpl implements S3Service {
             uuid,
             extension
         );
+    }
+
+    @Override
+    public String generateSponsorImagePath(String tenantId, Long sponsorId, String originalFilename) {
+        return generateSponsorImagePath(tenantId, sponsorId, originalFilename, null);
     }
 
     @Override
@@ -360,11 +407,12 @@ public class S3ServiceImpl implements S3Service {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String extension = getFileExtension(originalFilename);
-        String baseName = sanitizeFilename(getBaseFileName(originalFilename));
+        // Use "sponsor_poster" as the base name instead of the original filename
+        String baseName = "sponsor_poster";
         String profilePrefix = getActiveProfilePrefix();
 
         return String.format(
-            "%s/events/tenantId/%s/event-id/%d/sponsor/sponsor_id/%d/%s_%s_%s%s",
+            "%s/events/tenantId/%s/event-id/%d/sponsors/sponsor_id/%d/%s_%s_%s%s",
             profilePrefix,
             tenantId,
             eventId,

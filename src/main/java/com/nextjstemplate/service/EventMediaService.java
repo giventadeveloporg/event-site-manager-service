@@ -91,7 +91,11 @@ public interface EventMediaService {
         Boolean isProgramDirectorPhoto,
         Long entityId,
         String entityType,
-        String imageType
+        String imageType,
+        Long eventSponsorsJoinId,
+        Long sponsorId,
+        String eventMediaType,
+        String storageType
     );
 
     /**
