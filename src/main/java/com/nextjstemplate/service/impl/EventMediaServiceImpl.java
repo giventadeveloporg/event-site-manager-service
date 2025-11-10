@@ -168,6 +168,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         String imageType,
         Long eventSponsorsJoinId,
         Long sponsorId,
+        Long directorId,
+        Long performerId,
         String eventMediaType,
         String storageType
     ) {
@@ -243,6 +245,149 @@ public class EventMediaServiceImpl implements EventMediaService {
             } catch (Exception e) {
                 log.error("Warning: Could not update event_sponsors_join.custom_poster_url: {}", e.getMessage());
                 // Don't fail the upload if we can't update the join record
+            }
+
+            return eventMediaMapper.toDto(eventMedia);
+        }
+
+        // Handle EVENT_DIRECTOR_POSTER type uploads (custom poster for event-director combination)
+        if (eventMediaType != null && eventMediaType.equals("EVENT_DIRECTOR_POSTER") && eventId != null && directorId != null) {
+            log.debug("Processing event-director poster upload: eventId={}, directorId={}", eventId, directorId);
+
+            // 1. Find director record
+            EventProgramDirectors director = eventProgramDirectorsRepository
+                .findById(directorId)
+                .orElseThrow(() -> new RuntimeException("Director not found: directorId=" + directorId));
+
+            // 2. Generate S3 path using the correct format: dev/events/tenantId/{tenantId}/event-id/{eventId}/program-directors/director_id/{directorId}/{filename}
+            String s3Path = s3Service.generateEventDirectorPosterPath(tenantId, eventId, directorId, file.getOriginalFilename());
+
+            // 3. Upload to S3
+            String s3Url = s3Service.uploadFile(s3Path, file);
+
+            // 4. Create EventMedia record
+            EventMedia eventMedia = new EventMedia();
+            eventMedia.setEventId(eventId);
+            eventMedia.setDirectorId(directorId);
+            eventMedia.setTitle(title);
+            eventMedia.setDescription(description != null ? description : "Custom poster for event-director combination");
+            eventMedia.setFileUrl(s3Url);
+            eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(s3Url, 1));
+            eventMedia.setFileSize((int) file.getSize());
+            eventMedia.setEventMediaType(eventMediaType);
+            eventMedia.setStorageType(storageType != null ? storageType : "S3");
+            eventMedia.setIsPublic(isPublic);
+            eventMedia.setTenantId(tenantId);
+            eventMedia.setPriorityRanking(0); // Default to highest priority
+            eventMedia.setCreatedAt(ZonedDateTime.now());
+            eventMedia.setUpdatedAt(ZonedDateTime.now());
+            eventMedia.setEventFlyer(eventFlyer != null ? eventFlyer : false);
+            eventMedia.setIsEventManagementOfficialDocument(
+                isEventManagementOfficialDocument != null ? isEventManagementOfficialDocument : false
+            );
+            eventMedia.setIsHeroImage(isHeroImage != null ? isHeroImage : false);
+            eventMedia.setIsActiveHeroImage(isActiveHeroImage != null ? isActiveHeroImage : false);
+            eventMedia.setIsHomePageHeroImage(isHomePageHeroImage);
+            eventMedia.setIsFeaturedEventImage(isFeaturedEventImage);
+            eventMedia.setIsLiveEventImage(isLiveEventImage);
+            eventMedia.setStartDisplayingFromDate(startDisplayingFromDate != null ? startDisplayingFromDate : LocalDate.now());
+            eventMedia.setUploadedById(userProfileId);
+
+            // 5. Save EventMedia record
+            eventMedia = eventMediaRepository.save(eventMedia);
+            log.debug("Successfully created EventMedia record for event-director poster: eventId={}, directorId={}", eventId, directorId);
+
+            // 6. Optionally update director.photoUrl if this is the first poster (similar to sponsors)
+            try {
+                // Check if this is the first poster for this director in this event
+                // Count existing posters before saving (should be 0 for first poster)
+                long existingPosterCount = eventMediaRepository.countByDirectorIdAndEventIdAndEventMediaType(
+                    directorId,
+                    eventId,
+                    "EVENT_DIRECTOR_POSTER"
+                );
+                // Since we just saved one, if count is 1, this was the first poster
+                if (existingPosterCount == 1) {
+                    director.setPhotoUrl(s3Url);
+                    eventProgramDirectorsRepository.save(director);
+                    log.debug("Updated director.photoUrl for directorId={}", directorId);
+                }
+            } catch (Exception e) {
+                log.error("Warning: Could not update director.photoUrl: {}", e.getMessage());
+                // Don't fail the upload if we can't update the director record
+            }
+
+            return eventMediaMapper.toDto(eventMedia);
+        }
+
+        // Handle EVENT_PERFORMER_POSTER type uploads (custom poster for event-performer combination)
+        if (eventMediaType != null && eventMediaType.equals("EVENT_PERFORMER_POSTER") && eventId != null && performerId != null) {
+            log.debug("Processing event-performer poster upload: eventId={}, performerId={}", eventId, performerId);
+
+            // 1. Find performer record
+            EventFeaturedPerformers performer = eventFeaturedPerformersRepository
+                .findById(performerId)
+                .orElseThrow(() -> new RuntimeException("Performer not found: performerId=" + performerId));
+
+            // 2. Generate S3 path using the correct format: dev/events/tenantId/{tenantId}/event-id/{eventId}/performers/performer_id/{performerId}/{filename}
+            String s3Path = s3Service.generateEventPerformerPosterPath(tenantId, eventId, performerId, file.getOriginalFilename());
+
+            // 3. Upload to S3
+            String s3Url = s3Service.uploadFile(s3Path, file);
+
+            // 4. Create EventMedia record
+            EventMedia eventMedia = new EventMedia();
+            eventMedia.setEventId(eventId);
+            eventMedia.setPerformerId(performerId);
+            eventMedia.setTitle(title);
+            eventMedia.setDescription(description != null ? description : "Custom poster for event-performer combination");
+            eventMedia.setFileUrl(s3Url);
+            eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(s3Url, 1));
+            eventMedia.setFileSize((int) file.getSize());
+            eventMedia.setEventMediaType(eventMediaType);
+            eventMedia.setStorageType(storageType != null ? storageType : "S3");
+            eventMedia.setIsPublic(isPublic);
+            eventMedia.setTenantId(tenantId);
+            eventMedia.setPriorityRanking(0); // Default to highest priority
+            eventMedia.setCreatedAt(ZonedDateTime.now());
+            eventMedia.setUpdatedAt(ZonedDateTime.now());
+            eventMedia.setEventFlyer(eventFlyer != null ? eventFlyer : false);
+            eventMedia.setIsEventManagementOfficialDocument(
+                isEventManagementOfficialDocument != null ? isEventManagementOfficialDocument : false
+            );
+            eventMedia.setIsHeroImage(isHeroImage != null ? isHeroImage : false);
+            eventMedia.setIsActiveHeroImage(isActiveHeroImage != null ? isActiveHeroImage : false);
+            eventMedia.setIsHomePageHeroImage(isHomePageHeroImage);
+            eventMedia.setIsFeaturedEventImage(isFeaturedEventImage);
+            eventMedia.setIsLiveEventImage(isLiveEventImage);
+            eventMedia.setStartDisplayingFromDate(startDisplayingFromDate != null ? startDisplayingFromDate : LocalDate.now());
+            eventMedia.setUploadedById(userProfileId);
+
+            // 5. Save EventMedia record
+            eventMedia = eventMediaRepository.save(eventMedia);
+            log.debug(
+                "Successfully created EventMedia record for event-performer poster: eventId={}, performerId={}",
+                eventId,
+                performerId
+            );
+
+            // 6. Optionally update performer.portraitImageUrl if this is the first poster (similar to directors/sponsors)
+            try {
+                // Check if this is the first poster for this performer in this event
+                long existingPosterCount = eventMediaRepository.countByPerformerIdAndEventIdAndEventMediaType(
+                    performerId,
+                    eventId,
+                    "EVENT_PERFORMER_POSTER"
+                );
+                // Since we just saved one, if count is 1, this was the first poster
+                if (existingPosterCount == 1 && performer.getPortraitImageUrl() == null) {
+                    performer.setPortraitImageUrl(s3Url);
+                    eventFeaturedPerformersRepository.save(performer);
+                    log.debug("Updated performer.portraitImageUrl for performerId={}", performerId);
+                }
+            } catch (Exception e) {
+                log.error("Warning: Could not update performer.portraitImageUrl: {}", e.getMessage());
+                // Don't fail the upload if we can't update the performer record
             }
 
             return eventMediaMapper.toDto(eventMedia);
@@ -696,6 +841,8 @@ public class EventMediaServiceImpl implements EventMediaService {
                 null,
                 null,
                 null,
+                null, // directorId
+                null, // performerId
                 null,
                 null
             );

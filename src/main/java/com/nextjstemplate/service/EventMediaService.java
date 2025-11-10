@@ -94,6 +94,8 @@ public interface EventMediaService {
         String imageType,
         Long eventSponsorsJoinId,
         Long sponsorId,
+        Long directorId,
+        Long performerId,
         String eventMediaType,
         String storageType
     );

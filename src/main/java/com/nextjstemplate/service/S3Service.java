@@ -128,6 +128,18 @@ public interface S3Service {
     String generateEventSponsorJoinImagePath(String tenantId, Long eventId, Long sponsorId, String originalFilename);
 
     /**
+     * Generate S3 path for event-director poster images.
+     * Path format: {profile}/events/tenantId/{tenantId}/event-id/{eventId}/program-directors/director_id/{directorId}/{filename}
+     *
+     * @param tenantId Tenant ID
+     * @param eventId Event ID
+     * @param directorId Director ID
+     * @param originalFilename Original filename from upload
+     * @return S3 path string
+     */
+    String generateEventDirectorPosterPath(String tenantId, Long eventId, Long directorId, String originalFilename);
+
+    /**
      * Generate S3 path for performer images.
      * Path format: {profile}/media/tenantId/{tenantId}/performer/performer_id/{performerId}/{filename}
      *

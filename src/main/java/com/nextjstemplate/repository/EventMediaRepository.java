@@ -49,6 +49,30 @@ public interface EventMediaRepository extends JpaRepository<EventMedia, Long>, J
     long countByDirectorIdAndEventMediaType(@Param("directorId") Long directorId, @Param("eventMediaType") String eventMediaType);
 
     /**
+     * Count media files for a specific director, event, and event media type
+     */
+    @Query(
+        "SELECT COUNT(e) FROM EventMedia e WHERE e.directorId = :directorId AND e.eventId = :eventId AND e.eventMediaType = :eventMediaType"
+    )
+    long countByDirectorIdAndEventIdAndEventMediaType(
+        @Param("directorId") Long directorId,
+        @Param("eventId") Long eventId,
+        @Param("eventMediaType") String eventMediaType
+    );
+
+    /**
+     * Count media files for a specific performer, event, and event media type
+     */
+    @Query(
+        "SELECT COUNT(e) FROM EventMedia e WHERE e.performerId = :performerId AND e.eventId = :eventId AND e.eventMediaType = :eventMediaType"
+    )
+    long countByPerformerIdAndEventIdAndEventMediaType(
+        @Param("performerId") Long performerId,
+        @Param("eventId") Long eventId,
+        @Param("eventMediaType") String eventMediaType
+    );
+
+    /**
      * Find all media files for an event-sponsor combination, sorted by priority ranking (ascending)
      */
     @Query("SELECT e FROM EventMedia e WHERE e.eventSponsorsJoinId = :eventSponsorsJoinId ORDER BY e.priorityRanking ASC")

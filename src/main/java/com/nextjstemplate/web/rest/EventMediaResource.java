@@ -350,6 +350,8 @@ public class EventMediaResource {
         @RequestParam(value = "imageType", required = false) String imageType,
         @RequestParam(value = "eventSponsorsJoinId", required = false) Long eventSponsorsJoinId,
         @RequestParam(value = "sponsorId", required = false) Long sponsorId,
+        @RequestParam(value = "directorId", required = false) Long directorId,
+        @RequestParam(value = "performerId", required = false) Long performerId,
         @RequestParam(value = "eventMediaType", required = false) String eventMediaType,
         @RequestParam(value = "storageType", required = false) String storageType,
         Authentication authentication
@@ -413,6 +415,8 @@ public class EventMediaResource {
             imageType,
             eventSponsorsJoinId,
             sponsorId,
+            directorId,
+            performerId,
             eventMediaType,
             storageType
         );
@@ -501,6 +505,8 @@ public class EventMediaResource {
             imageType,
             null, // eventSponsorsJoinId
             null, // sponsorId
+            null, // directorId
+            null, // performerId
             null, // eventMediaType
             null // storageType
         );
@@ -604,6 +610,8 @@ public class EventMediaResource {
             normalizedImageType,
             null, // eventSponsorsJoinId
             null, // sponsorId
+            null, // directorId
+            null, // performerId
             null, // eventMediaType
             null // storageType
         );
@@ -691,6 +699,8 @@ public class EventMediaResource {
             "photo",
             null, // eventSponsorsJoinId
             null, // sponsorId
+            null, // directorId
+            null, // performerId
             null, // eventMediaType
             null // storageType
         );
@@ -756,6 +766,8 @@ public class EventMediaResource {
             "photo",
             null, // eventSponsorsJoinId
             null, // sponsorId
+            null, // directorId
+            null, // performerId
             null, // eventMediaType
             null // storageType
         );

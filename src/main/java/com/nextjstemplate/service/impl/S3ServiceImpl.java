@@ -424,6 +424,50 @@ public class S3ServiceImpl implements S3Service {
         );
     }
 
+    @Override
+    public String generateEventDirectorPosterPath(String tenantId, Long eventId, Long directorId, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        // Use "director_poster" as the base name instead of the original filename
+        String baseName = "director_poster";
+        String profilePrefix = getActiveProfilePrefix();
+
+        return String.format(
+            "%s/events/tenantId/%s/event-id/%d/program-directors/director_id/%d/%s_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            eventId,
+            directorId,
+            baseName,
+            timestamp,
+            uuid,
+            extension
+        );
+    }
+
+    @Override
+    public String generateEventPerformerPosterPath(String tenantId, Long eventId, Long performerId, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        // Use "performer_poster" as the base name instead of the original filename
+        String baseName = "performer_poster";
+        String profilePrefix = getActiveProfilePrefix();
+
+        return String.format(
+            "%s/events/tenantId/%s/event-id/%d/performers/performer_id/%d/%s_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            eventId,
+            performerId,
+            baseName,
+            timestamp,
+            uuid,
+            extension
+        );
+    }
+
     /**
      * Sanitize filename - remove special characters, keep alphanumeric, dots, hyphens, underscores
      */
