@@ -1,16 +1,17 @@
 # Task ID: 16
-# Title: Implement Permission Checking Service
+# Title: Update API documentation
 # Status: pending
-# Dependencies: 15 ⏱️
+# Dependencies: 9 ⏱️, 10 ⏱️, 11 ⏱️, 12 ⏱️, 13 ⏱️, 15 ⏱️
 # Priority: low
-# Description: Create service for verifying user permissions and roles.
+# Description: Update Swagger documentation for all new endpoints and response structures.
 # Details:
-- Create PermissionService interface
-- Implement PermissionServiceImpl
-- Implement permission checking methods
-- Implement role verification methods
-- Implement resource access methods
-- Add tenant-aware permission checks
+- Update Swagger API docs for payment initialization endpoint
+- Document payment status and refund endpoints
+- Add documentation for ACP endpoints
+- Document webhook endpoints
+- Add documentation for finance admin APIs
+- Ensure all response structures are properly defined
+- Include example requests and responses
 
 # Test Strategy:
-Test that permission checking works correctly, role-based access control functions properly, and tenant-aware permissions are enforced.
+Verify that the Swagger documentation accurately reflects the implemented endpoints. Test the documentation with Swagger UI.

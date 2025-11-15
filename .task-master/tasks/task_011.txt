@@ -1,18 +1,15 @@
 # Task ID: 11
-# Title: Implement Social Sign-In API
+# Title: Implement refund endpoint
 # Status: pending
-# Dependencies: 10 ⏱️, 5 ✅
+# Dependencies: 9 ⏱️
 # Priority: medium
-# Description: Create endpoint for authenticating with social providers.
+# Description: Create the endpoint for issuing full/partial refunds through the respective adapter.
 # Details:
-- Create SocialSignInRequest and SocialSignInResponse DTOs
-- Implement POST /api/auth/sign-in/social endpoint
-- Validate OAuth token with Clerk
-- Extract user info from Clerk
-- Create or update user_profile
-- Handle account linking
-- Update auth_provider field
-- Document API in Swagger
+- Implement POST /api/payments/{transactionId}/refund endpoint
+- Support full and partial refunds
+- Route to appropriate provider adapter based on original payment method
+- Log refund metadata in payment_transaction
+- Handle provider-specific refund requirements
 
 # Test Strategy:
-Test that social sign-in works for all configured providers, account linking functions correctly, and user profiles are properly updated.
+Test the endpoint with different providers. Verify refund processing and transaction status updates.

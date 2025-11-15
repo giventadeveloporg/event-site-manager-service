@@ -1,17 +1,17 @@
 # Task ID: 17
-# Title: Implement Webhook Endpoint
+# Title: Implement comprehensive testing suite
 # Status: pending
-# Dependencies: 3 ✅
-# Priority: low
-# Description: Create endpoint for receiving Clerk webhook events.
+# Dependencies: 9 ⏱️, 10 ⏱️, 11 ⏱️, 12 ⏱️, 13 ⏱️, 14 ⏱️, 15 ⏱️
+# Priority: high
+# Description: Create unit tests, integration tests, contract tests, and end-to-end tests for all payment flows.
 # Details:
-- Create WebhookController
-- Implement POST /api/webhooks/clerk endpoint
-- Verify webhook signature using webhook secret
-- Parse webhook payload
-- Route to appropriate event handler
-- Return appropriate response
-- Handle errors gracefully
+- Create unit tests for each provider adapter
+- Implement integration tests for payment initialization covering all providers
+- Add contract tests using Swagger schema
+- Create end-to-end tests for Stripe and PayPal flows in staging
+- Implement tests for the settlement job
+- Add tests for webhook processing
+- Create tests for admin finance APIs
 
 # Test Strategy:
-Test that the webhook endpoint correctly receives events, validates signatures, and routes events to the appropriate handlers.
+Run the full test suite and verify all payment flows work correctly. Ensure test coverage for edge cases and error handling.

@@ -1,17 +1,15 @@
 # Task ID: 12
-# Title: Implement Multi-Tenant Service
+# Title: Implement ACP endpoints
 # Status: pending
-# Dependencies: 2 ⏱️
+# Dependencies: 3 ⏱️
 # Priority: medium
-# Description: Create service for handling multi-tenant operations.
+# Description: Implement Stripe Instant Checkout (ACP) endpoints with feature flag support.
 # Details:
-- Create TenantService interface
-- Implement TenantServiceImpl
-- Implement tenant validation methods
-- Implement methods for adding/removing users from tenants
-- Implement methods for retrieving user tenants
-- Implement tenant switching functionality
-- Add tenant isolation to queries
+- Implement POST /api/payments/providers/stripe/instant-checkout endpoint
+- Create ACP REST endpoints according to Stripe spec (Create/Update/Complete/Cancel checkout)
+- Wrap existing Stripe PaymentIntent creation inside CompleteCheckout handler
+- Gate endpoints behind supports_acp flag in payment_provider_config
+- Implement fallback to standard PaymentIntent if feature disabled
 
 # Test Strategy:
-Test that users can belong to multiple tenants, tenant validation works, tenant switching functions correctly, and data isolation is enforced.
+Test the endpoints with the supports_acp flag enabled and disabled. Verify ACP session creation and fallback mechanism.

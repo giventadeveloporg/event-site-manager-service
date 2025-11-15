@@ -15,6 +15,7 @@ public class ApplicationProperties {
     private final Security security = new Security();
     private final Monitoring monitoring = new Monitoring();
     private final Urls urls = new Urls();
+    private final Payment payment = new Payment();
 
     public Cors getCors() {
         return cors;
@@ -32,7 +33,12 @@ public class ApplicationProperties {
         return urls;
     }
 
+    public Payment getPayment() {
+        return payment;
+    }
+
     public static class Cors {
+
         private String allowedOrigins = "http://localhost:3000,http://localhost:4200,http://localhost:8080";
         private String allowedMethods = "GET,POST,PUT,DELETE,OPTIONS,HEAD,PATCH";
         private String allowedHeaders = "*";
@@ -81,6 +87,7 @@ public class ApplicationProperties {
     }
 
     public static class Security {
+
         private final RateLimiting rateLimiting = new RateLimiting();
 
         public RateLimiting getRateLimiting() {
@@ -88,6 +95,7 @@ public class ApplicationProperties {
         }
 
         public static class RateLimiting {
+
             private boolean enabled = false;
             private int requestsPerMinute = 1000;
 
@@ -110,6 +118,7 @@ public class ApplicationProperties {
     }
 
     public static class Monitoring {
+
         private boolean enableTenantMetrics = true;
         private boolean enablePerformanceTracking = true;
         private boolean enableDebugLogging = true;
@@ -140,6 +149,7 @@ public class ApplicationProperties {
     }
 
     public static class Urls {
+
         private String qrcodeScanHostPrefix = "http://localhost:3000/admin";
         private String emailHostUrlPrefix = "http://localhost:3000";
 
@@ -160,6 +170,27 @@ public class ApplicationProperties {
         }
     }
 
+    public static class Payment {
+
+        private final Encryption encryption = new Encryption();
+
+        public Encryption getEncryption() {
+            return encryption;
+        }
+
+        public static class Encryption {
+
+            private String key = "";
+
+            public String getKey() {
+                return key;
+            }
+
+            public void setKey(String key) {
+                this.key = key;
+            }
+        }
+    }
     // jhipster-needle-application-properties-property
     // jhipster-needle-application-properties-property-getter
     // jhipster-needle-application-properties-property-class

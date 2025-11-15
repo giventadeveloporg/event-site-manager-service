@@ -1,18 +1,15 @@
 # Task ID: 4
-# Title: Implement Sign-Up API
-# Status: done
-# Dependencies: 3 ✅
-# Priority: high
-# Description: Create REST endpoint for user registration with Clerk.
+# Title: Implement PayPalPaymentAdapter
+# Status: pending
+# Dependencies: 2 ⏱️
+# Priority: medium
+# Description: Create the PayPal adapter using the Orders API with support for capture, refund, and webhook validation.
 # Details:
-- Create SignUpRequest and SignUpResponse DTOs
-- Implement POST /api/auth/sign-up endpoint
-- Validate input parameters
-- Call ClerkIntegrationService to create user in Clerk
-- Create user_profile record in database
-- Generate JWT token
-- Handle validation errors
-- Document API in Swagger
+- Implement PayPalPaymentAdapter using the Orders API
+- Add support for capture and refund operations
+- Implement webhook validation
+- Handle capture/void notifications
+- Store PayPal-specific transaction details
 
 # Test Strategy:
-Test that the endpoint returns 201 on success, creates a user in both Clerk and database, returns a valid JWT token, and properly handles validation errors.
+Test the adapter with PayPal sandbox environment. Verify order creation, capture, and webhook processing.

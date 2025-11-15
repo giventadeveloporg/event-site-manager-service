@@ -1,17 +1,16 @@
 # Task ID: 2
-# Title: Database Schema Migration
+# Title: Implement PaymentService interface and core orchestration layer
 # Status: pending
 # Dependencies: 1 ⏱️
 # Priority: high
-# Description: Create Liquibase migrations to add new columns to existing tables and create new tables required for Clerk integration.
+# Description: Create the core payment service interface that all provider adapters will implement, along with the orchestration layer that routes payment requests.
 # Details:
-- Add new Clerk-related columns to existing user_profile table
-- Create new clerk_user_tenant junction table
-- Create new clerk_organization_role table
-- Create new clerk_webhook_event table
-- Create new clerk_session table
-- Add indexes and constraints to optimize queries
-- Update unique constraint to support multi-tenant (email, tenant_id)
+- Define PaymentService interface with methods: initialize, confirm, cancel, refund, webhook handling, supportedMethods
+- Implement the payment orchestration service as the entry point for all payment operations
+- Create provider selection logic based on tenant configuration
+- Implement fallback ordering mechanism
+- Build configuration layer to access payment_provider_config settings
+- Create secure credential storage with AES-256-GCM encryption
 
 # Test Strategy:
-Ensure migrations run successfully on the existing database, preserve existing user_profile data, and that the application starts without migration errors.
+Unit test the orchestration layer with mock providers to ensure proper routing of requests based on tenant configuration.

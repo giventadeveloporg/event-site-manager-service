@@ -1,14 +1,17 @@
 # Task ID: 1
-# Title: Project Setup
-# Status: pending
+# Title: Set up project scaffolding and database migrations
+# Status: done
 # Dependencies: None
 # Priority: high
-# Description: Integrate Clerk SDK into the existing Spring Boot project and configure credentials.
+# Description: Create the initial project structure and implement database migrations for new tables and columns required by the payment orchestration layer.
 # Details:
-- Add Clerk Maven dependency to existing pom.xml
-- Add Clerk configuration to application-dev.yml
-- Verify the provided Clerk credentials (publishable key, secret key, webhook secret)
-- Extend existing error handling framework for Clerk errors
+- Set up project structure for the payment orchestration service
+- Create database migration scripts for new tables: payment_provider_config, platform_settlement, platform_invoice
+- Add new columns to payment_transaction: settlement_batch_id, platform_invoice_id, manual_payment_reference
+- Create membership_plan and membership_subscription tables
+- Implement indexes as described in the master PRD
+- Migrate legacy event_ticket_transaction data into payment_transaction
+- Backfill payment_provider_config for existing tenants with Stripe configs
 
 # Test Strategy:
-Verify that the application starts successfully without errors and that the Clerk SDK initializes correctly.
+Verify all tables are created with correct schema. Run test queries to ensure data integrity and proper relationships between tables.

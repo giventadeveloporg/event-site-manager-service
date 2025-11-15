@@ -190,7 +190,12 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  # Payment provider encryption key (Base64-encoded AES-256 key)
+  # Generate a key using: PaymentCredentialEncryptionService.generateEncryptionKey()
+  payment:
+    encryption:
+      key: ${PAYMENT_ENCRYPTION_KEY:}
 
 # ===================================================================
 # AWS S3 Configuration

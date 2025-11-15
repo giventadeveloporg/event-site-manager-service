@@ -1,17 +1,15 @@
 # Task ID: 14
-# Title: Implement Organization Sync Service
+# Title: Implement settlement and fee calculation job
 # Status: pending
-# Dependencies: 3 ✅
-# Priority: medium
-# Description: Create service to synchronize Clerk Organizations with application roles.
+# Dependencies: 1 ⏱️, 9 ⏱️, 13 ⏱️
+# Priority: high
+# Description: Create the nightly job that aggregates transactions, creates settlement entries, and generates invoices for platform fees.
 # Details:
-- Create OrganizationSyncService interface
-- Implement OrganizationSyncServiceImpl
-- Implement syncUserOrganizations method
-- Fetch organizations from Clerk
-- Map Clerk roles to application roles
-- Update user_profile.user_role
-- Update clerk_user_tenant records
+- Implement nightly job to aggregate transactions
+- Create platform_settlement entries with gross, processing fee, platform fee, net
+- Handle application fee collection for providers that support it (Stripe Connect)
+- Generate platform_invoice for fees that aren't auto-deducted
+- Implement fee calculation logic based on provider and transaction type
 
 # Test Strategy:
-Test that organizations are correctly synced from Clerk, roles are properly mapped, and user permissions are updated accordingly.
+Test the job with sample transaction data. Verify settlement calculations, invoice generation, and proper handling of different fee structures.

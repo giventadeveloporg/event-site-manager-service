@@ -1,16 +1,14 @@
 # Task ID: 8
-# Title: Implement Get Current User Endpoint
-# Status: done
-# Dependencies: 6 ✅
-# Priority: medium
-# Description: Create endpoint to retrieve authenticated user profile.
+# Title: Implement CeFiCharityAdapter
+# Status: pending
+# Dependencies: 2 ⏱️
+# Priority: low
+# Description: Create the CeFi charity adapter for integrating with partner ACH/transfer providers and fetching settlement files.
 # Details:
-- Create UserResponse DTO
-- Implement GET /api/auth/user endpoint
-- Load user from database by JWT claims
-- Include organizations and roles
-- Include tenant memberships
-- Document API in Swagger
+- Implement CeFiCharityAdapter for partner ACH/transfer integration
+- Create mechanism for fetching settlement files
+- Support DONATION_CEFI payment type
+- Process settlement data into payment_transaction records
 
 # Test Strategy:
-Test that the endpoint returns complete user info including organizations and tenants for authenticated users.
+Test the adapter with mock settlement files. Verify transaction creation and settlement processing.

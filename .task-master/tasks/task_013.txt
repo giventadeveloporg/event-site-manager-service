@@ -1,16 +1,18 @@
 # Task ID: 13
-# Title: Create Tenant Context Filter
+# Title: Implement webhook processing endpoints
 # Status: pending
-# Dependencies: 12 ⏱️
-# Priority: medium
-# Description: Implement filter to extract and validate tenant context from requests.
+# Dependencies: 3 ⏱️, 4 ⏱️, 5 ⏱️, 7 ⏱️
+# Priority: high
+# Description: Create webhook endpoints for all payment providers with proper signature verification and idempotent processing.
 # Details:
-- Create TenantContextFilter
-- Extract tenant ID from request (header, param, or JWT)
-- Validate tenant ID
-- Set tenant in ThreadLocal context
-- Clear context after request
-- Add filter to security filter chain
+- Implement /api/webhooks/stripe endpoint for Stripe events
+- Implement /api/webhooks/paypal endpoint for PayPal events
+- Add webhook support for Zeffy if provided
+- Implement webhook endpoint for Revolut events
+- Add signature verification for all webhooks
+- Implement rate-limiting for webhook requests
+- Log all webhook payloads in payment_webhook_log
+- Ensure idempotent processing of webhook events
 
 # Test Strategy:
-Test that tenant context is available in all requests, invalid tenant IDs return 403, and context is cleaned up after each request.
+Test webhook endpoints with sample payloads from each provider. Verify signature verification, idempotency, and event processing.

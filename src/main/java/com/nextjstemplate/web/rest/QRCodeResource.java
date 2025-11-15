@@ -192,9 +192,14 @@ public class QRCodeResource {
             return;
         }
         String recipient = (to != null && !to.isBlank()) ? to : "test@example.com";
-        // Check subscription
+
+        // CRITICAL: Get tenantId first for multi-tenant email subscription check
+        String tenantId = dto.getTransaction().getTenantId();
+
+        // Check subscription - MUST use findByEmailAndTenantId to avoid NonUniqueResultException
+        // In multi-tenant systems, the same email can exist across different tenants
         boolean isSubscribed = userProfileService
-            .findByEmail(recipient)
+            .findByEmailAndTenantId(recipient, tenantId)
             .map(u -> Boolean.TRUE.equals(u.getIsEmailSubscribed()))
             .orElse(true); // Default to true if not found
         if (!isSubscribed) {
@@ -211,7 +216,6 @@ public class QRCodeResource {
             "<div style='margin:24px 0 0 0; text-align:center; color:#888; font-size:13px;'>If you no longer wish to receive these emails, <a href='%s' style='color:#6b207c;'>click here to unsubscribe</a>.</div>",
             unsubscribeLink
         );
-        String tenantId = dto.getTransaction().getTenantId();
         String profilePrefix = getActiveProfilePrefix();
         String s3BaseUrl = getS3BaseUrl();
         String headerImageUrl = String.format(

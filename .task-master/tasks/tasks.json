@@ -2,291 +2,191 @@
   "meta": {
     "projectName": "Task Master",
     "version": "1.5.0",
-    "source": ".task-master/PRD.txt",
+    "source": ".task-master/PRD_backend.html",
     "description": "Tasks generated from PRD",
-    "totalTasksGenerated": 28,
-    "tasksIncluded": 28
+    "totalTasksGenerated": 18,
+    "tasksIncluded": 18
   },
   "tasks": [
     {
       "id": 1,
-      "title": "Project Setup",
-      "description": "Integrate Clerk SDK into the existing Spring Boot project and configure credentials.",
+      "title": "Set up project scaffolding and database migrations",
+      "description": "Create the initial project structure and implement database migrations for new tables and columns required by the payment orchestration layer.",
       "status": "pending",
       "dependencies": [],
       "priority": "high",
-      "details": "- Add Clerk Maven dependency to existing pom.xml\n- Add Clerk configuration to application-dev.yml\n- Verify the provided Clerk credentials (publishable key, secret key, webhook secret)\n- Extend existing error handling framework for Clerk errors",
-      "testStrategy": "Verify that the application starts successfully without errors and that the Clerk SDK initializes correctly."
+      "details": "- Set up project structure for the payment orchestration service\n- Create database migration scripts for new tables: payment_provider_config, platform_settlement, platform_invoice\n- Add new columns to payment_transaction: settlement_batch_id, platform_invoice_id, manual_payment_reference\n- Create membership_plan and membership_subscription tables\n- Implement indexes as described in the master PRD\n- Migrate legacy event_ticket_transaction data into payment_transaction\n- Backfill payment_provider_config for existing tenants with Stripe configs",
+      "testStrategy": "Verify all tables are created with correct schema. Run test queries to ensure data integrity and proper relationships between tables."
     },
     {
       "id": 2,
-      "title": "Database Schema Migration",
-      "description": "Create Liquibase migrations to add new columns to existing tables and create new tables required for Clerk integration.",
+      "title": "Implement PaymentService interface and core orchestration layer",
+      "description": "Create the core payment service interface that all provider adapters will implement, along with the orchestration layer that routes payment requests.",
       "status": "pending",
       "dependencies": [1],
       "priority": "high",
-      "details": "- Add new Clerk-related columns to existing user_profile table\n- Create new clerk_user_tenant junction table\n- Create new clerk_organization_role table\n- Create new clerk_webhook_event table\n- Create new clerk_session table\n- Add indexes and constraints to optimize queries\n- Update unique constraint to support multi-tenant (email, tenant_id)",
-      "testStrategy": "Ensure migrations run successfully on the existing database, preserve existing user_profile data, and that the application starts without migration errors."
+      "details": "- Define PaymentService interface with methods: initialize, confirm, cancel, refund, webhook handling, supportedMethods\n- Implement the payment orchestration service as the entry point for all payment operations\n- Create provider selection logic based on tenant configuration\n- Implement fallback ordering mechanism\n- Build configuration layer to access payment_provider_config settings\n- Create secure credential storage with AES-256-GCM encryption",
+      "testStrategy": "Unit test the orchestration layer with mock providers to ensure proper routing of requests based on tenant configuration."
     },
     {
       "id": 3,
-      "title": "Implement ClerkIntegrationService",
-      "description": "Create service layer for interacting with Clerk SDK.",
-      "status": "done",
-      "dependencies": [1, 2],
+      "title": "Implement StripePaymentAdapter",
+      "description": "Refactor the Stripe adapter to support PaymentIntent, Checkout Session, and Instant Checkout with multi-tenant configuration.",
+      "status": "pending",
+      "dependencies": [2],
       "priority": "high",
-      "details": "- Create ClerkIntegrationService interface\n- Implement ClerkIntegrationServiceImpl\n- Initialize Clerk SDK with credentials\n- Implement user management methods (createUser, getUserById, updateUser)\n- Implement token validation methods\n- Implement organization management methods\n- Add comprehensive error handling and logging",
-      "testStrategy": "Write unit tests with >80% coverage ensuring the service successfully calls Clerk APIs and handles errors appropriately."
+      "details": "- Implement StripePaymentAdapter with PaymentIntent creation\n- Add support for Checkout Sessions\n- Implement Link/Wallet support\n- Add multi-tenant configuration\n- Support Stripe Billing for subscriptions\n- Implement webhook handling for payment_intent.succeeded, payment_intent.payment_failed, checkout.session.completed events\n- Add support for refund events",
+      "testStrategy": "Unit test the adapter with Stripe test mode. Verify all payment flows and webhook handling work correctly."
     },
     {
       "id": 4,
-      "title": "Implement Sign-Up API",
-      "description": "Create REST endpoint for user registration with Clerk.",
-      "status": "done",
-      "dependencies": [3],
-      "priority": "high",
-      "details": "- Create SignUpRequest and SignUpResponse DTOs\n- Implement POST /api/auth/sign-up endpoint\n- Validate input parameters\n- Call ClerkIntegrationService to create user in Clerk\n- Create user_profile record in database\n- Generate JWT token\n- Handle validation errors\n- Document API in Swagger",
-      "testStrategy": "Test that the endpoint returns 201 on success, creates a user in both Clerk and database, returns a valid JWT token, and properly handles validation errors."
-    },
-    {
-      "id": 5,
-      "title": "Implement Sign-In API",
-      "description": "Create REST endpoint for user authentication with Clerk.",
-      "status": "done",
-      "dependencies": [3],
-      "priority": "high",
-      "details": "- Create SignInRequest and SignInResponse DTOs\n- Implement POST /api/auth/sign-in endpoint\n- Validate credentials with Clerk\n- Load user_profile from database\n- Generate JWT token\n- Update last_sign_in_at timestamp\n- Handle invalid credentials\n- Document API in Swagger",
-      "testStrategy": "Test that the endpoint returns 200 on success with a valid JWT token, returns 401 for invalid credentials, and updates the last sign-in timestamp."
-    },
-    {
-      "id": 6,
-      "title": "Implement Token Validation",
-      "description": "Create token validation endpoint and JWT authentication filter.",
-      "status": "done",
-      "dependencies": [3],
-      "priority": "high",
-      "details": "- Create TokenValidationRequest and TokenValidationResponse DTOs\n- Implement POST /api/auth/verify-token endpoint\n- Implement JWT validation logic with Clerk\n- Create JwtAuthenticationFilter\n- Extract token from Authorization header\n- Load user from database\n- Populate Spring Security context\n- Handle expired/invalid tokens",
-      "testStrategy": "Test that valid tokens return user info, invalid tokens return 401, and the JWT filter works on protected endpoints with user context available in controllers."
-    },
-    {
-      "id": 7,
-      "title": "Implement Refresh Token Endpoint",
-      "description": "Create endpoint for refreshing expired JWT tokens.",
-      "status": "done",
-      "dependencies": [6],
-      "priority": "medium",
-      "details": "- Create RefreshTokenRequest and RefreshTokenResponse DTOs\n- Implement POST /api/auth/refresh-token endpoint\n- Validate refresh token with Clerk\n- Generate new access token\n- Return new tokens\n- Document API in Swagger",
-      "testStrategy": "Test that refresh tokens successfully return new access tokens, invalid refresh tokens return 401, and token rotation works correctly."
-    },
-    {
-      "id": 8,
-      "title": "Implement Get Current User Endpoint",
-      "description": "Create endpoint to retrieve authenticated user profile.",
-      "status": "done",
-      "dependencies": [6],
-      "priority": "medium",
-      "details": "- Create UserResponse DTO\n- Implement GET /api/auth/user endpoint\n- Load user from database by JWT claims\n- Include organizations and roles\n- Include tenant memberships\n- Document API in Swagger",
-      "testStrategy": "Test that the endpoint returns complete user info including organizations and tenants for authenticated users."
-    },
-    {
-      "id": 9,
-      "title": "Implement Sign-Out Endpoint",
-      "description": "Create endpoint for user sign-out and session revocation.",
-      "status": "pending",
-      "dependencies": [6],
-      "priority": "medium",
-      "details": "- Create SignOutRequest DTO\n- Implement POST /api/auth/sign-out endpoint\n- Revoke session in Clerk\n- Update session status in database\n- Clear security context\n- Document API in Swagger",
-      "testStrategy": "Test that the session is revoked in Clerk, marked inactive in database, and subsequent requests with the token fail."
-    },
-    {
-      "id": 10,
-      "title": "Configure Social Login Providers",
-      "description": "Set up social login providers in Clerk dashboard.",
-      "status": "pending",
-      "dependencies": [1],
-      "priority": "medium",
-      "details": "- Configure Google OAuth in Clerk\n- Configure GitHub OAuth in Clerk\n- Configure Facebook OAuth in Clerk\n- Configure Apple Sign In in Clerk\n- Set redirect URLs\n- Configure OAuth scopes for each provider",
-      "testStrategy": "Manually test each provider to ensure OAuth flows work correctly and users can sign in with each provider."
-    },
-    {
-      "id": 11,
-      "title": "Implement Social Sign-In API",
-      "description": "Create endpoint for authenticating with social providers.",
-      "status": "pending",
-      "dependencies": [10, 5],
-      "priority": "medium",
-      "details": "- Create SocialSignInRequest and SocialSignInResponse DTOs\n- Implement POST /api/auth/sign-in/social endpoint\n- Validate OAuth token with Clerk\n- Extract user info from Clerk\n- Create or update user_profile\n- Handle account linking\n- Update auth_provider field\n- Document API in Swagger",
-      "testStrategy": "Test that social sign-in works for all configured providers, account linking functions correctly, and user profiles are properly updated."
-    },
-    {
-      "id": 12,
-      "title": "Implement Multi-Tenant Service",
-      "description": "Create service for handling multi-tenant operations.",
+      "title": "Implement PayPalPaymentAdapter",
+      "description": "Create the PayPal adapter using the Orders API with support for capture, refund, and webhook validation.",
       "status": "pending",
       "dependencies": [2],
       "priority": "medium",
-      "details": "- Create TenantService interface\n- Implement TenantServiceImpl\n- Implement tenant validation methods\n- Implement methods for adding/removing users from tenants\n- Implement methods for retrieving user tenants\n- Implement tenant switching functionality\n- Add tenant isolation to queries",
-      "testStrategy": "Test that users can belong to multiple tenants, tenant validation works, tenant switching functions correctly, and data isolation is enforced."
+      "details": "- Implement PayPalPaymentAdapter using the Orders API\n- Add support for capture and refund operations\n- Implement webhook validation\n- Handle capture/void notifications\n- Store PayPal-specific transaction details",
+      "testStrategy": "Test the adapter with PayPal sandbox environment. Verify order creation, capture, and webhook processing."
+    },
+    {
+      "id": 5,
+      "title": "Implement ZeffyPaymentAdapter",
+      "description": "Create the Zeffy adapter for donation API integration with fallback instructions.",
+      "status": "pending",
+      "dependencies": [2],
+      "priority": "medium",
+      "details": "- Implement ZeffyPaymentAdapter for donation API integration\n- Create fallback instructions mechanism if Zeffy is unavailable\n- Add support for importing payout CSV or processing webhooks\n- Implement helper endpoint for returning Zeffy campaign info/embedded URL",
+      "testStrategy": "Test the adapter with Zeffy test environment if available. Verify donation flow and CSV import functionality."
+    },
+    {
+      "id": 6,
+      "title": "Implement ZelleManualAdapter",
+      "description": "Create the Zelle manual adapter for handling pending transactions and admin confirmation endpoints.",
+      "status": "pending",
+      "dependencies": [2],
+      "priority": "medium",
+      "details": "- Implement ZelleManualAdapter for creating pending transactions\n- Create admin confirmation endpoints\n- Store payer email, expected amount, and memo instructions\n- Implement POST /api/payments/zelle/manual endpoint",
+      "testStrategy": "Test the creation of pending transactions and the admin confirmation flow. Verify transaction status updates correctly."
+    },
+    {
+      "id": 7,
+      "title": "Implement RevolutPaymentAdapter",
+      "description": "Create the Revolut adapter for card sessions with support for redirect-based SCA and settlement webhooks.",
+      "status": "pending",
+      "dependencies": [2],
+      "priority": "medium",
+      "details": "- Implement RevolutPaymentAdapter for creating card sessions\n- Add support for redirect-based Strong Customer Authentication (SCA)\n- Process settlement webhooks\n- Handle payment_succeeded, payment_failed, settlement_created events",
+      "testStrategy": "Test the adapter with Revolut test environment. Verify card session creation, SCA flow, and webhook processing."
+    },
+    {
+      "id": 8,
+      "title": "Implement CeFiCharityAdapter",
+      "description": "Create the CeFi charity adapter for integrating with partner ACH/transfer providers and fetching settlement files.",
+      "status": "pending",
+      "dependencies": [2],
+      "priority": "low",
+      "details": "- Implement CeFiCharityAdapter for partner ACH/transfer integration\n- Create mechanism for fetching settlement files\n- Support DONATION_CEFI payment type\n- Process settlement data into payment_transaction records",
+      "testStrategy": "Test the adapter with mock settlement files. Verify transaction creation and settlement processing."
+    },
+    {
+      "id": 9,
+      "title": "Implement payment initialization endpoint",
+      "description": "Create the main payment initialization endpoint that returns provider-neutral session details.",
+      "status": "pending",
+      "dependencies": [3, 4, 5, 6, 7, 8],
+      "priority": "high",
+      "details": "- Implement POST /api/payments/initialize endpoint\n- Return PaymentSessionResponse with provider hint, clientSecret/sessionUrl, publishable key\n- Support payment types: TICKET_SALE, DONATION, DONATION_CEFI, OFFERING, MEMBERSHIP_SUBSCRIPTION\n- Route to appropriate provider adapter based on tenant configuration\n- Derive schema from Swagger API docs",
+      "testStrategy": "Test the endpoint with different payment types and tenant configurations. Verify correct provider selection and response format."
+    },
+    {
+      "id": 10,
+      "title": "Implement payment status endpoint",
+      "description": "Create the endpoint for fetching payment status, used for polling by the frontend for Revolut/Zelle pending flows.",
+      "status": "pending",
+      "dependencies": [9],
+      "priority": "medium",
+      "details": "- Implement GET /api/payments/{transactionId} endpoint\n- Expose payment method details, settlement info, failure reasons\n- Support polling for pending transactions\n- Retrieve status from appropriate provider adapter",
+      "testStrategy": "Test the endpoint with different transaction states. Verify status updates correctly for pending transactions."
+    },
+    {
+      "id": 11,
+      "title": "Implement refund endpoint",
+      "description": "Create the endpoint for issuing full/partial refunds through the respective adapter.",
+      "status": "pending",
+      "dependencies": [9],
+      "priority": "medium",
+      "details": "- Implement POST /api/payments/{transactionId}/refund endpoint\n- Support full and partial refunds\n- Route to appropriate provider adapter based on original payment method\n- Log refund metadata in payment_transaction\n- Handle provider-specific refund requirements",
+      "testStrategy": "Test the endpoint with different providers. Verify refund processing and transaction status updates."
+    },
+    {
+      "id": 12,
+      "title": "Implement ACP endpoints",
+      "description": "Implement Stripe Instant Checkout (ACP) endpoints with feature flag support.",
+      "status": "pending",
+      "dependencies": [3],
+      "priority": "medium",
+      "details": "- Implement POST /api/payments/providers/stripe/instant-checkout endpoint\n- Create ACP REST endpoints according to Stripe spec (Create/Update/Complete/Cancel checkout)\n- Wrap existing Stripe PaymentIntent creation inside CompleteCheckout handler\n- Gate endpoints behind supports_acp flag in payment_provider_config\n- Implement fallback to standard PaymentIntent if feature disabled",
+      "testStrategy": "Test the endpoints with the supports_acp flag enabled and disabled. Verify ACP session creation and fallback mechanism."
     },
     {
       "id": 13,
-      "title": "Create Tenant Context Filter",
-      "description": "Implement filter to extract and validate tenant context from requests.",
+      "title": "Implement webhook processing endpoints",
+      "description": "Create webhook endpoints for all payment providers with proper signature verification and idempotent processing.",
       "status": "pending",
-      "dependencies": [12],
-      "priority": "medium",
-      "details": "- Create TenantContextFilter\n- Extract tenant ID from request (header, param, or JWT)\n- Validate tenant ID\n- Set tenant in ThreadLocal context\n- Clear context after request\n- Add filter to security filter chain",
-      "testStrategy": "Test that tenant context is available in all requests, invalid tenant IDs return 403, and context is cleaned up after each request."
+      "dependencies": [3, 4, 5, 7],
+      "priority": "high",
+      "details": "- Implement /api/webhooks/stripe endpoint for Stripe events\n- Implement /api/webhooks/paypal endpoint for PayPal events\n- Add webhook support for Zeffy if provided\n- Implement webhook endpoint for Revolut events\n- Add signature verification for all webhooks\n- Implement rate-limiting for webhook requests\n- Log all webhook payloads in payment_webhook_log\n- Ensure idempotent processing of webhook events",
+      "testStrategy": "Test webhook endpoints with sample payloads from each provider. Verify signature verification, idempotency, and event processing."
     },
     {
       "id": 14,
-      "title": "Implement Organization Sync Service",
-      "description": "Create service to synchronize Clerk Organizations with application roles.",
+      "title": "Implement settlement and fee calculation job",
+      "description": "Create the nightly job that aggregates transactions, creates settlement entries, and generates invoices for platform fees.",
       "status": "pending",
-      "dependencies": [3],
-      "priority": "medium",
-      "details": "- Create OrganizationSyncService interface\n- Implement OrganizationSyncServiceImpl\n- Implement syncUserOrganizations method\n- Fetch organizations from Clerk\n- Map Clerk roles to application roles\n- Update user_profile.user_role\n- Update clerk_user_tenant records",
-      "testStrategy": "Test that organizations are correctly synced from Clerk, roles are properly mapped, and user permissions are updated accordingly."
+      "dependencies": [1, 9, 13],
+      "priority": "high",
+      "details": "- Implement nightly job to aggregate transactions\n- Create platform_settlement entries with gross, processing fee, platform fee, net\n- Handle application fee collection for providers that support it (Stripe Connect)\n- Generate platform_invoice for fees that aren't auto-deducted\n- Implement fee calculation logic based on provider and transaction type",
+      "testStrategy": "Test the job with sample transaction data. Verify settlement calculations, invoice generation, and proper handling of different fee structures."
     },
     {
       "id": 15,
-      "title": "Configure Role Mapping",
-      "description": "Create configuration for mapping Clerk roles to application roles.",
+      "title": "Implement finance admin APIs",
+      "description": "Create admin APIs for reporting settlements and invoices, and for triggering auto-debit for outstanding invoices.",
       "status": "pending",
       "dependencies": [14],
-      "priority": "low",
-      "details": "- Create RoleMappingConfiguration class\n- Define role mapping rules\n- Seed clerk_organization_role table\n- Implement getRoleForClerkRole method\n- Add configuration properties\n- Support the role hierarchy defined in the PRD",
-      "testStrategy": "Test that role mappings are correctly configured, database is seeded with appropriate values, and mappings work as expected."
+      "priority": "medium",
+      "details": "- Implement GET /api/finance/settlements endpoint for reporting\n- Implement GET /api/finance/invoices endpoint for invoice listing\n- Create POST /api/finance/invoices/{id}/charge endpoint to trigger auto-debit\n- Add support for Stripe Billing/ACH for invoice charging\n- Implement proper authentication and authorization for admin endpoints\n- Log all admin actions related to settlements/invoices",
+      "testStrategy": "Test admin APIs with different user roles. Verify proper authorization, data retrieval, and invoice charging functionality."
     },
     {
       "id": 16,
-      "title": "Implement Permission Checking Service",
-      "description": "Create service for verifying user permissions and roles.",
+      "title": "Update API documentation",
+      "description": "Update Swagger documentation for all new endpoints and response structures.",
       "status": "pending",
-      "dependencies": [15],
+      "dependencies": [9, 10, 11, 12, 13, 15],
       "priority": "low",
-      "details": "- Create PermissionService interface\n- Implement PermissionServiceImpl\n- Implement permission checking methods\n- Implement role verification methods\n- Implement resource access methods\n- Add tenant-aware permission checks",
-      "testStrategy": "Test that permission checking works correctly, role-based access control functions properly, and tenant-aware permissions are enforced."
+      "details": "- Update Swagger API docs for payment initialization endpoint\n- Document payment status and refund endpoints\n- Add documentation for ACP endpoints\n- Document webhook endpoints\n- Add documentation for finance admin APIs\n- Ensure all response structures are properly defined\n- Include example requests and responses",
+      "testStrategy": "Verify that the Swagger documentation accurately reflects the implemented endpoints. Test the documentation with Swagger UI."
     },
     {
       "id": 17,
-      "title": "Implement Webhook Endpoint",
-      "description": "Create endpoint for receiving Clerk webhook events.",
+      "title": "Implement comprehensive testing suite",
+      "description": "Create unit tests, integration tests, contract tests, and end-to-end tests for all payment flows.",
       "status": "pending",
-      "dependencies": [3],
-      "priority": "low",
-      "details": "- Create WebhookController\n- Implement POST /api/webhooks/clerk endpoint\n- Verify webhook signature using webhook secret\n- Parse webhook payload\n- Route to appropriate event handler\n- Return appropriate response\n- Handle errors gracefully",
-      "testStrategy": "Test that the webhook endpoint correctly receives events, validates signatures, and routes events to the appropriate handlers."
+      "dependencies": [9, 10, 11, 12, 13, 14, 15],
+      "priority": "high",
+      "details": "- Create unit tests for each provider adapter\n- Implement integration tests for payment initialization covering all providers\n- Add contract tests using Swagger schema\n- Create end-to-end tests for Stripe and PayPal flows in staging\n- Implement tests for the settlement job\n- Add tests for webhook processing\n- Create tests for admin finance APIs",
+      "testStrategy": "Run the full test suite and verify all payment flows work correctly. Ensure test coverage for edge cases and error handling."
     },
     {
       "id": 18,
-      "title": "Implement Webhook Event Handlers",
-      "description": "Create handlers for different types of webhook events.",
+      "title": "Implement security measures",
+      "description": "Implement security features for credential storage, webhook verification, and admin action logging.",
       "status": "pending",
-      "dependencies": [17],
-      "priority": "medium",
-      "details": "- Create WebhookEventHandler interface\n- Implement handlers for user events (created, updated, deleted)\n- Implement handlers for session events\n- Implement handlers for organization membership events\n- Add idempotency checking to prevent duplicate processing\n- Implement retry logic for failed events",
-      "testStrategy": "Test that all event types are handled correctly, user data is synced properly, and idempotency checks prevent duplicate processing."
-    },
-    {
-      "id": 19,
-      "title": "Add Webhook Audit Logging",
-      "description": "Implement audit logging for webhook events.",
-      "status": "pending",
-      "dependencies": [18],
-      "priority": "low",
-      "details": "- Create WebhookAuditService\n- Save events to clerk_webhook_event table\n- Log processing results\n- Track retry attempts\n- Implement cleanup job for old events",
-      "testStrategy": "Test that all events are logged, processing status is tracked, and the cleanup job works correctly."
-    },
-    {
-      "id": 20,
-      "title": "Implement Admin List Users API",
-      "description": "Create endpoint for administrators to list and search users.",
-      "status": "pending",
-      "dependencies": [6],
-      "priority": "low",
-      "details": "- Create AdminController\n- Implement GET /api/admin/users endpoint\n- Add pagination support\n- Add filtering by tenant\n- Add sorting options\n- Add admin authorization check\n- Document API in Swagger",
-      "testStrategy": "Test that the endpoint returns paginated users, filtering works correctly, and only administrators can access the endpoint."
-    },
-    {
-      "id": 21,
-      "title": "Implement Admin User Role Management",
-      "description": "Create endpoint for administrators to update user roles.",
-      "status": "pending",
-      "dependencies": [20],
-      "priority": "low",
-      "details": "- Create UpdateRoleRequest DTO\n- Implement PUT /api/admin/users/{userId}/role endpoint\n- Validate role value\n- Update user_profile.user_role\n- Update clerk_user_tenant records\n- Add admin authorization check\n- Document API in Swagger",
-      "testStrategy": "Test that user roles are updated successfully, validation works correctly, and only administrators can access the endpoint."
-    },
-    {
-      "id": 22,
-      "title": "Implement Admin User Status Management",
-      "description": "Create endpoint for administrators to suspend or activate users.",
-      "status": "pending",
-      "dependencies": [20],
-      "priority": "low",
-      "details": "- Create UpdateStatusRequest DTO\n- Implement PUT /api/admin/users/{userId}/status endpoint\n- Validate status value\n- Update user_profile.user_status\n- Revoke sessions if suspended\n- Add admin authorization check\n- Document API in Swagger",
-      "testStrategy": "Test that user status is updated successfully, sessions are revoked when suspended, and only administrators can access the endpoint."
-    },
-    {
-      "id": 23,
-      "title": "Update Security Configuration",
-      "description": "Update existing security configuration to use Clerk JWT validation.",
-      "status": "pending",
-      "dependencies": [6],
+      "dependencies": [2, 13, 15],
       "priority": "high",
-      "details": "- Configure JWT decoder for Clerk tokens\n- Update CORS configuration\n- Add rate limiting configuration\n- Update security filter chain\n- Remove in-memory user details manager\n- Configure security for new endpoints",
-      "testStrategy": "Test that Clerk JWT validation works correctly, CORS is properly configured, rate limiting works as expected, and the security filter chain functions properly."
-    },
-    {
-      "id": 24,
-      "title": "Enhance Error Handling",
-      "description": "Implement comprehensive error handling for authentication flows.",
-      "status": "pending",
-      "dependencies": [],
-      "priority": "medium",
-      "details": "- Create custom exception classes\n- Extend GlobalExceptionHandler\n- Handle Clerk API exceptions\n- Handle validation exceptions\n- Handle authentication exceptions\n- Standardize error responses\n- Implement the error codes defined in the PRD",
-      "testStrategy": "Test that all exceptions are handled gracefully, error responses are standardized, and Clerk errors are properly mapped to application errors."
-    },
-    {
-      "id": 25,
-      "title": "Create API Documentation",
-      "description": "Generate comprehensive API documentation for all authentication endpoints.",
-      "status": "pending",
-      "dependencies": [4, 5, 6, 7, 8, 9, 11, 17, 20, 21, 22],
-      "priority": "low",
-      "details": "- Configure Swagger/OpenAPI\n- Add API descriptions\n- Add request/response examples\n- Document authentication flows\n- Document error codes\n- Generate Postman collection\n- Create integration guide",
-      "testStrategy": "Verify that Swagger UI is accessible, all endpoints are documented with examples, and the Postman collection works correctly."
-    },
-    {
-      "id": 26,
-      "title": "Write Integration Tests",
-      "description": "Create comprehensive integration tests for all authentication flows.",
-      "status": "pending",
-      "dependencies": [4, 5, 6, 7, 8, 9, 11, 17, 20, 21, 22],
-      "priority": "medium",
-      "details": "- Set up test database with TestContainers\n- Write authentication flow tests\n- Write social login tests\n- Write multi-tenant tests\n- Write webhook tests\n- Write admin API tests\n- Write security tests\n- Achieve >80% code coverage",
-      "testStrategy": "Run all integration tests in CI/CD pipeline and verify that they pass with >80% code coverage."
-    },
-    {
-      "id": 27,
-      "title": "Perform Security Audit",
-      "description": "Conduct security testing to identify and fix vulnerabilities.",
-      "status": "pending",
-      "dependencies": [26],
-      "priority": "medium",
-      "details": "- Run OWASP ZAP scan\n- Test for SQL injection vulnerabilities\n- Test for XSS vulnerabilities\n- Test for CSRF vulnerabilities\n- Test authentication bypass scenarios\n- Test authorization bypass scenarios\n- Test rate limiting effectiveness",
-      "testStrategy": "Verify that there are no critical or high vulnerabilities, all findings are documented and fixed, and a security report is generated."
-    },
-    {
-      "id": 28,
-      "title": "Prepare for Production Deployment",
-      "description": "Configure application for production environment.",
-      "status": "pending",
-      "dependencies": [27],
-      "priority": "high",
-      "details": "- Configure production environment variables\n- Set up production Clerk account and credentials\n- Configure production Clerk webhook endpoints\n- Update CORS for production domains\n- Configure SSL/TLS certificates\n- Set up monitoring and alerting\n- Create deployment scripts",
-      "testStrategy": "Verify that the production environment is correctly configured, database is ready, webhooks are configured, and deployment scripts are tested."
+      "details": "- Implement AES-256-GCM encryption for provider credentials\n- Add key rotation mechanism for encryption keys\n- Enhance webhook signature verification\n- Implement rate limiting for all API endpoints\n- Add comprehensive logging for admin actions\n- Ensure PCI compliance by avoiding raw card data storage",
+      "testStrategy": "Test encryption implementation, key rotation, webhook signature verification, and rate limiting. Verify logging of admin actions."
     }
   ]
 }

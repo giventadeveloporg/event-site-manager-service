@@ -1,16 +1,15 @@
 # Task ID: 9
-# Title: Implement Sign-Out Endpoint
+# Title: Implement payment initialization endpoint
 # Status: pending
-# Dependencies: 6 ✅
-# Priority: medium
-# Description: Create endpoint for user sign-out and session revocation.
+# Dependencies: 3 ⏱️, 4 ⏱️, 5 ⏱️, 6 ⏱️, 7 ⏱️, 8 ⏱️
+# Priority: high
+# Description: Create the main payment initialization endpoint that returns provider-neutral session details.
 # Details:
-- Create SignOutRequest DTO
-- Implement POST /api/auth/sign-out endpoint
-- Revoke session in Clerk
-- Update session status in database
-- Clear security context
-- Document API in Swagger
+- Implement POST /api/payments/initialize endpoint
+- Return PaymentSessionResponse with provider hint, clientSecret/sessionUrl, publishable key
+- Support payment types: TICKET_SALE, DONATION, DONATION_CEFI, OFFERING, MEMBERSHIP_SUBSCRIPTION
+- Route to appropriate provider adapter based on tenant configuration
+- Derive schema from Swagger API docs
 
 # Test Strategy:
-Test that the session is revoked in Clerk, marked inactive in database, and subsequent requests with the token fail.
+Test the endpoint with different payment types and tenant configurations. Verify correct provider selection and response format.

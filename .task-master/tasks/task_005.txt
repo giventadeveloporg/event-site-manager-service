@@ -1,18 +1,14 @@
 # Task ID: 5
-# Title: Implement Sign-In API
-# Status: done
-# Dependencies: 3 ✅
-# Priority: high
-# Description: Create REST endpoint for user authentication with Clerk.
+# Title: Implement ZeffyPaymentAdapter
+# Status: pending
+# Dependencies: 2 ⏱️
+# Priority: medium
+# Description: Create the Zeffy adapter for donation API integration with fallback instructions.
 # Details:
-- Create SignInRequest and SignInResponse DTOs
-- Implement POST /api/auth/sign-in endpoint
-- Validate credentials with Clerk
-- Load user_profile from database
-- Generate JWT token
-- Update last_sign_in_at timestamp
-- Handle invalid credentials
-- Document API in Swagger
+- Implement ZeffyPaymentAdapter for donation API integration
+- Create fallback instructions mechanism if Zeffy is unavailable
+- Add support for importing payout CSV or processing webhooks
+- Implement helper endpoint for returning Zeffy campaign info/embedded URL
 
 # Test Strategy:
-Test that the endpoint returns 200 on success with a valid JWT token, returns 401 for invalid credentials, and updates the last sign-in timestamp.
+Test the adapter with Zeffy test environment if available. Verify donation flow and CSV import functionality.

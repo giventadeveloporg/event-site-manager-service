@@ -1,16 +1,16 @@
 # Task ID: 15
-# Title: Configure Role Mapping
+# Title: Implement finance admin APIs
 # Status: pending
 # Dependencies: 14 ⏱️
-# Priority: low
-# Description: Create configuration for mapping Clerk roles to application roles.
+# Priority: medium
+# Description: Create admin APIs for reporting settlements and invoices, and for triggering auto-debit for outstanding invoices.
 # Details:
-- Create RoleMappingConfiguration class
-- Define role mapping rules
-- Seed clerk_organization_role table
-- Implement getRoleForClerkRole method
-- Add configuration properties
-- Support the role hierarchy defined in the PRD
+- Implement GET /api/finance/settlements endpoint for reporting
+- Implement GET /api/finance/invoices endpoint for invoice listing
+- Create POST /api/finance/invoices/{id}/charge endpoint to trigger auto-debit
+- Add support for Stripe Billing/ACH for invoice charging
+- Implement proper authentication and authorization for admin endpoints
+- Log all admin actions related to settlements/invoices
 
 # Test Strategy:
-Test that role mappings are correctly configured, database is seeded with appropriate values, and mappings work as expected.
+Test admin APIs with different user roles. Verify proper authorization, data retrieval, and invoice charging functionality.

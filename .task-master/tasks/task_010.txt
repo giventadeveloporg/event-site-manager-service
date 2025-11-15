@@ -1,16 +1,14 @@
 # Task ID: 10
-# Title: Configure Social Login Providers
+# Title: Implement payment status endpoint
 # Status: pending
-# Dependencies: 1 ⏱️
+# Dependencies: 9 ⏱️
 # Priority: medium
-# Description: Set up social login providers in Clerk dashboard.
+# Description: Create the endpoint for fetching payment status, used for polling by the frontend for Revolut/Zelle pending flows.
 # Details:
-- Configure Google OAuth in Clerk
-- Configure GitHub OAuth in Clerk
-- Configure Facebook OAuth in Clerk
-- Configure Apple Sign In in Clerk
-- Set redirect URLs
-- Configure OAuth scopes for each provider
+- Implement GET /api/payments/{transactionId} endpoint
+- Expose payment method details, settlement info, failure reasons
+- Support polling for pending transactions
+- Retrieve status from appropriate provider adapter
 
 # Test Strategy:
-Manually test each provider to ensure OAuth flows work correctly and users can sign in with each provider.
+Test the endpoint with different transaction states. Verify status updates correctly for pending transactions.

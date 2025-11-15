@@ -65,6 +65,23 @@ public class UserPaymentTransaction implements Serializable {
     @Column(name = "metadata", columnDefinition = "text")
     private String metadata;
 
+    @Size(max = 255)
+    @Column(name = "external_transaction_id", length = 255)
+    private String externalTransactionId;
+
+    @Size(max = 100)
+    @Column(name = "payment_method", length = 100)
+    private String paymentMethod;
+
+    @Column(name = "failure_reason", columnDefinition = "text")
+    private String failureReason;
+
+    @Column(name = "processing_fee", precision = 21, scale = 2)
+    private BigDecimal processingFee;
+
+    @Column(name = "reconciliation_date")
+    private java.time.LocalDate reconciliationDate;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -80,6 +97,18 @@ public class UserPaymentTransaction implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "event", "ticketType", "user" }, allowSetters = true)
     private EventTicketTransaction ticketTransaction;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = {}, allowSetters = true)
+    private PlatformSettlement settlementBatch;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = {}, allowSetters = true)
+    private PlatformInvoice platformInvoice;
+
+    @Size(max = 255)
+    @Column(name = "manual_payment_reference", length = 255)
+    private String manualPaymentReference;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -226,6 +255,71 @@ public class UserPaymentTransaction implements Serializable {
         this.metadata = metadata;
     }
 
+    public String getExternalTransactionId() {
+        return this.externalTransactionId;
+    }
+
+    public UserPaymentTransaction externalTransactionId(String externalTransactionId) {
+        this.setExternalTransactionId(externalTransactionId);
+        return this;
+    }
+
+    public void setExternalTransactionId(String externalTransactionId) {
+        this.externalTransactionId = externalTransactionId;
+    }
+
+    public String getPaymentMethod() {
+        return this.paymentMethod;
+    }
+
+    public UserPaymentTransaction paymentMethod(String paymentMethod) {
+        this.setPaymentMethod(paymentMethod);
+        return this;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getFailureReason() {
+        return this.failureReason;
+    }
+
+    public UserPaymentTransaction failureReason(String failureReason) {
+        this.setFailureReason(failureReason);
+        return this;
+    }
+
+    public void setFailureReason(String failureReason) {
+        this.failureReason = failureReason;
+    }
+
+    public BigDecimal getProcessingFee() {
+        return this.processingFee;
+    }
+
+    public UserPaymentTransaction processingFee(BigDecimal processingFee) {
+        this.setProcessingFee(processingFee);
+        return this;
+    }
+
+    public void setProcessingFee(BigDecimal processingFee) {
+        this.processingFee = processingFee;
+    }
+
+    public java.time.LocalDate getReconciliationDate() {
+        return this.reconciliationDate;
+    }
+
+    public UserPaymentTransaction reconciliationDate(java.time.LocalDate reconciliationDate) {
+        this.setReconciliationDate(reconciliationDate);
+        return this;
+    }
+
+    public void setReconciliationDate(java.time.LocalDate reconciliationDate) {
+        this.reconciliationDate = reconciliationDate;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return this.createdAt;
     }
@@ -276,6 +370,45 @@ public class UserPaymentTransaction implements Serializable {
     public UserPaymentTransaction ticketTransaction(EventTicketTransaction eventTicketTransaction) {
         this.setTicketTransaction(eventTicketTransaction);
         return this;
+    }
+
+    public PlatformSettlement getSettlementBatch() {
+        return this.settlementBatch;
+    }
+
+    public void setSettlementBatch(PlatformSettlement platformSettlement) {
+        this.settlementBatch = platformSettlement;
+    }
+
+    public UserPaymentTransaction settlementBatch(PlatformSettlement platformSettlement) {
+        this.setSettlementBatch(platformSettlement);
+        return this;
+    }
+
+    public PlatformInvoice getPlatformInvoice() {
+        return this.platformInvoice;
+    }
+
+    public void setPlatformInvoice(PlatformInvoice platformInvoice) {
+        this.platformInvoice = platformInvoice;
+    }
+
+    public UserPaymentTransaction platformInvoice(PlatformInvoice platformInvoice) {
+        this.setPlatformInvoice(platformInvoice);
+        return this;
+    }
+
+    public String getManualPaymentReference() {
+        return this.manualPaymentReference;
+    }
+
+    public UserPaymentTransaction manualPaymentReference(String manualPaymentReference) {
+        this.setManualPaymentReference(manualPaymentReference);
+        return this;
+    }
+
+    public void setManualPaymentReference(String manualPaymentReference) {
+        this.manualPaymentReference = manualPaymentReference;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

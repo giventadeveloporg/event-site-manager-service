@@ -178,3 +178,10 @@ dev.js
 .kiro/steering/byterover-rules.md
 .qoder/rules/byterover-rules.md
 .augment/rules/byterover-rules.md
+
+######################
+# Stripe Payment Configuration
+######################
+# Sensitive configuration files - DO NOT COMMIT
+scripts/stripe-config.properties
+scripts/stripe-config-insert.sql

@@ -1,18 +1,14 @@
 # Task ID: 6
-# Title: Implement Token Validation
-# Status: done
-# Dependencies: 3 ✅
-# Priority: high
-# Description: Create token validation endpoint and JWT authentication filter.
+# Title: Implement ZelleManualAdapter
+# Status: pending
+# Dependencies: 2 ⏱️
+# Priority: medium
+# Description: Create the Zelle manual adapter for handling pending transactions and admin confirmation endpoints.
 # Details:
-- Create TokenValidationRequest and TokenValidationResponse DTOs
-- Implement POST /api/auth/verify-token endpoint
-- Implement JWT validation logic with Clerk
-- Create JwtAuthenticationFilter
-- Extract token from Authorization header
-- Load user from database
-- Populate Spring Security context
-- Handle expired/invalid tokens
+- Implement ZelleManualAdapter for creating pending transactions
+- Create admin confirmation endpoints
+- Store payer email, expected amount, and memo instructions
+- Implement POST /api/payments/zelle/manual endpoint
 
 # Test Strategy:
-Test that valid tokens return user info, invalid tokens return 401, and the JWT filter works on protected endpoints with user context available in controllers.
+Test the creation of pending transactions and the admin confirmation flow. Verify transaction status updates correctly.
