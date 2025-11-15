@@ -44,7 +44,7 @@ INSERT INTO public.event_featured_performers VALUES (
   60, 2, false, 'https://facebook.com/gopiasan', NULL, 'https://instagram.com/gopiasan',
   'https://youtube.com/gopiasan', NULL, NULL,
   true, 90, '2025-01-10 10:00:00', '2025-01-10 10:00:00'
-); 
+);
 
 INSERT INTO public.event_featured_performers VALUES (
   3, 2, 'Zakir Hussain', 'Zakir Hussain', 'Percussionist',
@@ -188,15 +188,15 @@ INSERT INTO public.event_sponsors_join VALUES (
 -- =====================================================
 
 INSERT INTO public.event_emails VALUES (
-  1, 1, 'info@malayaleesfestival.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+  1, 1, 'info@eventsitemanager.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
 );
 
 INSERT INTO public.event_emails VALUES (
-  2, 1, 'tickets@malayaleesfestival.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+  2, 1, 'tickets@eventsitemanager.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
 );
 
 INSERT INTO public.event_emails VALUES (
-  3, 1, 'sponsorship@malayaleesfestival.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
+  3, 1, 'sponsorship@eventsitemanager.com', '2025-01-10 10:00:00', '2025-01-10 10:00:00'
 );
 
 INSERT INTO public.event_emails VALUES (

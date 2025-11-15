@@ -5,18 +5,18 @@
 // deploying the Spring Boot application with auto-scaling and monitoring.
 // ===================================================================
 
-import * as cdk from '@aws-cdk/core';
-import * as ec2 from '@aws-cdk/aws-ec2';
-import * as ecs from '@aws-cdk/aws-ecs';
-import * as ecsPatterns from '@aws-cdk/aws-ecs-patterns';
-import * as rds from '@aws-cdk/aws-rds';
-import * as elasticache from '@aws-cdk/aws-elasticache';
-import * as elbv2 from '@aws-cdk/aws-elasticloadbalancingv2';
-import * as cloudwatch from '@aws-cdk/aws-cloudwatch';
-import * as iam from '@aws-cdk/aws-iam';
-import * as logs from '@aws-cdk/aws-logs';
-import * as s3 from '@aws-cdk/aws-s3';
-import * as ssm from '@aws-cdk/aws-ssm';
+import * as cdk from 'aws-cdk-lib';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
+import * as rds from 'aws-cdk-lib/aws-rds';
+import * as elasticache from 'aws-cdk-lib/aws-elasticache';
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as logs from 'aws-cdk-lib/aws-logs';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 
 export interface SpringBootAppStackProps extends cdk.StackProps {
   applicationName: string;
@@ -124,7 +124,7 @@ export class SpringBootAppStack extends cdk.Stack {
       backupRetention: cdk.Duration.days(7),
       deleteAutomatedBackups: false,
       deletionProtection: false, // Set to true for production
-      databaseName: 'malayalees_us_site',
+      databaseName: 'event_site_manager_db',
       credentials: rds.Credentials.fromGeneratedSecret('dbadmin'),
       storageEncrypted: true,
       monitoringInterval: cdk.Duration.seconds(60),
@@ -197,7 +197,7 @@ export class SpringBootAppStack extends cdk.Stack {
       environment: {
         SPRING_PROFILES_ACTIVE: 'prod-aws',
         RDS_ENDPOINT: this.database.instanceEndpoint.hostname,
-        DB_NAME: 'malayalees_us_site',
+        DB_NAME: 'event_site_manager_db',
         REDIS_ENDPOINT: this.redis.attrRedisEndpointAddress,
         AWS_REGION: this.region,
         S3_BUCKET_NAME: this.bucket.bucketName,

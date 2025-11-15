@@ -1,7 +1,9 @@
 # Local Testing Guide
+
 ## Multi-Tenant Spring Boot Application
 
 ### Table of Contents
+
 1. [Overview](#overview)
 2. [Quick Start](#quick-start)
 3. [Architecture Comparison](#architecture-comparison)
@@ -17,7 +19,7 @@
 This guide provides comprehensive instructions for testing your multi-tenant Spring Boot application locally before deploying to AWS. The local environment includes:
 
 ✅ **PostgreSQL Database** with test data
-✅ **Redis Cache** for session management  
+✅ **Redis Cache** for session management
 ✅ **Spring Boot Application** with local configuration
 ✅ **Management UIs** (pgAdmin, Redis Commander, MailHog)
 ✅ **Complete Test Data** for all tenants
@@ -27,6 +29,7 @@ This guide provides comprehensive instructions for testing your multi-tenant Spr
 ## Quick Start
 
 ### Windows Users
+
 ```bash
 # 1. Start the complete local environment
 scripts\local-test.bat start
@@ -39,6 +42,7 @@ scripts\local-test.bat stop
 ```
 
 ### Linux/Mac Users
+
 ```bash
 # 1. Make script executable
 chmod +x scripts/local-test.sh
@@ -58,28 +62,31 @@ chmod +x scripts/local-test.sh
 ## Architecture Comparison
 
 ### Original: EC2 + Auto Scaling
-| Aspect | Rating | Notes |
-|--------|--------|-------|
-| **Automation** | ⭐⭐⭐ | Manual server management |
-| **Cost** | ⭐⭐⭐ | $125-500/month |
-| **Maintenance** | ⭐⭐ | High overhead |
-| **Scaling** | ⭐⭐⭐ | Manual configuration |
+
+| Aspect          | Rating | Notes                    |
+| --------------- | ------ | ------------------------ |
+| **Automation**  | ⭐⭐⭐ | Manual server management |
+| **Cost**        | ⭐⭐⭐ | $125-500/month           |
+| **Maintenance** | ⭐⭐   | High overhead            |
+| **Scaling**     | ⭐⭐⭐ | Manual configuration     |
 
 ### Recommended: Fargate
-| Aspect | Rating | Notes |
-|--------|--------|-------|
-| **Automation** | ⭐⭐⭐⭐⭐ | Fully automated |
-| **Cost** | ⭐⭐⭐⭐ | $95-585/month |
-| **Maintenance** | ⭐⭐⭐⭐⭐ | Zero maintenance |
-| **Scaling** | ⭐⭐⭐⭐⭐ | Built-in auto-scaling |
+
+| Aspect          | Rating     | Notes                 |
+| --------------- | ---------- | --------------------- |
+| **Automation**  | ⭐⭐⭐⭐⭐ | Fully automated       |
+| **Cost**        | ⭐⭐⭐⭐   | $95-585/month         |
+| **Maintenance** | ⭐⭐⭐⭐⭐ | Zero maintenance      |
+| **Scaling**     | ⭐⭐⭐⭐⭐ | Built-in auto-scaling |
 
 ### Advanced: EKS
-| Aspect | Rating | Notes |
-|--------|--------|-------|
-| **Automation** | ⭐⭐⭐⭐⭐ | Kubernetes orchestration |
-| **Cost** | ⭐⭐⭐ | $120-600/month |
-| **Maintenance** | ⭐⭐⭐⭐⭐ | Very low |
-| **Scaling** | ⭐⭐⭐⭐⭐ | Advanced orchestration |
+
+| Aspect          | Rating     | Notes                    |
+| --------------- | ---------- | ------------------------ |
+| **Automation**  | ⭐⭐⭐⭐⭐ | Kubernetes orchestration |
+| **Cost**        | ⭐⭐⭐     | $120-600/month           |
+| **Maintenance** | ⭐⭐⭐⭐⭐ | Very low                 |
+| **Scaling**     | ⭐⭐⭐⭐⭐ | Advanced orchestration   |
 
 ---
 
@@ -88,6 +95,7 @@ chmod +x scripts/local-test.sh
 ### Services Included
 
 #### 1. PostgreSQL Database
+
 - **Port**: 5432
 - **Database**: malayalees_us_site
 - **User**: postgres
@@ -95,18 +103,21 @@ chmod +x scripts/local-test.sh
 - **Features**: Complete schema with test data
 
 #### 2. Redis Cache
+
 - **Port**: 6379
 - **Features**: Session storage, caching
 - **Memory**: 256MB limit
 
 #### 3. Spring Boot Application
+
 - **Port**: 8080
 - **Profile**: local
 - **Features**: Enhanced logging, relaxed security
 
 #### 4. Management UIs
-- **pgAdmin**: http://localhost:5050 (admin@local.com/admin)
-- **Redis Commander**: http://localhost:8081 (admin/admin)
+
+- **pgAdmin**: http://localhost:5050 (${PGADMIN_DEFAULT_EMAIL:-admin@local.com}/${PGADMIN_DEFAULT_PASSWORD:-admin})
+- **Redis Commander**: http://localhost:8081 (${REDIS_COMMANDER_USER:-admin}/${REDIS_COMMANDER_PASSWORD:-admin})
 - **MailHog**: http://localhost:8025
 
 ### Test Data Structure
@@ -137,12 +148,13 @@ chmod +x scripts/local-test.sh
 ### 1. Tenant Isolation Testing
 
 #### Test Tenant Data Access
+
 ```bash
 # Test tenant 1 data
 curl -H "X-Tenant-ID: tenant_demo_001" \
      http://localhost:8080/api/events
 
-# Test tenant 2 data  
+# Test tenant 2 data
 curl -H "X-Tenant-ID: tenant_demo_002" \
      http://localhost:8080/api/events
 
@@ -152,6 +164,7 @@ curl -H "X-Tenant-ID: tenant_demo_001" \
 ```
 
 #### Test Poll Responses
+
 ```bash
 # Submit response for tenant 1
 curl -X POST http://localhost:8080/api/poll-responses \
@@ -169,6 +182,7 @@ curl -X POST http://localhost:8080/api/poll-responses \
 ### 2. Database Connection Testing
 
 #### Connection Pool Testing
+
 ```bash
 # Check database connections
 curl http://localhost:8080/management/health/db
@@ -178,6 +192,7 @@ curl http://localhost:8080/management/metrics/hikaricp.connections
 ```
 
 #### Redis Connection Testing
+
 ```bash
 # Check Redis connectivity
 curl http://localhost:8080/management/health/redis
@@ -190,6 +205,7 @@ curl -b cookies.txt http://localhost:8080/api/user/profile
 ### 3. Performance Testing
 
 #### Load Testing with Apache Bench
+
 ```bash
 # Test API endpoints
 ab -n 1000 -c 10 http://localhost:8080/api/events
@@ -200,16 +216,17 @@ ab -n 1000 -c 10 -H "X-Tenant-ID: tenant_demo_001" \
 ```
 
 #### Database Performance Testing
+
 ```sql
 -- Test query performance in pgAdmin
-EXPLAIN ANALYZE 
-SELECT * FROM event_details 
+EXPLAIN ANALYZE
+SELECT * FROM event_details
 WHERE tenant_id = 'tenant_demo_001';
 
 -- Test index usage
-EXPLAIN ANALYZE 
-SELECT * FROM event_poll_response 
-WHERE tenant_id = 'tenant_demo_001' 
+EXPLAIN ANALYZE
+SELECT * FROM event_poll_response
+WHERE tenant_id = 'tenant_demo_001'
   AND poll_id = 1;
 ```
 
@@ -220,6 +237,7 @@ WHERE tenant_id = 'tenant_demo_001'
 ### 1. Connection Pool Testing
 
 #### Test HikariCP Configuration
+
 ```yaml
 # Monitor connection pool in application-local.yml
 spring:
@@ -231,11 +249,12 @@ spring:
 ```
 
 #### Connection Pool Metrics
+
 ```bash
 # Check active connections
 curl http://localhost:8080/management/metrics/hikaricp.connections.active
 
-# Check idle connections  
+# Check idle connections
 curl http://localhost:8080/management/metrics/hikaricp.connections.idle
 
 # Check connection timeouts
@@ -245,6 +264,7 @@ curl http://localhost:8080/management/metrics/hikaricp.connections.timeout
 ### 2. Cache Performance Testing
 
 #### Redis Cache Testing
+
 ```bash
 # Test cache hit rate
 curl http://localhost:8080/management/metrics/cache.gets
@@ -259,6 +279,7 @@ docker-compose -f docker-compose.local.yml exec redis redis-cli info memory
 ### 3. Multi-Tenant Performance
 
 #### Concurrent Tenant Testing
+
 ```bash
 # Test multiple tenants simultaneously
 for tenant in tenant_demo_001 tenant_demo_002 tenant_demo_003; do
@@ -275,6 +296,7 @@ wait
 ### Common Issues
 
 #### 1. Database Connection Issues
+
 ```bash
 # Check PostgreSQL status
 docker-compose -f docker-compose.local.yml logs postgres
@@ -287,6 +309,7 @@ docker-compose -f docker-compose.local.yml exec postgres psql -U postgres -c "SE
 ```
 
 #### 2. Redis Connection Issues
+
 ```bash
 # Check Redis status
 docker-compose -f docker-compose.local.yml logs redis
@@ -299,6 +322,7 @@ docker-compose -f docker-compose.local.yml exec redis redis-cli info memory
 ```
 
 #### 3. Application Issues
+
 ```bash
 # Check application logs
 docker-compose -f docker-compose.local.yml logs app
@@ -313,6 +337,7 @@ curl http://localhost:8080/management/metrics
 ### Performance Issues
 
 #### 1. Slow Database Queries
+
 ```sql
 -- Enable query logging in PostgreSQL
 ALTER SYSTEM SET log_statement = 'all';
@@ -321,6 +346,7 @@ SELECT pg_reload_conf();
 ```
 
 #### 2. High Memory Usage
+
 ```bash
 # Check JVM memory usage
 curl http://localhost:8080/management/metrics/jvm.memory.used
@@ -330,6 +356,7 @@ docker-compose -f docker-compose.local.yml exec redis redis-cli info memory | gr
 ```
 
 #### 3. Connection Pool Exhaustion
+
 ```bash
 # Monitor connection pool
 curl http://localhost:8080/management/metrics/hikaricp.connections.pending
@@ -341,6 +368,7 @@ curl http://localhost:8080/management/metrics/hikaricp.connections.leak
 ### Reset Environment
 
 #### Complete Reset
+
 ```bash
 # Stop and remove all containers and volumes
 docker-compose -f docker-compose.local.yml down -v
@@ -353,6 +381,7 @@ docker image prune -f
 ```
 
 #### Database Reset Only
+
 ```bash
 # Reset database only
 docker-compose -f docker-compose.local.yml stop postgres
@@ -368,7 +397,9 @@ docker-compose -f docker-compose.local.yml up -d postgres
 ## Next Steps
 
 ### 1. Local Testing Complete
+
 After successful local testing:
+
 - ✅ All APIs working correctly
 - ✅ Multi-tenant isolation verified
 - ✅ Database performance acceptable
@@ -376,6 +407,7 @@ After successful local testing:
 - ✅ Connection pooling optimized
 
 ### 2. Deploy to AWS Fargate
+
 ```bash
 # Deploy to AWS Fargate (recommended)
 ./src/main/resources/documentation/deployment-scripts/deploy-aws.sh deploy
@@ -385,6 +417,7 @@ kubectl apply -f k8s/
 ```
 
 ### 3. Production Monitoring
+
 - Set up CloudWatch alarms
 - Configure auto-scaling policies
 - Monitor database performance
@@ -407,5 +440,5 @@ This setup allows you to thoroughly test your application locally before deployi
 
 ---
 
-*Last Updated: January 2025*
-*Version: 1.0*
+_Last Updated: January 2025_
+_Version: 1.0_

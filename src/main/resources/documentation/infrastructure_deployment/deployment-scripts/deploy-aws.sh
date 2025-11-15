@@ -18,7 +18,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 REGION="us-east-1"
-APPLICATION_NAME="malayalees-us-site-boot"
+APPLICATION_NAME="event-site-manager"
 ENVIRONMENT="prod"
 VERSION=${1:-"latest"}
 
@@ -53,121 +53,121 @@ error() {
 # Check prerequisites
 check_prerequisites() {
     log "Checking prerequisites..."
-    
+
     # Check AWS CLI
     if ! command -v aws &> /dev/null; then
         error "AWS CLI is not installed. Please install it first."
     fi
-    
+
     # Check Docker
     if ! command -v docker &> /dev/null; then
         error "Docker is not installed. Please install it first."
     fi
-    
+
     # Check Maven
     if ! command -v mvn &> /dev/null; then
         error "Maven is not installed. Please install it first."
     fi
-    
+
     # Check AWS credentials
     if ! aws sts get-caller-identity &> /dev/null; then
         error "AWS credentials not configured. Please run 'aws configure' first."
     fi
-    
+
     success "Prerequisites check passed"
 }
 
 # Build application
 build_application() {
     log "Building Spring Boot application..."
-    
+
     # Clean and build
     ./mvnw clean package -Pprod-aws -DskipTests -q
-    
+
     if [ ! -f "target/${APPLICATION_NAME}-${VERSION}.jar" ]; then
         error "Build failed. JAR file not found."
     fi
-    
+
     success "Application built successfully"
 }
 
 # Build and push Docker image
 build_and_push_image() {
     log "Building and pushing Docker image..."
-    
+
     # Login to ECR
     aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_REPOSITORY}
-    
+
     # Build Docker image
     docker build -t ${APPLICATION_NAME}:${VERSION} .
     docker tag ${APPLICATION_NAME}:${VERSION} ${ECR_REPOSITORY}:${VERSION}
     docker tag ${APPLICATION_NAME}:${VERSION} ${ECR_REPOSITORY}:latest
-    
+
     # Push to ECR
     docker push ${ECR_REPOSITORY}:${VERSION}
     docker push ${ECR_REPOSITORY}:latest
-    
+
     success "Docker image pushed successfully"
 }
 
 # Deploy infrastructure using CDK
 deploy_infrastructure() {
     log "Deploying infrastructure with AWS CDK..."
-    
+
     if [ ! -d "infrastructure" ]; then
         warning "Infrastructure directory not found. Skipping CDK deployment."
         return
     fi
-    
+
     cd infrastructure
-    
+
     # Install dependencies
     npm install
-    
+
     # Deploy stack
     npx cdk deploy --require-approval never
-    
+
     cd ..
-    
+
     success "Infrastructure deployed successfully"
 }
 
 # Update ECS service
 update_ecs_service() {
     log "Updating ECS service..."
-    
+
     # Update task definition with new image
     TASK_DEFINITION_ARN=$(aws ecs describe-task-definition \
         --task-definition ${TASK_DEFINITION} \
         --query 'taskDefinition.taskDefinitionArn' \
         --output text)
-    
+
     # Create new task definition revision
     aws ecs register-task-definition \
         --cli-input-json file://task-definition.json \
         --query 'taskDefinition.taskDefinitionArn' \
         --output text
-    
+
     # Update ECS service
     aws ecs update-service \
         --cluster ${ECS_CLUSTER} \
         --service ${ECS_SERVICE} \
         --task-definition ${TASK_DEFINITION} \
         --force-new-deployment
-    
+
     success "ECS service updated successfully"
 }
 
 # Run database migrations
 run_migrations() {
     log "Running database migrations..."
-    
+
     # Get RDS endpoint from Parameter Store
     RDS_ENDPOINT=$(aws ssm get-parameter \
         --name "/${APPLICATION_NAME}/${ENVIRONMENT}/database/endpoint" \
         --query 'Parameter.Value' \
         --output text)
-    
+
     # Run migrations using a temporary ECS task
     aws ecs run-task \
         --cluster ${ECS_CLUSTER} \
@@ -179,20 +179,20 @@ run_migrations() {
             }]
         }' \
         --wait-for-completion
-    
+
     success "Database migrations completed"
 }
 
 # Health check
 health_check() {
     log "Performing health check..."
-    
+
     # Get ALB DNS name
     ALB_DNS=$(aws elbv2 describe-load-balancers \
         --names "${APPLICATION_NAME}-alb" \
         --query 'LoadBalancers[0].DNSName' \
         --output text)
-    
+
     # Wait for service to be healthy
     for i in {1..30}; do
         if curl -f -s "http://${ALB_DNS}/management/health" > /dev/null; then
@@ -202,39 +202,39 @@ health_check() {
         log "Health check attempt $i/30 - waiting..."
         sleep 10
     done
-    
+
     error "Health check failed after 5 minutes"
 }
 
 # Rollback function
 rollback() {
     warning "Rolling back deployment..."
-    
+
     # Get previous task definition
     PREVIOUS_TASK_DEFINITION=$(aws ecs describe-task-definition \
         --task-definition ${TASK_DEFINITION} \
         --query 'taskDefinition.revision' \
         --output text)
-    
+
     PREVIOUS_REVISION=$((PREVIOUS_TASK_DEFINITION - 1))
-    
+
     # Update service to previous revision
     aws ecs update-service \
         --cluster ${ECS_CLUSTER} \
         --service ${ECS_SERVICE} \
         --task-definition ${TASK_DEFINITION}:${PREVIOUS_REVISION} \
         --force-new-deployment
-    
+
     success "Rollback completed"
 }
 
 # Main deployment function
 main() {
     log "Starting deployment of ${APPLICATION_NAME} version ${VERSION}"
-    
+
     # Trap errors for rollback
     trap 'error "Deployment failed. Check logs for details."' ERR
-    
+
     check_prerequisites
     build_application
     build_and_push_image
@@ -242,7 +242,7 @@ main() {
     update_ecs_service
     run_migrations
     health_check
-    
+
     success "Deployment completed successfully!"
     log "Application is available at: http://$(aws elbv2 describe-load-balancers --names "${APPLICATION_NAME}-alb" --query 'LoadBalancers[0].DNSName' --output text)"
 }
