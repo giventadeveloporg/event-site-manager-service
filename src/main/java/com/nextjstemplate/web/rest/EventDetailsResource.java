@@ -3,8 +3,10 @@ package com.nextjstemplate.web.rest;
 import com.nextjstemplate.repository.EventDetailsRepository;
 import com.nextjstemplate.service.EventDetailsQueryService;
 import com.nextjstemplate.service.EventDetailsService;
+import com.nextjstemplate.service.RecurringEventGenerationService;
 import com.nextjstemplate.service.criteria.EventDetailsCriteria;
 import com.nextjstemplate.service.dto.EventDetailsDTO;
+import com.nextjstemplate.service.dto.RecurrenceConfig;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -46,14 +48,18 @@ public class EventDetailsResource {
 
     private final EventDetailsQueryService eventDetailsQueryService;
 
+    private final RecurringEventGenerationService recurringEventGenerationService;
+
     public EventDetailsResource(
         EventDetailsService eventDetailsService,
         EventDetailsRepository eventDetailsRepository,
-        EventDetailsQueryService eventDetailsQueryService
+        EventDetailsQueryService eventDetailsQueryService,
+        RecurringEventGenerationService recurringEventGenerationService
     ) {
         this.eventDetailsService = eventDetailsService;
         this.eventDetailsRepository = eventDetailsRepository;
         this.eventDetailsQueryService = eventDetailsQueryService;
+        this.recurringEventGenerationService = recurringEventGenerationService;
     }
 
     /**
@@ -205,5 +211,83 @@ public class EventDetailsResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * {@code POST  /event-details/:id/generate-recurring-events} : Generate all child events for a recurring event series.
+     *
+     * @param id the id of the parent event.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body containing generated events.
+     */
+    @PostMapping("/{id}/generate-recurring-events")
+    public ResponseEntity<List<EventDetailsDTO>> generateRecurringEvents(@PathVariable Long id) {
+        log.debug("REST request to generate recurring events for parent event: {}", id);
+        List<EventDetailsDTO> generatedEvents = recurringEventGenerationService.generateRecurringEvents(id);
+        return ResponseEntity.ok().body(generatedEvents);
+    }
+
+    /**
+     * {@code GET  /event-details/:id/recurring-series} : Get all events in a recurring series.
+     *
+     * @param id the id of the parent event.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body containing all events in the series.
+     */
+    @GetMapping("/{id}/recurring-series")
+    public ResponseEntity<List<EventDetailsDTO>> getRecurringSeries(@PathVariable Long id) {
+        log.debug("REST request to get recurring series for parent event: {}", id);
+        List<EventDetailsDTO> seriesEvents = recurringEventGenerationService.getRecurringSeries(id);
+        return ResponseEntity.ok().body(seriesEvents);
+    }
+
+    /**
+     * {@code PUT  /event-details/:id/recurring-series} : Update recurrence configuration and optionally regenerate events.
+     *
+     * @param id the id of the parent event.
+     * @param requestBody the request body containing recurrence config and regenerate flag.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)}.
+     */
+    @PutMapping("/{id}/recurring-series")
+    public ResponseEntity<Void> updateRecurringSeries(@PathVariable Long id, @RequestBody UpdateRecurringSeriesRequest requestBody) {
+        log.debug("REST request to update recurring series for parent event: {}", id);
+        recurringEventGenerationService.updateRecurringSeries(id, requestBody.getRecurrenceConfig(), requestBody.isRegenerateEvents());
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * {@code DELETE  /event-details/:id/recurring-series} : Delete a recurring event series (parent and all child events).
+     *
+     * @param id the id of the parent event.
+     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
+     */
+    @DeleteMapping("/{id}/recurring-series")
+    public ResponseEntity<Void> deleteRecurringSeries(@PathVariable Long id) {
+        log.debug("REST request to delete recurring series for parent event: {}", id);
+        recurringEventGenerationService.deleteRecurringSeries(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Request DTO for updating recurring series.
+     */
+    public static class UpdateRecurringSeriesRequest {
+
+        private RecurrenceConfig recurrenceConfig;
+        private boolean regenerateEvents = false;
+
+        public RecurrenceConfig getRecurrenceConfig() {
+            return recurrenceConfig;
+        }
+
+        public void setRecurrenceConfig(RecurrenceConfig recurrenceConfig) {
+            this.recurrenceConfig = recurrenceConfig;
+        }
+
+        public boolean isRegenerateEvents() {
+            return regenerateEvents;
+        }
+
+        public void setRegenerateEvents(boolean regenerateEvents) {
+            this.regenerateEvents = regenerateEvents;
+        }
     }
 }

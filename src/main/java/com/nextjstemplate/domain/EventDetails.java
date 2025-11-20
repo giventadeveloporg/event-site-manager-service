@@ -1,15 +1,24 @@
 package com.nextjstemplate.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nextjstemplate.domain.enumeration.RecurrenceEndType;
+import com.nextjstemplate.domain.enumeration.RecurrencePattern;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A EventDetails.
@@ -134,6 +143,59 @@ public class EventDetails implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
 
+    @Transient
+    private String metadata; // DEPRECATED - kept for backward compatibility during migration (not persisted to DB)
+
+    @Column(name = "donation_metadata", columnDefinition = "TEXT")
+    private String donationMetadata; // For fundraiser/charity configuration only
+
+    @Column(name = "event_recurrence_metadata", columnDefinition = "TEXT")
+    private String eventRecurrenceMetadata; // For recurrence configuration only
+
+    @Size(max = 2048)
+    @Column(name = "email_header_image_url", length = 2048)
+    private String emailHeaderImageUrl;
+
+    // Recurrence fields
+    @Column(name = "is_recurring")
+    private Boolean isRecurring;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "recurrence_pattern", length = 50)
+    private RecurrencePattern recurrencePattern;
+
+    @Column(name = "recurrence_interval")
+    private Integer recurrenceInterval;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "recurrence_end_type", length = 20)
+    private RecurrenceEndType recurrenceEndType;
+
+    @Column(name = "recurrence_end_date")
+    private LocalDate recurrenceEndDate;
+
+    @Column(name = "recurrence_occurrences")
+    private Integer recurrenceOccurrences;
+
+    @Column(name = "recurrence_weekly_days", columnDefinition = "integer[]", nullable = true)
+    private Integer[] recurrenceWeeklyDays;
+
+    @Column(name = "recurrence_monthly_day")
+    private Integer recurrenceMonthlyDay;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_event_id")
+    @JsonIgnoreProperties(value = { "parentEvent", "childEvents", "createdBy", "eventType" }, allowSetters = true)
+    private EventDetails parentEvent;
+
+    @Column(name = "recurrence_series_id")
+    private Long recurrenceSeriesId;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentEvent")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "parentEvent", "childEvents", "createdBy", "eventType" }, allowSetters = true)
+    private Set<EventDetails> childEvents = new HashSet<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "reviewedByAdmin", "userSubscription" }, allowSetters = true)
     private UserProfile createdBy;
@@ -142,7 +204,11 @@ public class EventDetails implements Serializable {
     private EventTypeDetails eventType;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "rel_event_details__discount_codes", joinColumns = @JoinColumn(name = "event_details_id"), inverseJoinColumns = @JoinColumn(name = "discount_codes_id"))
+    @JoinTable(
+        name = "rel_event_details__discount_codes",
+        joinColumns = @JoinColumn(name = "event_details_id"),
+        inverseJoinColumns = @JoinColumn(name = "discount_codes_id")
+    )
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "events" }, allowSetters = true)
     private Set<DiscountCode> discountCodes = new HashSet<>();
@@ -549,6 +615,256 @@ public class EventDetails implements Serializable {
 
     public void setUpdatedAt(ZonedDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getMetadata() {
+        return this.metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
+
+    public EventDetails metadata(String metadata) {
+        this.setMetadata(metadata);
+        return this;
+    }
+
+    public String getDonationMetadata() {
+        return this.donationMetadata;
+    }
+
+    public void setDonationMetadata(String donationMetadata) {
+        this.donationMetadata = donationMetadata;
+    }
+
+    public EventDetails donationMetadata(String donationMetadata) {
+        this.setDonationMetadata(donationMetadata);
+        return this;
+    }
+
+    public String getEventRecurrenceMetadata() {
+        return this.eventRecurrenceMetadata;
+    }
+
+    public void setEventRecurrenceMetadata(String eventRecurrenceMetadata) {
+        this.eventRecurrenceMetadata = eventRecurrenceMetadata;
+    }
+
+    public EventDetails eventRecurrenceMetadata(String eventRecurrenceMetadata) {
+        this.setEventRecurrenceMetadata(eventRecurrenceMetadata);
+        return this;
+    }
+
+    public String getEmailHeaderImageUrl() {
+        return this.emailHeaderImageUrl;
+    }
+
+    public void setEmailHeaderImageUrl(String emailHeaderImageUrl) {
+        this.emailHeaderImageUrl = emailHeaderImageUrl;
+    }
+
+    public EventDetails emailHeaderImageUrl(String emailHeaderImageUrl) {
+        this.setEmailHeaderImageUrl(emailHeaderImageUrl);
+        return this;
+    }
+
+    public Boolean getIsRecurring() {
+        return this.isRecurring;
+    }
+
+    public void setIsRecurring(Boolean isRecurring) {
+        this.isRecurring = isRecurring;
+    }
+
+    public EventDetails isRecurring(Boolean isRecurring) {
+        this.setIsRecurring(isRecurring);
+        return this;
+    }
+
+    public RecurrencePattern getRecurrencePattern() {
+        return this.recurrencePattern;
+    }
+
+    public void setRecurrencePattern(RecurrencePattern recurrencePattern) {
+        this.recurrencePattern = recurrencePattern;
+    }
+
+    public EventDetails recurrencePattern(RecurrencePattern recurrencePattern) {
+        this.setRecurrencePattern(recurrencePattern);
+        return this;
+    }
+
+    public Integer getRecurrenceInterval() {
+        return this.recurrenceInterval;
+    }
+
+    public void setRecurrenceInterval(Integer recurrenceInterval) {
+        this.recurrenceInterval = recurrenceInterval;
+    }
+
+    public EventDetails recurrenceInterval(Integer recurrenceInterval) {
+        this.setRecurrenceInterval(recurrenceInterval);
+        return this;
+    }
+
+    public RecurrenceEndType getRecurrenceEndType() {
+        return this.recurrenceEndType;
+    }
+
+    public void setRecurrenceEndType(RecurrenceEndType recurrenceEndType) {
+        this.recurrenceEndType = recurrenceEndType;
+    }
+
+    public EventDetails recurrenceEndType(RecurrenceEndType recurrenceEndType) {
+        this.setRecurrenceEndType(recurrenceEndType);
+        return this;
+    }
+
+    public LocalDate getRecurrenceEndDate() {
+        return this.recurrenceEndDate;
+    }
+
+    public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
+        this.recurrenceEndDate = recurrenceEndDate;
+    }
+
+    public EventDetails recurrenceEndDate(LocalDate recurrenceEndDate) {
+        this.setRecurrenceEndDate(recurrenceEndDate);
+        return this;
+    }
+
+    public Integer getRecurrenceOccurrences() {
+        return this.recurrenceOccurrences;
+    }
+
+    public void setRecurrenceOccurrences(Integer recurrenceOccurrences) {
+        this.recurrenceOccurrences = recurrenceOccurrences;
+    }
+
+    public EventDetails recurrenceOccurrences(Integer recurrenceOccurrences) {
+        this.setRecurrenceOccurrences(recurrenceOccurrences);
+        return this;
+    }
+
+    public Integer[] getRecurrenceWeeklyDays() {
+        return this.recurrenceWeeklyDays;
+    }
+
+    public void setRecurrenceWeeklyDays(Integer[] recurrenceWeeklyDays) {
+        this.recurrenceWeeklyDays = recurrenceWeeklyDays;
+    }
+
+    public EventDetails recurrenceWeeklyDays(Integer[] recurrenceWeeklyDays) {
+        this.setRecurrenceWeeklyDays(recurrenceWeeklyDays);
+        return this;
+    }
+
+    public Integer getRecurrenceMonthlyDay() {
+        return this.recurrenceMonthlyDay;
+    }
+
+    public void setRecurrenceMonthlyDay(Integer recurrenceMonthlyDay) {
+        this.recurrenceMonthlyDay = recurrenceMonthlyDay;
+    }
+
+    public EventDetails recurrenceMonthlyDay(Integer recurrenceMonthlyDay) {
+        this.setRecurrenceMonthlyDay(recurrenceMonthlyDay);
+        return this;
+    }
+
+    public EventDetails getParentEvent() {
+        return this.parentEvent;
+    }
+
+    public void setParentEvent(EventDetails parentEvent) {
+        this.parentEvent = parentEvent;
+    }
+
+    public EventDetails parentEvent(EventDetails parentEvent) {
+        this.setParentEvent(parentEvent);
+        return this;
+    }
+
+    public Long getRecurrenceSeriesId() {
+        return this.recurrenceSeriesId;
+    }
+
+    public void setRecurrenceSeriesId(Long recurrenceSeriesId) {
+        this.recurrenceSeriesId = recurrenceSeriesId;
+    }
+
+    public EventDetails recurrenceSeriesId(Long recurrenceSeriesId) {
+        this.setRecurrenceSeriesId(recurrenceSeriesId);
+        return this;
+    }
+
+    public Set<EventDetails> getChildEvents() {
+        return this.childEvents;
+    }
+
+    public void setChildEvents(Set<EventDetails> childEvents) {
+        if (this.childEvents != null) {
+            this.childEvents.forEach(i -> i.setParentEvent(null));
+        }
+        if (childEvents != null) {
+            childEvents.forEach(i -> i.setParentEvent(this));
+        }
+        this.childEvents = childEvents;
+    }
+
+    public EventDetails childEvents(Set<EventDetails> childEvents) {
+        this.setChildEvents(childEvents);
+        return this;
+    }
+
+    public EventDetails addChildEvents(EventDetails childEvent) {
+        this.childEvents.add(childEvent);
+        childEvent.setParentEvent(this);
+        return this;
+    }
+
+    public EventDetails removeChildEvents(EventDetails childEvent) {
+        this.childEvents.remove(childEvent);
+        childEvent.setParentEvent(null);
+        return this;
+    }
+
+    /**
+     * Parse metadata JSON string to Map.
+     *
+     * @return Map containing parsed metadata, or empty map if metadata is null or invalid
+     */
+    public Map<String, Object> getMetadataAsMap() {
+        if (metadata == null || metadata.isEmpty()) {
+            return new HashMap<>();
+        }
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(metadata, new TypeReference<Map<String, Object>>() {});
+        } catch (Exception e) {
+            LoggerFactory.getLogger(EventDetails.class).error("Failed to parse metadata JSON", e);
+            return new HashMap<>();
+        }
+    }
+
+    /**
+     * Set metadata from Map by serializing to JSON string.
+     *
+     * @param metadataMap Map to serialize as JSON
+     */
+    public void setMetadataFromMap(Map<String, Object> metadataMap) {
+        if (metadataMap == null || metadataMap.isEmpty()) {
+            this.metadata = null;
+            return;
+        }
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            this.metadata = mapper.writeValueAsString(metadataMap);
+        } catch (Exception e) {
+            LoggerFactory.getLogger(EventDetails.class).error("Failed to serialize metadata to JSON", e);
+            this.metadata = null;
+        }
     }
 
     public UserProfile getCreatedBy() {

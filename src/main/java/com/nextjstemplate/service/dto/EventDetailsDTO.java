@@ -1,10 +1,13 @@
 package com.nextjstemplate.service.dto;
 
+import com.nextjstemplate.domain.enumeration.RecurrenceEndType;
+import com.nextjstemplate.domain.enumeration.RecurrencePattern;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -92,6 +95,36 @@ public class EventDetailsDTO implements Serializable {
 
     @NotNull
     private ZonedDateTime updatedAt;
+
+    private String metadata; // DEPRECATED - kept for backward compatibility during migration
+
+    private String donationMetadata; // For fundraiser/charity configuration only
+
+    private String eventRecurrenceMetadata; // For recurrence configuration only
+
+    @Size(max = 2048)
+    private String emailHeaderImageUrl;
+
+    // Recurrence fields
+    private Boolean isRecurring;
+
+    private RecurrencePattern recurrencePattern;
+
+    private Integer recurrenceInterval;
+
+    private RecurrenceEndType recurrenceEndType;
+
+    private LocalDate recurrenceEndDate;
+
+    private Integer recurrenceOccurrences;
+
+    private List<Integer> recurrenceWeeklyDays;
+
+    private Integer recurrenceMonthlyDay;
+
+    private Long parentEventId;
+
+    private Long recurrenceSeriesId;
 
     private UserProfileDTO createdBy;
 
@@ -329,6 +362,118 @@ public class EventDetailsDTO implements Serializable {
 
     public void setUpdatedAt(ZonedDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
+
+    public String getDonationMetadata() {
+        return donationMetadata;
+    }
+
+    public void setDonationMetadata(String donationMetadata) {
+        this.donationMetadata = donationMetadata;
+    }
+
+    public String getEventRecurrenceMetadata() {
+        return eventRecurrenceMetadata;
+    }
+
+    public void setEventRecurrenceMetadata(String eventRecurrenceMetadata) {
+        this.eventRecurrenceMetadata = eventRecurrenceMetadata;
+    }
+
+    public String getEmailHeaderImageUrl() {
+        return emailHeaderImageUrl;
+    }
+
+    public void setEmailHeaderImageUrl(String emailHeaderImageUrl) {
+        this.emailHeaderImageUrl = emailHeaderImageUrl;
+    }
+
+    public Boolean getIsRecurring() {
+        return isRecurring;
+    }
+
+    public void setIsRecurring(Boolean isRecurring) {
+        this.isRecurring = isRecurring;
+    }
+
+    public RecurrencePattern getRecurrencePattern() {
+        return recurrencePattern;
+    }
+
+    public void setRecurrencePattern(RecurrencePattern recurrencePattern) {
+        this.recurrencePattern = recurrencePattern;
+    }
+
+    public Integer getRecurrenceInterval() {
+        return recurrenceInterval;
+    }
+
+    public void setRecurrenceInterval(Integer recurrenceInterval) {
+        this.recurrenceInterval = recurrenceInterval;
+    }
+
+    public RecurrenceEndType getRecurrenceEndType() {
+        return recurrenceEndType;
+    }
+
+    public void setRecurrenceEndType(RecurrenceEndType recurrenceEndType) {
+        this.recurrenceEndType = recurrenceEndType;
+    }
+
+    public LocalDate getRecurrenceEndDate() {
+        return recurrenceEndDate;
+    }
+
+    public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
+        this.recurrenceEndDate = recurrenceEndDate;
+    }
+
+    public Integer getRecurrenceOccurrences() {
+        return recurrenceOccurrences;
+    }
+
+    public void setRecurrenceOccurrences(Integer recurrenceOccurrences) {
+        this.recurrenceOccurrences = recurrenceOccurrences;
+    }
+
+    public List<Integer> getRecurrenceWeeklyDays() {
+        return recurrenceWeeklyDays;
+    }
+
+    public void setRecurrenceWeeklyDays(List<Integer> recurrenceWeeklyDays) {
+        this.recurrenceWeeklyDays = recurrenceWeeklyDays;
+    }
+
+    public Integer getRecurrenceMonthlyDay() {
+        return recurrenceMonthlyDay;
+    }
+
+    public void setRecurrenceMonthlyDay(Integer recurrenceMonthlyDay) {
+        this.recurrenceMonthlyDay = recurrenceMonthlyDay;
+    }
+
+    public Long getParentEventId() {
+        return parentEventId;
+    }
+
+    public void setParentEventId(Long parentEventId) {
+        this.parentEventId = parentEventId;
+    }
+
+    public Long getRecurrenceSeriesId() {
+        return recurrenceSeriesId;
+    }
+
+    public void setRecurrenceSeriesId(Long recurrenceSeriesId) {
+        this.recurrenceSeriesId = recurrenceSeriesId;
     }
 
     public UserProfileDTO getCreatedBy() {

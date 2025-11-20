@@ -1252,4 +1252,74 @@ public class EventMediaServiceImpl implements EventMediaService {
         EventMedia updated = eventMediaRepository.save(media);
         return eventMediaMapper.toDto(updated);
     }
+
+    @Override
+    public EventMediaDTO uploadEmailHeaderImage(
+        Long eventId,
+        MultipartFile file,
+        String tenantId,
+        String title,
+        String description,
+        Boolean isPublic
+    ) {
+        log.debug("Request to upload email header image: eventId={}, tenantId={}", eventId, tenantId);
+
+        // 1. Validate event exists
+        EventDetails event = eventRepository
+            .findById(eventId)
+            .orElseThrow(() -> new EntityNotFoundException("Event not found: " + eventId));
+
+        // 2. Validate file
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        // Validate file type (images only)
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("File must be an image");
+        }
+
+        // Validate file size (max 10MB)
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("File size must be less than 10MB");
+        }
+
+        // 3. Generate S3 path
+        String s3Path = s3Service.generateEmailHeaderImagePath(tenantId, eventId, file.getOriginalFilename());
+
+        // 4. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+        log.debug("Uploaded email header image to S3: {}", s3Url);
+
+        // 5. Create EventMedia record for audit/tracking
+        EventMediaDTO mediaDTO = new EventMediaDTO();
+        mediaDTO.setEventId(eventId);
+        mediaDTO.setTenantId(tenantId);
+        mediaDTO.setTitle(title != null && !title.isEmpty() ? title : "Email Header Image");
+        mediaDTO.setDescription(
+            description != null && !description.isEmpty() ? description : "Email header image for ticket confirmation emails"
+        );
+        mediaDTO.setFileUrl(s3Url);
+        mediaDTO.setEventMediaType("EMAIL_HEADER_IMAGE");
+        mediaDTO.setStorageType("S3");
+        mediaDTO.setIsPublic(isPublic != null ? isPublic : true);
+        mediaDTO.setPriorityRanking(0);
+        mediaDTO.setIsHomePageHeroImage(false);
+        mediaDTO.setIsFeaturedEventImage(false);
+        mediaDTO.setIsLiveEventImage(false);
+        mediaDTO.setStartDisplayingFromDate(LocalDate.now());
+        mediaDTO.setCreatedAt(ZonedDateTime.now());
+        mediaDTO.setUpdatedAt(ZonedDateTime.now());
+
+        EventMediaDTO savedMedia = save(mediaDTO);
+        log.debug("Created EventMedia record for email header image: {}", savedMedia.getId());
+
+        // 6. Update event_details table with email header image URL
+        event.setEmailHeaderImageUrl(s3Url);
+        eventRepository.save(event);
+        log.info("Updated event {} with email header image URL: {}", eventId, s3Url);
+
+        return savedMedia;
+    }
 }

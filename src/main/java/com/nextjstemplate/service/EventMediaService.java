@@ -226,4 +226,26 @@ public interface EventMediaService {
      * @return the updated EventMedia DTO.
      */
     EventMediaDTO updateMediaPriorityRanking(Long mediaId, Integer priorityRanking);
+
+    /**
+     * Upload email header image for an event.
+     * Uploads an image to S3 and updates the event_details.email_header_image_url field.
+     * Also creates an EventMedia record for audit/tracking.
+     *
+     * @param eventId Event ID
+     * @param file Multipart file to upload
+     * @param tenantId Tenant ID
+     * @param title Optional title (defaults to "Email Header Image")
+     * @param description Optional description (defaults to "Email header image for ticket confirmation emails")
+     * @param isPublic Optional public flag (defaults to true)
+     * @return EventMediaDTO with uploaded image details
+     */
+    EventMediaDTO uploadEmailHeaderImage(
+        Long eventId,
+        MultipartFile file,
+        String tenantId,
+        String title,
+        String description,
+        Boolean isPublic
+    );
 }

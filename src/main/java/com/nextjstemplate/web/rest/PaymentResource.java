@@ -120,7 +120,11 @@ public class PaymentResource {
         }
 
         // Configuration errors
-        if (errorCode.equals("STRIPE_CONFIG_ERROR") || errorCode.equals("PROVIDER_CONFIG_NOT_FOUND")) {
+        if (
+            errorCode.equals("STRIPE_CONFIG_ERROR") ||
+            errorCode.equals("GIVEBUTTER_CONFIG_ERROR") ||
+            errorCode.equals("PROVIDER_CONFIG_NOT_FOUND")
+        ) {
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
@@ -131,6 +135,11 @@ public class PaymentResource {
 
         // Stripe API errors - should rarely occur since we fall back to database status
         if (errorCode.equals("STRIPE_ERROR")) {
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        // Givebutter API errors
+        if (errorCode.equals("GIVEBUTTER_API_ERROR") || errorCode.equals("GIVEBUTTER_ERROR")) {
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
 

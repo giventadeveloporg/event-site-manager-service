@@ -80,16 +80,24 @@ public class QRCodeService {
 
     /**
      * Get the active Spring profile prefix for S3 paths.
-     * Returns the first active profile or "default" if none is set.
+     * Returns the first active profile, "dev" for development, or "prod" for production.
+     * Defaults to "dev" if no profile is set (for local development).
      *
      * @return the active profile prefix
      */
     private String getActiveProfilePrefix() {
         String[] activeProfiles = environment.getActiveProfiles();
         if (activeProfiles.length > 0) {
-            return activeProfiles[0];
+            String profile = activeProfiles[0];
+            // Map common profile names to S3 path prefixes
+            if ("prod".equalsIgnoreCase(profile) || "production".equalsIgnoreCase(profile)) {
+                return "prod";
+            }
+            // Default to "dev" for dev, local, or any other profile
+            return "dev";
         }
-        return "default";
+        // Default to "dev" for local development when no profile is set
+        return "dev";
     }
 
     private String generateUniqueFilename(String tenantId, Long eventId, String originalFilename) {

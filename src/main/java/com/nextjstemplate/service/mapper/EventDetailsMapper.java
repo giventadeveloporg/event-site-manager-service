@@ -20,9 +20,12 @@ public interface EventDetailsMapper extends EntityMapper<EventDetailsDTO, EventD
     @Mapping(target = "createdBy", source = "createdBy", qualifiedByName = "userProfileId")
     @Mapping(target = "eventType", source = "eventType", qualifiedByName = "eventTypeDetailsId")
     @Mapping(target = "discountCodes", source = "discountCodes", qualifiedByName = "discountCodeIdSet")
+    @Mapping(target = "parentEventId", source = "parentEvent.id")
     EventDetailsDTO toDto(EventDetails s);
 
     @Mapping(target = "removeDiscountCodes", ignore = true)
+    @Mapping(target = "parentEvent", ignore = true)
+    @Mapping(target = "childEvents", ignore = true)
     EventDetails toEntity(EventDetailsDTO eventDetailsDTO);
 
     @Named("userProfileId")

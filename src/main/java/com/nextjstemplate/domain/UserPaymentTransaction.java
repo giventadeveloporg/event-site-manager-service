@@ -98,18 +98,6 @@ public class UserPaymentTransaction implements Serializable {
     @JsonIgnoreProperties(value = { "event", "ticketType", "user" }, allowSetters = true)
     private EventTicketTransaction ticketTransaction;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = {}, allowSetters = true)
-    private PlatformSettlement settlementBatch;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = {}, allowSetters = true)
-    private PlatformInvoice platformInvoice;
-
-    @Size(max = 255)
-    @Column(name = "manual_payment_reference", length = 255)
-    private String manualPaymentReference;
-
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -370,45 +358,6 @@ public class UserPaymentTransaction implements Serializable {
     public UserPaymentTransaction ticketTransaction(EventTicketTransaction eventTicketTransaction) {
         this.setTicketTransaction(eventTicketTransaction);
         return this;
-    }
-
-    public PlatformSettlement getSettlementBatch() {
-        return this.settlementBatch;
-    }
-
-    public void setSettlementBatch(PlatformSettlement platformSettlement) {
-        this.settlementBatch = platformSettlement;
-    }
-
-    public UserPaymentTransaction settlementBatch(PlatformSettlement platformSettlement) {
-        this.setSettlementBatch(platformSettlement);
-        return this;
-    }
-
-    public PlatformInvoice getPlatformInvoice() {
-        return this.platformInvoice;
-    }
-
-    public void setPlatformInvoice(PlatformInvoice platformInvoice) {
-        this.platformInvoice = platformInvoice;
-    }
-
-    public UserPaymentTransaction platformInvoice(PlatformInvoice platformInvoice) {
-        this.setPlatformInvoice(platformInvoice);
-        return this;
-    }
-
-    public String getManualPaymentReference() {
-        return this.manualPaymentReference;
-    }
-
-    public UserPaymentTransaction manualPaymentReference(String manualPaymentReference) {
-        this.setManualPaymentReference(manualPaymentReference);
-        return this;
-    }
-
-    public void setManualPaymentReference(String manualPaymentReference) {
-        this.manualPaymentReference = manualPaymentReference;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

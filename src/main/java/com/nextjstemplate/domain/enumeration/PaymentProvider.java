@@ -11,4 +11,5 @@ public enum PaymentProvider {
     ZELLE_MANUAL,
     REVOLUT,
     CEFI_CHARITY,
+    GIVEBUTTER,
 }

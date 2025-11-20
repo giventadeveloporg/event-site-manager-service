@@ -172,4 +172,15 @@ public interface S3Service {
      * @return the S3 path for the director image.
      */
     String generateDirectorImagePath(String tenantId, Long directorId, String originalFilename);
+
+    /**
+     * Generate S3 path for email header images.
+     * Path format: {profile}/events/tenantId/{tenantId}/event-id/{eventId}/tickets/email-templates/email_header_image_{timestamp}_{uuid}.{ext}
+     *
+     * @param tenantId Tenant ID
+     * @param eventId Event ID
+     * @param originalFilename Original filename from upload
+     * @return S3 path string
+     */
+    String generateEmailHeaderImagePath(String tenantId, Long eventId, String originalFilename);
 }

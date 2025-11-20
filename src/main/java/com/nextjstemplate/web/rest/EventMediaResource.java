@@ -14,6 +14,7 @@ import com.nextjstemplate.service.dto.EventProgramDirectorsDTO;
 import com.nextjstemplate.service.dto.EventSponsorsDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -647,6 +648,58 @@ public class EventMediaResource {
             .created(new URI("/api/event-medias/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
+    }
+
+    /**
+     * POST /event-medias/upload/email-header-image : Upload email header image for event.
+     */
+    @PostMapping(value = "/upload/email-header-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadEmailHeaderImage(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("eventId") Long eventId,
+        @RequestParam(value = "tenantId", required = false) String tenantId,
+        @RequestParam(value = "title", required = false, defaultValue = "Email Header Image") String title,
+        @RequestParam(
+            value = "description",
+            required = false,
+            defaultValue = "Email header image for ticket confirmation emails"
+        ) String description,
+        @RequestParam(value = "isPublic", required = false, defaultValue = "true") Boolean isPublic,
+        Authentication authentication
+    ) throws URISyntaxException {
+        log.debug("REST request to upload email header image for event: {}", eventId);
+
+        // Get tenantId from context if not provided
+        String finalTenantId = tenantId;
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            try {
+                finalTenantId = com.nextjstemplate.security.TenantContext.getCurrentTenant();
+                log.debug("Tenant ID from context: {}", finalTenantId);
+            } catch (Exception e) {
+                log.warn("Could not get tenant ID from context: {}", e.getMessage());
+            }
+        }
+
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            throw new BadRequestAlertException("Tenant ID is required", ENTITY_NAME, "tenantIdRequired");
+        }
+
+        try {
+            EventMediaDTO result = eventMediaService.uploadEmailHeaderImage(eventId, file, finalTenantId, title, description, isPublic);
+            return ResponseEntity
+                .created(new URI("/api/event-medias/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        } catch (EntityNotFoundException e) {
+            log.error("Event not found: {}", eventId);
+            throw new BadRequestAlertException("Event not found: " + eventId, ENTITY_NAME, "eventNotFound");
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid request: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidRequest");
+        } catch (Exception e) {
+            log.error("Failed to upload email header image", e);
+            throw new BadRequestAlertException("Failed to upload email header image: " + e.getMessage(), ENTITY_NAME, "uploadFailed");
+        }
     }
 
     /**

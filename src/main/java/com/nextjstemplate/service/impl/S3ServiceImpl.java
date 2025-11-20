@@ -152,6 +152,11 @@ public class S3ServiceImpl implements S3Service {
     public String downloadHtmlFromUrl(String url) {
         try {
             String fileName = extractFileNameFromUrl(url);
+            // Check if file exists before attempting to download
+            if (!amazonS3.doesObjectExist(bucketName, fileName)) {
+                log.debug("HTML file not found in S3: {}, returning empty string", url);
+                return "";
+            }
             S3Object s3Object = amazonS3.getObject(bucketName, fileName);
             try (
                 java.io.InputStream inputStream = s3Object.getObjectContent();
@@ -160,9 +165,17 @@ public class S3ServiceImpl implements S3Service {
                 scanner.useDelimiter("\\A");
                 return scanner.hasNext() ? scanner.next() : "";
             }
+        } catch (com.amazonaws.services.s3.model.AmazonS3Exception s3Exception) {
+            // Handle S3-specific exceptions (e.g., NoSuchKey) gracefully
+            if (s3Exception.getStatusCode() == 404) {
+                log.debug("HTML file not found in S3 (404): {}, returning empty string", url);
+                return "";
+            }
+            log.warn("S3 error downloading HTML from S3: {}, returning empty string", url);
+            return "";
         } catch (Exception e) {
-            log.error("Error downloading HTML from S3: {}", url, e);
-            throw new RuntimeException("Failed to download HTML from S3", e);
+            log.warn("Error downloading HTML from S3: {}, returning empty string", url);
+            return "";
         }
     }
 
@@ -462,6 +475,28 @@ public class S3ServiceImpl implements S3Service {
             eventId,
             performerId,
             baseName,
+            timestamp,
+            uuid,
+            extension
+        );
+    }
+
+    @Override
+    public String generateEmailHeaderImagePath(String tenantId, Long eventId, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        // Default to .jpeg if no extension found
+        if (extension == null || extension.isEmpty()) {
+            extension = ".jpeg";
+        }
+        String profilePrefix = getActiveProfilePrefix();
+
+        return String.format(
+            "%s/events/tenantId/%s/event-id/%d/tickets/email-templates/email_header_image_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            eventId,
             timestamp,
             uuid,
             extension

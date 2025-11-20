@@ -64,6 +64,8 @@ public class SecurityConfiguration {
                     .permitAll()
                     .requestMatchers(mvc.pattern("/api/webhooks/clerk"))
                     .permitAll()
+                    .requestMatchers(mvc.pattern("/api/webhooks/givebutter"))
+                    .permitAll()
                     // All other /api/** endpoints require authentication
                     .requestMatchers(mvc.pattern("/api/**"))
                     .authenticated()

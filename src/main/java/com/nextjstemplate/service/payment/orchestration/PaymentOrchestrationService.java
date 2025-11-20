@@ -1,19 +1,25 @@
 package com.nextjstemplate.service.payment.orchestration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nextjstemplate.domain.EventDetails;
+import com.nextjstemplate.domain.EventTicketTransaction;
 import com.nextjstemplate.domain.UserPaymentTransaction;
 import com.nextjstemplate.domain.enumeration.PaymentProvider;
 import com.nextjstemplate.domain.enumeration.PaymentUseCase;
 import com.nextjstemplate.repository.EventDetailsRepository;
+import com.nextjstemplate.repository.EventTicketTransactionRepository;
 import com.nextjstemplate.repository.UserPaymentTransactionRepository;
 import com.nextjstemplate.service.payment.PaymentException;
 import com.nextjstemplate.service.payment.PaymentService;
+import com.nextjstemplate.service.payment.TicketGenerationService;
 import com.nextjstemplate.service.payment.config.PaymentProviderConfigService;
 import com.nextjstemplate.service.payment.dto.PaymentSessionRequest;
 import com.nextjstemplate.service.payment.dto.PaymentSessionResponse;
 import com.nextjstemplate.service.payment.dto.RefundRequest;
 import com.nextjstemplate.service.payment.dto.RefundResponse;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,17 +42,25 @@ public class PaymentOrchestrationService {
     private final PaymentProviderConfigService configService;
     private final UserPaymentTransactionRepository transactionRepository;
     private final EventDetailsRepository eventDetailsRepository;
+    private final EventTicketTransactionRepository eventTicketTransactionRepository;
+    private final TicketGenerationService ticketGenerationService;
+    private final ObjectMapper objectMapper;
     private final Map<PaymentProvider, PaymentService> paymentServices;
 
     public PaymentOrchestrationService(
         PaymentProviderConfigService configService,
         UserPaymentTransactionRepository transactionRepository,
         EventDetailsRepository eventDetailsRepository,
+        EventTicketTransactionRepository eventTicketTransactionRepository,
+        TicketGenerationService ticketGenerationService,
         List<PaymentService> paymentServicesList
     ) {
         this.configService = configService;
         this.transactionRepository = transactionRepository;
         this.eventDetailsRepository = eventDetailsRepository;
+        this.eventTicketTransactionRepository = eventTicketTransactionRepository;
+        this.ticketGenerationService = ticketGenerationService;
+        this.objectMapper = new ObjectMapper();
         this.paymentServices = new java.util.HashMap<>();
         // Register all payment services (may be empty initially until adapters are implemented)
         if (paymentServicesList != null) {
@@ -72,11 +86,17 @@ public class PaymentOrchestrationService {
      */
     public PaymentSessionResponse initialize(PaymentSessionRequest request) throws PaymentException {
         log.info("Initializing payment session for tenant: {}, use case: {}", request.getTenantId(), request.getPaymentUseCase());
+        log.debug(
+            "Determining provider for request: eventId={}, paymentUseCase={}, tenantId={}",
+            request.getEventId(),
+            request.getPaymentUseCase(),
+            request.getTenantId()
+        );
 
         // Get active provider configurations ordered by fallback priority
-        List<Map<String, Object>> providerConfigs = configService.getActiveProviderConfigs(
-            request.getTenantId(),
-            request.getPaymentUseCase()
+        // Create a mutable copy since getActiveProviderConfigs() returns an immutable list
+        List<Map<String, Object>> providerConfigs = new ArrayList<>(
+            configService.getActiveProviderConfigs(request.getTenantId(), request.getPaymentUseCase())
         );
 
         if (providerConfigs.isEmpty()) {
@@ -86,6 +106,138 @@ public class PaymentOrchestrationService {
             );
         }
 
+        // Prioritize Givebutter for OFFERING and DONATION_ZERO_FEE use cases
+        if (request.getPaymentUseCase() == PaymentUseCase.OFFERING || request.getPaymentUseCase() == PaymentUseCase.DONATION_ZERO_FEE) {
+            // Check if Givebutter is configured
+            Optional<Map<String, Object>> givebutterConfig = providerConfigs
+                .stream()
+                .filter(config -> PaymentProvider.GIVEBUTTER.equals(config.get("providerName")))
+                .findFirst();
+
+            givebutterConfig.ifPresent(config -> {
+                // Move Givebutter to the front of the list
+                providerConfigs.remove(config);
+                providerConfigs.add(0, config);
+                log.debug("Prioritizing Givebutter for use case: {}", request.getPaymentUseCase());
+            });
+        }
+
+        // For TICKET_SALE and DONATION use cases, check if event has zero-fee provider configured
+        // Also add event metadata to request metadata for adapter access
+        if (request.getEventId() != null) {
+            Optional<EventDetails> eventOptional = eventDetailsRepository.findById(request.getEventId());
+            log.debug("Event found: {}, eventId: {}", eventOptional.isPresent(), request.getEventId());
+
+            eventOptional.ifPresent(event -> {
+                Map<String, Object> eventMetadata = event.getMetadataAsMap();
+                log.debug("Event metadata: {}", eventMetadata != null && !eventMetadata.isEmpty() ? "present" : "null or empty");
+
+                if (eventMetadata != null && !eventMetadata.isEmpty()) {
+                    // Add event metadata to request metadata for adapter access
+                    if (request.getMetadata() == null) {
+                        request.setMetadata(new HashMap<>());
+                    }
+                    request.getMetadata().put("eventMetadata", eventMetadata);
+
+                    // Check if event is configured as fundraiser/charity event with Givebutter
+                    Boolean isFundraiserEvent = (Boolean) eventMetadata.get("isFundraiserEvent");
+                    Boolean isCharityEvent = (Boolean) eventMetadata.get("isCharityEvent");
+                    log.debug(
+                        "Event {} metadata check: isFundraiserEvent={}, isCharityEvent={}",
+                        request.getEventId(),
+                        isFundraiserEvent,
+                        isCharityEvent
+                    );
+
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> donationConfig = (Map<String, Object>) eventMetadata.get("donationConfig");
+                    log.debug("Event {} donationConfig: {}", request.getEventId(), donationConfig != null ? "present" : "null");
+
+                    // For TICKET_SALE: Check if fundraiser event - use Stripe instead of Givebutter
+                    // Givebutter API does not support programmatic donation creation
+                    if (request.getPaymentUseCase() == PaymentUseCase.TICKET_SALE) {
+                        log.debug("Processing TICKET_SALE routing for event {}", request.getEventId());
+                        log.debug(
+                            "Conditions check: isFundraiserEvent={}, isCharityEvent={}, donationConfig={}",
+                            Boolean.TRUE.equals(isFundraiserEvent),
+                            Boolean.TRUE.equals(isCharityEvent),
+                            donationConfig != null
+                        );
+
+                        if ((Boolean.TRUE.equals(isFundraiserEvent) || Boolean.TRUE.equals(isCharityEvent)) && donationConfig != null) {
+                            // Skip Givebutter - API does not support programmatic donation creation
+                            // Use Stripe for fundraiser/charity events (can qualify for nonprofit discount)
+                            log.info(
+                                "Event {} is fundraiser/charity event - routing to Stripe (Givebutter API not available for donations)",
+                                request.getEventId()
+                            );
+
+                            // Remove Givebutter from provider list if present
+                            providerConfigs.removeIf(config -> PaymentProvider.GIVEBUTTER.equals(config.get("providerName")));
+
+                            // Prioritize Stripe for fundraiser/charity events
+                            Optional<Map<String, Object>> stripeConfig = providerConfigs
+                                .stream()
+                                .filter(config -> PaymentProvider.STRIPE.equals(config.get("providerName")))
+                                .findFirst();
+
+                            stripeConfig.ifPresentOrElse(
+                                config -> {
+                                    // Move Stripe to front of list
+                                    providerConfigs.remove(config);
+                                    providerConfigs.add(0, config);
+                                    log.debug(
+                                        "Prioritized Stripe for fundraiser/charity event {} (nonprofit discount eligible)",
+                                        request.getEventId()
+                                    );
+                                },
+                                () ->
+                                    log.warn(
+                                        "Stripe not configured for tenant {} - fundraiser event {} may fail",
+                                        request.getTenantId(),
+                                        request.getEventId()
+                                    )
+                            );
+                        }
+                    }
+
+                    // For DONATION use case: Always use Stripe (skip Givebutter - API not available)
+                    // Stripe can qualify for nonprofit discount (2.2% vs 2.9%)
+                    if (
+                        request.getPaymentUseCase() == PaymentUseCase.DONATION ||
+                        request.getPaymentUseCase() == PaymentUseCase.DONATION_ZERO_FEE
+                    ) {
+                        // Skip Givebutter - API does not support programmatic donation creation
+                        providerConfigs.removeIf(config -> PaymentProvider.GIVEBUTTER.equals(config.get("providerName")));
+
+                        // Prioritize Stripe for donations
+                        Optional<Map<String, Object>> stripeConfig = providerConfigs
+                            .stream()
+                            .filter(config -> PaymentProvider.STRIPE.equals(config.get("providerName")))
+                            .findFirst();
+
+                        stripeConfig.ifPresentOrElse(
+                            config -> {
+                                providerConfigs.remove(config);
+                                providerConfigs.add(0, config);
+                                log.info(
+                                    "Routing donation (use case: {}) to Stripe (Givebutter API not available, nonprofit discount eligible)",
+                                    request.getPaymentUseCase()
+                                );
+                            },
+                            () -> log.warn("Stripe not configured for tenant {} - donation may fail", request.getTenantId())
+                        );
+                    }
+                }
+            });
+        }
+
+        // Log final provider selection order
+        log.debug(
+            "Provider selection order: {}",
+            providerConfigs.stream().map(config -> ((PaymentProvider) config.get("providerName")).name()).toList()
+        );
+
         // Try each provider in fallback order
         PaymentException lastException = null;
         for (Map<String, Object> providerConfig : providerConfigs) {
@@ -94,6 +246,20 @@ public class PaymentOrchestrationService {
 
             if (paymentService == null) {
                 log.warn("Payment service not found for provider: {}", provider);
+                continue;
+            }
+
+            // Skip Givebutter for programmatic donation creation
+            // Givebutter API is read-only and does NOT support creating donations via API
+            // It only supports retrieving existing donation data
+            if (
+                provider == PaymentProvider.GIVEBUTTER &&
+                (request.getPaymentUseCase() == PaymentUseCase.DONATION || request.getPaymentUseCase() == PaymentUseCase.DONATION_ZERO_FEE)
+            ) {
+                log.debug(
+                    "Skipping Givebutter - API does not support programmatic donation creation. Use case: {}",
+                    request.getPaymentUseCase()
+                );
                 continue;
             }
 
@@ -238,9 +404,36 @@ public class PaymentOrchestrationService {
     public PaymentSessionResponse getStatus(String transactionId) throws PaymentException {
         log.debug("Getting payment status for transaction: {}", transactionId);
 
-        UserPaymentTransaction transaction = transactionRepository
-            .findById(Long.parseLong(transactionId))
-            .orElseThrow(() -> new PaymentException("TRANSACTION_NOT_FOUND", "Transaction not found: " + transactionId));
+        UserPaymentTransaction transaction;
+        try {
+            transaction =
+                transactionRepository
+                    .findById(Long.parseLong(transactionId))
+                    .orElseThrow(() -> new PaymentException("TRANSACTION_NOT_FOUND", "Transaction not found: " + transactionId));
+        } catch (org.springframework.orm.jpa.JpaSystemException e) {
+            if (
+                e.getCause() instanceof org.hibernate.HibernateException &&
+                e.getCause().getMessage() != null &&
+                e.getCause().getMessage().contains("Duplicate row was found")
+            ) {
+                log.error(
+                    "Duplicate primary key found for transaction ID: {}. This indicates database integrity issue. Please check and fix duplicate rows in user_payment_transaction table.",
+                    transactionId
+                );
+                // Try to get transaction using native query workaround
+                // Note: This is a temporary workaround. The database should be fixed to remove duplicate primary keys.
+                transaction =
+                    transactionRepository
+                        .findByIdWithDuplicateHandling(Long.parseLong(transactionId))
+                        .orElseThrow(() -> new PaymentException("TRANSACTION_NOT_FOUND", "Transaction not found: " + transactionId));
+                log.warn(
+                    "Using first transaction found with duplicate ID: {}. Database integrity issue detected - please investigate and fix duplicate rows.",
+                    transactionId
+                );
+            } else {
+                throw e;
+            }
+        }
 
         PaymentProvider provider = extractProviderFromTransaction(transaction);
         Map<String, Object> providerConfig = configService
@@ -279,6 +472,376 @@ public class PaymentOrchestrationService {
         }
 
         return paymentService.handleWebhook(payload, signature, providerConfig);
+    }
+
+    /**
+     * Process Givebutter webhook event.
+     * Updates payment transaction status based on webhook event type.
+     *
+     * @param event Givebutter webhook event
+     * @param tenantId Tenant ID
+     * @throws PaymentException if processing fails
+     */
+    public void processGivebutterWebhook(
+        com.nextjstemplate.service.payment.adapter.givebutter.dto.GivebutterWebhookEvent event,
+        String tenantId
+    ) throws PaymentException {
+        log.info("Processing Givebutter webhook event: {} for tenant: {}", event.getType(), tenantId);
+
+        if (event.getDonation() == null || event.getDonation().getId() == null) {
+            throw new PaymentException("INVALID_WEBHOOK", "Donation ID not found in webhook event");
+        }
+
+        String donationId = event.getDonation().getId();
+        String eventType = event.getType();
+
+        // Find transaction by external transaction ID (Givebutter donation ID)
+        UserPaymentTransaction transaction = transactionRepository
+            .findAll()
+            .stream()
+            .filter(t -> donationId.equals(t.getExternalTransactionId()) && tenantId.equals(t.getTenantId()))
+            .findFirst()
+            .orElse(null);
+
+        if (transaction == null) {
+            log.warn("Transaction not found for Givebutter donation ID: {} for tenant: {}", donationId, tenantId);
+            // Don't throw exception - webhook might be for a donation created outside our system
+            return;
+        }
+
+        // Process based on event type
+        switch (eventType) {
+            case "donation.completed":
+                transaction.setStatus("SUCCEEDED");
+                transaction.setUpdatedAt(ZonedDateTime.now());
+                transactionRepository.save(transaction);
+                log.info("Updated transaction {} status to SUCCEEDED for Givebutter donation: {}", transaction.getId(), donationId);
+
+                // CRITICAL: Create ticket transaction if this is a ticket purchase
+                createTicketTransactionForGivebutter(transaction, event);
+                break;
+            case "donation.updated":
+                // Update status based on donation status
+                String donationStatus = event.getDonation().getStatus();
+                if (donationStatus != null) {
+                    String mappedStatus = mapGivebutterStatus(donationStatus);
+                    transaction.setStatus(mappedStatus);
+                    transaction.setUpdatedAt(ZonedDateTime.now());
+                    transactionRepository.save(transaction);
+                    log.info(
+                        "Updated transaction {} status to {} for Givebutter donation: {}",
+                        transaction.getId(),
+                        mappedStatus,
+                        donationId
+                    );
+
+                    // If status is SUCCEEDED, ensure ticket transaction exists
+                    if ("SUCCEEDED".equals(mappedStatus)) {
+                        createTicketTransactionForGivebutter(transaction, event);
+                    }
+                }
+                break;
+            case "donation.refunded":
+                transaction.setStatus("REFUNDED");
+                transaction.setUpdatedAt(ZonedDateTime.now());
+                transactionRepository.save(transaction);
+                log.info("Updated transaction {} status to REFUNDED for Givebutter donation: {}", transaction.getId(), donationId);
+                break;
+            default:
+                log.debug("Unhandled Givebutter webhook event type: {}", eventType);
+        }
+    }
+
+    /**
+     * Create ticket transaction for Givebutter payment.
+     * This is called when a Givebutter payment succeeds for a ticket purchase.
+     *
+     * @param paymentTransaction The payment transaction
+     * @param event The Givebutter webhook event
+     */
+    private void createTicketTransactionForGivebutter(
+        UserPaymentTransaction paymentTransaction,
+        com.nextjstemplate.service.payment.adapter.givebutter.dto.GivebutterWebhookEvent event
+    ) {
+        // Check if this is a ticket purchase
+        Long eventId = paymentTransaction.getEvent() != null ? paymentTransaction.getEvent().getId() : null;
+        boolean isTicketPurchase = eventId != null || PaymentUseCase.TICKET_SALE.name().equals(paymentTransaction.getTransactionType());
+
+        if (!isTicketPurchase) {
+            log.debug("Givebutter payment {} is not a ticket purchase, skipping ticket transaction creation", paymentTransaction.getId());
+            return;
+        }
+
+        if (eventId == null) {
+            log.warn("Givebutter payment transaction {} has no eventId, cannot create ticket transaction", paymentTransaction.getId());
+            return;
+        }
+
+        log.info("Creating ticket transaction for Givebutter payment {} for event {}", paymentTransaction.getId(), eventId);
+
+        try {
+            // Extract donation information
+            com.nextjstemplate.service.payment.adapter.givebutter.dto.GivebutterDonation donation = event.getDonation();
+            String donationId = donation != null ? donation.getId() : paymentTransaction.getExternalTransactionId();
+
+            // Check if ticket transaction already exists
+            // For Givebutter, we store donation ID in stripePaymentIntentId field for compatibility
+            Optional<EventTicketTransaction> existingTicket = Optional.empty();
+            if (donationId != null && !donationId.isEmpty()) {
+                // Try to find by stripePaymentIntentId (where we store Givebutter donation ID)
+                existingTicket = eventTicketTransactionRepository.findByStripePaymentIntentId(donationId);
+            }
+
+            // Also try by transaction reference (payment transaction ID)
+            if (existingTicket.isEmpty()) {
+                List<EventTicketTransaction> ticketsByRef = eventTicketTransactionRepository.findByTransactionReference(
+                    String.valueOf(paymentTransaction.getId())
+                );
+                if (!ticketsByRef.isEmpty()) {
+                    existingTicket = Optional.of(ticketsByRef.get(0));
+                }
+            }
+
+            // Process existing ticket transaction if found, otherwise create new one
+            final boolean[] ticketProcessed = { false };
+            existingTicket.ifPresent(existing -> {
+                ticketProcessed[0] = true;
+                log.info("Ticket transaction {} already exists for Givebutter payment {}", existing.getId(), paymentTransaction.getId());
+
+                // Update status to COMPLETED if not already
+                if (!"COMPLETED".equals(existing.getStatus())) {
+                    existing.setStatus("COMPLETED");
+                    existing.setUpdatedAt(ZonedDateTime.now());
+                    eventTicketTransactionRepository.save(existing);
+                }
+
+                // Trigger ticket generation (QR code and email) if not already done
+                try {
+                    // Use donation ID as payment reference for TicketGenerationService compatibility
+                    ticketGenerationService.processTicketGenerationSync(paymentTransaction, donationId);
+                } catch (Exception e) {
+                    log.error(
+                        "Failed to process ticket generation for existing ticket transaction {}: {}",
+                        existing.getId(),
+                        e.getMessage(),
+                        e
+                    );
+                }
+            });
+
+            // If ticket transaction already exists, return early
+            if (ticketProcessed[0]) {
+                return;
+            }
+
+            // Create new ticket transaction
+            EventTicketTransaction ticketTransaction = new EventTicketTransaction();
+            ticketTransaction.setTenantId(paymentTransaction.getTenantId());
+            ticketTransaction.setEventId(eventId);
+            ticketTransaction.setTransactionReference(String.valueOf(paymentTransaction.getId()));
+
+            // Extract email from donation or transaction metadata
+            String email = null;
+            String firstName = null;
+            String lastName = null;
+            String phone = null;
+
+            if (donation != null) {
+                email = donation.getDonorEmail();
+                String donorName = donation.getDonorName();
+                if (donorName != null && !donorName.isEmpty()) {
+                    String[] nameParts = donorName.split(" ", 2);
+                    firstName = nameParts.length > 0 ? nameParts[0] : null;
+                    lastName = nameParts.length > 1 ? nameParts[1] : null;
+                }
+            }
+
+            // Fallback to transaction metadata if donation info not available
+            if (email == null || email.isEmpty()) {
+                email = extractEmailFromTransactionMetadata(paymentTransaction);
+            }
+            if (firstName == null) {
+                firstName = extractFirstNameFromTransactionMetadata(paymentTransaction);
+            }
+            if (lastName == null) {
+                lastName = extractLastNameFromTransactionMetadata(paymentTransaction);
+            }
+            if (phone == null) {
+                phone = extractPhoneFromTransactionMetadata(paymentTransaction);
+            }
+
+            if (email == null || email.isEmpty()) {
+                log.warn("No email found for Givebutter payment {}, cannot create ticket transaction", paymentTransaction.getId());
+                return;
+            }
+
+            ticketTransaction.setEmail(email);
+            ticketTransaction.setFirstName(firstName);
+            ticketTransaction.setLastName(lastName);
+            ticketTransaction.setPhone(phone);
+
+            // Set amount fields
+            BigDecimal amount = paymentTransaction.getAmount();
+            ticketTransaction.setPricePerUnit(amount);
+            ticketTransaction.setTotalAmount(amount);
+            ticketTransaction.setFinalAmount(amount);
+            ticketTransaction.setQuantity(1); // Default to 1, can be updated from metadata
+
+            // Set status and payment info
+            ticketTransaction.setStatus("COMPLETED");
+            ticketTransaction.setPaymentMethod("GIVEBUTTER");
+            ticketTransaction.setPaymentReference(donationId != null ? donationId : paymentTransaction.getExternalTransactionId());
+
+            // CRITICAL: Store Givebutter donation ID in stripePaymentIntentId field for compatibility
+            // This allows existing queries to find ticket transactions by payment reference
+            ticketTransaction.setStripePaymentIntentId(donationId != null ? donationId : paymentTransaction.getExternalTransactionId());
+            ticketTransaction.setStripePaymentStatus("succeeded");
+            ticketTransaction.setStripePaymentCurrency(paymentTransaction.getCurrency());
+
+            // Set dates
+            ticketTransaction.setPurchaseDate(
+                paymentTransaction.getCreatedAt() != null ? paymentTransaction.getCreatedAt() : ZonedDateTime.now()
+            );
+            ticketTransaction.setCreatedAt(ZonedDateTime.now());
+            ticketTransaction.setUpdatedAt(ZonedDateTime.now());
+
+            // Save ticket transaction
+            EventTicketTransaction savedTicket = eventTicketTransactionRepository.save(ticketTransaction);
+            log.info(
+                "Created ticket transaction {} for Givebutter payment {} (donation ID: {})",
+                savedTicket.getId(),
+                paymentTransaction.getId(),
+                donationId
+            );
+
+            // Trigger ticket generation (QR code and email)
+            try {
+                // Use donation ID as payment reference for TicketGenerationService compatibility
+                ticketGenerationService.processTicketGenerationSync(
+                    paymentTransaction,
+                    donationId != null ? donationId : paymentTransaction.getExternalTransactionId()
+                );
+                log.info("Successfully processed ticket generation for Givebutter payment {}", paymentTransaction.getId());
+            } catch (Exception e) {
+                log.error(
+                    "Failed to process ticket generation for Givebutter payment {}: {}",
+                    paymentTransaction.getId(),
+                    e.getMessage(),
+                    e
+                );
+                // Don't fail the webhook - ticket generation can be retried manually
+            }
+        } catch (Exception e) {
+            log.error("Error creating ticket transaction for Givebutter payment {}: {}", paymentTransaction.getId(), e.getMessage(), e);
+            // Don't fail the webhook - ticket transaction creation can be retried
+        }
+    }
+
+    /**
+     * Extract email from transaction metadata.
+     */
+    private String extractEmailFromTransactionMetadata(UserPaymentTransaction transaction) {
+        if (transaction.getMetadata() == null || transaction.getMetadata().isEmpty()) {
+            return null;
+        }
+        try {
+            Map<String, Object> metadata = objectMapper.readValue(transaction.getMetadata(), Map.class);
+            Object email = metadata.get("email");
+            if (email != null && !email.toString().isEmpty()) {
+                return email.toString();
+            }
+            Object customerEmail = metadata.get("customerEmail");
+            if (customerEmail != null && !customerEmail.toString().isEmpty()) {
+                return customerEmail.toString();
+            }
+        } catch (Exception e) {
+            log.debug("Failed to parse transaction metadata JSON: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Extract first name from transaction metadata.
+     */
+    private String extractFirstNameFromTransactionMetadata(UserPaymentTransaction transaction) {
+        if (transaction.getMetadata() == null || transaction.getMetadata().isEmpty()) {
+            return null;
+        }
+        try {
+            Map<String, Object> metadata = objectMapper.readValue(transaction.getMetadata(), Map.class);
+            Object firstName = metadata.get("firstName");
+            if (firstName != null) {
+                return firstName.toString();
+            }
+            Object customerName = metadata.get("customerName");
+            if (customerName != null) {
+                String[] nameParts = customerName.toString().split(" ", 2);
+                return nameParts.length > 0 ? nameParts[0] : null;
+            }
+        } catch (Exception e) {
+            log.debug("Failed to parse transaction metadata JSON: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Extract last name from transaction metadata.
+     */
+    private String extractLastNameFromTransactionMetadata(UserPaymentTransaction transaction) {
+        if (transaction.getMetadata() == null || transaction.getMetadata().isEmpty()) {
+            return null;
+        }
+        try {
+            Map<String, Object> metadata = objectMapper.readValue(transaction.getMetadata(), Map.class);
+            Object lastName = metadata.get("lastName");
+            if (lastName != null) {
+                return lastName.toString();
+            }
+            Object customerName = metadata.get("customerName");
+            if (customerName != null) {
+                String[] nameParts = customerName.toString().split(" ", 2);
+                return nameParts.length > 1 ? nameParts[1] : null;
+            }
+        } catch (Exception e) {
+            log.debug("Failed to parse transaction metadata JSON: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Extract phone from transaction metadata.
+     */
+    private String extractPhoneFromTransactionMetadata(UserPaymentTransaction transaction) {
+        if (transaction.getMetadata() == null || transaction.getMetadata().isEmpty()) {
+            return null;
+        }
+        try {
+            Map<String, Object> metadata = objectMapper.readValue(transaction.getMetadata(), Map.class);
+            Object phone = metadata.get("phone");
+            if (phone != null) {
+                return phone.toString();
+            }
+        } catch (Exception e) {
+            log.debug("Failed to parse transaction metadata JSON: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Map Givebutter status to internal status.
+     */
+    private String mapGivebutterStatus(String givebutterStatus) {
+        if (givebutterStatus == null) {
+            return "PENDING";
+        }
+
+        return switch (givebutterStatus.toUpperCase()) {
+            case "COMPLETED", "SUCCEEDED", "PAID" -> "SUCCEEDED";
+            case "PENDING", "PROCESSING" -> "PENDING";
+            case "FAILED", "CANCELLED" -> "FAILED";
+            case "REFUNDED" -> "REFUNDED";
+            default -> "PENDING";
+        };
     }
 
     /**
@@ -336,6 +899,9 @@ public class PaymentOrchestrationService {
             transactionMetadata.put("customerName", request.getCustomerName());
         }
 
+        // CRITICAL: Store provider name in metadata for later retrieval
+        transactionMetadata.put("provider", provider.name());
+
         // Merge with provider-specific metadata from response
         if (response.getProviderMetadata() != null) {
             transactionMetadata.putAll(response.getProviderMetadata());
@@ -360,6 +926,13 @@ public class PaymentOrchestrationService {
             Object stripePaymentIntentId = response.getProviderMetadata().get("stripePaymentIntentId");
             if (stripePaymentIntentId != null && provider == PaymentProvider.STRIPE) {
                 transaction.setStripePaymentIntentId(stripePaymentIntentId.toString());
+            }
+
+            // For Givebutter, store donation ID in stripePaymentIntentId field for compatibility
+            // This allows existing queries to find transactions by payment reference
+            if (provider == PaymentProvider.GIVEBUTTER && externalId != null) {
+                transaction.setStripePaymentIntentId(externalId.toString());
+                log.debug("Stored Givebutter donation ID {} in stripePaymentIntentId field for compatibility", externalId);
             }
         }
 

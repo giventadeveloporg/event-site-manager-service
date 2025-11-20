@@ -104,9 +104,16 @@ public class QRCodeResource {
     private String getActiveProfilePrefix() {
         String[] activeProfiles = environment.getActiveProfiles();
         if (activeProfiles.length > 0) {
-            return activeProfiles[0];
+            String profile = activeProfiles[0];
+            // Map common profile names to S3 path prefixes
+            if ("prod".equalsIgnoreCase(profile) || "production".equalsIgnoreCase(profile)) {
+                return "prod";
+            }
+            // Default to "dev" for dev, local, or any other profile
+            return "dev";
         }
-        return "default";
+        // Default to "dev" for local development when no profile is set
+        return "dev";
     }
 
     /**
@@ -218,13 +225,24 @@ public class QRCodeResource {
         );
         String profilePrefix = getActiveProfilePrefix();
         String s3BaseUrl = getS3BaseUrl();
-        String headerImageUrl = String.format(
-            "%s/%s/events/tenantId/%s/event-id/%d/tickets/email-templates/email_header_image.jpeg",
-            s3BaseUrl,
-            profilePrefix,
-            tenantId,
-            eventId
-        );
+
+        // Get email header image URL from event_details table, fallback to default path if not set
+        String headerImageUrl = dto.getEventDetails().getEmailHeaderImageUrl();
+        if (headerImageUrl == null || headerImageUrl.isEmpty()) {
+            // Fallback to default path for backward compatibility
+            headerImageUrl =
+                String.format(
+                    "%s/%s/events/tenantId/%s/event-id/%d/tickets/email-templates/email_header_image.jpeg",
+                    s3BaseUrl,
+                    profilePrefix,
+                    tenantId,
+                    eventId
+                );
+            log.debug("Using default email header image path for event {}: {}", eventId, headerImageUrl);
+        } else {
+            log.debug("Using custom email header image URL for event {}: {}", eventId, headerImageUrl);
+        }
+
         String qrCodeImageUrl = dto.getTransaction().getQrCodeImageUrl();
         String eventName = dto.getEventDetails().getTitle();
         // Format event date and time

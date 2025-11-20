@@ -28,4 +28,28 @@ public interface EventDetailsRepository
     default Page<EventDetails> findAllWithEagerRelationships(Pageable pageable) {
         return this.fetchBagRelationships(this.findAll(pageable));
     }
+
+    /**
+     * Find all events in a recurrence series by series ID.
+     *
+     * @param recurrenceSeriesId the recurrence series ID
+     * @return list of events in the series
+     */
+    List<EventDetails> findByRecurrenceSeriesId(Long recurrenceSeriesId);
+
+    /**
+     * Find all child events by parent event ID.
+     *
+     * @param parentEventId the parent event ID
+     * @return list of child events
+     */
+    List<EventDetails> findByParentEventId(Long parentEventId);
+
+    /**
+     * Find parent event (event with no parent and matching series ID).
+     *
+     * @param recurrenceSeriesId the recurrence series ID
+     * @return optional parent event
+     */
+    Optional<EventDetails> findByRecurrenceSeriesIdAndParentEventIsNull(Long recurrenceSeriesId);
 }
