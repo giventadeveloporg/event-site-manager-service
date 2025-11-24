@@ -98,6 +98,13 @@ public class EventDetailsResource {
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody EventDetailsDTO eventDetailsDTO
     ) throws URISyntaxException {
+        log.info(
+            "REST request to update EventDetails - ID: {}, isActive: {}, isRecurring: {}, parentEventId: {}",
+            id,
+            eventDetailsDTO.getIsActive(),
+            eventDetailsDTO.getIsRecurring(),
+            eventDetailsDTO.getParentEventId()
+        );
         log.debug("REST request to update EventDetails : {}, {}", id, eventDetailsDTO);
         if (eventDetailsDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");

@@ -40,6 +40,23 @@ public class QRCodeService {
     }
 
     public String generateAndUploadQRCode(String qrScanUrlContent, Long eventId, String transactionId, String tenantId) throws IOException {
+        org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(QRCodeService.class);
+
+        log.info(
+            "Enter: generateAndUploadQRCode() with argument[s] = [qrScanUrlContent={}, eventId={}, transactionId={}, tenantId={}]",
+            qrScanUrlContent,
+            eventId,
+            transactionId,
+            tenantId
+        );
+
+        // Log configuration values
+        log.info(
+            "QRCodeService configuration - bucketName: {}, activeProfiles: {}",
+            bucketName,
+            java.util.Arrays.toString(environment.getActiveProfiles())
+        );
+
         int width = 300;
         int height = 300;
         String fileType = "png";
@@ -49,6 +66,7 @@ public class QRCodeService {
         hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
 
         try {
+            log.debug("Generating QR code image for content: {}", qrScanUrlContent);
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
             BitMatrix bitMatrix = qrCodeWriter.encode(qrScanUrlContent, BarcodeFormat.QR_CODE, width, height, hints);
             BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
@@ -59,7 +77,10 @@ public class QRCodeService {
             byte[] imageBytes = baos.toByteArray();
             baos.close();
 
+            log.debug("QR code image generated successfully: {} bytes", imageBytes.length);
+
             String uniqueFilename = generateUniqueFilename(tenantId, eventId, fileName);
+            log.info("Generated S3 filename: {}", uniqueFilename);
 
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType("image/png");
@@ -68,13 +89,22 @@ public class QRCodeService {
             metadata.addUserMetadata("event-id", String.valueOf(eventId));
             metadata.addUserMetadata("original-filename", fileName);
 
+            log.debug("Uploading QR code image to S3: bucket={}, key={}", bucketName, uniqueFilename);
             ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
             PutObjectRequest putRequest = new PutObjectRequest(bucketName, uniqueFilename, inputStream, metadata);
             amazonS3.putObject(putRequest);
+
             URL url = amazonS3.getUrl(bucketName, uniqueFilename);
-            return url.toString();
+            String s3Url = url.toString();
+            log.info("QR code image uploaded successfully to S3: {}", s3Url);
+            log.info("Exit: generateAndUploadQRCode() with result = {}", s3Url);
+            return s3Url;
         } catch (WriterException e) {
+            log.error("Failed to generate QR code image: {}", e.getMessage(), e);
             throw new IOException("Failed to generate QR code image", e);
+        } catch (Exception e) {
+            log.error("Unexpected error during QR code generation/upload: {}", e.getMessage(), e);
+            throw new IOException("Failed to upload QR code image to S3", e);
         }
     }
 
@@ -86,17 +116,23 @@ public class QRCodeService {
      * @return the active profile prefix
      */
     private String getActiveProfilePrefix() {
+        org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(QRCodeService.class);
         String[] activeProfiles = environment.getActiveProfiles();
+        log.debug("Active Spring profiles: {}", java.util.Arrays.toString(activeProfiles));
+
         if (activeProfiles.length > 0) {
             String profile = activeProfiles[0];
             // Map common profile names to S3 path prefixes
             if ("prod".equalsIgnoreCase(profile) || "production".equalsIgnoreCase(profile)) {
+                log.debug("Using profile prefix: prod");
                 return "prod";
             }
             // Default to "dev" for dev, local, or any other profile
+            log.debug("Using profile prefix: dev (profile={})", profile);
             return "dev";
         }
         // Default to "dev" for local development when no profile is set
+        log.warn("No active Spring profiles found, defaulting to 'dev' prefix");
         return "dev";
     }
 

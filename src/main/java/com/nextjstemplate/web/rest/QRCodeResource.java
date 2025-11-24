@@ -6,6 +6,7 @@ import com.nextjstemplate.repository.EventTicketTransactionItemRepository;
 import com.nextjstemplate.repository.EventTicketTransactionRepository;
 import com.nextjstemplate.repository.EventTicketTypeRepository;
 import com.nextjstemplate.service.EmailSenderService;
+import com.nextjstemplate.service.QRCodeService;
 import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.UserProfileService;
 import com.nextjstemplate.service.dto.*;
@@ -37,6 +38,7 @@ public class QRCodeResource {
 
     private final EventTicketTransactionRepository transactionRepository;
     private final S3Service s3Service;
+    private final QRCodeService qrCodeService;
     private final EventTicketTransactionMapper eventTicketTransactionMapper;
     private final EventTicketTransactionItemMapper eventTicketTransactionItemMapper;
     private final EventTicketTransactionItemRepository eventTicketTransactionItemRepository;
@@ -68,6 +70,7 @@ public class QRCodeResource {
     public QRCodeResource(
         EventTicketTransactionRepository transactionRepository,
         S3Service s3Service,
+        QRCodeService qrCodeService,
         EventTicketTransactionMapper eventTicketTransactionMapper,
         EventTicketTransactionItemMapper eventTicketTransactionItemMapper,
         EventTicketTransactionItemRepository eventTicketTransactionItemRepository,
@@ -82,6 +85,7 @@ public class QRCodeResource {
     ) {
         this.transactionRepository = transactionRepository;
         this.s3Service = s3Service;
+        this.qrCodeService = qrCodeService;
         this.eventTicketTransactionMapper = eventTicketTransactionMapper;
         this.eventTicketTransactionItemMapper = eventTicketTransactionItemMapper;
         this.eventTicketTransactionItemRepository = eventTicketTransactionItemRepository;
@@ -169,21 +173,133 @@ public class QRCodeResource {
         @PathVariable Long transactionId,
         @PathVariable String emailHostUrlPrefix
     ) {
+        log.debug("Enter: getQRCodeImage() with argument[s] = [{}, {}, {}]", eventId, transactionId, emailHostUrlPrefix);
+
         QrCodeUsageDTO dto = buildQrCodeUsageDTO(eventId, transactionId);
         if (dto == null) {
+            log.warn("QR code data not found for eventId={}, transactionId={}", eventId, transactionId);
             return ResponseEntity.notFound().build();
         }
-        String decodedEmailHostUrlPrefix = decoder.decodeEmailHostUrlPrefix(emailHostUrlPrefix);
 
-        // You can now extract details from dto as needed
-        // sendTicketEmail(eventId, transactionId, dto.getTransaction().getEmail(),
-        // decodedEmailHostUrlPrefix);
+        String decodedEmailHostUrlPrefix = decoder.decodeEmailHostUrlPrefix(emailHostUrlPrefix);
         String qrCodeImageUrl = dto.getTransaction().getQrCodeImageUrl();
+
+        // CRITICAL: Log the QR code image URL to diagnose production issues
+        log.info("QR code image URL for eventId={}, transactionId={}: {}", eventId, transactionId, qrCodeImageUrl);
+
+        if (qrCodeImageUrl == null || qrCodeImageUrl.isEmpty()) {
+            log.error(
+                "QR code image URL is NULL or EMPTY for eventId={}, transactionId={}. " +
+                "This indicates QR code was not generated during ticket purchase. " +
+                "Attempting to generate QR code on-demand...",
+                eventId,
+                transactionId
+            );
+
+            // FALLBACK: Try to generate QR code on-demand if missing
+            try {
+                qrCodeImageUrl =
+                    generateQRCodeOnDemand(eventId, transactionId, decodedEmailHostUrlPrefix, dto.getTransaction().getTenantId());
+                if (qrCodeImageUrl != null && !qrCodeImageUrl.isEmpty()) {
+                    log.info(
+                        "Successfully generated QR code on-demand for eventId={}, transactionId={}: {}",
+                        eventId,
+                        transactionId,
+                        qrCodeImageUrl
+                    );
+                } else {
+                    log.error("Failed to generate QR code on-demand for eventId={}, transactionId={}", eventId, transactionId);
+                    return ResponseEntity.notFound().build();
+                }
+            } catch (java.io.IOException e) {
+                log.error(
+                    "IOException while generating QR code on-demand for eventId={}, transactionId={}: {}",
+                    eventId,
+                    transactionId,
+                    e.getMessage(),
+                    e
+                );
+                return ResponseEntity.notFound().build();
+            } catch (Exception e) {
+                log.error(
+                    "Exception while generating QR code on-demand for eventId={}, transactionId={}: {}",
+                    eventId,
+                    transactionId,
+                    e.getMessage(),
+                    e
+                );
+                return ResponseEntity.notFound().build();
+            }
+        }
+
+        log.debug(
+            "Exit: getQRCodeImage() with result = <200 OK OK,[Content-Type:\"image/png\", Content-Disposition:\"inline; filename=\\\"qrcode.png\\\"\"]>"
+        );
         return ResponseEntity
             .ok()
             .contentType(MediaType.parseMediaType("image/png"))
             .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"qrcode.png\"")
             .body(qrCodeImageUrl);
+    }
+
+    /**
+     * Generate QR code on-demand if it's missing from the transaction.
+     * This is a fallback mechanism for transactions that were created before QR code generation was implemented,
+     * or for cases where QR code generation failed during ticket purchase.
+     *
+     * @throws IOException if QR code generation or S3 upload fails
+     */
+    private String generateQRCodeOnDemand(Long eventId, Long transactionId, String emailHostUrlPrefix, String tenantId)
+        throws java.io.IOException {
+        log.info("Enter: generateQRCodeOnDemand() for eventId={}, transactionId={}, tenantId={}", eventId, transactionId, tenantId);
+
+        try {
+            // Build QR scan URL content
+            String qrScanUrlContent = emailHostUrlPrefix + "/qrcode-scan/tickets/events/" + eventId + "/transactions/" + transactionId;
+            log.debug("QR scan URL content: {}", qrScanUrlContent);
+
+            // Generate and upload QR code using injected service
+            String qrCodeImageUrl = qrCodeService.generateAndUploadQRCode(
+                qrScanUrlContent,
+                eventId,
+                String.valueOf(transactionId),
+                tenantId
+            );
+
+            // Update the transaction with the QR code URL
+            transactionRepository
+                .findById(transactionId)
+                .ifPresentOrElse(
+                    transaction -> {
+                        transaction.setQrCodeImageUrl(qrCodeImageUrl);
+                        transaction.setUpdatedAt(java.time.ZonedDateTime.now());
+                        transactionRepository.save(transaction);
+                        log.info("Updated transaction {} with QR code image URL: {}", transactionId, qrCodeImageUrl);
+                    },
+                    () -> log.warn("Transaction {} not found when trying to update QR code URL", transactionId)
+                );
+
+            return qrCodeImageUrl;
+        } catch (java.io.IOException e) {
+            log.error(
+                "Failed to generate QR code on-demand for eventId={}, transactionId={}: {}",
+                eventId,
+                transactionId,
+                e.getMessage(),
+                e
+            );
+            throw e;
+        } catch (Exception e) {
+            log.error(
+                "Unexpected error generating QR code on-demand for eventId={}, transactionId={}: {}",
+                eventId,
+                transactionId,
+                e.getMessage(),
+                e
+            );
+            // Wrap non-IOException exceptions in RuntimeException to avoid changing method signature
+            throw new RuntimeException("Failed to generate QR code on-demand", e);
+        }
     }
 
     @PostMapping("/events/{eventId}/transactions/{transactionId}/emailHostUrlPrefix/{emailHostUrlPrefix}/send-ticket-email")

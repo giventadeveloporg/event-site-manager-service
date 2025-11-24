@@ -36,7 +36,7 @@ public class TicketGenerationService {
     private final Environment environment;
     private final ObjectMapper objectMapper;
 
-    @Value("${app.email-host-url-prefix:${NEXT_PUBLIC_APP_URL:http://localhost:3000}}")
+    @Value("${email.host.url-prefix:${NEXT_PUBLIC_APP_URL:${EMAIL_HOST_URL_PREFIX:http://localhost:3000}}}")
     private String emailHostUrlPrefix;
 
     @Autowired
@@ -291,8 +291,23 @@ public class TicketGenerationService {
      * Generate QR code for ticket transaction.
      */
     private void generateQrCodeForTicket(EventTicketTransaction ticketTransaction, Long eventId) throws Exception {
+        log.info("Enter: generateQrCodeForTicket() for transactionId={}, eventId={}", ticketTransaction.getId(), eventId);
+
+        // CRITICAL: Log emailHostUrlPrefix to diagnose production issues
+        log.info("emailHostUrlPrefix configuration value: '{}'", emailHostUrlPrefix);
+        if (emailHostUrlPrefix == null || emailHostUrlPrefix.isEmpty()) {
+            log.error(
+                "CRITICAL: emailHostUrlPrefix is NULL or EMPTY! QR code generation will fail. Check app.email-host-url-prefix or EMAIL_HOST_URL_PREFIX environment variable."
+            );
+            throw new IllegalStateException(
+                "emailHostUrlPrefix is not configured. Set app.email-host-url-prefix or EMAIL_HOST_URL_PREFIX environment variable."
+            );
+        }
+
         String qrScanUrlContent =
             emailHostUrlPrefix + "/qrcode-scan/tickets" + "/events/" + eventId + "/transactions/" + ticketTransaction.getId();
+
+        log.info("QR scan URL content: {}", qrScanUrlContent);
 
         String qrCodeImageUrl = qrCodeService.generateAndUploadQRCode(
             qrScanUrlContent,
@@ -301,11 +316,17 @@ public class TicketGenerationService {
             ticketTransaction.getTenantId()
         );
 
+        if (qrCodeImageUrl == null || qrCodeImageUrl.isEmpty()) {
+            log.error("CRITICAL: QR code generation returned NULL or EMPTY URL for transactionId={}", ticketTransaction.getId());
+            throw new IllegalStateException("QR code generation returned empty URL");
+        }
+
+        log.info("QR code image URL generated: {}", qrCodeImageUrl);
         ticketTransaction.setQrCodeImageUrl(qrCodeImageUrl);
         ticketTransaction.setUpdatedAt(ZonedDateTime.now());
         eventTicketTransactionRepository.save(ticketTransaction);
 
-        log.info("QR code generated and saved for ticket transaction {}", ticketTransaction.getId());
+        log.info("QR code generated and saved for ticket transaction {}: {}", ticketTransaction.getId(), qrCodeImageUrl);
     }
 
     /**

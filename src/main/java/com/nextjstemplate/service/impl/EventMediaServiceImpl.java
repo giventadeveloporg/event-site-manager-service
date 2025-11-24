@@ -88,16 +88,121 @@ public class EventMediaServiceImpl implements EventMediaService {
     @Override
     public EventMediaDTO save(EventMediaDTO eventMediaDTO) {
         log.debug("Request to save EventMedia : {}", eventMediaDTO);
+
+        // CRITICAL: For child events, if isHomePageHeroImage is true and one already exists, update it instead of creating new
+        if (
+            eventMediaDTO.getIsHomePageHeroImage() != null && eventMediaDTO.getIsHomePageHeroImage() && eventMediaDTO.getEventId() != null
+        ) {
+            try {
+                EventDetails eventDetails = eventRepository.findById(eventMediaDTO.getEventId()).orElse(null);
+                if (eventDetails != null && eventDetails.getParentEvent() != null) {
+                    // This is a child event - check if homepage hero image already exists
+                    List<EventMedia> existingHomePageHeroImages = eventMediaRepository.findByEventIdAndIsHomePageHeroImageTrue(
+                        eventDetails.getId()
+                    );
+                    if (!existingHomePageHeroImages.isEmpty()) {
+                        // Update the first existing record instead of creating new
+                        EventMedia existingMedia = existingHomePageHeroImages.get(0);
+                        log.info(
+                            "Child event {} already has homepage hero image (ID: {}) - updating with new image",
+                            eventDetails.getId(),
+                            existingMedia.getId()
+                        );
+
+                        // Update all fields from DTO
+                        eventMediaMapper.partialUpdate(existingMedia, eventMediaDTO);
+                        existingMedia.setUpdatedAt(ZonedDateTime.now());
+
+                        EventMedia updatedMedia = eventMediaRepository.save(existingMedia);
+                        return eventMediaMapper.toDto(updatedMedia);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Failed to check/update existing homepage hero image for child event {}", eventMediaDTO.getEventId(), e);
+                // Continue with normal save if check fails
+            }
+        }
+
         EventMedia eventMedia = eventMediaMapper.toEntity(eventMediaDTO);
         eventMedia = eventMediaRepository.save(eventMedia);
+
+        // CRITICAL: Replicate homepage hero image to child events if this is a parent event
+        if (eventMedia.getIsHomePageHeroImage() != null && eventMedia.getIsHomePageHeroImage() && eventMedia.getEventId() != null) {
+            try {
+                EventDetails eventDetails = eventRepository.findById(eventMedia.getEventId()).orElse(null);
+                if (eventDetails != null && eventDetails.getParentEvent() == null) {
+                    // This is a parent event - replicate to children
+                    log.info("Homepage hero image saved for parent event {} - replicating to child events", eventMedia.getEventId());
+                    replicateHomePageHeroImageToChildren(eventMedia, eventDetails);
+                }
+            } catch (Exception e) {
+                log.error("Failed to replicate homepage hero image to child events for event {}", eventMedia.getEventId(), e);
+                // Don't fail the save if replication fails
+            }
+        }
+
         return eventMediaMapper.toDto(eventMedia);
     }
 
     @Override
     public EventMediaDTO update(EventMediaDTO eventMediaDTO) {
         log.debug("Request to update EventMedia : {}", eventMediaDTO);
+
+        // Check if isHomePageHeroImage is being set to true
+        boolean isHomePageHeroImageBeingSet = eventMediaDTO.getIsHomePageHeroImage() != null && eventMediaDTO.getIsHomePageHeroImage();
+
+        // CRITICAL: For child events, if isHomePageHeroImage is true and one already exists (different ID), update it instead
+        if (isHomePageHeroImageBeingSet && eventMediaDTO.getEventId() != null) {
+            try {
+                EventDetails eventDetails = eventRepository.findById(eventMediaDTO.getEventId()).orElse(null);
+                if (eventDetails != null && eventDetails.getParentEvent() != null) {
+                    // This is a child event - check if homepage hero image already exists (with different ID)
+                    List<EventMedia> existingHomePageHeroImages = eventMediaRepository.findByEventIdAndIsHomePageHeroImageTrue(
+                        eventDetails.getId()
+                    );
+                    if (!existingHomePageHeroImages.isEmpty()) {
+                        EventMedia existingMedia = existingHomePageHeroImages.get(0);
+                        // If updating a different record, update the existing one instead
+                        if (eventMediaDTO.getId() == null || !existingMedia.getId().equals(eventMediaDTO.getId())) {
+                            log.info(
+                                "Child event {} already has homepage hero image (ID: {}) - updating with new data",
+                                eventDetails.getId(),
+                                existingMedia.getId()
+                            );
+
+                            // Update all fields from DTO
+                            eventMediaMapper.partialUpdate(existingMedia, eventMediaDTO);
+                            existingMedia.setUpdatedAt(ZonedDateTime.now());
+
+                            EventMedia updatedMedia = eventMediaRepository.save(existingMedia);
+                            return eventMediaMapper.toDto(updatedMedia);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Failed to check/update existing homepage hero image for child event {}", eventMediaDTO.getEventId(), e);
+                // Continue with normal update if check fails
+            }
+        }
+
         EventMedia eventMedia = eventMediaMapper.toEntity(eventMediaDTO);
         eventMedia = eventMediaRepository.save(eventMedia);
+
+        // CRITICAL: Replicate homepage hero image to child events if this is a parent event and isHomePageHeroImage is true
+        if (isHomePageHeroImageBeingSet && eventMedia.getEventId() != null) {
+            try {
+                EventDetails eventDetails = eventRepository.findById(eventMedia.getEventId()).orElse(null);
+                if (eventDetails != null && eventDetails.getParentEvent() == null) {
+                    // This is a parent event - replicate to children
+                    log.info("Homepage hero image updated for parent event {} - replicating to child events", eventMedia.getEventId());
+                    replicateHomePageHeroImageToChildren(eventMedia, eventDetails);
+                }
+            } catch (Exception e) {
+                log.error("Failed to replicate homepage hero image to child events for event {}", eventMedia.getEventId(), e);
+                // Don't fail the update if replication fails
+            }
+        }
+
         return eventMediaMapper.toDto(eventMedia);
     }
 
@@ -105,15 +210,80 @@ public class EventMediaServiceImpl implements EventMediaService {
     public Optional<EventMediaDTO> partialUpdate(EventMediaDTO eventMediaDTO) {
         log.debug("Request to partially update EventMedia : {}", eventMediaDTO);
 
-        return eventMediaRepository
-            .findById(eventMediaDTO.getId())
-            .map(existingEventMedia -> {
-                eventMediaMapper.partialUpdate(existingEventMedia, eventMediaDTO);
+        // Check if isHomePageHeroImage is being set to true
+        boolean isHomePageHeroImageBeingSet = eventMediaDTO.getIsHomePageHeroImage() != null && eventMediaDTO.getIsHomePageHeroImage();
 
-                return existingEventMedia;
-            })
-            .map(eventMediaRepository::save)
-            .map(eventMediaMapper::toDto);
+        // If updating by ID, use normal flow
+        if (eventMediaDTO.getId() != null) {
+            return eventMediaRepository
+                .findById(eventMediaDTO.getId())
+                .map(existingEventMedia -> {
+                    eventMediaMapper.partialUpdate(existingEventMedia, eventMediaDTO);
+
+                    return existingEventMedia;
+                })
+                .map(eventMediaRepository::save)
+                .map(savedEventMedia -> {
+                    // CRITICAL: Replicate homepage hero image to child events if this is a parent event and isHomePageHeroImage is true
+                    if (isHomePageHeroImageBeingSet && savedEventMedia.getEventId() != null) {
+                        try {
+                            EventDetails eventDetails = eventRepository.findById(savedEventMedia.getEventId()).orElse(null);
+                            if (eventDetails != null && eventDetails.getParentEvent() == null) {
+                                // This is a parent event - replicate to children
+                                log.info(
+                                    "Homepage hero image partially updated for parent event {} - replicating to child events",
+                                    savedEventMedia.getEventId()
+                                );
+                                replicateHomePageHeroImageToChildren(savedEventMedia, eventDetails);
+                            }
+                        } catch (Exception e) {
+                            log.error(
+                                "Failed to replicate homepage hero image to child events for event {}",
+                                savedEventMedia.getEventId(),
+                                e
+                            );
+                            // Don't fail the update if replication fails
+                        }
+                    }
+                    return savedEventMedia;
+                })
+                .map(eventMediaMapper::toDto);
+        }
+
+        // If no ID provided but eventId is provided and isHomePageHeroImage is true, check for child event
+        if (isHomePageHeroImageBeingSet && eventMediaDTO.getEventId() != null) {
+            try {
+                EventDetails eventDetails = eventRepository.findById(eventMediaDTO.getEventId()).orElse(null);
+                if (eventDetails != null && eventDetails.getParentEvent() != null) {
+                    // This is a child event - check if homepage hero image already exists
+                    List<EventMedia> existingHomePageHeroImages = eventMediaRepository.findByEventIdAndIsHomePageHeroImageTrue(
+                        eventDetails.getId()
+                    );
+                    if (!existingHomePageHeroImages.isEmpty()) {
+                        // Update the first existing record instead of creating new
+                        EventMedia existingMedia = existingHomePageHeroImages.get(0);
+                        log.info(
+                            "Child event {} already has homepage hero image (ID: {}) - updating with new data",
+                            eventDetails.getId(),
+                            existingMedia.getId()
+                        );
+
+                        // Update all fields from DTO
+                        eventMediaMapper.partialUpdate(existingMedia, eventMediaDTO);
+                        existingMedia.setUpdatedAt(ZonedDateTime.now());
+
+                        EventMedia updatedMedia = eventMediaRepository.save(existingMedia);
+                        return Optional.of(eventMediaMapper.toDto(updatedMedia));
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Failed to check/update existing homepage hero image for child event {}", eventMediaDTO.getEventId(), e);
+                // Continue with normal flow if check fails
+            }
+        }
+
+        // Fallback: return empty if no ID and can't find existing record
+        return Optional.empty();
     }
 
     @Override
@@ -756,7 +926,75 @@ public class EventMediaServiceImpl implements EventMediaService {
             // eventMedia.setEvent(...);
             // eventMedia.setUploadedBy(...);
 
+            // CRITICAL: For child events, if isHomePageHeroImage is true and one already exists, update it instead of creating new
+            if (isHomePageHeroImage && eventId != null && eventId > 0) {
+                try {
+                    EventDetails eventDetails = eventRepository.findById(eventId).orElse(null);
+                    if (eventDetails != null && eventDetails.getParentEvent() != null) {
+                        // This is a child event - check if homepage hero image already exists
+                        List<EventMedia> existingHomePageHeroImages = eventMediaRepository.findByEventIdAndIsHomePageHeroImageTrue(eventId);
+                        if (!existingHomePageHeroImages.isEmpty()) {
+                            // Update the first existing record instead of creating new
+                            EventMedia existingMedia = existingHomePageHeroImages.get(0);
+                            log.info(
+                                "Child event {} already has homepage hero image (ID: {}) - updating with new image",
+                                eventId,
+                                existingMedia.getId()
+                            );
+
+                            // Update all fields from the new upload
+                            existingMedia.setTitle(eventMedia.getTitle());
+                            existingMedia.setDescription(eventMedia.getDescription());
+                            existingMedia.setFileUrl(eventMedia.getFileUrl());
+                            existingMedia.setPreSignedUrl(eventMedia.getPreSignedUrl());
+                            existingMedia.setContentType(eventMedia.getContentType());
+                            existingMedia.setFileSize(eventMedia.getFileSize());
+                            existingMedia.setIsPublic(eventMedia.getIsPublic());
+                            existingMedia.setEventFlyer(eventMedia.getEventFlyer());
+                            existingMedia.setIsEventManagementOfficialDocument(eventMedia.getIsEventManagementOfficialDocument());
+                            existingMedia.setAltText(eventMedia.getAltText());
+                            existingMedia.setDisplayOrder(eventMedia.getDisplayOrder());
+                            existingMedia.setIsFeaturedVideo(eventMedia.getIsFeaturedVideo());
+                            existingMedia.setFeaturedVideoUrl(eventMedia.getFeaturedVideoUrl());
+                            existingMedia.setIsHeroImage(eventMedia.getIsHeroImage());
+                            existingMedia.setIsActiveHeroImage(eventMedia.getIsActiveHeroImage());
+                            existingMedia.setIsFeaturedEventImage(eventMedia.getIsFeaturedEventImage());
+                            existingMedia.setIsLiveEventImage(eventMedia.getIsLiveEventImage());
+                            existingMedia.setStartDisplayingFromDate(eventMedia.getStartDisplayingFromDate());
+                            existingMedia.setPriorityRanking(
+                                eventMedia.getPriorityRanking() != null
+                                    ? eventMedia.getPriorityRanking()
+                                    : existingMedia.getPriorityRanking()
+                            );
+                            existingMedia.setUpdatedAt(ZonedDateTime.now());
+
+                            eventMedia = eventMediaRepository.save(existingMedia);
+                            return eventMediaMapper.toDto(eventMedia);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to check/update existing homepage hero image for child event {}", eventId, e);
+                    // Continue with normal save if check fails
+                }
+            }
+
             eventMedia = eventMediaRepository.save(eventMedia);
+
+            // CRITICAL: Replicate homepage hero image to child events if this is a parent event
+            if (isHomePageHeroImage && eventId != null && eventId > 0) {
+                try {
+                    EventDetails eventDetails = eventRepository.findById(eventId).orElse(null);
+                    if (eventDetails != null && eventDetails.getParentEvent() == null) {
+                        // This is a parent event - replicate to children
+                        log.info("Homepage hero image uploaded for parent event {} - replicating to child events", eventId);
+                        replicateHomePageHeroImageToChildren(eventMedia, eventDetails);
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to replicate homepage hero image to child events for event {}", eventId, e);
+                    // Don't fail the upload if replication fails
+                }
+            }
+
             return eventMediaMapper.toDto(eventMedia);
         } else if (executiveTeamMemberID != null) {
             // Handle ExecutiveCommitteeTeamMember profile image update
@@ -1321,5 +1559,108 @@ public class EventMediaServiceImpl implements EventMediaService {
         log.info("Updated event {} with email header image URL: {}", eventId, s3Url);
 
         return savedMedia;
+    }
+
+    /**
+     * Replicate homepage hero image from parent event to all child events in the recurrence series.
+     * Only creates media records for child events that don't already have a homepage hero image.
+     *
+     * @param parentMedia the parent event's media record
+     * @param parentEvent the parent event details
+     */
+    private void replicateHomePageHeroImageToChildren(EventMedia parentMedia, EventDetails parentEvent) {
+        try {
+            // Fetch all child events in the recurrence series
+            // Use parentEventId to find direct children
+            List<EventDetails> childEvents = eventRepository.findByParentEventId(parentEvent.getId());
+
+            if (childEvents.isEmpty()) {
+                log.debug("No child events found for parent event: {} (this is expected if event has no children)", parentEvent.getId());
+                return;
+            }
+
+            log.info("Replicating homepage hero image from parent event {} to {} child events", parentEvent.getId(), childEvents.size());
+
+            int createdCount = 0;
+            int skippedCount = 0;
+            int errorCount = 0;
+
+            for (EventDetails childEvent : childEvents) {
+                try {
+                    Long childId = childEvent.getId();
+
+                    // Check if child event already has a homepage hero image
+                    List<EventMedia> existingHomePageHeroImages = eventMediaRepository.findByEventIdAndIsHomePageHeroImageTrue(childId);
+
+                    if (!existingHomePageHeroImages.isEmpty()) {
+                        log.debug(
+                            "Child event {} already has {} homepage hero image(s), skipping replication",
+                            childId,
+                            existingHomePageHeroImages.size()
+                        );
+                        skippedCount++;
+                        continue; // Skip this child - preserve existing homepage hero image
+                    }
+
+                    // Child doesn't have homepage hero image - create one
+                    EventMedia childMedia = new EventMedia();
+
+                    // Copy all fields from parent media
+                    childMedia.setTitle(parentMedia.getTitle());
+                    childMedia.setDescription(parentMedia.getDescription());
+                    childMedia.setEventMediaType(parentMedia.getEventMediaType());
+                    childMedia.setStorageType(parentMedia.getStorageType());
+                    childMedia.setFileUrl(parentMedia.getFileUrl()); // Same URL
+                    childMedia.setContentType(parentMedia.getContentType());
+                    childMedia.setFileSize(parentMedia.getFileSize());
+                    childMedia.setIsPublic(parentMedia.getIsPublic());
+                    childMedia.setEventFlyer(parentMedia.getEventFlyer());
+                    childMedia.setIsEventManagementOfficialDocument(parentMedia.getIsEventManagementOfficialDocument());
+                    childMedia.setAltText(parentMedia.getAltText());
+                    childMedia.setDisplayOrder(parentMedia.getDisplayOrder());
+                    childMedia.setIsFeaturedVideo(parentMedia.getIsFeaturedVideo());
+                    childMedia.setFeaturedVideoUrl(parentMedia.getFeaturedVideoUrl());
+                    childMedia.setIsHeroImage(parentMedia.getIsHeroImage());
+                    childMedia.setIsActiveHeroImage(parentMedia.getIsActiveHeroImage());
+                    childMedia.setIsHomePageHeroImage(true); // Explicitly set to true
+                    childMedia.setIsFeaturedEventImage(parentMedia.getIsFeaturedEventImage());
+                    childMedia.setIsLiveEventImage(parentMedia.getIsLiveEventImage());
+                    childMedia.setStartDisplayingFromDate(parentMedia.getStartDisplayingFromDate());
+                    childMedia.setPreSignedUrl(parentMedia.getPreSignedUrl());
+                    childMedia.setPreSignedUrlExpiresAt(parentMedia.getPreSignedUrlExpiresAt());
+                    childMedia.setPriorityRanking(parentMedia.getPriorityRanking() != null ? parentMedia.getPriorityRanking() : 0);
+
+                    // Set child-specific fields
+                    childMedia.setEventId(childId); // Child event ID
+                    childMedia.setUploadedById(parentMedia.getUploadedById()); // Same uploader
+                    childMedia.setTenantId(parentMedia.getTenantId()); // Same tenant
+
+                    // Set timestamps
+                    childMedia.setCreatedAt(ZonedDateTime.now());
+                    childMedia.setUpdatedAt(ZonedDateTime.now());
+
+                    // Save child media record
+                    eventMediaRepository.save(childMedia);
+                    createdCount++;
+
+                    log.debug("Created homepage hero image media record for child event {}", childId);
+                } catch (Exception e) {
+                    errorCount++;
+                    log.error("Failed to replicate homepage hero image to child event {}", childEvent.getId(), e);
+                    // Continue with next child - don't fail entire replication
+                }
+            }
+
+            log.info(
+                "Completed homepage hero image replication for parent event {}: {} created, {} skipped (already had image), {} errors",
+                parentEvent.getId(),
+                createdCount,
+                skippedCount,
+                errorCount
+            );
+        } catch (Exception e) {
+            log.error("Failed to replicate homepage hero image to child events for parent event {}", parentEvent.getId(), e);
+            // Don't throw - parent media upload should still succeed even if replication fails
+        }
     }
 }

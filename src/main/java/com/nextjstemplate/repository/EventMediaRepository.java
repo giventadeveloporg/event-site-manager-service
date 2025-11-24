@@ -104,6 +104,16 @@ public interface EventMediaRepository extends JpaRepository<EventMedia, Long>, J
         nativeQuery = true
     )
     List<Object[]> findAllWithoutLobFieldsRaw();
+
+    /**
+     * Find all EventMedia records for a specific event that have isHomePageHeroImage = true.
+     * Used to check if a child event already has a homepage hero image before replication.
+     *
+     * @param eventId the event ID
+     * @return list of EventMedia records with isHomePageHeroImage = true
+     */
+    @Query("SELECT e FROM EventMedia e WHERE e.eventId = :eventId AND e.isHomePageHeroImage = true")
+    List<EventMedia> findByEventIdAndIsHomePageHeroImageTrue(@Param("eventId") Long eventId);
     /**
      * Update null LOB fields to prevent stream access errors from orphaned LOB
      * references

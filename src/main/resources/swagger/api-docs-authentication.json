@@ -2227,12 +2227,12 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "Role updated successfully",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
-          },
           "403": {
             "description": "Access denied - admin privileges required",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
+          },
+          "200": {
+            "description": "Role updated successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
           },
           "404": {
@@ -2473,6 +2473,15 @@
         "responses": {
           "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WhatsAppLogDTO" } } } }
         }
+      }
+    },
+    "/api/webhooks/givebutter": {
+      "post": {
+        "tags": ["givebutter-webhook-controller"],
+        "operationId": "handleWebhook",
+        "parameters": [{ "name": "X-Givebutter-Signature", "in": "header", "required": false, "schema": { "type": "string" } }],
+        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } }, "required": true },
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "object" } } } } }
       }
     },
     "/api/user-tasks": {
@@ -4159,7 +4168,7 @@
     "/api/twilio-whatsapp/{tenantId}/webhook": {
       "post": {
         "tags": ["twilio-whats-app-resource"],
-        "operationId": "handleWebhook",
+        "operationId": "handleWebhook_1",
         "parameters": [{ "name": "tenantId", "in": "path", "required": true, "schema": { "type": "string" } }],
         "requestBody": {
           "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } },
@@ -5424,9 +5433,10 @@
     "/api/payments/webhooks/{provider}": {
       "post": {
         "tags": ["payment-resource"],
-        "operationId": "handleWebhook_1",
+        "operationId": "handleWebhook_2",
         "parameters": [
           { "name": "provider", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "Stripe-Signature", "in": "header", "required": false, "schema": { "type": "string" } },
           { "name": "X-Webhook-Signature", "in": "header", "required": false, "schema": { "type": "string" } },
           { "name": "X-Tenant-Id", "in": "header", "required": false, "schema": { "type": "string" } },
           { "name": "tenantId", "in": "query", "required": false, "schema": { "type": "string" } }
@@ -14402,16 +14412,16 @@
         "parameters": [{ "name": "X-Clerk-Signature", "in": "header", "required": false, "schema": { "type": "string" } }],
         "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } }, "required": true },
         "responses": {
+          "200": {
+            "description": "Webhook processed successfully",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
+          },
           "401": {
             "description": "Invalid signature",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
           },
           "400": {
             "description": "Invalid payload",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
-          },
-          "200": {
-            "description": "Webhook processed successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
           }
         }
@@ -14690,16 +14700,16 @@
           "required": true
         },
         "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
+          },
           "400": {
             "description": "Invalid request or user already exists",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
           },
           "500": {
             "description": "Internal server error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
-          },
-          "201": {
-            "description": "User registered successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
           }
         }
@@ -14738,12 +14748,12 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "User authenticated successfully",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignInResponse" } } }
-          },
           "401": {
             "description": "Invalid credentials",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignInResponse" } } }
+          },
+          "200": {
+            "description": "User authenticated successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignInResponse" } } }
           },
           "400": {
@@ -17610,12 +17620,7 @@
         "tags": ["payment-resource"],
         "operationId": "getPaymentStatus",
         "parameters": [{ "name": "transactionId", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaymentSessionResponse" } } }
-          }
-        }
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "object" } } } } }
       }
     },
     "/api/oauth/{provider}/initiate": {
@@ -25749,12 +25754,12 @@
         "description": "Get details of the currently authenticated user",
         "operationId": "getCurrentUser",
         "responses": {
-          "200": {
-            "description": "User details retrieved successfully",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
-          },
           "404": {
             "description": "User not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
+          },
+          "200": {
+            "description": "User details retrieved successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
           },
           "401": {
@@ -26453,6 +26458,7 @@
           "liveEventPriorityRanking": { "type": "integer", "format": "int32" },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" },
+          "metadata": { "type": "string" },
           "createdBy": { "$ref": "#/components/schemas/UserProfileDTO" },
           "eventType": { "$ref": "#/components/schemas/EventTypeDetailsDTO" },
           "discountCodes": { "uniqueItems": true, "type": "array", "items": { "$ref": "#/components/schemas/DiscountCodeDTO" } }
@@ -27398,7 +27404,7 @@
         "type": "object",
         "properties": {
           "transactionId": { "type": "string" },
-          "provider": { "type": "string", "enum": ["STRIPE", "PAYPAL", "ZEFFY", "ZELLE_MANUAL", "REVOLUT", "CEFI_CHARITY"] },
+          "provider": { "type": "string", "enum": ["STRIPE", "PAYPAL", "ZEFFY", "ZELLE_MANUAL", "REVOLUT", "CEFI_CHARITY", "GIVEBUTTER"] },
           "status": { "type": "string" },
           "clientSecret": { "type": "string" },
           "sessionUrl": { "type": "string" },
@@ -27414,7 +27420,12 @@
           "actionType": { "type": "string" },
           "actionData": { "type": "object", "additionalProperties": { "type": "object" } },
           "failureReason": { "type": "string" },
-          "metadata": { "type": "object", "additionalProperties": { "type": "object" } }
+          "metadata": { "type": "object", "additionalProperties": { "type": "object" } },
+          "stripePaymentIntentId": { "type": "string" },
+          "ticketTransactionId": { "type": "integer", "format": "int64" },
+          "qrCodeUrl": { "type": "string" },
+          "emailSent": { "type": "boolean" },
+          "eventId": { "type": "integer", "format": "int64" }
         }
       },
       "PaymentSessionRequest": {
@@ -27424,7 +27435,7 @@
           "tenantId": { "type": "string" },
           "paymentUseCase": {
             "type": "string",
-            "enum": ["TICKET_SALE", "DONATION", "DONATION_CEFI", "OFFERING", "MEMBERSHIP_SUBSCRIPTION"]
+            "enum": ["TICKET_SALE", "DONATION", "DONATION_CEFI", "DONATION_ZERO_FEE", "OFFERING", "MEMBERSHIP_SUBSCRIPTION"]
           },
           "amount": { "type": "number" },
           "currency": { "maxLength": 3, "minLength": 3, "type": "string" },

@@ -32,6 +32,9 @@ public class SecurityConfiguration {
     @Value("${jwt-api-auth.password:admin}")
     private String jwtApiAuthPassword;
 
+    @Value("${CORS_ALLOWED_ORIGINS:*}")
+    private String corsAllowedOrigins;
+
     private final ClerkJwtAuthenticationFilter clerkJwtAuthenticationFilter;
     private final TenantContextFilter tenantContextFilter;
 
@@ -81,8 +84,22 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow all origins using patterns (supports wildcards properly)
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+
+        // Handle wildcard or specific origins
+        if ("*".equals(corsAllowedOrigins)) {
+            // Allow all origins using patterns (supports wildcards properly)
+            configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+            configuration.setAllowCredentials(false); // Must be false when using "*" origin pattern
+        } else {
+            // Split comma-separated origins and trim whitespace
+            String[] origins = corsAllowedOrigins.split(",");
+            for (int i = 0; i < origins.length; i++) {
+                origins[i] = origins[i].trim();
+            }
+            configuration.setAllowedOrigins(Arrays.asList(origins));
+            configuration.setAllowCredentials(true);
+        }
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(
             Arrays.asList(
@@ -98,7 +115,6 @@ public class SecurityConfiguration {
             )
         ); // Added for multi-tenant support
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Link", "X-Total-Count", "X-XSRF-TOKEN"));
-        configuration.setAllowCredentials(false); // Must be false when using "*" origin pattern
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

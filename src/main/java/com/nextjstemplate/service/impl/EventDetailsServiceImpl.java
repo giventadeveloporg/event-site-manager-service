@@ -108,6 +108,14 @@ public class EventDetailsServiceImpl implements EventDetailsService {
 
     @Override
     public EventDetailsDTO update(EventDetailsDTO eventDetailsDTO) {
+        log.info(
+            "UPDATE REQUEST - Event ID: {}, isActive: {} -> {}, isRecurring: {}, parentEventId: {}",
+            eventDetailsDTO.getId(),
+            eventDetailsDTO.getIsActive() != null ? eventDetailsDTO.getIsActive() : "null",
+            eventDetailsDTO.getIsActive() != null ? eventDetailsDTO.getIsActive() : "null",
+            eventDetailsDTO.getIsRecurring() != null ? eventDetailsDTO.getIsRecurring() : "null",
+            eventDetailsDTO.getParentEventId() != null ? eventDetailsDTO.getParentEventId() : "null"
+        );
         log.debug("Request to update EventDetails : {}", eventDetailsDTO);
 
         // CRITICAL FIX: Load existing entity first to properly compare and update
@@ -116,12 +124,25 @@ public class EventDetailsServiceImpl implements EventDetailsService {
             .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("EventDetails not found with id: " + eventDetailsDTO.getId())
             );
 
+        // CRITICAL FIX: Store original isActive value BEFORE any updates
+        Boolean originalIsActive = eventDetails.getIsActive();
+        log.info(
+            "EXISTING EVENT STATE - Event ID: {}, current isActive: {}, current isRecurring: {}, current parentEventId: {}",
+            eventDetails.getId(),
+            originalIsActive != null ? originalIsActive : "null",
+            eventDetails.getIsRecurring() != null ? eventDetails.getIsRecurring() : "null",
+            eventDetails.getParentEvent() != null ? eventDetails.getParentEvent().getId() : "null"
+        );
+
         // CRITICAL FIX: Handle recurrence metadata and detect changes BEFORE updating entity
         String newRecurrenceMetadata = getRecurrenceMetadataFromDto(eventDetailsDTO);
         String existingRecurrenceMetadata = eventDetails.getEventRecurrenceMetadata();
         boolean wasRecurring = Boolean.TRUE.equals(eventDetails.getIsRecurring());
         boolean willBeRecurring = Boolean.TRUE.equals(eventDetailsDTO.getIsRecurring());
         boolean isParentEvent = eventDetails.getParentEvent() == null;
+
+        // Check if this is just a deactivation (isActive changing to false) vs actual recurrence config change
+        boolean isDeactivating = Boolean.FALSE.equals(eventDetailsDTO.getIsActive()) && Boolean.TRUE.equals(originalIsActive);
 
         // Check if recurrence config has changed - compare metadata JSON AND individual fields
         boolean metadataChanged = !java.util.Objects.equals(newRecurrenceMetadata, existingRecurrenceMetadata);
@@ -133,11 +154,20 @@ public class EventDetailsServiceImpl implements EventDetailsService {
             !java.util.Objects.equals(eventDetails.getRecurrenceOccurrences(), eventDetailsDTO.getRecurrenceOccurrences()) ||
             !java.util.Objects.equals(eventDetails.getRecurrenceEndDate(), eventDetailsDTO.getRecurrenceEndDate());
 
-        boolean recurrenceChanged = metadataChanged || recurringStatusChanged || recurrenceFieldsChanged;
+        // CRITICAL FIX: Only delete child events and recurrence series if:
+        // 1. Recurrence configuration fields are actually changing (not just isRecurring flag)
+        // 2. AND it's not just a deactivation (isActive changing to false)
+        // When deactivating, we should keep child events and recurrence series, just mark parent as inactive
+        boolean shouldDeleteRecurrenceData =
+            (metadataChanged || recurrenceFieldsChanged) && !isDeactivating && (wasRecurring || willBeRecurring) && isParentEvent;
 
-        if (recurrenceChanged && (wasRecurring || willBeRecurring) && isParentEvent) {
-            // CRITICAL: Delete existing child events and recurrence series before updating
+        if (shouldDeleteRecurrenceData) {
+            // CRITICAL: Delete existing child events and recurrence series only when recurrence config actually changes
+            log.debug("Deleting recurrence series and children due to recurrence configuration change for event: {}", eventDetails.getId());
             deleteRecurringSeriesAndChildren(eventDetails.getId());
+        } else if (recurringStatusChanged && isDeactivating) {
+            // When deactivating, just log - don't delete child events or recurrence series
+            log.debug("Deactivating event {} - keeping child events and recurrence series", eventDetails.getId());
         }
 
         // Map DTO fields to existing entity (this updates the entity with DTO values)
@@ -185,12 +215,14 @@ public class EventDetailsServiceImpl implements EventDetailsService {
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("EventDetails not found after save: " + eventId));
 
         log.debug(
-            "After save and refresh - recurrenceOccurrences: {}, recurrencePattern: {}",
+            "After save and refresh - recurrenceOccurrences: {}, recurrencePattern: {}, isRecurring: {}",
             eventDetails.getRecurrenceOccurrences(),
-            eventDetails.getRecurrencePattern()
+            eventDetails.getRecurrencePattern(),
+            eventDetails.getIsRecurring()
         );
 
-        // CRITICAL FIX: Set recurrenceSeriesId to parent event ID (for parent events)
+        // CRITICAL FIX: Only process recurrence if isRecurring is true (check refreshed entity value)
+        // This prevents processing recurrence for events that have been deactivated or are not recurring
         if (Boolean.TRUE.equals(eventDetails.getIsRecurring()) && eventDetails.getParentEvent() == null) {
             if (eventDetails.getRecurrenceSeriesId() == null) {
                 eventDetails.setRecurrenceSeriesId(eventDetails.getId());
@@ -209,15 +241,67 @@ public class EventDetailsServiceImpl implements EventDetailsService {
                     .orElseThrow(() ->
                         new jakarta.persistence.EntityNotFoundException("EventDetails not found before generation: " + eventIdForGeneration)
                     );
-            log.debug("Before generateRecurringEvents - recurrenceOccurrences: {}", eventDetails.getRecurrenceOccurrences());
+            log.debug(
+                "Before generateRecurringEvents - recurrenceOccurrences: {}, isRecurring: {}",
+                eventDetails.getRecurrenceOccurrences(),
+                eventDetails.getIsRecurring()
+            );
 
-            try {
-                recurringEventGenerationService.generateRecurringEvents(eventDetails.getId());
-                log.info("Generated child events for recurring parent event: {}", eventDetails.getId());
-            } catch (Exception e) {
-                log.error("Failed to generate child events for parent event: {}", eventDetails.getId(), e);
-                // Don't throw exception - allow parent event to be saved even if child generation fails
+            // CRITICAL FIX: Only generate recurring events if isRecurring is still true after refresh
+            if (eventDetails.getIsRecurring() != null && eventDetails.getIsRecurring()) {
+                try {
+                    recurringEventGenerationService.generateRecurringEvents(eventDetails.getId());
+                    log.info("Generated child events for recurring parent event: {}", eventDetails.getId());
+                } catch (Exception e) {
+                    log.error("Failed to generate child events for parent event: {}", eventDetails.getId(), e);
+                    // Don't throw exception - allow parent event to be saved even if child generation fails
+                }
+            } else {
+                log.debug("Skipping generateRecurringEvents - event is not recurring (isRecurring: {})", eventDetails.getIsRecurring());
             }
+        } else {
+            log.debug(
+                "Skipping recurrence processing - isRecurring: {}, parentEvent: {}",
+                eventDetails.getIsRecurring(),
+                eventDetails.getParentEvent() != null ? eventDetails.getParentEvent().getId() : null
+            );
+        }
+
+        // CRITICAL FIX: Sync child events' isActive status with parent when parent isActive changes
+        // Only update children of THIS specific parent event, not other parents
+        // Reuse existing isParentEvent variable (already defined at line 127)
+        // Reuse existing eventId variable (already defined at line 199)
+        boolean isActiveChanged = !java.util.Objects.equals(originalIsActive, eventDetails.getIsActive());
+
+        // Log detailed information about the event's parent status for debugging
+        Long parentEventIdFromEntity = eventDetails.getParentEvent() != null ? eventDetails.getParentEvent().getId() : null;
+        log.debug(
+            "Event {} - isParentEvent: {}, parentEvent from entity: {}, isActiveChanged: {}, new isActive: {}",
+            eventId,
+            isParentEvent,
+            parentEventIdFromEntity,
+            isActiveChanged,
+            eventDetails.getIsActive()
+        );
+
+        if (isParentEvent && isActiveChanged && eventDetails.getIsActive() != null) {
+            log.info(
+                "Parent event {} isActive changed from {} to {} - syncing ONLY direct child events",
+                eventId,
+                originalIsActive,
+                eventDetails.getIsActive()
+            );
+            syncChildEventsActiveStatus(eventId, eventDetails.getIsActive());
+        } else if (!isParentEvent) {
+            log.debug("Event {} is not a parent event (has parent: {}) - skipping child sync", eventId, parentEventIdFromEntity);
+        } else {
+            log.debug(
+                "Event {} - skipping child sync (isParentEvent: {}, isActiveChanged: {}, isActive: {})",
+                eventId,
+                isParentEvent,
+                isActiveChanged,
+                eventDetails.getIsActive()
+            );
         }
 
         return eventDetailsMapper.toDto(eventDetails);
@@ -227,9 +311,15 @@ public class EventDetailsServiceImpl implements EventDetailsService {
     public Optional<EventDetailsDTO> partialUpdate(EventDetailsDTO eventDetailsDTO) {
         log.debug("Request to partially update EventDetails : {}", eventDetailsDTO);
 
+        // CRITICAL FIX: Store original isActive value BEFORE the map chain so it's accessible in all lambdas
+        final Boolean[] originalIsActiveHolder = new Boolean[1];
+
         return eventDetailsRepository
             .findById(eventDetailsDTO.getId())
             .map(existingEventDetails -> {
+                // CRITICAL FIX: Store original isActive value BEFORE partial update
+                originalIsActiveHolder[0] = existingEventDetails.getIsActive();
+
                 eventDetailsMapper.partialUpdate(existingEventDetails, eventDetailsDTO);
 
                 // Handle parentEventId mapping if provided
@@ -243,11 +333,16 @@ public class EventDetailsServiceImpl implements EventDetailsService {
                 handleDonationMetadata(existingEventDetails, eventDetailsDTO);
 
                 // CRITICAL FIX: Handle recurrence metadata and detect changes BEFORE updating entity
+
                 String newRecurrenceMetadata = getRecurrenceMetadataFromDto(eventDetailsDTO);
                 String existingRecurrenceMetadata = existingEventDetails.getEventRecurrenceMetadata();
                 boolean wasRecurring = Boolean.TRUE.equals(existingEventDetails.getIsRecurring());
                 boolean willBeRecurring = Boolean.TRUE.equals(eventDetailsDTO.getIsRecurring());
                 boolean isParentEvent = existingEventDetails.getParentEvent() == null;
+
+                // Check if this is just a deactivation (isActive changing to false) vs actual recurrence config change
+                boolean isDeactivating =
+                    Boolean.FALSE.equals(eventDetailsDTO.getIsActive()) && Boolean.TRUE.equals(originalIsActiveHolder[0]);
 
                 // Check if recurrence config has changed - compare metadata JSON AND individual fields
                 boolean metadataChanged = !java.util.Objects.equals(newRecurrenceMetadata, existingRecurrenceMetadata);
@@ -262,11 +357,23 @@ public class EventDetailsServiceImpl implements EventDetailsService {
                     ) ||
                     !java.util.Objects.equals(existingEventDetails.getRecurrenceEndDate(), eventDetailsDTO.getRecurrenceEndDate());
 
-                boolean recurrenceChanged = metadataChanged || recurringStatusChanged || recurrenceFieldsChanged;
+                // CRITICAL FIX: Only delete child events and recurrence series if:
+                // 1. Recurrence configuration fields are actually changing (not just isRecurring flag)
+                // 2. AND it's not just a deactivation (isActive changing to false)
+                // When deactivating, we should keep child events and recurrence series, just mark parent as inactive
+                boolean shouldDeleteRecurrenceData =
+                    (metadataChanged || recurrenceFieldsChanged) && !isDeactivating && (wasRecurring || willBeRecurring) && isParentEvent;
 
-                if (recurrenceChanged && (wasRecurring || willBeRecurring) && isParentEvent) {
-                    // CRITICAL: Delete existing child events and recurrence series before updating
+                if (shouldDeleteRecurrenceData) {
+                    // CRITICAL: Delete existing child events and recurrence series only when recurrence config actually changes
+                    log.debug(
+                        "Deleting recurrence series and children due to recurrence configuration change for event: {}",
+                        existingEventDetails.getId()
+                    );
                     deleteRecurringSeriesAndChildren(existingEventDetails.getId());
+                } else if (recurringStatusChanged && isDeactivating) {
+                    // When deactivating, just log - don't delete child events or recurrence series
+                    log.debug("Deactivating event {} - keeping child events and recurrence series", existingEventDetails.getId());
                 }
 
                 // Handle recurrence metadata
@@ -293,15 +400,56 @@ public class EventDetailsServiceImpl implements EventDetailsService {
                     // Create or update recurrence series record
                     createOrUpdateRecurrenceSeries(eventDetails, eventDetailsDTO);
 
-                    // CRITICAL: Generate child event occurrences (regenerate on partial update)
-                    try {
-                        recurringEventGenerationService.generateRecurringEvents(eventDetails.getId());
-                        log.info("Generated child events for recurring parent event: {}", eventDetails.getId());
-                    } catch (Exception e) {
-                        log.error("Failed to generate child events for parent event: {}", eventDetails.getId(), e);
-                        // Don't throw exception - allow parent event to be saved even if child generation fails
+                    // CRITICAL FIX: Only generate recurring events if isRecurring is true
+                    if (eventDetails.getIsRecurring() != null && eventDetails.getIsRecurring()) {
+                        try {
+                            recurringEventGenerationService.generateRecurringEvents(eventDetails.getId());
+                            log.info("Generated child events for recurring parent event: {}", eventDetails.getId());
+                        } catch (Exception e) {
+                            log.error("Failed to generate child events for parent event: {}", eventDetails.getId(), e);
+                            // Don't throw exception - allow parent event to be saved even if child generation fails
+                        }
                     }
                 }
+
+                // CRITICAL FIX: Sync child events' isActive status with parent when parent isActive changes
+                // Only update children of THIS specific parent event, not other parents
+                boolean isParentEventForSync = eventDetails.getParentEvent() == null;
+                boolean isActiveChanged =
+                    originalIsActiveHolder[0] != null && !java.util.Objects.equals(originalIsActiveHolder[0], eventDetails.getIsActive());
+
+                // Log detailed information about the event's parent status for debugging
+                Long eventId = eventDetails.getId();
+                Long parentEventIdFromEntity = eventDetails.getParentEvent() != null ? eventDetails.getParentEvent().getId() : null;
+                log.debug(
+                    "Event {} - isParentEventForSync: {}, parentEvent from entity: {}, isActiveChanged: {}, new isActive: {}",
+                    eventId,
+                    isParentEventForSync,
+                    parentEventIdFromEntity,
+                    isActiveChanged,
+                    eventDetails.getIsActive()
+                );
+
+                if (isParentEventForSync && isActiveChanged && eventDetails.getIsActive() != null) {
+                    log.info(
+                        "Parent event {} isActive changed from {} to {} - syncing ONLY direct child events",
+                        eventId,
+                        originalIsActiveHolder[0],
+                        eventDetails.getIsActive()
+                    );
+                    syncChildEventsActiveStatus(eventId, eventDetails.getIsActive());
+                } else if (!isParentEventForSync) {
+                    log.debug("Event {} is not a parent event (has parent: {}) - skipping child sync", eventId, parentEventIdFromEntity);
+                } else {
+                    log.debug(
+                        "Event {} - skipping child sync (isParentEventForSync: {}, isActiveChanged: {}, isActive: {})",
+                        eventId,
+                        isParentEventForSync,
+                        isActiveChanged,
+                        eventDetails.getIsActive()
+                    );
+                }
+
                 return eventDetails;
             })
             .map(eventDetailsMapper::toDto);
@@ -518,6 +666,100 @@ public class EventDetailsServiceImpl implements EventDetailsService {
     }
 
     /**
+     * Sync child events' isActive status with parent event.
+     * Only updates child events that belong to the specific parent event ID.
+     *
+     * @param parentEventId the parent event ID
+     * @param isActive the isActive status to set on child events
+     */
+    private void syncChildEventsActiveStatus(Long parentEventId, Boolean isActive) {
+        try {
+            // CRITICAL: Only get child events for THIS specific parent event ID
+            // The native query ensures we query the parent_event_id column directly, avoiding JPA lazy loading issues
+            List<EventDetails> childEvents = eventDetailsRepository.findByParentEventId(parentEventId);
+
+            if (!childEvents.isEmpty()) {
+                log.info(
+                    "Syncing isActive status for {} child events of parent event: {} to {}",
+                    childEvents.size(),
+                    parentEventId,
+                    isActive
+                );
+
+                int updatedCount = 0;
+                int skippedCount = 0;
+                int invalidCount = 0;
+
+                for (EventDetails childEvent : childEvents) {
+                    Long childId = childEvent.getId();
+                    Boolean currentIsActive = childEvent.getIsActive();
+
+                    // CRITICAL: Double-check that this child event actually belongs to the specified parent
+                    // Query the parent_event_id column directly from the database to avoid lazy loading issues
+                    Long actualParentId = eventDetailsRepository.getParentEventIdByEventId(childId);
+
+                    // This defensive check prevents updating unrelated events due to any query issues
+                    if (actualParentId == null || !actualParentId.equals(parentEventId)) {
+                        log.warn(
+                            "SKIPPING child event {} - parent_event_id mismatch! Expected parent: {}, Actual parent from DB: {}. " +
+                            "This should not happen with correct query filtering. Event will NOT be updated.",
+                            childId,
+                            parentEventId,
+                            actualParentId
+                        );
+                        invalidCount++;
+                        continue;
+                    }
+
+                    // Only update if the status is different
+                    if (!java.util.Objects.equals(currentIsActive, isActive)) {
+                        childEvent.setIsActive(isActive);
+                        eventDetailsRepository.save(childEvent);
+                        updatedCount++;
+                        log.info(
+                            "Updated child event {} isActive from {} to {} for parent event {}",
+                            childId,
+                            currentIsActive,
+                            isActive,
+                            parentEventId
+                        );
+                    } else {
+                        skippedCount++;
+                        log.debug(
+                            "Child event {} already has isActive={} for parent event {} - skipping update",
+                            childId,
+                            isActive,
+                            parentEventId
+                        );
+                    }
+                }
+
+                log.info(
+                    "Completed sync for parent event {}: {} updated, {} skipped (already correct), {} invalid (parent mismatch)",
+                    parentEventId,
+                    updatedCount,
+                    skippedCount,
+                    invalidCount
+                );
+
+                if (invalidCount > 0) {
+                    log.error(
+                        "WARNING: {} child events were skipped due to parent_event_id mismatch for parent event {}. " +
+                        "This indicates a potential data integrity issue or query problem.",
+                        invalidCount,
+                        parentEventId
+                    );
+                }
+            } else {
+                log.debug("No child events found for parent event: {} (this is expected if event has no children)", parentEventId);
+            }
+        } catch (Exception e) {
+            log.error("Failed to sync child events active status for parent event: {}", parentEventId, e);
+            // Don't throw exception - allow parent update to continue
+        }
+    }
+
+    /**
      * Process recurrence configuration: Read from DTO fields first (primary source),
      * then fallback to eventRecurrenceMetadata parsing if DTO fields are not set.
      *
@@ -527,6 +769,13 @@ public class EventDetailsServiceImpl implements EventDetailsService {
     private void processRecurrenceConfiguration(EventDetails eventDetails, EventDetailsDTO eventDetailsDTO) {
         // Priority 1: Read from DTO fields (primary source)
         Boolean isRecurringFromDto = eventDetailsDTO.getIsRecurring();
+
+        // CRITICAL FIX: If isRecurring is explicitly false, clear recurrence columns immediately
+        if (Boolean.FALSE.equals(isRecurringFromDto)) {
+            clearRecurrenceColumns(eventDetails);
+            log.debug("Cleared recurrence columns for event: {} (isRecurring=false from DTO)", eventDetails.getId());
+            return;
+        }
 
         // CRITICAL FIX: Also check if DTO has any recurrence fields set (even if isRecurring is null)
         // This handles cases where frontend sends recurrence fields but isRecurring is not explicitly set
@@ -569,8 +818,8 @@ public class EventDetailsServiceImpl implements EventDetailsService {
         // Validate recurrence configuration
         validateRecurrenceConfiguration(dto);
 
-        // Set is_recurring flag
-        eventDetails.setIsRecurring(true);
+        // CRITICAL FIX: Set is_recurring flag from DTO (default to true if not explicitly set)
+        eventDetails.setIsRecurring(dto.getIsRecurring() != null ? dto.getIsRecurring() : true);
 
         // Set pattern from DTO
         if (dto.getRecurrencePattern() != null) {
