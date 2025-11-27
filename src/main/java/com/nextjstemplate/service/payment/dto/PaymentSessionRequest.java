@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,9 +33,18 @@ public class PaymentSessionRequest {
 
     private String customerName;
 
+    private String customerPhone;
+
+    /**
+     * Discount code ID (as string from frontend)
+     */
+    private String discountCode;
+
     private Long eventId;
 
     private Long membershipPlanId;
+
+    private List<PaymentItem> items;
 
     private Map<String, Object> metadata;
 
@@ -102,6 +112,22 @@ public class PaymentSessionRequest {
         this.customerName = customerName;
     }
 
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
+    }
+
+    public String getDiscountCode() {
+        return discountCode;
+    }
+
+    public void setDiscountCode(String discountCode) {
+        this.discountCode = discountCode;
+    }
+
     public Long getEventId() {
         return eventId;
     }
@@ -116,6 +142,14 @@ public class PaymentSessionRequest {
 
     public void setMembershipPlanId(Long membershipPlanId) {
         this.membershipPlanId = membershipPlanId;
+    }
+
+    public List<PaymentItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<PaymentItem> items) {
+        this.items = items;
     }
 
     public Map<String, Object> getMetadata() {

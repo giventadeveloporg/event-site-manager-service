@@ -45,6 +45,18 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
 
     private BooleanFilter isActive;
 
+    private ZonedDateTimeFilter saleStartDate;
+
+    private ZonedDateTimeFilter saleEndDate;
+
+    private IntegerFilter minQuantityPerOrder;
+
+    private IntegerFilter maxQuantityPerOrder;
+
+    private BooleanFilter requiresApproval;
+
+    private IntegerFilter sortOrder;
+
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -68,6 +80,12 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
         this.soldQuantity = other.soldQuantity == null ? null : other.soldQuantity.copy();
         this.remainingQuantity = other.remainingQuantity == null ? null : other.remainingQuantity.copy();
         this.isActive = other.isActive == null ? null : other.isActive.copy();
+        this.saleStartDate = other.saleStartDate == null ? null : other.saleStartDate.copy();
+        this.saleEndDate = other.saleEndDate == null ? null : other.saleEndDate.copy();
+        this.minQuantityPerOrder = other.minQuantityPerOrder == null ? null : other.minQuantityPerOrder.copy();
+        this.maxQuantityPerOrder = other.maxQuantityPerOrder == null ? null : other.maxQuantityPerOrder.copy();
+        this.requiresApproval = other.requiresApproval == null ? null : other.requiresApproval.copy();
+        this.sortOrder = other.sortOrder == null ? null : other.sortOrder.copy();
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.eventId = other.eventId == null ? null : other.eventId.copy();
@@ -259,6 +277,96 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
         this.isActive = isActive;
     }
 
+    public ZonedDateTimeFilter getSaleStartDate() {
+        return saleStartDate;
+    }
+
+    public ZonedDateTimeFilter saleStartDate() {
+        if (saleStartDate == null) {
+            saleStartDate = new ZonedDateTimeFilter();
+        }
+        return saleStartDate;
+    }
+
+    public void setSaleStartDate(ZonedDateTimeFilter saleStartDate) {
+        this.saleStartDate = saleStartDate;
+    }
+
+    public ZonedDateTimeFilter getSaleEndDate() {
+        return saleEndDate;
+    }
+
+    public ZonedDateTimeFilter saleEndDate() {
+        if (saleEndDate == null) {
+            saleEndDate = new ZonedDateTimeFilter();
+        }
+        return saleEndDate;
+    }
+
+    public void setSaleEndDate(ZonedDateTimeFilter saleEndDate) {
+        this.saleEndDate = saleEndDate;
+    }
+
+    public IntegerFilter getMinQuantityPerOrder() {
+        return minQuantityPerOrder;
+    }
+
+    public IntegerFilter minQuantityPerOrder() {
+        if (minQuantityPerOrder == null) {
+            minQuantityPerOrder = new IntegerFilter();
+        }
+        return minQuantityPerOrder;
+    }
+
+    public void setMinQuantityPerOrder(IntegerFilter minQuantityPerOrder) {
+        this.minQuantityPerOrder = minQuantityPerOrder;
+    }
+
+    public IntegerFilter getMaxQuantityPerOrder() {
+        return maxQuantityPerOrder;
+    }
+
+    public IntegerFilter maxQuantityPerOrder() {
+        if (maxQuantityPerOrder == null) {
+            maxQuantityPerOrder = new IntegerFilter();
+        }
+        return maxQuantityPerOrder;
+    }
+
+    public void setMaxQuantityPerOrder(IntegerFilter maxQuantityPerOrder) {
+        this.maxQuantityPerOrder = maxQuantityPerOrder;
+    }
+
+    public BooleanFilter getRequiresApproval() {
+        return requiresApproval;
+    }
+
+    public BooleanFilter requiresApproval() {
+        if (requiresApproval == null) {
+            requiresApproval = new BooleanFilter();
+        }
+        return requiresApproval;
+    }
+
+    public void setRequiresApproval(BooleanFilter requiresApproval) {
+        this.requiresApproval = requiresApproval;
+    }
+
+    public IntegerFilter getSortOrder() {
+        return sortOrder;
+    }
+
+    public IntegerFilter sortOrder() {
+        if (sortOrder == null) {
+            sortOrder = new IntegerFilter();
+        }
+        return sortOrder;
+    }
+
+    public void setSortOrder(IntegerFilter sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -334,6 +442,12 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
             Objects.equals(soldQuantity, that.soldQuantity) &&
             Objects.equals(remainingQuantity, that.remainingQuantity) &&
             Objects.equals(isActive, that.isActive) &&
+            Objects.equals(saleStartDate, that.saleStartDate) &&
+            Objects.equals(saleEndDate, that.saleEndDate) &&
+            Objects.equals(minQuantityPerOrder, that.minQuantityPerOrder) &&
+            Objects.equals(maxQuantityPerOrder, that.maxQuantityPerOrder) &&
+            Objects.equals(requiresApproval, that.requiresApproval) &&
+            Objects.equals(sortOrder, that.sortOrder) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(eventId, that.eventId) &&
@@ -356,6 +470,12 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
             soldQuantity,
             remainingQuantity,
             isActive,
+            saleStartDate,
+            saleEndDate,
+            minQuantityPerOrder,
+            maxQuantityPerOrder,
+            requiresApproval,
+            sortOrder,
             createdAt,
             updatedAt,
             eventId,
@@ -379,6 +499,12 @@ public class EventTicketTypeCriteria implements Serializable, Criteria {
             (soldQuantity != null ? "soldQuantity=" + soldQuantity + ", " : "") +
             (remainingQuantity != null ? "remainingQuantity=" + remainingQuantity + ", " : "") +
             (isActive != null ? "isActive=" + isActive + ", " : "") +
+            (saleStartDate != null ? "saleStartDate=" + saleStartDate + ", " : "") +
+            (saleEndDate != null ? "saleEndDate=" + saleEndDate + ", " : "") +
+            (minQuantityPerOrder != null ? "minQuantityPerOrder=" + minQuantityPerOrder + ", " : "") +
+            (maxQuantityPerOrder != null ? "maxQuantityPerOrder=" + maxQuantityPerOrder + ", " : "") +
+            (requiresApproval != null ? "requiresApproval=" + requiresApproval + ", " : "") +
+            (sortOrder != null ? "sortOrder=" + sortOrder + ", " : "") +
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
             (eventId != null ? "eventId=" + eventId + ", " : "") +

@@ -1,20 +1,34 @@
 package com.nextjstemplate.service.payment;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nextjstemplate.domain.DiscountCode;
 import com.nextjstemplate.domain.EventTicketTransaction;
+import com.nextjstemplate.domain.EventTicketTransactionItem;
+import com.nextjstemplate.domain.EventTicketType;
 import com.nextjstemplate.domain.UserPaymentTransaction;
+import com.nextjstemplate.repository.DiscountCodeRepository;
+import com.nextjstemplate.repository.EventTicketTransactionItemRepository;
 import com.nextjstemplate.repository.EventTicketTransactionRepository;
+import com.nextjstemplate.repository.EventTicketTypeRepository;
 import com.nextjstemplate.service.QRCodeService;
+import com.nextjstemplate.service.payment.adapter.StripePaymentAdapter;
 import com.nextjstemplate.service.payment.event.PaymentSuccessEvent;
 import com.nextjstemplate.web.rest.QRCodeResource;
+import com.stripe.model.PaymentIntent;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
@@ -31,10 +45,14 @@ public class TicketGenerationService {
     private static final Logger log = LoggerFactory.getLogger(TicketGenerationService.class);
 
     private final EventTicketTransactionRepository eventTicketTransactionRepository;
+    private final EventTicketTransactionItemRepository eventTicketTransactionItemRepository;
+    private final EventTicketTypeRepository eventTicketTypeRepository;
+    private final DiscountCodeRepository discountCodeRepository;
     private final QRCodeService qrCodeService;
     private final QRCodeResource qrCodeResource;
     private final Environment environment;
     private final ObjectMapper objectMapper;
+    private final StripePaymentAdapter stripePaymentAdapter;
 
     @Value("${email.host.url-prefix:${NEXT_PUBLIC_APP_URL:${EMAIL_HOST_URL_PREFIX:http://localhost:3000}}}")
     private String emailHostUrlPrefix;
@@ -42,14 +60,22 @@ public class TicketGenerationService {
     @Autowired
     public TicketGenerationService(
         EventTicketTransactionRepository eventTicketTransactionRepository,
+        EventTicketTransactionItemRepository eventTicketTransactionItemRepository,
+        EventTicketTypeRepository eventTicketTypeRepository,
+        DiscountCodeRepository discountCodeRepository,
         QRCodeService qrCodeService,
         QRCodeResource qrCodeResource,
-        Environment environment
+        Environment environment,
+        @Lazy StripePaymentAdapter stripePaymentAdapter
     ) {
         this.eventTicketTransactionRepository = eventTicketTransactionRepository;
+        this.eventTicketTransactionItemRepository = eventTicketTransactionItemRepository;
+        this.eventTicketTypeRepository = eventTicketTypeRepository;
+        this.discountCodeRepository = discountCodeRepository;
         this.qrCodeService = qrCodeService;
         this.qrCodeResource = qrCodeResource;
         this.environment = environment;
+        this.stripePaymentAdapter = stripePaymentAdapter;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -84,13 +110,91 @@ public class TicketGenerationService {
             );
 
             // Step 2: Find or create EventTicketTransaction
-            EventTicketTransaction ticketTransaction = findOrCreateTicketTransaction(paymentTransaction, eventId);
+            EventTicketTransaction ticketTransaction = findOrCreateTicketTransaction(paymentTransaction, eventId, false);
             if (ticketTransaction == null || ticketTransaction.getId() == null) {
                 log.error("Failed to create ticket transaction for payment {}", paymentTransaction.getId());
                 return;
             }
 
             log.info("Ticket transaction {} created/found for payment {}", ticketTransaction.getId(), paymentTransaction.getId());
+
+            // Step 2.5: Extract cart from Payment Intent and create transaction items
+            // Use parameter if provided, otherwise fall back to payment transaction
+            String effectivePaymentIntentId = stripePaymentIntentId != null && !stripePaymentIntentId.isEmpty()
+                ? stripePaymentIntentId
+                : paymentTransaction.getStripePaymentIntentId();
+            if (effectivePaymentIntentId != null && !effectivePaymentIntentId.isEmpty()) {
+                try {
+                    List<CartItem> cartItems = extractCartFromPaymentIntent(effectivePaymentIntentId, paymentTransaction);
+                    if (cartItems != null && !cartItems.isEmpty()) {
+                        List<EventTicketTransactionItem> createdItems = createTransactionItems(
+                            ticketTransaction,
+                            cartItems,
+                            paymentTransaction.getTenantId()
+                        );
+
+                        // Update transaction quantity to sum of all cart items
+                        int totalQuantity = cartItems.stream().mapToInt(CartItem::getQuantity).sum();
+                        ticketTransaction.setQuantity(totalQuantity);
+
+                        // Calculate totalAmount from transaction items
+                        BigDecimal totalAmount = createdItems
+                            .stream()
+                            .map(EventTicketTransactionItem::getTotalAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        ticketTransaction.setTotalAmount(totalAmount);
+
+                        // Extract and apply discount code if present
+                        try {
+                            PaymentIntent paymentIntent = stripePaymentAdapter.retrievePaymentIntent(
+                                effectivePaymentIntentId,
+                                paymentTransaction.getTenantId()
+                            );
+                            applyDiscountToTransaction(ticketTransaction, paymentIntent, paymentTransaction, totalAmount);
+                        } catch (Exception e) {
+                            log.warn("Failed to apply discount to transaction {}: {}", ticketTransaction.getId(), e.getMessage());
+                            // Continue without discount - payment already succeeded
+                        }
+
+                        // CRITICAL: Set status to COMPLETED AFTER items are inserted
+                        // Since items were inserted when status was PENDING, trigger didn't update sold_quantity.
+                        // We need to manually update sold_quantity now.
+                        String previousStatus = ticketTransaction.getStatus();
+                        ticketTransaction.setStatus("COMPLETED");
+                        ticketTransaction.setUpdatedAt(ZonedDateTime.now());
+                        eventTicketTransactionRepository.save(ticketTransaction);
+
+                        // Update sold_quantity manually since items were inserted when status was PENDING
+                        if (!"COMPLETED".equals(previousStatus) && !createdItems.isEmpty()) {
+                            updateTicketTypeQuantities(createdItems, ticketTransaction.getEventId());
+                        }
+
+                        log.info(
+                            "Successfully created {} transaction items for transaction {}",
+                            cartItems.size(),
+                            ticketTransaction.getId()
+                        );
+                    } else {
+                        log.warn("No cart items found for Payment Intent {}, transaction items not created", effectivePaymentIntentId);
+                        // Set status to COMPLETED even if no items (fallback case)
+                        ticketTransaction.setStatus("COMPLETED");
+                        ticketTransaction.setUpdatedAt(ZonedDateTime.now());
+                        eventTicketTransactionRepository.save(ticketTransaction);
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to create transaction items for transaction {}: {}", ticketTransaction.getId(), e.getMessage(), e);
+                    // Set status to COMPLETED even if item creation fails (payment already succeeded)
+                    ticketTransaction.setStatus("COMPLETED");
+                    ticketTransaction.setUpdatedAt(ZonedDateTime.now());
+                    eventTicketTransactionRepository.save(ticketTransaction);
+                }
+            } else {
+                log.warn("Payment transaction {} has no Stripe payment intent ID, cannot extract cart", paymentTransaction.getId());
+                // Set status to COMPLETED even if no payment intent ID
+                ticketTransaction.setStatus("COMPLETED");
+                ticketTransaction.setUpdatedAt(ZonedDateTime.now());
+                eventTicketTransactionRepository.save(ticketTransaction);
+            }
 
             // Step 3: Generate QR code if not already generated
             if (ticketTransaction.getQrCodeImageUrl() == null || ticketTransaction.getQrCodeImageUrl().isEmpty()) {
@@ -164,13 +268,88 @@ public class TicketGenerationService {
             );
 
             // Step 2: Find or create EventTicketTransaction
-            EventTicketTransaction ticketTransaction = findOrCreateTicketTransaction(paymentTransaction, eventId);
+            // CRITICAL: Create with PENDING status first to avoid trigger inventory check during item insertion
+            EventTicketTransaction ticketTransaction = findOrCreateTicketTransaction(paymentTransaction, eventId, false);
             if (ticketTransaction == null || ticketTransaction.getId() == null) {
                 log.error("Failed to create ticket transaction for payment {}", paymentTransaction.getId());
                 return;
             }
 
             log.info("Ticket transaction {} created/found for payment {}", ticketTransaction.getId(), paymentTransaction.getId());
+
+            // Step 2.5: Extract cart from Payment Intent and create transaction items
+            if (stripePaymentIntentId != null && !stripePaymentIntentId.isEmpty()) {
+                try {
+                    List<CartItem> cartItems = extractCartFromPaymentIntent(stripePaymentIntentId, paymentTransaction);
+                    if (cartItems != null && !cartItems.isEmpty()) {
+                        List<EventTicketTransactionItem> createdItems = createTransactionItems(
+                            ticketTransaction,
+                            cartItems,
+                            paymentTransaction.getTenantId()
+                        );
+
+                        // Update transaction quantity to sum of all cart items
+                        int totalQuantity = cartItems.stream().mapToInt(CartItem::getQuantity).sum();
+                        ticketTransaction.setQuantity(totalQuantity);
+
+                        // Calculate totalAmount from transaction items
+                        BigDecimal totalAmount = createdItems
+                            .stream()
+                            .map(EventTicketTransactionItem::getTotalAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        ticketTransaction.setTotalAmount(totalAmount);
+
+                        // Extract and apply discount code if present
+                        try {
+                            PaymentIntent paymentIntent = stripePaymentAdapter.retrievePaymentIntent(
+                                stripePaymentIntentId,
+                                paymentTransaction.getTenantId()
+                            );
+                            applyDiscountToTransaction(ticketTransaction, paymentIntent, paymentTransaction, totalAmount);
+                        } catch (Exception e) {
+                            log.warn("Failed to apply discount to transaction {}: {}", ticketTransaction.getId(), e.getMessage());
+                            // Continue without discount - payment already succeeded
+                        }
+
+                        // CRITICAL: Set status to COMPLETED AFTER items are inserted
+                        // Since items were inserted when status was PENDING, trigger didn't update sold_quantity.
+                        // We need to manually update sold_quantity now.
+                        String previousStatus = ticketTransaction.getStatus();
+                        ticketTransaction.setStatus("COMPLETED");
+                        ticketTransaction.setUpdatedAt(ZonedDateTime.now());
+                        eventTicketTransactionRepository.save(ticketTransaction);
+
+                        // Update sold_quantity manually since items were inserted when status was PENDING
+                        if (!"COMPLETED".equals(previousStatus) && !createdItems.isEmpty()) {
+                            updateTicketTypeQuantities(createdItems, ticketTransaction.getEventId());
+                        }
+
+                        log.info(
+                            "Successfully created {} transaction items for transaction {}",
+                            cartItems.size(),
+                            ticketTransaction.getId()
+                        );
+                    } else {
+                        log.warn("No cart items found for Payment Intent {}, transaction items not created", stripePaymentIntentId);
+                        // Set status to COMPLETED even if no items (fallback case)
+                        ticketTransaction.setStatus("COMPLETED");
+                        ticketTransaction.setUpdatedAt(ZonedDateTime.now());
+                        eventTicketTransactionRepository.save(ticketTransaction);
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to create transaction items for transaction {}: {}", ticketTransaction.getId(), e.getMessage(), e);
+                    // Set status to COMPLETED even if item creation fails (payment already succeeded)
+                    ticketTransaction.setStatus("COMPLETED");
+                    ticketTransaction.setUpdatedAt(ZonedDateTime.now());
+                    eventTicketTransactionRepository.save(ticketTransaction);
+                }
+            } else {
+                log.warn("Payment transaction {} has no Stripe payment intent ID, cannot extract cart", paymentTransaction.getId());
+                // Set status to COMPLETED even if no payment intent ID
+                ticketTransaction.setStatus("COMPLETED");
+                ticketTransaction.setUpdatedAt(ZonedDateTime.now());
+                eventTicketTransactionRepository.save(ticketTransaction);
+            }
 
             // Step 3: Generate QR code if not already generated
             if (ticketTransaction.getQrCodeImageUrl() == null || ticketTransaction.getQrCodeImageUrl().isEmpty()) {
@@ -231,8 +410,16 @@ public class TicketGenerationService {
 
     /**
      * Find existing ticket transaction or create a new one from payment transaction.
+     *
+     * @param paymentTransaction Payment transaction
+     * @param eventId Event ID
+     * @param setCompletedStatus If true, set status to COMPLETED immediately. If false, set to PENDING (for item insertion first).
      */
-    private EventTicketTransaction findOrCreateTicketTransaction(UserPaymentTransaction paymentTransaction, Long eventId) {
+    private EventTicketTransaction findOrCreateTicketTransaction(
+        UserPaymentTransaction paymentTransaction,
+        Long eventId,
+        boolean setCompletedStatus
+    ) {
         // Try to find existing ticket transaction by Stripe payment intent ID
         Optional<EventTicketTransaction> existingOpt = Optional.empty();
         if (paymentTransaction.getStripePaymentIntentId() != null && !paymentTransaction.getStripePaymentIntentId().isEmpty()) {
@@ -243,10 +430,27 @@ public class TicketGenerationService {
             .map(existing -> {
                 log.info("Found existing ticket transaction {} for payment {}", existing.getId(), paymentTransaction.getId());
 
-                // Update status to COMPLETED if not already
-                if (!"COMPLETED".equals(existing.getStatus())) {
+                // Update payment method if not already set
+                if (existing.getPaymentMethod() == null || existing.getPaymentMethod().isEmpty()) {
+                    String paymentMethod = paymentTransaction.getPaymentMethod();
+                    if (paymentMethod == null || paymentMethod.isEmpty()) {
+                        // Try to extract from Payment Intent as fallback
+                        paymentMethod = extractPaymentMethodFromPaymentIntent(paymentTransaction);
+                    }
+                    if (paymentMethod != null && !paymentMethod.isEmpty()) {
+                        existing.setPaymentMethod(paymentMethod);
+                        existing.setUpdatedAt(ZonedDateTime.now());
+                        log.info("Updated payment method for transaction {}: {}", existing.getId(), paymentMethod);
+                    }
+                }
+
+                // Update status to COMPLETED if requested and not already
+                if (setCompletedStatus && !"COMPLETED".equals(existing.getStatus())) {
                     existing.setStatus("COMPLETED");
                     existing.setUpdatedAt(ZonedDateTime.now());
+                }
+
+                if (existing.getUpdatedAt() != null) {
                     eventTicketTransactionRepository.save(existing);
                 }
 
@@ -270,9 +474,17 @@ public class TicketGenerationService {
                 ticketTransaction.setFinalAmount(paymentTransaction.getAmount());
                 ticketTransaction.setQuantity(1); // Default to 1, can be updated from metadata
 
-                // Set status and payment info
-                ticketTransaction.setStatus("COMPLETED");
-                ticketTransaction.setPaymentMethod(paymentTransaction.getPaymentMethod());
+                // Set status: PENDING initially to allow item insertion without inventory check,
+                // then will be set to COMPLETED after items are inserted
+                ticketTransaction.setStatus(setCompletedStatus ? "COMPLETED" : "PENDING");
+
+                // Set payment method - try from paymentTransaction first, then Payment Intent as fallback
+                String paymentMethod = paymentTransaction.getPaymentMethod();
+                if (paymentMethod == null || paymentMethod.isEmpty()) {
+                    paymentMethod = extractPaymentMethodFromPaymentIntent(paymentTransaction);
+                }
+                ticketTransaction.setPaymentMethod(paymentMethod);
+
                 ticketTransaction.setPaymentReference(paymentTransaction.getExternalTransactionId());
                 ticketTransaction.setStripePaymentIntentId(paymentTransaction.getStripePaymentIntentId());
                 ticketTransaction.setStripePaymentStatus("succeeded");
@@ -392,9 +604,11 @@ public class TicketGenerationService {
     }
 
     /**
-     * Extract first name from payment transaction metadata.
+     * Extract first name from payment transaction metadata or Payment Intent metadata.
+     * Checks both sources: payment transaction metadata and Payment Intent metadata.
      */
     private String extractFirstNameFromPayment(UserPaymentTransaction paymentTransaction) {
+        // First check payment transaction metadata
         if (paymentTransaction.getMetadata() != null && !paymentTransaction.getMetadata().isEmpty()) {
             try {
                 Map<String, Object> metadata = objectMapper.readValue(paymentTransaction.getMetadata(), Map.class);
@@ -406,13 +620,40 @@ public class TicketGenerationService {
                 log.debug("Failed to parse metadata JSON: {}", e.getMessage());
             }
         }
+
+        // Also check Payment Intent metadata if available
+        String stripePaymentIntentId = paymentTransaction.getStripePaymentIntentId();
+        if (stripePaymentIntentId != null && !stripePaymentIntentId.isEmpty()) {
+            try {
+                com.stripe.model.PaymentIntent paymentIntent = stripePaymentAdapter.retrievePaymentIntent(
+                    stripePaymentIntentId,
+                    paymentTransaction.getTenantId()
+                );
+                if (paymentIntent != null && paymentIntent.getMetadata() != null) {
+                    String customerName = paymentIntent.getMetadata().get("customerName");
+                    if (customerName != null && !customerName.isEmpty()) {
+                        // Parse customerName to extract first name (assumes format "FirstName LastName" or just "FirstName")
+                        String[] nameParts = customerName.trim().split("\\s+", 2);
+                        if (nameParts.length > 0) {
+                            log.debug("Extracted firstName from Payment Intent customerName: {}", nameParts[0]);
+                            return nameParts[0];
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Failed to extract firstName from Payment Intent metadata: {}", e.getMessage());
+            }
+        }
+
         return null;
     }
 
     /**
-     * Extract last name from payment transaction metadata.
+     * Extract last name from payment transaction metadata or Payment Intent metadata.
+     * Checks both sources: payment transaction metadata and Payment Intent metadata.
      */
     private String extractLastNameFromPayment(UserPaymentTransaction paymentTransaction) {
+        // First check payment transaction metadata
         if (paymentTransaction.getMetadata() != null && !paymentTransaction.getMetadata().isEmpty()) {
             try {
                 Map<String, Object> metadata = objectMapper.readValue(paymentTransaction.getMetadata(), Map.class);
@@ -424,13 +665,40 @@ public class TicketGenerationService {
                 log.debug("Failed to parse metadata JSON: {}", e.getMessage());
             }
         }
+
+        // Also check Payment Intent metadata if available
+        String stripePaymentIntentId = paymentTransaction.getStripePaymentIntentId();
+        if (stripePaymentIntentId != null && !stripePaymentIntentId.isEmpty()) {
+            try {
+                com.stripe.model.PaymentIntent paymentIntent = stripePaymentAdapter.retrievePaymentIntent(
+                    stripePaymentIntentId,
+                    paymentTransaction.getTenantId()
+                );
+                if (paymentIntent != null && paymentIntent.getMetadata() != null) {
+                    String customerName = paymentIntent.getMetadata().get("customerName");
+                    if (customerName != null && !customerName.isEmpty()) {
+                        // Parse customerName to extract last name (assumes format "FirstName LastName")
+                        String[] nameParts = customerName.trim().split("\\s+", 2);
+                        if (nameParts.length > 1) {
+                            log.debug("Extracted lastName from Payment Intent customerName: {}", nameParts[1]);
+                            return nameParts[1];
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Failed to extract lastName from Payment Intent metadata: {}", e.getMessage());
+            }
+        }
+
         return null;
     }
 
     /**
-     * Extract phone from payment transaction metadata.
+     * Extract phone from payment transaction metadata or Payment Intent metadata.
+     * Checks both sources: payment transaction metadata and Payment Intent metadata.
      */
     private String extractPhoneFromPayment(UserPaymentTransaction paymentTransaction) {
+        // First check payment transaction metadata
         if (paymentTransaction.getMetadata() != null && !paymentTransaction.getMetadata().isEmpty()) {
             try {
                 Map<String, Object> metadata = objectMapper.readValue(paymentTransaction.getMetadata(), Map.class);
@@ -442,6 +710,27 @@ public class TicketGenerationService {
                 log.debug("Failed to parse metadata JSON: {}", e.getMessage());
             }
         }
+
+        // Also check Payment Intent metadata if available
+        String stripePaymentIntentId = paymentTransaction.getStripePaymentIntentId();
+        if (stripePaymentIntentId != null && !stripePaymentIntentId.isEmpty()) {
+            try {
+                com.stripe.model.PaymentIntent paymentIntent = stripePaymentAdapter.retrievePaymentIntent(
+                    stripePaymentIntentId,
+                    paymentTransaction.getTenantId()
+                );
+                if (paymentIntent != null && paymentIntent.getMetadata() != null) {
+                    String customerPhone = paymentIntent.getMetadata().get("customerPhone");
+                    if (customerPhone != null && !customerPhone.isEmpty()) {
+                        log.debug("Extracted phone from Payment Intent metadata: {}", customerPhone);
+                        return customerPhone;
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Failed to extract phone from Payment Intent metadata: {}", e.getMessage());
+            }
+        }
+
         return null;
     }
 
@@ -454,6 +743,417 @@ public class TicketGenerationService {
         } catch (Exception e) {
             log.warn("Failed to encode email host URL prefix, using original: {}", e.getMessage());
             return urlPrefix;
+        }
+    }
+
+    /**
+     * Extract cart items from Payment Intent metadata.
+     *
+     * @param stripePaymentIntentId Payment Intent ID
+     * @param paymentTransaction Payment transaction (for tenant ID)
+     * @return List of cart items, or null if not available
+     */
+    private List<CartItem> extractCartFromPaymentIntent(String stripePaymentIntentId, UserPaymentTransaction paymentTransaction) {
+        try {
+            // Retrieve Payment Intent from Stripe
+            PaymentIntent paymentIntent = stripePaymentAdapter.retrievePaymentIntent(
+                stripePaymentIntentId,
+                paymentTransaction.getTenantId()
+            );
+
+            if (paymentIntent == null) {
+                log.warn("Payment Intent {} not found in Stripe", stripePaymentIntentId);
+                return null;
+            }
+
+            // Extract cart from metadata
+            Map<String, String> metadata = paymentIntent.getMetadata();
+            if (metadata == null || metadata.isEmpty()) {
+                log.warn("Payment Intent {} has no metadata", stripePaymentIntentId);
+                return null;
+            }
+
+            String cartJson = metadata.get("cart");
+            if (cartJson == null || cartJson.isEmpty()) {
+                log.warn("Payment Intent {} metadata has no 'cart' field", stripePaymentIntentId);
+                return null;
+            }
+
+            // Parse cart JSON
+            List<Map<String, Object>> cartArray = objectMapper.readValue(cartJson, new TypeReference<List<Map<String, Object>>>() {});
+
+            // Convert to CartItem objects
+            List<CartItem> cartItems = new ArrayList<>();
+            for (Map<String, Object> item : cartArray) {
+                CartItem cartItem = new CartItem();
+                cartItem.setTicketTypeId(getLongValue(item.get("ticketTypeId")));
+                cartItem.setQuantity(getIntValue(item.get("quantity")));
+                cartItems.add(cartItem);
+            }
+
+            log.info("Extracted {} cart items from Payment Intent {} metadata", cartItems.size(), stripePaymentIntentId);
+            return cartItems;
+        } catch (Exception e) {
+            log.error("Error extracting cart from Payment Intent {}: {}", stripePaymentIntentId, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Helper to safely extract Long value from Object
+     */
+    private Long getLongValue(Object value) {
+        if (value == null) return null;
+        if (value instanceof Long) return (Long) value;
+        if (value instanceof Integer) return ((Integer) value).longValue();
+        if (value instanceof String) {
+            try {
+                return Long.parseLong((String) value);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper to safely extract Integer value from Object
+     */
+    private Integer getIntValue(Object value) {
+        if (value == null) return null;
+        if (value instanceof Integer) return (Integer) value;
+        if (value instanceof Long) return ((Long) value).intValue();
+        if (value instanceof String) {
+            try {
+                return Integer.parseInt((String) value);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Create transaction items for each cart item.
+     *
+     * @param ticketTransaction Parent transaction
+     * @param cartItems List of cart items
+     * @param tenantId Tenant ID
+     */
+    private List<EventTicketTransactionItem> createTransactionItems(
+        EventTicketTransaction ticketTransaction,
+        List<CartItem> cartItems,
+        String tenantId
+    ) {
+        List<EventTicketTransactionItem> itemsToSave = new ArrayList<>();
+        ZonedDateTime now = ZonedDateTime.now();
+
+        for (CartItem cartItem : cartItems) {
+            if (cartItem.getTicketTypeId() == null || cartItem.getQuantity() == null || cartItem.getQuantity() <= 0) {
+                log.warn("Skipping invalid cart item: {}", cartItem);
+                continue;
+            }
+
+            // Fetch ticket type to get current price
+            eventTicketTypeRepository
+                .findById(cartItem.getTicketTypeId())
+                .ifPresentOrElse(
+                    ticketType -> {
+                        // Create transaction item
+                        EventTicketTransactionItem item = new EventTicketTransactionItem();
+                        item.setTenantId(tenantId);
+                        item.setTransactionId(ticketTransaction.getId());
+                        item.setTicketTypeId(cartItem.getTicketTypeId());
+                        item.setQuantity(cartItem.getQuantity());
+                        item.setPricePerUnit(ticketType.getPrice());
+                        item.setTotalAmount(ticketType.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+                        item.setCreatedAt(now);
+                        item.setUpdatedAt(now);
+
+                        itemsToSave.add(item);
+
+                        log.debug(
+                            "Created transaction item: ticketTypeId={}, quantity={}, pricePerUnit={}, totalAmount={}",
+                            cartItem.getTicketTypeId(),
+                            cartItem.getQuantity(),
+                            ticketType.getPrice(),
+                            item.getTotalAmount()
+                        );
+                    },
+                    () -> log.error("Ticket type {} not found, skipping cart item", cartItem.getTicketTypeId())
+                );
+        }
+
+        // Bulk save transaction items
+        // NOTE: If transaction status is PENDING, the trigger won't update sold_quantity.
+        // We'll update sold_quantity manually when status is changed to COMPLETED.
+        if (!itemsToSave.isEmpty()) {
+            eventTicketTransactionItemRepository.saveAll(itemsToSave);
+            log.info("Successfully created {} transaction items for transaction {}", itemsToSave.size(), ticketTransaction.getId());
+            // If transaction status is COMPLETED, trigger will have updated sold_quantity automatically.
+            // If status is PENDING, we'll update sold_quantity when status changes to COMPLETED.
+        } else {
+            log.warn("No valid transaction items to create for transaction {}", ticketTransaction.getId());
+        }
+
+        return itemsToSave;
+    }
+
+    /**
+     * Update ticket type quantities (sold_quantity and remaining_quantity) based on transaction items.
+     * This method recalculates sold quantity by summing quantities from COMPLETED transactions
+     * and updates remaining quantity accordingly.
+     *
+     * @param transactionItems List of transaction items that were just created
+     * @param eventId Event ID to filter transactions
+     */
+    private void updateTicketTypeQuantities(List<EventTicketTransactionItem> transactionItems, Long eventId) {
+        try {
+            // Get unique ticket type IDs from the transaction items
+            java.util.Set<Long> ticketTypeIds = transactionItems
+                .stream()
+                .map(EventTicketTransactionItem::getTicketTypeId)
+                .collect(java.util.stream.Collectors.toSet());
+
+            // Update quantities for each ticket type
+            for (Long ticketTypeId : ticketTypeIds) {
+                updateTicketTypeQuantityForEvent(ticketTypeId, eventId);
+            }
+        } catch (Exception e) {
+            log.error("Failed to update ticket type quantities: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Update sold and remaining quantities for a specific ticket type.
+     * This method calculates sold quantity by summing quantities from COMPLETED transactions
+     * and updates remaining quantity as availableQuantity - soldQuantity.
+     *
+     * @param ticketTypeId Ticket type ID to update
+     * @param eventId Event ID to filter transactions
+     */
+    private void updateTicketTypeQuantityForEvent(Long ticketTypeId, Long eventId) {
+        try {
+            eventTicketTypeRepository
+                .findById(ticketTypeId)
+                .ifPresent(ticketType -> {
+                    // Calculate sold quantity by summing quantities from COMPLETED transactions
+                    // Query all transaction items for this ticket type across all COMPLETED transactions for this event
+                    Integer soldQuantity = eventTicketTransactionItemRepository
+                        .findAll()
+                        .stream()
+                        .filter(item -> item.getTicketTypeId().equals(ticketTypeId))
+                        .filter(item -> {
+                            // Check if the transaction is COMPLETED and belongs to this event
+                            Optional<EventTicketTransaction> transactionOpt = eventTicketTransactionRepository.findById(
+                                item.getTransactionId()
+                            );
+                            return transactionOpt
+                                .map(transaction -> "COMPLETED".equals(transaction.getStatus()) && eventId.equals(transaction.getEventId()))
+                                .orElse(false);
+                        })
+                        .mapToInt(EventTicketTransactionItem::getQuantity)
+                        .sum();
+
+                    // Calculate remaining quantity
+                    Integer availableQuantity = ticketType.getAvailableQuantity();
+                    Integer remainingQuantity = availableQuantity != null ? Math.max(0, availableQuantity - soldQuantity) : null;
+
+                    // Update the ticket type
+                    ticketType.setSoldQuantity(soldQuantity);
+                    ticketType.setRemainingQuantity(remainingQuantity);
+                    ticketType.setUpdatedAt(ZonedDateTime.now());
+
+                    eventTicketTypeRepository.save(ticketType);
+
+                    log.info("Updated ticket type {} quantities: sold={}, remaining={}", ticketTypeId, soldQuantity, remainingQuantity);
+                });
+        } catch (Exception e) {
+            log.error("Failed to update quantities for ticket type {}: {}", ticketTypeId, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Extract payment method from Payment Intent.
+     *
+     * @param paymentTransaction Payment transaction (for tenant ID and Payment Intent ID)
+     * @return Payment method, or null if not found
+     */
+    private String extractPaymentMethodFromPaymentIntent(UserPaymentTransaction paymentTransaction) {
+        String stripePaymentIntentId = paymentTransaction.getStripePaymentIntentId();
+        if (stripePaymentIntentId != null && !stripePaymentIntentId.isEmpty()) {
+            try {
+                PaymentIntent paymentIntent = stripePaymentAdapter.retrievePaymentIntent(
+                    stripePaymentIntentId,
+                    paymentTransaction.getTenantId()
+                );
+                if (paymentIntent != null && paymentIntent.getPaymentMethod() != null) {
+                    String paymentMethod = paymentIntent.getPaymentMethod().toString();
+                    log.debug("Extracted payment method from Payment Intent: {}", paymentMethod);
+                    return paymentMethod;
+                }
+            } catch (Exception e) {
+                log.debug("Failed to extract payment method from Payment Intent: {}", e.getMessage());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Extract discount code ID from Payment Intent metadata or payment transaction metadata.
+     *
+     * @param paymentIntent Payment Intent (primary source)
+     * @param paymentTransaction Payment transaction (fallback source)
+     * @return Discount code ID, or null if not found
+     */
+    private Long extractDiscountCodeIdFromPayment(PaymentIntent paymentIntent, UserPaymentTransaction paymentTransaction) {
+        // First check Payment Intent metadata (primary source)
+        if (paymentIntent != null && paymentIntent.getMetadata() != null) {
+            String discountCodeIdStr = paymentIntent.getMetadata().get("discountCodeId");
+            if (discountCodeIdStr != null && !discountCodeIdStr.isEmpty()) {
+                try {
+                    return Long.parseLong(discountCodeIdStr);
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid discountCodeId format in Payment Intent metadata: {}", discountCodeIdStr);
+                }
+            }
+        }
+
+        // Fallback: Check payment transaction metadata (for backward compatibility)
+        if (paymentTransaction != null && paymentTransaction.getMetadata() != null && !paymentTransaction.getMetadata().isEmpty()) {
+            try {
+                Map<String, Object> metadata = objectMapper.readValue(paymentTransaction.getMetadata(), Map.class);
+                Object discountCodeIdObj = metadata.get("discountCodeId");
+                if (discountCodeIdObj != null) {
+                    try {
+                        if (discountCodeIdObj instanceof String) {
+                            return Long.parseLong((String) discountCodeIdObj);
+                        } else if (discountCodeIdObj instanceof Number) {
+                            return ((Number) discountCodeIdObj).longValue();
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to parse discountCodeId from payment transaction metadata: {}", e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Failed to parse payment transaction metadata JSON: {}", e.getMessage());
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Apply discount code to transaction if present.
+     *
+     * @param ticketTransaction Ticket transaction to apply discount to
+     * @param paymentIntent Payment Intent (for extracting discount code ID)
+     * @param paymentTransaction Payment transaction (fallback source)
+     * @param totalAmount Total amount before discount
+     */
+    private void applyDiscountToTransaction(
+        EventTicketTransaction ticketTransaction,
+        PaymentIntent paymentIntent,
+        UserPaymentTransaction paymentTransaction,
+        BigDecimal totalAmount
+    ) {
+        // Extract discount code ID from Payment Intent metadata
+        Long discountCodeId = extractDiscountCodeIdFromPayment(paymentIntent, paymentTransaction);
+
+        // If discount code is present, look up details and calculate discount
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        if (discountCodeId != null) {
+            try {
+                Optional<DiscountCode> discountCodeOpt = discountCodeRepository.findById(discountCodeId);
+                discountCodeOpt.ifPresentOrElse(
+                    discountCode -> {
+                        // Calculate discount amount based on type
+                        BigDecimal calculatedDiscountAmount = BigDecimal.ZERO;
+                        if (totalAmount != null && totalAmount.compareTo(BigDecimal.ZERO) > 0) {
+                            if ("PERCENTAGE".equals(discountCode.getDiscountType())) {
+                                // Percentage discount: discountAmount = totalAmount * (discountValue / 100)
+                                BigDecimal discountPercent = discountCode
+                                    .getDiscountValue()
+                                    .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+                                calculatedDiscountAmount = totalAmount.multiply(discountPercent).setScale(2, RoundingMode.HALF_UP);
+                            } else if ("FIXED_AMOUNT".equals(discountCode.getDiscountType())) {
+                                // Fixed amount discount: discountAmount = min(totalAmount, discountValue)
+                                calculatedDiscountAmount =
+                                    discountCode.getDiscountValue().min(totalAmount).setScale(2, RoundingMode.HALF_UP);
+                            }
+                        }
+
+                        // Set discount fields on transaction
+                        ticketTransaction.setDiscountCodeId(discountCodeId);
+                        ticketTransaction.setDiscountAmount(calculatedDiscountAmount);
+
+                        // Update finalAmount = totalAmount - discountAmount
+                        BigDecimal finalAmount = totalAmount.subtract(calculatedDiscountAmount).setScale(2, RoundingMode.HALF_UP);
+                        ticketTransaction.setFinalAmount(finalAmount);
+
+                        // Increment uses_count for the discount code
+                        Integer currentUsesCount = discountCode.getUsesCount();
+                        if (currentUsesCount == null) {
+                            currentUsesCount = 0;
+                        }
+                        discountCode.setUsesCount(currentUsesCount + 1);
+                        discountCode.setUpdatedAt(ZonedDateTime.now());
+                        discountCodeRepository.save(discountCode);
+
+                        log.info(
+                            "Applied discount code {} to transaction {}: amount={}, type={}, finalAmount={}, uses_count={}",
+                            discountCodeId,
+                            ticketTransaction.getId(),
+                            calculatedDiscountAmount,
+                            discountCode.getDiscountType(),
+                            finalAmount,
+                            discountCode.getUsesCount()
+                        );
+                    },
+                    () -> {
+                        log.warn("Discount code {} not found in database for transaction {}", discountCodeId, ticketTransaction.getId());
+                    }
+                );
+            } catch (Exception e) {
+                log.error(
+                    "Failed to apply discount code {} to transaction {}: {}",
+                    discountCodeId,
+                    ticketTransaction.getId(),
+                    e.getMessage(),
+                    e
+                );
+                // Continue without discount rather than failing transaction
+            }
+        }
+    }
+
+    /**
+     * Internal class to represent cart item
+     */
+    private static class CartItem {
+
+        private Long ticketTypeId;
+        private Integer quantity;
+
+        public Long getTicketTypeId() {
+            return ticketTypeId;
+        }
+
+        public void setTicketTypeId(Long ticketTypeId) {
+            this.ticketTypeId = ticketTypeId;
+        }
+
+        public Integer getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(Integer quantity) {
+            this.quantity = quantity;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("CartItem{ticketTypeId=%d, quantity=%d}", ticketTypeId, quantity);
         }
     }
 }

@@ -35,8 +35,7 @@ public class EventTicketType implements Serializable {
     @Column(name = "name", length = 255, nullable = false)
     private String name;
 
-    @Size(max = 255)
-    @Column(name = "description", length = 255)
+    @Column(name = "description", columnDefinition = "text")
     private String description;
 
     @Column(name = "is_service_fee_included")
@@ -65,6 +64,24 @@ public class EventTicketType implements Serializable {
 
     @Column(name = "is_active")
     private Boolean isActive;
+
+    @Column(name = "sale_start_date")
+    private ZonedDateTime saleStartDate;
+
+    @Column(name = "sale_end_date")
+    private ZonedDateTime saleEndDate;
+
+    @Column(name = "min_quantity_per_order")
+    private Integer minQuantityPerOrder;
+
+    @Column(name = "max_quantity_per_order")
+    private Integer maxQuantityPerOrder;
+
+    @Column(name = "requires_approval")
+    private Boolean requiresApproval;
+
+    @Column(name = "sort_order")
+    private Integer sortOrder;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -236,6 +253,84 @@ public class EventTicketType implements Serializable {
         this.isActive = isActive;
     }
 
+    public ZonedDateTime getSaleStartDate() {
+        return this.saleStartDate;
+    }
+
+    public EventTicketType saleStartDate(ZonedDateTime saleStartDate) {
+        this.setSaleStartDate(saleStartDate);
+        return this;
+    }
+
+    public void setSaleStartDate(ZonedDateTime saleStartDate) {
+        this.saleStartDate = saleStartDate;
+    }
+
+    public ZonedDateTime getSaleEndDate() {
+        return this.saleEndDate;
+    }
+
+    public EventTicketType saleEndDate(ZonedDateTime saleEndDate) {
+        this.setSaleEndDate(saleEndDate);
+        return this;
+    }
+
+    public void setSaleEndDate(ZonedDateTime saleEndDate) {
+        this.saleEndDate = saleEndDate;
+    }
+
+    public Integer getMinQuantityPerOrder() {
+        return this.minQuantityPerOrder;
+    }
+
+    public EventTicketType minQuantityPerOrder(Integer minQuantityPerOrder) {
+        this.setMinQuantityPerOrder(minQuantityPerOrder);
+        return this;
+    }
+
+    public void setMinQuantityPerOrder(Integer minQuantityPerOrder) {
+        this.minQuantityPerOrder = minQuantityPerOrder;
+    }
+
+    public Integer getMaxQuantityPerOrder() {
+        return this.maxQuantityPerOrder;
+    }
+
+    public EventTicketType maxQuantityPerOrder(Integer maxQuantityPerOrder) {
+        this.setMaxQuantityPerOrder(maxQuantityPerOrder);
+        return this;
+    }
+
+    public void setMaxQuantityPerOrder(Integer maxQuantityPerOrder) {
+        this.maxQuantityPerOrder = maxQuantityPerOrder;
+    }
+
+    public Boolean getRequiresApproval() {
+        return this.requiresApproval;
+    }
+
+    public EventTicketType requiresApproval(Boolean requiresApproval) {
+        this.setRequiresApproval(requiresApproval);
+        return this;
+    }
+
+    public void setRequiresApproval(Boolean requiresApproval) {
+        this.requiresApproval = requiresApproval;
+    }
+
+    public Integer getSortOrder() {
+        return this.sortOrder;
+    }
+
+    public EventTicketType sortOrder(Integer sortOrder) {
+        this.setSortOrder(sortOrder);
+        return this;
+    }
+
+    public void setSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return this.createdAt;
     }
@@ -310,6 +405,12 @@ public class EventTicketType implements Serializable {
             ", soldQuantity=" + getSoldQuantity() +
             ", remainingQuantity=" + getRemainingQuantity() +
             ", isActive='" + getIsActive() + "'" +
+            ", saleStartDate='" + getSaleStartDate() + "'" +
+            ", saleEndDate='" + getSaleEndDate() + "'" +
+            ", minQuantityPerOrder=" + getMinQuantityPerOrder() +
+            ", maxQuantityPerOrder=" + getMaxQuantityPerOrder() +
+            ", requiresApproval='" + getRequiresApproval() + "'" +
+            ", sortOrder=" + getSortOrder() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             "}";

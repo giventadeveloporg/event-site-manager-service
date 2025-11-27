@@ -21,7 +21,6 @@ public class EventTicketTypeDTO implements Serializable {
     @Size(max = 255)
     private String name;
 
-    @Size(max = 255)
     private String description;
 
     private Boolean isServiceFeeIncluded;
@@ -42,6 +41,18 @@ public class EventTicketTypeDTO implements Serializable {
     private Integer remainingQuantity;
 
     private Boolean isActive;
+
+    private ZonedDateTime saleStartDate;
+
+    private ZonedDateTime saleEndDate;
+
+    private Integer minQuantityPerOrder;
+
+    private Integer maxQuantityPerOrder;
+
+    private Boolean requiresApproval;
+
+    private Integer sortOrder;
 
     @NotNull
     private ZonedDateTime createdAt;
@@ -147,6 +158,54 @@ public class EventTicketTypeDTO implements Serializable {
         this.isActive = isActive;
     }
 
+    public ZonedDateTime getSaleStartDate() {
+        return saleStartDate;
+    }
+
+    public void setSaleStartDate(ZonedDateTime saleStartDate) {
+        this.saleStartDate = saleStartDate;
+    }
+
+    public ZonedDateTime getSaleEndDate() {
+        return saleEndDate;
+    }
+
+    public void setSaleEndDate(ZonedDateTime saleEndDate) {
+        this.saleEndDate = saleEndDate;
+    }
+
+    public Integer getMinQuantityPerOrder() {
+        return minQuantityPerOrder;
+    }
+
+    public void setMinQuantityPerOrder(Integer minQuantityPerOrder) {
+        this.minQuantityPerOrder = minQuantityPerOrder;
+    }
+
+    public Integer getMaxQuantityPerOrder() {
+        return maxQuantityPerOrder;
+    }
+
+    public void setMaxQuantityPerOrder(Integer maxQuantityPerOrder) {
+        this.maxQuantityPerOrder = maxQuantityPerOrder;
+    }
+
+    public Boolean getRequiresApproval() {
+        return requiresApproval;
+    }
+
+    public void setRequiresApproval(Boolean requiresApproval) {
+        this.requiresApproval = requiresApproval;
+    }
+
+    public Integer getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
@@ -208,6 +267,12 @@ public class EventTicketTypeDTO implements Serializable {
             ", soldQuantity=" + getSoldQuantity() +
             ", remainingQuantity=" + getRemainingQuantity() +
             ", isActive='" + getIsActive() + "'" +
+            ", saleStartDate='" + getSaleStartDate() + "'" +
+            ", saleEndDate='" + getSaleEndDate() + "'" +
+            ", minQuantityPerOrder=" + getMinQuantityPerOrder() +
+            ", maxQuantityPerOrder=" + getMaxQuantityPerOrder() +
+            ", requiresApproval='" + getRequiresApproval() + "'" +
+            ", sortOrder=" + getSortOrder() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", event=" + getEvent() +

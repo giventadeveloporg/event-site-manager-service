@@ -1,5 +1,6 @@
 package com.nextjstemplate.service.payment.adapter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nextjstemplate.domain.EventTicketTransaction;
 import com.nextjstemplate.domain.UserPaymentTransaction;
@@ -10,6 +11,7 @@ import com.nextjstemplate.repository.UserPaymentTransactionRepository;
 import com.nextjstemplate.service.payment.PaymentException;
 import com.nextjstemplate.service.payment.PaymentService;
 import com.nextjstemplate.service.payment.TicketGenerationService;
+import com.nextjstemplate.service.payment.dto.PaymentItem;
 import com.nextjstemplate.service.payment.dto.PaymentSessionRequest;
 import com.nextjstemplate.service.payment.dto.PaymentSessionResponse;
 import com.nextjstemplate.service.payment.dto.RefundRequest;
@@ -42,17 +44,20 @@ public class StripePaymentAdapter implements PaymentService {
     private final ApplicationEventPublisher eventPublisher;
     private final TicketGenerationService ticketGenerationService;
     private final ObjectMapper objectMapper;
+    private final com.nextjstemplate.service.payment.config.PaymentProviderConfigService configService;
 
     public StripePaymentAdapter(
         UserPaymentTransactionRepository transactionRepository,
         EventTicketTransactionRepository eventTicketTransactionRepository,
         ApplicationEventPublisher eventPublisher,
-        TicketGenerationService ticketGenerationService
+        TicketGenerationService ticketGenerationService,
+        com.nextjstemplate.service.payment.config.PaymentProviderConfigService configService
     ) {
         this.transactionRepository = transactionRepository;
         this.eventTicketTransactionRepository = eventTicketTransactionRepository;
         this.eventPublisher = eventPublisher;
         this.ticketGenerationService = ticketGenerationService;
+        this.configService = configService;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -108,6 +113,47 @@ public class StripePaymentAdapter implements PaymentService {
             if (request.getCustomerEmail() != null && !request.getCustomerEmail().isEmpty()) {
                 metadata.put("customerEmail", request.getCustomerEmail());
             }
+
+            // Store customer name and phone in metadata if provided
+            if (request.getCustomerName() != null && !request.getCustomerName().isEmpty()) {
+                metadata.put("customerName", request.getCustomerName());
+            }
+            if (request.getCustomerPhone() != null && !request.getCustomerPhone().isEmpty()) {
+                metadata.put("customerPhone", request.getCustomerPhone());
+            }
+
+            // Add discount code ID if provided
+            if (request.getDiscountCode() != null && !request.getDiscountCode().isEmpty()) {
+                metadata.put("discountCodeId", request.getDiscountCode());
+            }
+
+            // CRITICAL: Extract items from request and convert to cart metadata format
+            // This is required for TicketGenerationService to create transaction items
+            if (request.getItems() != null && !request.getItems().isEmpty()) {
+                try {
+                    List<Map<String, Object>> cartMetadata = new ArrayList<>();
+                    for (PaymentItem item : request.getItems()) {
+                        // Only include TICKET items in cart metadata
+                        if ("TICKET".equals(item.getItemType()) && item.getItemId() != null && item.getQuantity() != null) {
+                            Map<String, Object> cartItem = new HashMap<>();
+                            cartItem.put("ticketTypeId", item.getItemId());
+                            cartItem.put("quantity", item.getQuantity());
+                            cartMetadata.add(cartItem);
+                        }
+                    }
+
+                    // Add cart to metadata as JSON string
+                    if (!cartMetadata.isEmpty()) {
+                        String cartJson = objectMapper.writeValueAsString(cartMetadata);
+                        metadata.put("cart", cartJson);
+                        log.info("Added cart metadata to Payment Intent: {} items", cartMetadata.size());
+                    }
+                } catch (JsonProcessingException e) {
+                    log.error("Failed to serialize cart metadata", e);
+                    // Continue without cart metadata - transaction items won't be created
+                }
+            }
+
             intentParamsBuilder.putAllMetadata(metadata);
 
             // CRITICAL: Set receipt email in Stripe PaymentIntent
@@ -1186,6 +1232,46 @@ public class StripePaymentAdapter implements PaymentService {
         if (charge != null) {
             result.put("chargeId", charge.getId());
             result.put("refunded", charge.getRefunded());
+        }
+    }
+
+    /**
+     * Retrieve Payment Intent from Stripe.
+     * This method can be used by other services to retrieve Payment Intent metadata.
+     *
+     * @param paymentIntentId Stripe Payment Intent ID
+     * @param tenantId Tenant ID to get Stripe configuration
+     * @return PaymentIntent object, or null if not found or error occurs
+     */
+    public PaymentIntent retrievePaymentIntent(String paymentIntentId, String tenantId) {
+        try {
+            // Get provider config for tenant
+            Map<String, Object> providerConfig = configService.getProviderConfig(tenantId, PaymentProvider.STRIPE).orElse(null);
+
+            if (providerConfig == null) {
+                log.warn("Stripe provider config not found for tenant: {}", tenantId);
+                return null;
+            }
+
+            // Set Stripe API key
+            String apiKey = (String) providerConfig.get("secretKey");
+            if (apiKey == null || apiKey.isEmpty()) {
+                log.warn("Stripe secret key not configured for tenant: {}", tenantId);
+                return null;
+            }
+
+            Stripe.apiKey = apiKey;
+
+            // Retrieve Payment Intent
+            PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
+            log.debug("Retrieved Payment Intent {} from Stripe", paymentIntentId);
+            return paymentIntent;
+        } catch (StripeException e) {
+            log.error("Failed to retrieve Payment Intent {}: {}", paymentIntentId, e.getMessage(), e);
+            return null;
+        } catch (Exception e) {
+            log.error("Unexpected error retrieving Payment Intent {}: {}", paymentIntentId, e.getMessage(), e);
+            return null;
         }
     }
 }

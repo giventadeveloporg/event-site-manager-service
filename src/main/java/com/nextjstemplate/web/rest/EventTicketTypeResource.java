@@ -72,6 +72,24 @@ public class EventTicketTypeResource {
         }
         eventTicketTypeDTO.setSoldQuantity(0);
         eventTicketTypeDTO.setRemainingQuantity(eventTicketTypeDTO.getAvailableQuantity());
+
+        // Set default values for new fields if not provided
+        if (eventTicketTypeDTO.getMinQuantityPerOrder() == null) {
+            eventTicketTypeDTO.setMinQuantityPerOrder(1);
+        }
+        if (eventTicketTypeDTO.getMaxQuantityPerOrder() == null) {
+            eventTicketTypeDTO.setMaxQuantityPerOrder(10);
+        }
+        if (eventTicketTypeDTO.getRequiresApproval() == null) {
+            eventTicketTypeDTO.setRequiresApproval(false);
+        }
+        if (eventTicketTypeDTO.getSortOrder() == null) {
+            eventTicketTypeDTO.setSortOrder(0);
+        }
+        if (eventTicketTypeDTO.getIsActive() == null) {
+            eventTicketTypeDTO.setIsActive(true);
+        }
+
         EventTicketTypeDTO result = eventTicketTypeService.save(eventTicketTypeDTO);
         return ResponseEntity
             .created(new URI("/api/event-ticket-types/" + result.getId()))
