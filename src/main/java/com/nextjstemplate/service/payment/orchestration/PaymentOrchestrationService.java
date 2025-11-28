@@ -584,12 +584,31 @@ public class PaymentOrchestrationService {
             com.nextjstemplate.service.payment.adapter.givebutter.dto.GivebutterDonation donation = event.getDonation();
             String donationId = donation != null ? donation.getId() : paymentTransaction.getExternalTransactionId();
 
-            // Check if ticket transaction already exists
+            // CRITICAL: Check if ticket transaction already exists (cross-tenant check first)
+            // This prevents the same payment from creating tickets for multiple tenants
             // For Givebutter, we store donation ID in stripePaymentIntentId field for compatibility
             Optional<EventTicketTransaction> existingTicket = Optional.empty();
             if (donationId != null && !donationId.isEmpty()) {
-                // Try to find by stripePaymentIntentId (where we store Givebutter donation ID)
-                existingTicket = eventTicketTransactionRepository.findByStripePaymentIntentId(donationId);
+                // Check if ANY transaction exists for this donation ID (cross-tenant)
+                if (eventTicketTransactionRepository.existsByStripePaymentIntentId(donationId)) {
+                    // Try to find by stripePaymentIntentId AND tenantId
+                    existingTicket =
+                        eventTicketTransactionRepository.findByStripePaymentIntentIdAndTenantId(
+                            donationId,
+                            paymentTransaction.getTenantId()
+                        );
+
+                    if (existingTicket.isEmpty()) {
+                        // Transaction exists but for a DIFFERENT tenant - this is a cross-tenant duplicate!
+                        log.warn(
+                            "DUPLICATE PREVENTION: Ticket transaction already exists for Givebutter donation {} " +
+                            "but for a different tenant. Current tenant: {}. Skipping duplicate creation.",
+                            donationId,
+                            paymentTransaction.getTenantId()
+                        );
+                        return;
+                    }
+                }
             }
 
             // Also try by transaction reference (payment transaction ID)

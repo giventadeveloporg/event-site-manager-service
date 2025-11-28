@@ -446,29 +446,39 @@ public class StripePaymentAdapter implements PaymentService {
                     transactionRepository.save(transaction);
                     log.info("Updated transaction {} status from {} to {}", transactionId, oldStatus, mappedStatus);
 
-                    // NOTE: Ticket generation should NOT be triggered synchronously from getStatus() because:
-                    // 1. getStatus() runs in a read-only transaction (@Transactional(readOnly = true))
-                    // 2. Ticket generation requires write operations (saving EventTicketTransaction)
-                    // 3. This causes "cannot execute nextval() in a read-only transaction" errors
-                    // Instead, publish an event for async processing:
-                    // - The async PaymentSuccessEvent listener will handle ticket generation in its own transaction
-                    // - Webhook handlers also handle ticket generation synchronously in writable transactions
+                    // CRITICAL FIX (Nov 2025): Call ticket generation SYNCHRONOUSLY from polling!
+                    // Previous approach (disabled async event + relying on webhook) caused issues:
+                    // - Webhooks can be delayed by Stripe retries, network latency, etc.
+                    // - Frontend sees SUCCEEDED status before webhook creates ticket
+                    // - Frontend queries for ticket, finds none, appears "stuck"
+                    //
+                    // New approach:
+                    // - Call ticketGenerationService.processTicketGenerationSync() directly from polling
+                    // - Database unique constraint (ux_event_ticket_stripe_payment_intent) prevents duplicates
+                    // - If webhook arrives later, findOrCreateTicketTransaction returns existing record
+                    // - This ensures immediate ticket creation when payment succeeds
                     if ("SUCCEEDED".equals(mappedStatus) && !"SUCCEEDED".equals(oldStatus)) {
                         Long eventId = transactionFinal.getEvent() != null ? transactionFinal.getEvent().getId() : null;
-                        if (eventId != null) {
+                        if (eventId != null || "TICKET_SALE".equals(transactionFinal.getTransactionType())) {
                             log.info(
-                                "Payment {} just succeeded via polling. Publishing PaymentSuccessEvent for async ticket generation",
-                                transactionId
+                                "Payment {} just succeeded via polling. Creating ticket synchronously (eventId={})",
+                                transactionId,
+                                eventId
                             );
                             try {
-                                eventPublisher.publishEvent(new PaymentSuccessEvent(this, transactionFinal, stripePaymentIntentIdFinal));
-                                log.debug("Published PaymentSuccessEvent for transaction {} (async ticket generation)", transactionId);
+                                // CRITICAL: Call synchronous ticket generation
+                                // The unique constraint will prevent duplicates if webhook also tries to create
+                                ticketGenerationService.processTicketGenerationSync(transactionFinal, stripePaymentIntentIdFinal);
+                                log.info("Successfully processed ticket generation for payment {} via polling", transactionId);
                             } catch (Exception e) {
-                                log.warn(
-                                    "Failed to publish PaymentSuccessEvent for transaction {}: {}. Ticket generation will be handled by webhook.",
+                                log.error(
+                                    "Failed to process ticket generation for payment {} via polling: {}. " +
+                                    "Webhook will retry or manual regeneration may be needed.",
                                     transactionId,
-                                    e.getMessage()
+                                    e.getMessage(),
+                                    e
                                 );
+                                // Don't fail - payment is still successful, ticket can be created later by webhook
                             }
                         }
                     }
@@ -967,19 +977,11 @@ public class StripePaymentAdapter implements PaymentService {
             );
         }
 
-        // Also publish payment success event for async processing (backup/retry mechanism)
-        try {
-            eventPublisher.publishEvent(new PaymentSuccessEvent(this, transaction, stripePaymentIntentId));
-            log.debug("[StripePaymentAdapter] Published PaymentSuccessEvent for transaction {} (async backup)", transaction.getId());
-        } catch (Exception e) {
-            log.error(
-                "[StripePaymentAdapter] Failed to publish PaymentSuccessEvent for transaction {}: {}",
-                transaction.getId(),
-                e.getMessage(),
-                e
-            );
-            // Don't fail webhook processing if event publishing fails
-        }
+        // NOTE: Removed redundant PaymentSuccessEvent publishing here.
+        // The synchronous ticketGenerationService.processTicketGenerationSync() call above already handles ticket creation.
+        // Publishing an additional async event was causing duplicate ticket transactions to be created
+        // due to race conditions between the sync and async processing paths.
+        // If synchronous processing fails, the error is logged and can be retried manually.
 
         // Populate result map for webhook response
         result.put("paymentIntentId", stripePaymentIntentId);

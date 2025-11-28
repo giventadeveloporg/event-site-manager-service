@@ -11,6 +11,7 @@ import com.nextjstemplate.repository.DiscountCodeRepository;
 import com.nextjstemplate.repository.EventTicketTransactionItemRepository;
 import com.nextjstemplate.repository.EventTicketTransactionRepository;
 import com.nextjstemplate.repository.EventTicketTypeRepository;
+import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.QRCodeService;
 import com.nextjstemplate.service.payment.adapter.StripePaymentAdapter;
 import com.nextjstemplate.service.payment.event.PaymentSuccessEvent;
@@ -33,6 +34,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -83,10 +85,19 @@ public class TicketGenerationService {
      * Synchronously process ticket generation for a payment transaction.
      * This method can be called directly from webhook handlers to ensure immediate ticket creation.
      *
+     * CRITICAL: Uses Propagation.REQUIRES_NEW to ensure a fresh read-write transaction.
+     * This is necessary because this method may be called from:
+     * 1. StripePaymentAdapter.getStatus() - which is called from PaymentOrchestrationService.getStatus()
+     *    with @Transactional(readOnly = true)
+     * 2. Webhook handlers that need to create/update database records
+     *
+     * Without REQUIRES_NEW, this method would inherit the parent's read-only transaction
+     * and fail with "cannot execute nextval() in a read-only transaction" error.
+     *
      * @param paymentTransaction the payment transaction that succeeded
      * @param stripePaymentIntentId the Stripe payment intent ID
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processTicketGenerationSync(UserPaymentTransaction paymentTransaction, String stripePaymentIntentId) {
         log.info("Processing ticket generation synchronously for transaction: {}", paymentTransaction.getId());
 
@@ -245,8 +256,26 @@ public class TicketGenerationService {
     public void handlePaymentSuccess(PaymentSuccessEvent event) {
         UserPaymentTransaction paymentTransaction = event.getPaymentTransaction();
         String stripePaymentIntentId = event.getStripePaymentIntentId();
+        String eventTenantId = event.getTenantId();
 
-        log.info("Processing payment success event for transaction: {}", paymentTransaction.getId());
+        // CRITICAL: Set TenantContext from the event because @Async methods run in separate threads
+        // where thread-local TenantContext is NOT propagated from the original request thread.
+        // Without this, the default tenant would be used, causing cross-tenant duplicates.
+        if (eventTenantId != null && !eventTenantId.isEmpty()) {
+            TenantContext.setCurrentTenant(eventTenantId);
+            log.info("Set TenantContext to '{}' for async payment success event processing", eventTenantId);
+        } else {
+            log.warn("PaymentSuccessEvent missing tenantId! Using paymentTransaction.getTenantId(): {}", paymentTransaction.getTenantId());
+            if (paymentTransaction.getTenantId() != null) {
+                TenantContext.setCurrentTenant(paymentTransaction.getTenantId());
+            }
+        }
+
+        log.info(
+            "Processing payment success event for transaction: {} with tenant: {}",
+            paymentTransaction.getId(),
+            TenantContext.getCurrentTenant()
+        );
 
         try {
             // Step 1: Check if this is a ticket purchase
@@ -387,6 +416,11 @@ public class TicketGenerationService {
                 e
             );
             // Don't throw exception - payment is still successful, ticket generation can be retried manually
+        } finally {
+            // CRITICAL: Always clear TenantContext after async processing
+            // This prevents tenant context leaking to other threads in the pool
+            TenantContext.clear();
+            log.debug("Cleared TenantContext after async payment success processing");
         }
     }
 
@@ -411,6 +445,11 @@ public class TicketGenerationService {
     /**
      * Find existing ticket transaction or create a new one from payment transaction.
      *
+     * CRITICAL: This method implements GLOBAL duplicate prevention.
+     * Only ONE ticket transaction can exist per stripe_payment_intent_id, regardless of tenant.
+     * If a transaction exists for a different tenant, we return that existing transaction
+     * (after logging a warning) instead of creating a duplicate.
+     *
      * @param paymentTransaction Payment transaction
      * @param eventId Event ID
      * @param setCompletedStatus If true, set status to COMPLETED immediately. If false, set to PENDING (for item insertion first).
@@ -420,83 +459,185 @@ public class TicketGenerationService {
         Long eventId,
         boolean setCompletedStatus
     ) {
-        // Try to find existing ticket transaction by Stripe payment intent ID
-        Optional<EventTicketTransaction> existingOpt = Optional.empty();
-        if (paymentTransaction.getStripePaymentIntentId() != null && !paymentTransaction.getStripePaymentIntentId().isEmpty()) {
-            existingOpt = eventTicketTransactionRepository.findByStripePaymentIntentId(paymentTransaction.getStripePaymentIntentId());
+        String stripePaymentIntentId = paymentTransaction.getStripePaymentIntentId();
+        String tenantId = paymentTransaction.getTenantId();
+
+        // CRITICAL: First check if ANY ticket transaction exists for this payment intent (GLOBAL check)
+        // This prevents the same payment from creating multiple tickets, even across tenants
+        if (stripePaymentIntentId != null && !stripePaymentIntentId.isEmpty()) {
+            // Find ANY existing transaction for this payment intent (regardless of tenant)
+            // Use map/orElse pattern to avoid isPresent()+get() which modernizer flags
+            EventTicketTransaction existingTransaction = eventTicketTransactionRepository
+                .findByStripePaymentIntentId(stripePaymentIntentId)
+                .map(existing -> {
+                    if (tenantId.equals(existing.getTenantId())) {
+                        // Same tenant - update and return
+                        log.info(
+                            "Found existing ticket transaction {} for payment intent {} and tenant {}",
+                            existing.getId(),
+                            stripePaymentIntentId,
+                            tenantId
+                        );
+                        return updateExistingTransaction(existing, paymentTransaction, setCompletedStatus);
+                    } else {
+                        // DIFFERENT tenant - this means the first request used wrong tenant (likely default)
+                        // Log warning but RETURN the existing transaction instead of creating duplicate
+                        log.warn(
+                            "DUPLICATE PREVENTION: Ticket transaction {} already exists for payment intent {} " +
+                            "with tenant '{}', but current request has tenant '{}'. " +
+                            "Returning existing transaction to prevent duplicate. " +
+                            "This may indicate a tenant context issue in the first request.",
+                            existing.getId(),
+                            stripePaymentIntentId,
+                            existing.getTenantId(),
+                            tenantId
+                        );
+
+                        // Return the existing transaction - caller should handle this appropriately
+                        // We return it instead of null so QR code generation and email can still work
+                        return existing;
+                    }
+                })
+                .orElse(null);
+
+            if (existingTransaction != null) {
+                return existingTransaction;
+            }
         }
 
-        return existingOpt
-            .map(existing -> {
-                log.info("Found existing ticket transaction {} for payment {}", existing.getId(), paymentTransaction.getId());
+        // No existing transaction found - create a new one
+        log.info(
+            "No existing ticket transaction found for payment intent {}, creating new one for tenant {}",
+            stripePaymentIntentId,
+            tenantId
+        );
 
-                // Update payment method if not already set
-                if (existing.getPaymentMethod() == null || existing.getPaymentMethod().isEmpty()) {
-                    String paymentMethod = paymentTransaction.getPaymentMethod();
-                    if (paymentMethod == null || paymentMethod.isEmpty()) {
-                        // Try to extract from Payment Intent as fallback
-                        paymentMethod = extractPaymentMethodFromPaymentIntent(paymentTransaction);
-                    }
-                    if (paymentMethod != null && !paymentMethod.isEmpty()) {
-                        existing.setPaymentMethod(paymentMethod);
-                        existing.setUpdatedAt(ZonedDateTime.now());
-                        log.info("Updated payment method for transaction {}: {}", existing.getId(), paymentMethod);
-                    }
-                }
+        try {
+            return createNewTicketTransaction(paymentTransaction, eventId, setCompletedStatus);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // CRITICAL: Handle unique constraint violation (race condition)
+            // Another thread created a record between our check and insert
+            // This is expected in high-concurrency scenarios
+            log.warn(
+                "Unique constraint violation when creating ticket for payment intent {} - " +
+                "another thread likely created it. Fetching existing record.",
+                stripePaymentIntentId
+            );
 
-                // Update status to COMPLETED if requested and not already
-                if (setCompletedStatus && !"COMPLETED".equals(existing.getStatus())) {
-                    existing.setStatus("COMPLETED");
-                    existing.setUpdatedAt(ZonedDateTime.now());
-                }
+            // Fetch and return the existing record that was created by the other thread
+            return eventTicketTransactionRepository
+                .findByStripePaymentIntentId(stripePaymentIntentId)
+                .map(existing -> {
+                    log.info(
+                        "Retrieved existing ticket transaction {} created by concurrent thread for payment intent {}",
+                        existing.getId(),
+                        stripePaymentIntentId
+                    );
+                    return updateExistingTransaction(existing, paymentTransaction, setCompletedStatus);
+                })
+                .orElseThrow(() -> {
+                    // This should never happen - constraint violation implies record exists
+                    log.error(
+                        "CRITICAL: Unique constraint violated but no record found for payment intent {}. " +
+                        "This indicates a serious data integrity issue.",
+                        stripePaymentIntentId
+                    );
+                    return new IllegalStateException(
+                        "Unique constraint violated but no record found for payment intent: " + stripePaymentIntentId
+                    );
+                });
+        }
+    }
 
-                if (existing.getUpdatedAt() != null) {
-                    eventTicketTransactionRepository.save(existing);
-                }
+    /**
+     * Create a new ticket transaction from payment transaction.
+     */
+    private EventTicketTransaction createNewTicketTransaction(
+        UserPaymentTransaction paymentTransaction,
+        Long eventId,
+        boolean setCompletedStatus
+    ) {
+        // Create new ticket transaction
+        log.info("Creating new ticket transaction for payment {}", paymentTransaction.getId());
 
-                return existing;
-            })
-            .orElseGet(() -> {
-                // Create new ticket transaction
-                log.info("Creating new ticket transaction for payment {}", paymentTransaction.getId());
+        EventTicketTransaction ticketTransaction = new EventTicketTransaction();
+        ticketTransaction.setTenantId(paymentTransaction.getTenantId());
+        ticketTransaction.setEventId(eventId);
+        ticketTransaction.setEmail(extractEmailFromPayment(paymentTransaction));
+        ticketTransaction.setFirstName(extractFirstNameFromPayment(paymentTransaction));
+        ticketTransaction.setLastName(extractLastNameFromPayment(paymentTransaction));
+        ticketTransaction.setPhone(extractPhoneFromPayment(paymentTransaction));
 
-                EventTicketTransaction ticketTransaction = new EventTicketTransaction();
-                ticketTransaction.setTenantId(paymentTransaction.getTenantId());
-                ticketTransaction.setEventId(eventId);
-                ticketTransaction.setEmail(extractEmailFromPayment(paymentTransaction));
-                ticketTransaction.setFirstName(extractFirstNameFromPayment(paymentTransaction));
-                ticketTransaction.setLastName(extractLastNameFromPayment(paymentTransaction));
-                ticketTransaction.setPhone(extractPhoneFromPayment(paymentTransaction));
+        // Set amount fields
+        ticketTransaction.setPricePerUnit(paymentTransaction.getAmount());
+        ticketTransaction.setTotalAmount(paymentTransaction.getAmount());
+        ticketTransaction.setFinalAmount(paymentTransaction.getAmount());
+        ticketTransaction.setQuantity(1); // Default to 1, can be updated from metadata
 
-                // Set amount fields
-                ticketTransaction.setPricePerUnit(paymentTransaction.getAmount());
-                ticketTransaction.setTotalAmount(paymentTransaction.getAmount());
-                ticketTransaction.setFinalAmount(paymentTransaction.getAmount());
-                ticketTransaction.setQuantity(1); // Default to 1, can be updated from metadata
+        // Set status: PENDING initially to allow item insertion without inventory check,
+        // then will be set to COMPLETED after items are inserted
+        ticketTransaction.setStatus(setCompletedStatus ? "COMPLETED" : "PENDING");
 
-                // Set status: PENDING initially to allow item insertion without inventory check,
-                // then will be set to COMPLETED after items are inserted
-                ticketTransaction.setStatus(setCompletedStatus ? "COMPLETED" : "PENDING");
+        // Set payment method - try from paymentTransaction first, then Payment Intent as fallback
+        String paymentMethod = paymentTransaction.getPaymentMethod();
+        if (paymentMethod == null || paymentMethod.isEmpty()) {
+            paymentMethod = extractPaymentMethodFromPaymentIntent(paymentTransaction);
+        }
+        ticketTransaction.setPaymentMethod(paymentMethod);
 
-                // Set payment method - try from paymentTransaction first, then Payment Intent as fallback
-                String paymentMethod = paymentTransaction.getPaymentMethod();
-                if (paymentMethod == null || paymentMethod.isEmpty()) {
-                    paymentMethod = extractPaymentMethodFromPaymentIntent(paymentTransaction);
-                }
-                ticketTransaction.setPaymentMethod(paymentMethod);
+        ticketTransaction.setPaymentReference(paymentTransaction.getExternalTransactionId());
+        ticketTransaction.setStripePaymentIntentId(paymentTransaction.getStripePaymentIntentId());
+        ticketTransaction.setStripePaymentStatus("succeeded");
+        ticketTransaction.setStripePaymentCurrency(paymentTransaction.getCurrency());
 
-                ticketTransaction.setPaymentReference(paymentTransaction.getExternalTransactionId());
-                ticketTransaction.setStripePaymentIntentId(paymentTransaction.getStripePaymentIntentId());
-                ticketTransaction.setStripePaymentStatus("succeeded");
-                ticketTransaction.setStripePaymentCurrency(paymentTransaction.getCurrency());
+        // Set dates
+        ticketTransaction.setPurchaseDate(paymentTransaction.getCreatedAt());
+        ticketTransaction.setCreatedAt(ZonedDateTime.now());
+        ticketTransaction.setUpdatedAt(ZonedDateTime.now());
 
-                // Set dates
-                ticketTransaction.setPurchaseDate(paymentTransaction.getCreatedAt());
-                ticketTransaction.setCreatedAt(ZonedDateTime.now());
-                ticketTransaction.setUpdatedAt(ZonedDateTime.now());
+        return eventTicketTransactionRepository.save(ticketTransaction);
+    }
 
-                return eventTicketTransactionRepository.save(ticketTransaction);
-            });
+    /**
+     * Update an existing ticket transaction with payment information.
+     *
+     * @param existing The existing ticket transaction
+     * @param paymentTransaction The payment transaction with updated info
+     * @param setCompletedStatus If true, set status to COMPLETED
+     * @return The updated ticket transaction
+     */
+    private EventTicketTransaction updateExistingTransaction(
+        EventTicketTransaction existing,
+        UserPaymentTransaction paymentTransaction,
+        boolean setCompletedStatus
+    ) {
+        log.info("Found existing ticket transaction {} for payment {}", existing.getId(), paymentTransaction.getId());
+
+        // Update payment method if not already set
+        if (existing.getPaymentMethod() == null || existing.getPaymentMethod().isEmpty()) {
+            String paymentMethod = paymentTransaction.getPaymentMethod();
+            if (paymentMethod == null || paymentMethod.isEmpty()) {
+                // Try to extract from Payment Intent as fallback
+                paymentMethod = extractPaymentMethodFromPaymentIntent(paymentTransaction);
+            }
+            if (paymentMethod != null && !paymentMethod.isEmpty()) {
+                existing.setPaymentMethod(paymentMethod);
+                existing.setUpdatedAt(ZonedDateTime.now());
+                log.info("Updated payment method for transaction {}: {}", existing.getId(), paymentMethod);
+            }
+        }
+
+        // Update status to COMPLETED if requested and not already
+        if (setCompletedStatus && !"COMPLETED".equals(existing.getStatus())) {
+            existing.setStatus("COMPLETED");
+            existing.setUpdatedAt(ZonedDateTime.now());
+        }
+
+        if (existing.getUpdatedAt() != null) {
+            eventTicketTransactionRepository.save(existing);
+        }
+
+        return existing;
     }
 
     /**
