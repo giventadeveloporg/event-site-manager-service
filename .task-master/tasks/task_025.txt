@@ -1,0 +1,18 @@
+# Task ID: 25
+# Title: Create end-to-end test for subscription flow
+# Status: pending
+# Dependencies: 13 ⏱️, 16 ⏱️, 17 ⏱️, 18 ⏱️, 19 ⏱️, 20 ⏱️
+# Priority: low
+# Description: Implement E2E test for the complete subscription lifecycle.
+# Details:
+- Create E2E test for subscription flow
+- Test complete subscription creation
+- Test webhook processing
+- Test subscription management
+- Test subscription cancellation
+- Test multi-tenant isolation
+- Use Stripe test mode
+- Verify correct database state
+
+# Test Strategy:
+Create comprehensive test that walks through entire subscription lifecycle with Stripe test mode.

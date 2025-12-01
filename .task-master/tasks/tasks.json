@@ -2,191 +2,261 @@
   "meta": {
     "projectName": "Task Master",
     "version": "1.5.0",
-    "source": ".task-master/PRD_backend.html",
+    "source": ".task-master/MEMBERSHIP_SUBSCRIPTION_BACKEND_PRD.html",
     "description": "Tasks generated from PRD",
-    "totalTasksGenerated": 18,
-    "tasksIncluded": 18
+    "totalTasksGenerated": 25,
+    "tasksIncluded": 25
   },
   "tasks": [
     {
       "id": 1,
-      "title": "Set up project scaffolding and database migrations",
-      "description": "Create the initial project structure and implement database migrations for new tables and columns required by the payment orchestration layer.",
+      "title": "Verify and update MembershipPlan entity",
+      "description": "Verify the MembershipPlan entity matches the database schema and add necessary relationships and validations.",
       "status": "pending",
       "dependencies": [],
       "priority": "high",
-      "details": "- Set up project structure for the payment orchestration service\n- Create database migration scripts for new tables: payment_provider_config, platform_settlement, platform_invoice\n- Add new columns to payment_transaction: settlement_batch_id, platform_invoice_id, manual_payment_reference\n- Create membership_plan and membership_subscription tables\n- Implement indexes as described in the master PRD\n- Migrate legacy event_ticket_transaction data into payment_transaction\n- Backfill payment_provider_config for existing tenants with Stripe configs",
-      "testStrategy": "Verify all tables are created with correct schema. Run test queries to ensure data integrity and proper relationships between tables."
+      "details": "- Verify MembershipPlan entity matches database schema in Latest_Schema_Post__Blob_Claude_11.sql\n- Add relationships to other entities (@ManyToOne, @OneToMany)\n- Add validation annotations for fields\n- Ensure all fields from database are present\n- Add tenantId field for multi-tenant support",
+      "testStrategy": "Verify entity can be persisted to database and relationships work correctly."
     },
     {
       "id": 2,
-      "title": "Implement PaymentService interface and core orchestration layer",
-      "description": "Create the core payment service interface that all provider adapters will implement, along with the orchestration layer that routes payment requests.",
+      "title": "Verify and update MembershipSubscription entity",
+      "description": "Verify the MembershipSubscription entity matches the database schema and add necessary relationships and validations.",
       "status": "pending",
-      "dependencies": [1],
+      "dependencies": [],
       "priority": "high",
-      "details": "- Define PaymentService interface with methods: initialize, confirm, cancel, refund, webhook handling, supportedMethods\n- Implement the payment orchestration service as the entry point for all payment operations\n- Create provider selection logic based on tenant configuration\n- Implement fallback ordering mechanism\n- Build configuration layer to access payment_provider_config settings\n- Create secure credential storage with AES-256-GCM encryption",
-      "testStrategy": "Unit test the orchestration layer with mock providers to ensure proper routing of requests based on tenant configuration."
+      "details": "- Verify MembershipSubscription entity matches database schema in Latest_Schema_Post__Blob_Claude_11.sql\n- Add relationships to UserProfile and MembershipPlan (@ManyToOne)\n- Add validation annotations for fields\n- Ensure all fields from database are present\n- Add tenantId field for multi-tenant support",
+      "testStrategy": "Verify entity can be persisted to database and relationships work correctly."
     },
     {
       "id": 3,
-      "title": "Implement StripePaymentAdapter",
-      "description": "Refactor the Stripe adapter to support PaymentIntent, Checkout Session, and Instant Checkout with multi-tenant configuration.",
+      "title": "Create MembershipPlanRepository",
+      "description": "Create repository interface for MembershipPlan entity with custom query methods.",
       "status": "pending",
-      "dependencies": [2],
+      "dependencies": [1],
       "priority": "high",
-      "details": "- Implement StripePaymentAdapter with PaymentIntent creation\n- Add support for Checkout Sessions\n- Implement Link/Wallet support\n- Add multi-tenant configuration\n- Support Stripe Billing for subscriptions\n- Implement webhook handling for payment_intent.succeeded, payment_intent.payment_failed, checkout.session.completed events\n- Add support for refund events",
-      "testStrategy": "Unit test the adapter with Stripe test mode. Verify all payment flows and webhook handling work correctly."
+      "details": "- Create MembershipPlanRepository interface extending JpaRepository\n- Add custom query methods:\n  - findByTenantId\n  - findByTenantIdAndIsActive\n  - findByTenantIdAndPlanCode\n  - existsByTenantIdAndPlanCode",
+      "testStrategy": "Test repository methods with JUnit to ensure they return expected results."
     },
     {
       "id": 4,
-      "title": "Implement PayPalPaymentAdapter",
-      "description": "Create the PayPal adapter using the Orders API with support for capture, refund, and webhook validation.",
+      "title": "Create MembershipSubscriptionRepository",
+      "description": "Create repository interface for MembershipSubscription entity with custom query methods.",
       "status": "pending",
       "dependencies": [2],
-      "priority": "medium",
-      "details": "- Implement PayPalPaymentAdapter using the Orders API\n- Add support for capture and refund operations\n- Implement webhook validation\n- Handle capture/void notifications\n- Store PayPal-specific transaction details",
-      "testStrategy": "Test the adapter with PayPal sandbox environment. Verify order creation, capture, and webhook processing."
+      "priority": "high",
+      "details": "- Create MembershipSubscriptionRepository interface extending JpaRepository\n- Add custom query methods:\n  - findByStripeSubscriptionId\n  - existsByStripeSubscriptionId\n  - findByUserProfileIdAndSubscriptionStatusIn\n  - findByTenantIdAndSubscriptionStatus\n  - findByStripeSubscriptionIdAndTenantId",
+      "testStrategy": "Test repository methods with JUnit to ensure they return expected results."
     },
     {
       "id": 5,
-      "title": "Implement ZeffyPaymentAdapter",
-      "description": "Create the Zeffy adapter for donation API integration with fallback instructions.",
+      "title": "Create MembershipPlanDTO",
+      "description": "Create DTO for MembershipPlan entity with validation annotations matching OpenAPI schema.",
       "status": "pending",
-      "dependencies": [2],
+      "dependencies": [1],
       "priority": "medium",
-      "details": "- Implement ZeffyPaymentAdapter for donation API integration\n- Create fallback instructions mechanism if Zeffy is unavailable\n- Add support for importing payout CSV or processing webhooks\n- Implement helper endpoint for returning Zeffy campaign info/embedded URL",
-      "testStrategy": "Test the adapter with Zeffy test environment if available. Verify donation flow and CSV import functionality."
+      "details": "- Create MembershipPlanDTO class\n- Add all fields from MembershipPlan entity\n- Add validation annotations (@NotNull, @Size, etc.)\n- Match OpenAPI schema in documentation/Swagger_API_Docs/api-docs.json\n- Implement serialization/deserialization support",
+      "testStrategy": "Test validation with invalid data and ensure serialization/deserialization works correctly."
     },
     {
       "id": 6,
-      "title": "Implement ZelleManualAdapter",
-      "description": "Create the Zelle manual adapter for handling pending transactions and admin confirmation endpoints.",
+      "title": "Create MembershipSubscriptionDTO",
+      "description": "Create DTO for MembershipSubscription entity with validation annotations matching OpenAPI schema.",
       "status": "pending",
       "dependencies": [2],
       "priority": "medium",
-      "details": "- Implement ZelleManualAdapter for creating pending transactions\n- Create admin confirmation endpoints\n- Store payer email, expected amount, and memo instructions\n- Implement POST /api/payments/zelle/manual endpoint",
-      "testStrategy": "Test the creation of pending transactions and the admin confirmation flow. Verify transaction status updates correctly."
+      "details": "- Create MembershipSubscriptionDTO class\n- Add all fields from MembershipSubscription entity\n- Add validation annotations (@NotNull, @Size, etc.)\n- Match OpenAPI schema in documentation/Swagger_API_Docs/api-docs.json\n- Add optional relation fields (membershipPlan, userProfile)\n- Implement serialization/deserialization support",
+      "testStrategy": "Test validation with invalid data and ensure serialization/deserialization works correctly."
     },
     {
       "id": 7,
-      "title": "Implement RevolutPaymentAdapter",
-      "description": "Create the Revolut adapter for card sessions with support for redirect-based SCA and settlement webhooks.",
+      "title": "Create MembershipPlanMapper",
+      "description": "Create mapper for converting between MembershipPlan entity and DTO.",
       "status": "pending",
-      "dependencies": [2],
+      "dependencies": [1, 5],
       "priority": "medium",
-      "details": "- Implement RevolutPaymentAdapter for creating card sessions\n- Add support for redirect-based Strong Customer Authentication (SCA)\n- Process settlement webhooks\n- Handle payment_succeeded, payment_failed, settlement_created events",
-      "testStrategy": "Test the adapter with Revolut test environment. Verify card session creation, SCA flow, and webhook processing."
+      "details": "- Create MembershipPlanMapper interface/class\n- Implement toDto() method to convert entity to DTO\n- Implement toEntity() method to convert DTO to entity\n- Use MapStruct or manual mapping\n- Handle nested objects if needed",
+      "testStrategy": "Test conversion in both directions with various data scenarios."
     },
     {
       "id": 8,
-      "title": "Implement CeFiCharityAdapter",
-      "description": "Create the CeFi charity adapter for integrating with partner ACH/transfer providers and fetching settlement files.",
+      "title": "Create MembershipSubscriptionMapper",
+      "description": "Create mapper for converting between MembershipSubscription entity and DTO.",
       "status": "pending",
-      "dependencies": [2],
-      "priority": "low",
-      "details": "- Implement CeFiCharityAdapter for partner ACH/transfer integration\n- Create mechanism for fetching settlement files\n- Support DONATION_CEFI payment type\n- Process settlement data into payment_transaction records",
-      "testStrategy": "Test the adapter with mock settlement files. Verify transaction creation and settlement processing."
+      "dependencies": [2, 6],
+      "priority": "medium",
+      "details": "- Create MembershipSubscriptionMapper interface/class\n- Implement toDto() method to convert entity to DTO\n- Implement toEntity() method to convert DTO to entity\n- Use MapStruct or manual mapping\n- Handle nested objects (membershipPlan, userProfile)",
+      "testStrategy": "Test conversion in both directions with various data scenarios."
     },
     {
       "id": 9,
-      "title": "Implement payment initialization endpoint",
-      "description": "Create the main payment initialization endpoint that returns provider-neutral session details.",
+      "title": "Add unique index on membership_subscription.stripe_subscription_id",
+      "description": "Create Liquibase migration to add unique index on stripe_subscription_id to prevent duplicate subscriptions.",
       "status": "pending",
-      "dependencies": [3, 4, 5, 6, 7, 8],
+      "dependencies": [],
       "priority": "high",
-      "details": "- Implement POST /api/payments/initialize endpoint\n- Return PaymentSessionResponse with provider hint, clientSecret/sessionUrl, publishable key\n- Support payment types: TICKET_SALE, DONATION, DONATION_CEFI, OFFERING, MEMBERSHIP_SUBSCRIPTION\n- Route to appropriate provider adapter based on tenant configuration\n- Derive schema from Swagger API docs",
-      "testStrategy": "Test the endpoint with different payment types and tenant configurations. Verify correct provider selection and response format."
+      "details": "- Create Liquibase migration file in src/main/resources/config/liquibase/changelog/\n- Add createIndex with unique=true on membership_subscription.stripe_subscription_id\n- Include comment explaining purpose (race condition prevention)\n- Pattern based on existing unique constraint on event_ticket_transaction.stripe_payment_intent_id",
+      "testStrategy": "Verify index is created correctly in database and prevents duplicate stripe_subscription_id values."
     },
     {
       "id": 10,
-      "title": "Implement payment status endpoint",
-      "description": "Create the endpoint for fetching payment status, used for polling by the frontend for Revolut/Zelle pending flows.",
+      "title": "Create MembershipPlanService",
+      "description": "Implement service layer for membership plan management with CRUD operations and Stripe integration.",
       "status": "pending",
-      "dependencies": [9],
-      "priority": "medium",
-      "details": "- Implement GET /api/payments/{transactionId} endpoint\n- Expose payment method details, settlement info, failure reasons\n- Support polling for pending transactions\n- Retrieve status from appropriate provider adapter",
-      "testStrategy": "Test the endpoint with different transaction states. Verify status updates correctly for pending transactions."
+      "dependencies": [3, 5, 7],
+      "priority": "high",
+      "details": "- Create MembershipPlanService class\n- Implement CRUD operations (create, read, update, delete)\n- Add Stripe Product/Price creation\n- Implement validation logic\n- Add plan code uniqueness validation\n- Handle plan updates with active subscriptions\n- Support soft delete functionality",
+      "testStrategy": "Unit test service methods with mocked dependencies. Test business logic for plan creation, updates, and deletion."
     },
     {
       "id": 11,
-      "title": "Implement refund endpoint",
-      "description": "Create the endpoint for issuing full/partial refunds through the respective adapter.",
+      "title": "Create StripeSubscriptionService",
+      "description": "Implement service for Stripe subscription management with customer and subscription operations.",
       "status": "pending",
-      "dependencies": [9],
-      "priority": "medium",
-      "details": "- Implement POST /api/payments/{transactionId}/refund endpoint\n- Support full and partial refunds\n- Route to appropriate provider adapter based on original payment method\n- Log refund metadata in payment_transaction\n- Handle provider-specific refund requirements",
-      "testStrategy": "Test the endpoint with different providers. Verify refund processing and transaction status updates."
+      "dependencies": [],
+      "priority": "high",
+      "details": "- Create StripeSubscriptionService class\n- Implement Stripe Customer creation/retrieval\n- Implement Stripe Subscription creation\n- Implement Stripe Subscription update\n- Implement Stripe Subscription cancellation\n- Handle trial periods\n- Add error handling and logging\n- Use existing Stripe infrastructure",
+      "testStrategy": "Unit test with Stripe SDK test mode. Mock Stripe responses for unit tests."
     },
     {
       "id": 12,
-      "title": "Implement ACP endpoints",
-      "description": "Implement Stripe Instant Checkout (ACP) endpoints with feature flag support.",
+      "title": "Create MembershipSubscriptionService",
+      "description": "Implement service layer for membership subscription management with business logic.",
       "status": "pending",
-      "dependencies": [3],
-      "priority": "medium",
-      "details": "- Implement POST /api/payments/providers/stripe/instant-checkout endpoint\n- Create ACP REST endpoints according to Stripe spec (Create/Update/Complete/Cancel checkout)\n- Wrap existing Stripe PaymentIntent creation inside CompleteCheckout handler\n- Gate endpoints behind supports_acp flag in payment_provider_config\n- Implement fallback to standard PaymentIntent if feature disabled",
-      "testStrategy": "Test the endpoints with the supports_acp flag enabled and disabled. Verify ACP session creation and fallback mechanism."
+      "dependencies": [4, 6, 8, 11],
+      "priority": "high",
+      "details": "- Create MembershipSubscriptionService class\n- Implement findOrCreateSubscription method with duplicate prevention\n- Implement subscription creation\n- Implement subscription updates\n- Implement subscription cancellation\n- Add trial period calculation\n- Add period date calculation\n- Handle subscription status transitions\n- Implement tenant context propagation for async methods",
+      "testStrategy": "Unit test service methods with mocked dependencies. Test business logic for subscription lifecycle."
     },
     {
       "id": 13,
-      "title": "Implement webhook processing endpoints",
-      "description": "Create webhook endpoints for all payment providers with proper signature verification and idempotent processing.",
+      "title": "Enhance Stripe webhook handler for subscription events",
+      "description": "Update existing webhook handler to process subscription-related Stripe events.",
       "status": "pending",
-      "dependencies": [3, 4, 5, 7],
+      "dependencies": [11, 12],
       "priority": "high",
-      "details": "- Implement /api/webhooks/stripe endpoint for Stripe events\n- Implement /api/webhooks/paypal endpoint for PayPal events\n- Add webhook support for Zeffy if provided\n- Implement webhook endpoint for Revolut events\n- Add signature verification for all webhooks\n- Implement rate-limiting for webhook requests\n- Log all webhook payloads in payment_webhook_log\n- Ensure idempotent processing of webhook events",
-      "testStrategy": "Test webhook endpoints with sample payloads from each provider. Verify signature verification, idempotency, and event processing."
+      "details": "- Enhance existing webhook handler\n- Add handlers for subscription events:\n  - checkout.session.completed\n  - customer.subscription.created\n  - customer.subscription.updated\n  - customer.subscription.deleted\n  - invoice.payment_succeeded\n  - invoice.payment_failed\n- Implement webhook signature verification\n- Extract metadata from events\n- Call appropriate service methods\n- Add error handling and logging\n- Follow pattern from TicketGenerationService for race condition prevention",
+      "testStrategy": "Test webhook handlers with sample Stripe event payloads. Verify correct subscription updates."
     },
     {
       "id": 14,
-      "title": "Implement settlement and fee calculation job",
-      "description": "Create the nightly job that aggregates transactions, creates settlement entries, and generates invoices for platform fees.",
+      "title": "Create MembershipPlanResource controller",
+      "description": "Implement REST controller for membership plan endpoints.",
       "status": "pending",
-      "dependencies": [1, 9, 13],
-      "priority": "high",
-      "details": "- Implement nightly job to aggregate transactions\n- Create platform_settlement entries with gross, processing fee, platform fee, net\n- Handle application fee collection for providers that support it (Stripe Connect)\n- Generate platform_invoice for fees that aren't auto-deducted\n- Implement fee calculation logic based on provider and transaction type",
-      "testStrategy": "Test the job with sample transaction data. Verify settlement calculations, invoice generation, and proper handling of different fee structures."
+      "dependencies": [5, 10],
+      "priority": "medium",
+      "details": "- Create MembershipPlanResource class\n- Implement GET /api/membership-plans (with filtering)\n- Implement GET /api/membership-plans/{id}\n- Implement POST /api/membership-plans\n- Implement PUT /api/membership-plans/{id}\n- Implement PATCH /api/membership-plans/{id}\n- Implement DELETE /api/membership-plans/{id}\n- Add pagination support\n- Add sorting support\n- Include x-total-count header\n- Add proper error handling",
+      "testStrategy": "Test endpoints with MockMvc. Verify correct responses, pagination, and error handling."
     },
     {
       "id": 15,
-      "title": "Implement finance admin APIs",
-      "description": "Create admin APIs for reporting settlements and invoices, and for triggering auto-debit for outstanding invoices.",
+      "title": "Create MembershipSubscriptionResource controller",
+      "description": "Implement REST controller for membership subscription endpoints.",
       "status": "pending",
-      "dependencies": [14],
+      "dependencies": [6, 12],
       "priority": "medium",
-      "details": "- Implement GET /api/finance/settlements endpoint for reporting\n- Implement GET /api/finance/invoices endpoint for invoice listing\n- Create POST /api/finance/invoices/{id}/charge endpoint to trigger auto-debit\n- Add support for Stripe Billing/ACH for invoice charging\n- Implement proper authentication and authorization for admin endpoints\n- Log all admin actions related to settlements/invoices",
-      "testStrategy": "Test admin APIs with different user roles. Verify proper authorization, data retrieval, and invoice charging functionality."
+      "details": "- Create MembershipSubscriptionResource class\n- Implement GET /api/membership-subscriptions (with filtering)\n- Implement GET /api/membership-subscriptions/by-user/{userId}\n- Implement GET /api/membership-subscriptions/{id}\n- Implement POST /api/membership-subscriptions\n- Implement PATCH /api/membership-subscriptions/{id}\n- Add pagination support\n- Add sorting support\n- Include x-total-count header\n- Add proper error handling",
+      "testStrategy": "Test endpoints with MockMvc. Verify correct responses, pagination, and error handling."
     },
     {
       "id": 16,
-      "title": "Update API documentation",
-      "description": "Update Swagger documentation for all new endpoints and response structures.",
+      "title": "Enhance billing endpoint for subscription management",
+      "description": "Update existing billing endpoint to support subscription creation and management.",
       "status": "pending",
-      "dependencies": [9, 10, 11, 12, 13, 15],
-      "priority": "low",
-      "details": "- Update Swagger API docs for payment initialization endpoint\n- Document payment status and refund endpoints\n- Add documentation for ACP endpoints\n- Document webhook endpoints\n- Add documentation for finance admin APIs\n- Ensure all response structures are properly defined\n- Include example requests and responses",
-      "testStrategy": "Verify that the Swagger documentation accurately reflects the implemented endpoints. Test the documentation with Swagger UI."
+      "dependencies": [11, 12, 13],
+      "priority": "medium",
+      "details": "- Enhance /api/billing/manage-subscription endpoint\n- Add support for subscription creation\n- Implement Stripe Checkout Session creation for subscriptions\n- Return checkout session URL\n- Handle subscription upgrades/downgrades\n- Handle subscription cancellation\n- Add proper error handling and validation",
+      "testStrategy": "Test endpoint with different subscription scenarios. Verify correct Checkout Session creation."
     },
     {
       "id": 17,
-      "title": "Implement comprehensive testing suite",
-      "description": "Create unit tests, integration tests, contract tests, and end-to-end tests for all payment flows.",
+      "title": "Implement subscription status transition logic",
+      "description": "Add business logic for handling subscription status transitions based on events.",
       "status": "pending",
-      "dependencies": [9, 10, 11, 12, 13, 14, 15],
-      "priority": "high",
-      "details": "- Create unit tests for each provider adapter\n- Implement integration tests for payment initialization covering all providers\n- Add contract tests using Swagger schema\n- Create end-to-end tests for Stripe and PayPal flows in staging\n- Implement tests for the settlement job\n- Add tests for webhook processing\n- Create tests for admin finance APIs",
-      "testStrategy": "Run the full test suite and verify all payment flows work correctly. Ensure test coverage for edge cases and error handling."
+      "dependencies": [12],
+      "priority": "medium",
+      "details": "- Implement status transition logic in MembershipSubscriptionService\n- Handle transitions:\n  - TRIAL → ACTIVE (trial ends, payment succeeds)\n  - ACTIVE → PAST_DUE (payment fails)\n  - PAST_DUE → ACTIVE (payment succeeds)\n  - ACTIVE → CANCELLED (user cancels)\n  - CANCELLED → EXPIRED (period ends)\n- Add validation for valid transitions\n- Update subscription dates during transitions",
+      "testStrategy": "Test each transition scenario with unit tests. Verify correct status updates and date calculations."
     },
     {
       "id": 18,
-      "title": "Implement security measures",
-      "description": "Implement security features for credential storage, webhook verification, and admin action logging.",
+      "title": "Implement trial period calculation logic",
+      "description": "Add logic for calculating trial periods and handling trial expirations.",
       "status": "pending",
-      "dependencies": [2, 13, 15],
-      "priority": "high",
-      "details": "- Implement AES-256-GCM encryption for provider credentials\n- Add key rotation mechanism for encryption keys\n- Enhance webhook signature verification\n- Implement rate limiting for all API endpoints\n- Add comprehensive logging for admin actions\n- Ensure PCI compliance by avoiding raw card data storage",
-      "testStrategy": "Test encryption implementation, key rotation, webhook signature verification, and rate limiting. Verify logging of admin actions."
+      "dependencies": [12],
+      "priority": "medium",
+      "details": "- Add trial period calculation in MembershipSubscriptionService\n- Set trial_start and trial_end dates\n- Set initial subscription_status to TRIAL when applicable\n- Handle trial expiration\n- Update current_period dates based on trial\n- Handle Stripe trial period synchronization",
+      "testStrategy": "Test trial period calculation with different scenarios. Verify correct date calculations and status updates."
+    },
+    {
+      "id": 19,
+      "title": "Implement subscription cancellation logic",
+      "description": "Add logic for handling subscription cancellations with proper status updates.",
+      "status": "pending",
+      "dependencies": [12],
+      "priority": "medium",
+      "details": "- Add cancellation logic in MembershipSubscriptionService\n- Set cancel_at_period_end flag\n- Store cancellation_reason\n- Cancel Stripe subscription at period end\n- Handle immediate cancellation if needed\n- Update subscription status when period ends\n- Set cancelled_at timestamp",
+      "testStrategy": "Test cancellation scenarios with different timing options. Verify correct status updates and Stripe calls."
+    },
+    {
+      "id": 20,
+      "title": "Implement subscription upgrade/downgrade logic",
+      "description": "Add logic for handling plan changes (upgrades and downgrades) with proper proration.",
+      "status": "pending",
+      "dependencies": [12],
+      "priority": "medium",
+      "details": "- Add upgrade/downgrade logic in MembershipSubscriptionService\n- Create new Stripe Subscription with new Price ID\n- Cancel old Stripe Subscription\n- Create new membership_subscription record\n- Set old subscription status to CANCELLED\n- Handle proration if applicable\n- Update current_period dates",
+      "testStrategy": "Test upgrade and downgrade scenarios. Verify correct subscription creation and cancellation."
+    },
+    {
+      "id": 21,
+      "title": "Create unit tests for MembershipPlanService",
+      "description": "Implement comprehensive unit tests for the membership plan service.",
+      "status": "pending",
+      "dependencies": [10],
+      "priority": "low",
+      "details": "- Create unit tests for MembershipPlanService\n- Test CRUD operations\n- Test validation logic\n- Test Stripe integration\n- Test error handling\n- Mock repository and Stripe dependencies",
+      "testStrategy": "Use JUnit and Mockito to test service methods with various scenarios."
+    },
+    {
+      "id": 22,
+      "title": "Create unit tests for MembershipSubscriptionService",
+      "description": "Implement comprehensive unit tests for the membership subscription service.",
+      "status": "pending",
+      "dependencies": [12],
+      "priority": "low",
+      "details": "- Create unit tests for MembershipSubscriptionService\n- Test findOrCreateSubscription method\n- Test subscription creation\n- Test subscription updates\n- Test subscription cancellation\n- Test trial period calculation\n- Test status transitions\n- Test tenant context propagation\n- Mock repository and Stripe dependencies",
+      "testStrategy": "Use JUnit and Mockito to test service methods with various scenarios."
+    },
+    {
+      "id": 23,
+      "title": "Create integration tests for REST endpoints",
+      "description": "Implement integration tests for the REST controllers to verify API functionality.",
+      "status": "pending",
+      "dependencies": [14, 15, 16],
+      "priority": "low",
+      "details": "- Create integration tests for REST endpoints\n- Test MembershipPlanResource endpoints\n- Test MembershipSubscriptionResource endpoints\n- Test enhanced billing endpoint\n- Test pagination and filtering\n- Test error responses\n- Use Spring Boot Test and MockMvc",
+      "testStrategy": "Use Spring Boot Test with MockMvc to test endpoints with various request scenarios."
+    },
+    {
+      "id": 24,
+      "title": "Create integration test for Stripe webhook handling",
+      "description": "Implement integration test for webhook event processing to verify correct subscription updates.",
+      "status": "pending",
+      "dependencies": [13],
+      "priority": "low",
+      "details": "- Create integration test for webhook handler\n- Test processing of sample events:\n  - checkout.session.completed\n  - customer.subscription.created\n  - customer.subscription.updated\n  - customer.subscription.deleted\n  - invoice.payment_succeeded\n  - invoice.payment_failed\n- Verify correct database updates\n- Use Spring Boot Test",
+      "testStrategy": "Use Spring Boot Test to verify webhook handler correctly processes events and updates database."
+    },
+    {
+      "id": 25,
+      "title": "Create end-to-end test for subscription flow",
+      "description": "Implement E2E test for the complete subscription lifecycle.",
+      "status": "pending",
+      "dependencies": [13, 16, 17, 18, 19, 20],
+      "priority": "low",
+      "details": "- Create E2E test for subscription flow\n- Test complete subscription creation\n- Test webhook processing\n- Test subscription management\n- Test subscription cancellation\n- Test multi-tenant isolation\n- Use Stripe test mode\n- Verify correct database state",
+      "testStrategy": "Create comprehensive test that walks through entire subscription lifecycle with Stripe test mode."
     }
   ]
 }

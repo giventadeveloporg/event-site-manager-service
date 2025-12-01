@@ -1,17 +1,16 @@
 # Task ID: 3
-# Title: Implement StripePaymentAdapter
+# Title: Create MembershipPlanRepository
 # Status: pending
-# Dependencies: 2 ⏱️
+# Dependencies: 1 ⏱️
 # Priority: high
-# Description: Refactor the Stripe adapter to support PaymentIntent, Checkout Session, and Instant Checkout with multi-tenant configuration.
+# Description: Create repository interface for MembershipPlan entity with custom query methods.
 # Details:
-- Implement StripePaymentAdapter with PaymentIntent creation
-- Add support for Checkout Sessions
-- Implement Link/Wallet support
-- Add multi-tenant configuration
-- Support Stripe Billing for subscriptions
-- Implement webhook handling for payment_intent.succeeded, payment_intent.payment_failed, checkout.session.completed events
-- Add support for refund events
+- Create MembershipPlanRepository interface extending JpaRepository
+- Add custom query methods:
+  - findByTenantId
+  - findByTenantIdAndIsActive
+  - findByTenantIdAndPlanCode
+  - existsByTenantIdAndPlanCode
 
 # Test Strategy:
-Unit test the adapter with Stripe test mode. Verify all payment flows and webhook handling work correctly.
+Test repository methods with JUnit to ensure they return expected results.

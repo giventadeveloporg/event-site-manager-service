@@ -77,6 +77,10 @@ public class PaymentProviderConfig implements Serializable {
     @Column(name = "publishable_key", length = 500)
     private String publishableKey;
 
+    @Size(max = 255)
+    @Column(name = "payment_method_domain_id", length = 255)
+    private String paymentMethodDomainId;
+
     @Column(name = "fallback_order")
     private Integer fallbackOrder = 0;
 
@@ -261,6 +265,19 @@ public class PaymentProviderConfig implements Serializable {
 
     public void setPublishableKey(String publishableKey) {
         this.publishableKey = publishableKey;
+    }
+
+    public String getPaymentMethodDomainId() {
+        return this.paymentMethodDomainId;
+    }
+
+    public PaymentProviderConfig paymentMethodDomainId(String paymentMethodDomainId) {
+        this.setPaymentMethodDomainId(paymentMethodDomainId);
+        return this;
+    }
+
+    public void setPaymentMethodDomainId(String paymentMethodDomainId) {
+        this.paymentMethodDomainId = paymentMethodDomainId;
     }
 
     public Integer getFallbackOrder() {

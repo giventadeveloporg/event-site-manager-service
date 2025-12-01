@@ -65,4 +65,24 @@ public interface EventTicketTransactionService {
      * @return the statistics DTO.
      */
     EventTicketTransactionStatisticsDTO getEventStatistics(Long eventId);
+
+    /**
+     * Find a transaction by Stripe payment intent ID.
+     * Used for idempotent transaction creation to prevent duplicates.
+     *
+     * @param stripePaymentIntentId the Stripe payment intent ID.
+     * @return the entity if found.
+     */
+    Optional<EventTicketTransactionDTO> findByStripePaymentIntentId(String stripePaymentIntentId);
+
+    /**
+     * Find a transaction by Stripe payment intent ID and tenant ID.
+     * Used for idempotent transaction creation to prevent duplicates with tenant isolation.
+     * CRITICAL: This ensures tenant isolation - same payment intent can exist for different tenants.
+     *
+     * @param stripePaymentIntentId the Stripe payment intent ID.
+     * @param tenantId the tenant ID.
+     * @return the entity if found for the specific tenant.
+     */
+    Optional<EventTicketTransactionDTO> findByStripePaymentIntentIdAndTenantId(String stripePaymentIntentId, String tenantId);
 }

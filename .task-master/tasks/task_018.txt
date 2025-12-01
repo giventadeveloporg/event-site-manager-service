@@ -1,16 +1,16 @@
 # Task ID: 18
-# Title: Implement security measures
+# Title: Implement trial period calculation logic
 # Status: pending
-# Dependencies: 2 ⏱️, 13 ⏱️, 15 ⏱️
-# Priority: high
-# Description: Implement security features for credential storage, webhook verification, and admin action logging.
+# Dependencies: 12 ⏱️
+# Priority: medium
+# Description: Add logic for calculating trial periods and handling trial expirations.
 # Details:
-- Implement AES-256-GCM encryption for provider credentials
-- Add key rotation mechanism for encryption keys
-- Enhance webhook signature verification
-- Implement rate limiting for all API endpoints
-- Add comprehensive logging for admin actions
-- Ensure PCI compliance by avoiding raw card data storage
+- Add trial period calculation in MembershipSubscriptionService
+- Set trial_start and trial_end dates
+- Set initial subscription_status to TRIAL when applicable
+- Handle trial expiration
+- Update current_period dates based on trial
+- Handle Stripe trial period synchronization
 
 # Test Strategy:
-Test encryption implementation, key rotation, webhook signature verification, and rate limiting. Verify logging of admin actions.
+Test trial period calculation with different scenarios. Verify correct date calculations and status updates.

@@ -196,6 +196,14 @@ application:
   payment:
     encryption:
       key: ${PAYMENT_ENCRYPTION_KEY:}
+  # Webhook configuration
+  webhook:
+    # Enable/disable ticket generation via webhooks
+    # When disabled, webhooks will still update payment status but won't create tickets
+    # Tickets will only be created via frontend API calls or polling
+    # Default: false (disabled) - tickets should be created via frontend API calls
+    ticket-generation:
+      enabled: ${WEBHOOK_TICKET_GENERATION_ENABLED:false}
 
 # ===================================================================
 # AWS S3 Configuration

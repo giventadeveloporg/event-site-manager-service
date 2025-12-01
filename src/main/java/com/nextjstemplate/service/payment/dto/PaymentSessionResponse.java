@@ -30,6 +30,9 @@ public class PaymentSessionResponse {
     // CRITICAL: Stripe payment intent ID - REQUIRED for frontend ticket polling
     private String stripePaymentIntentId;
 
+    // CRITICAL: Tenant ID - REQUIRED for frontend to query ticket transactions with correct tenant
+    private String tenantId;
+
     // Ticket purchase fields (only populated when status=SUCCEEDED and it's a ticket purchase)
     private Long ticketTransactionId; // EventTicketTransaction ID
     private String qrCodeUrl; // QR code image URL - REQUIRED for frontend display
@@ -196,5 +199,13 @@ public class PaymentSessionResponse {
 
     public void setStripePaymentIntentId(String stripePaymentIntentId) {
         this.stripePaymentIntentId = stripePaymentIntentId;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
     }
 }

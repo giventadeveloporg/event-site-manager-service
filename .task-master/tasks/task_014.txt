@@ -1,15 +1,21 @@
 # Task ID: 14
-# Title: Implement settlement and fee calculation job
+# Title: Create MembershipPlanResource controller
 # Status: pending
-# Dependencies: 1 ⏱️, 9 ⏱️, 13 ⏱️
-# Priority: high
-# Description: Create the nightly job that aggregates transactions, creates settlement entries, and generates invoices for platform fees.
+# Dependencies: 5 ⏱️, 10 ⏱️
+# Priority: medium
+# Description: Implement REST controller for membership plan endpoints.
 # Details:
-- Implement nightly job to aggregate transactions
-- Create platform_settlement entries with gross, processing fee, platform fee, net
-- Handle application fee collection for providers that support it (Stripe Connect)
-- Generate platform_invoice for fees that aren't auto-deducted
-- Implement fee calculation logic based on provider and transaction type
+- Create MembershipPlanResource class
+- Implement GET /api/membership-plans (with filtering)
+- Implement GET /api/membership-plans/{id}
+- Implement POST /api/membership-plans
+- Implement PUT /api/membership-plans/{id}
+- Implement PATCH /api/membership-plans/{id}
+- Implement DELETE /api/membership-plans/{id}
+- Add pagination support
+- Add sorting support
+- Include x-total-count header
+- Add proper error handling
 
 # Test Strategy:
-Test the job with sample transaction data. Verify settlement calculations, invoice generation, and proper handling of different fee structures.
+Test endpoints with MockMvc. Verify correct responses, pagination, and error handling.

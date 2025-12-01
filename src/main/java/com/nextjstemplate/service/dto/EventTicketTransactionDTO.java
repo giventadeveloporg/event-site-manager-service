@@ -19,6 +19,9 @@ public class EventTicketTransactionDTO implements Serializable {
     private String tenantId;
 
     @Size(max = 255)
+    private String paymentMethodDomainId;
+
+    @Size(max = 255)
     private String transactionReference;
 
     @NotNull
@@ -137,6 +140,14 @@ public class EventTicketTransactionDTO implements Serializable {
 
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public String getPaymentMethodDomainId() {
+        return paymentMethodDomainId;
+    }
+
+    public void setPaymentMethodDomainId(String paymentMethodDomainId) {
+        this.paymentMethodDomainId = paymentMethodDomainId;
     }
 
     public String getTransactionReference() {

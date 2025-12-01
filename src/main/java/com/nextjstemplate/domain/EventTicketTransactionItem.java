@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A EventTicketTransactionItem.
@@ -18,6 +20,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class EventTicketTransactionItem implements Serializable {
 
+    private static final Logger log = LoggerFactory.getLogger(EventTicketTransactionItem.class);
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -58,6 +61,29 @@ public class EventTicketTransactionItem implements Serializable {
     @NotNull
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
+
+    /**
+     * PrePersist callback to ensure tenantId is set before persisting.
+     * This is a safety net - tenantId should already be set from the DTO in the service layer.
+     * If tenantId is null here, it indicates the DTO didn't have tenantId, which is an error.
+     */
+    @PrePersist
+    protected void onPrePersist() {
+        if (tenantId == null || tenantId.isEmpty()) {
+            log.error(
+                "CRITICAL: EventTicketTransactionItem entity is being persisted with NULL or EMPTY tenantId! " +
+                "transactionId={}, ticketTypeId={}, quantity={}. " +
+                "This indicates tenantId was not set from the DTO in the service layer.",
+                transactionId,
+                ticketTypeId,
+                quantity
+            );
+            // DO NOT set a default tenantId here - this is an error condition that should fail
+            // The service layer should have already validated and set tenantId from the DTO
+        } else {
+            log.debug("EventTicketTransactionItem PrePersist: tenantId='{}', transactionId={}", tenantId, transactionId);
+        }
+    }
 
     /*@ManyToOne(optional = false)
     @NotNull

@@ -10,6 +10,7 @@ import com.nextjstemplate.repository.EventTicketTransactionRepository;
 import com.nextjstemplate.repository.UserPaymentTransactionRepository;
 import com.nextjstemplate.service.payment.PaymentException;
 import com.nextjstemplate.service.payment.PaymentService;
+import com.nextjstemplate.service.payment.StripeSubscriptionWebhookHandler;
 import com.nextjstemplate.service.payment.TicketGenerationService;
 import com.nextjstemplate.service.payment.dto.PaymentItem;
 import com.nextjstemplate.service.payment.dto.PaymentSessionRequest;
@@ -22,11 +23,13 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.net.Webhook;
 import com.stripe.param.*;
+import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -43,22 +46,46 @@ public class StripePaymentAdapter implements PaymentService {
     private final EventTicketTransactionRepository eventTicketTransactionRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final TicketGenerationService ticketGenerationService;
+    private final StripeSubscriptionWebhookHandler subscriptionWebhookHandler;
     private final ObjectMapper objectMapper;
     private final com.nextjstemplate.service.payment.config.PaymentProviderConfigService configService;
+
+    /**
+     * Feature flag to enable/disable ticket generation via webhooks.
+     * When disabled, webhooks will still update payment status but won't create tickets.
+     * Tickets will only be created via frontend API calls or polling.
+     * Default: false (disabled) - tickets should be created via frontend API calls
+     */
+    @Value("${application.webhook.ticket-generation.enabled:false}")
+    private boolean webhookTicketGenerationEnabled;
 
     public StripePaymentAdapter(
         UserPaymentTransactionRepository transactionRepository,
         EventTicketTransactionRepository eventTicketTransactionRepository,
         ApplicationEventPublisher eventPublisher,
         TicketGenerationService ticketGenerationService,
+        StripeSubscriptionWebhookHandler subscriptionWebhookHandler,
         com.nextjstemplate.service.payment.config.PaymentProviderConfigService configService
     ) {
         this.transactionRepository = transactionRepository;
         this.eventTicketTransactionRepository = eventTicketTransactionRepository;
         this.eventPublisher = eventPublisher;
         this.ticketGenerationService = ticketGenerationService;
+        this.subscriptionWebhookHandler = subscriptionWebhookHandler;
         this.configService = configService;
         this.objectMapper = new ObjectMapper();
+    }
+
+    @PostConstruct
+    public void logWebhookTicketGenerationStatus() {
+        if (webhookTicketGenerationEnabled) {
+            log.info("[StripePaymentAdapter] Webhook ticket generation is ENABLED. Tickets will be created automatically via webhooks.");
+        } else {
+            log.warn(
+                "[StripePaymentAdapter] Webhook ticket generation is DISABLED. Tickets will NOT be created via webhooks. " +
+                "Tickets should be created via frontend API calls or polling."
+            );
+        }
     }
 
     @Override
@@ -90,6 +117,8 @@ public class StripePaymentAdapter implements PaymentService {
             response.setAmount(request.getAmount());
             response.setCurrency(request.getCurrency());
             response.setPublishableKey(publishableKey);
+            // CRITICAL: Include tenantId in response so frontend knows which tenant to use for queries
+            response.setTenantId(request.getTenantId());
 
             // Create PaymentIntent (Checkout Sessions require additional SDK dependencies)
             PaymentIntentCreateParams.Builder intentParamsBuilder = PaymentIntentCreateParams
@@ -237,6 +266,18 @@ public class StripePaymentAdapter implements PaymentService {
             response.setAmount(BigDecimal.valueOf(paymentIntent.getAmount()).divide(BigDecimal.valueOf(100)));
             response.setCurrency(paymentIntent.getCurrency().toUpperCase());
             response.setPublishableKey(publishableKey);
+            // CRITICAL: Extract tenantId from PaymentIntent metadata (source of truth) for response
+            String confirmTenantId = null;
+            if (paymentIntent.getMetadata() != null) {
+                confirmTenantId = paymentIntent.getMetadata().get("tenantId");
+            }
+            // Fallback to request tenantId if metadata doesn't have it (shouldn't happen, but safety check)
+            if (confirmTenantId == null || confirmTenantId.isEmpty()) {
+                // Try to get from transaction if available
+                log.warn("PaymentIntent metadata missing tenantId, cannot set in confirm response");
+            } else {
+                response.setTenantId(confirmTenantId);
+            }
 
             if (paymentIntent.getNextAction() != null) {
                 response.setRequiresAction(true);
@@ -391,6 +432,17 @@ public class StripePaymentAdapter implements PaymentService {
             PaymentSessionResponse response = new PaymentSessionResponse();
             response.setProvider(PaymentProvider.STRIPE);
             response.setTransactionId(transactionId); // Use internal transaction ID
+            // CRITICAL: Include tenantId in response so frontend knows which tenant to use for queries
+            // Use tenantId from PaymentIntent metadata if available (source of truth), otherwise use transaction tenantId
+            String responseTenantId = transaction.getTenantId();
+            if (paymentIntent.getMetadata() != null) {
+                String metadataTenantId = paymentIntent.getMetadata().get("tenantId");
+                if (metadataTenantId != null && !metadataTenantId.isEmpty()) {
+                    responseTenantId = metadataTenantId;
+                    log.debug("Using tenantId from PaymentIntent metadata: {}", responseTenantId);
+                }
+            }
+            response.setTenantId(responseTenantId);
 
             // CRITICAL: Map Stripe status (lowercase) to uppercase enum for frontend
             String stripeStatus = paymentIntent.getStatus(); // e.g., "succeeded" (lowercase)
@@ -443,6 +495,24 @@ public class StripePaymentAdapter implements PaymentService {
                     final UserPaymentTransaction transactionFinal = transaction;
                     final String stripePaymentIntentIdFinal = stripePaymentIntentId;
 
+                    // CRITICAL: Extract tenantId from PaymentIntent metadata (source of truth)
+                    // This ensures correct tenantId is passed to ticket generation
+                    String pollingTenantId = null;
+                    if (paymentIntent.getMetadata() != null) {
+                        pollingTenantId = paymentIntent.getMetadata().get("tenantId");
+                        if (pollingTenantId != null && !pollingTenantId.isEmpty()) {
+                            log.info(
+                                "Extracted tenantId='{}' from PaymentIntent metadata for ticket generation (polling)",
+                                pollingTenantId
+                            );
+                        } else {
+                            log.warn(
+                                "PaymentIntent metadata missing tenantId, will use transaction tenantId or extract from PaymentIntent in ticket generation"
+                            );
+                        }
+                    }
+                    final String correctTenantIdForPolling = pollingTenantId;
+
                     transactionRepository.save(transaction);
                     log.info("Updated transaction {} status from {} to {}", transactionId, oldStatus, mappedStatus);
 
@@ -461,15 +531,24 @@ public class StripePaymentAdapter implements PaymentService {
                         Long eventId = transactionFinal.getEvent() != null ? transactionFinal.getEvent().getId() : null;
                         if (eventId != null || "TICKET_SALE".equals(transactionFinal.getTransactionType())) {
                             log.info(
-                                "Payment {} just succeeded via polling. Creating ticket synchronously (eventId={})",
+                                "Payment {} just succeeded via polling. Creating ticket synchronously (eventId={}, tenantId={})",
                                 transactionId,
-                                eventId
+                                eventId,
+                                correctTenantIdForPolling != null ? correctTenantIdForPolling : "will extract from PaymentIntent"
                             );
                             try {
-                                // CRITICAL: Call synchronous ticket generation
+                                // CRITICAL: Call synchronous ticket generation with correct tenantId from PaymentIntent metadata
                                 // The unique constraint will prevent duplicates if webhook also tries to create
-                                ticketGenerationService.processTicketGenerationSync(transactionFinal, stripePaymentIntentIdFinal);
-                                log.info("Successfully processed ticket generation for payment {} via polling", transactionId);
+                                ticketGenerationService.processTicketGenerationSync(
+                                    transactionFinal,
+                                    stripePaymentIntentIdFinal,
+                                    correctTenantIdForPolling
+                                );
+                                log.info(
+                                    "Successfully processed ticket generation for payment {} via polling with tenantId={}",
+                                    transactionId,
+                                    correctTenantIdForPolling != null ? correctTenantIdForPolling : "extracted from PaymentIntent"
+                                );
                             } catch (Exception e) {
                                 log.error(
                                     "Failed to process ticket generation for payment {} via polling: {}. " +
@@ -568,6 +647,8 @@ public class StripePaymentAdapter implements PaymentService {
         PaymentSessionResponse response = new PaymentSessionResponse();
         response.setProvider(PaymentProvider.STRIPE);
         response.setTransactionId(transactionId);
+        // CRITICAL: Include tenantId in response so frontend knows which tenant to use for queries
+        response.setTenantId(transaction.getTenantId());
 
         // Set status from database (PENDING, SUCCEEDED, FAILED, etc.)
         response.setStatus(transaction.getStatus() != null ? transaction.getStatus() : "PENDING");
@@ -651,22 +732,28 @@ public class StripePaymentAdapter implements PaymentService {
             result.put("processed", true);
 
             // Handle different event types
-            switch (eventType) {
-                case "payment_intent.succeeded":
-                    handlePaymentIntentSucceeded(event, result);
-                    break;
-                case "payment_intent.payment_failed":
-                    handlePaymentIntentFailed(event, result);
-                    break;
-                case "checkout.session.completed":
-                    handleCheckoutSessionCompleted(event, result);
-                    break;
-                case "charge.refunded":
-                    handleRefund(event, result);
-                    break;
-                default:
-                    log.debug("Unhandled Stripe webhook event type: {}", eventType);
-                    result.put("processed", false);
+            // First try subscription events
+            boolean subscriptionEventHandled = subscriptionWebhookHandler.handleSubscriptionEvent(event, result);
+
+            if (!subscriptionEventHandled) {
+                // Handle payment-related events
+                switch (eventType) {
+                    case "payment_intent.succeeded":
+                        handlePaymentIntentSucceeded(event, result);
+                        break;
+                    case "payment_intent.payment_failed":
+                        handlePaymentIntentFailed(event, result);
+                        break;
+                    case "checkout.session.completed":
+                        handleCheckoutSessionCompleted(event, result);
+                        break;
+                    case "charge.refunded":
+                        handleRefund(event, result);
+                        break;
+                    default:
+                        log.debug("Unhandled Stripe webhook event type: {}", eventType);
+                        result.put("processed", false);
+                }
             }
 
             return result;
@@ -864,6 +951,17 @@ public class StripePaymentAdapter implements PaymentService {
         String stripePaymentIntentId = paymentIntent.getId();
         log.info("[StripePaymentAdapter] Processing payment_intent.succeeded webhook for payment intent: {}", stripePaymentIntentId);
 
+        // CRITICAL: Extract tenant ID from PaymentIntent metadata - this is the source of truth
+        // The frontend stores tenantId in PaymentIntent metadata during payment initialization
+        String metadataTenantId = null;
+        Map<String, String> piMetadata = paymentIntent.getMetadata();
+        if (piMetadata != null) {
+            metadataTenantId = piMetadata.get("tenantId");
+            if (metadataTenantId != null && !metadataTenantId.isEmpty()) {
+                log.info("[StripePaymentAdapter] Extracted tenantId from PaymentIntent metadata: {}", metadataTenantId);
+            }
+        }
+
         // Find the payment transaction by Stripe payment intent ID
         Optional<UserPaymentTransaction> transactionOpt = transactionRepository.findByStripePaymentIntentId(stripePaymentIntentId);
 
@@ -881,11 +979,28 @@ public class StripePaymentAdapter implements PaymentService {
             new RuntimeException("Payment transaction not found for Stripe payment intent: " + stripePaymentIntentId)
         );
 
+        // CRITICAL: Fix tenant ID mismatch if PaymentIntent metadata has different tenant
+        // This handles the case where webhook TenantContext had wrong tenant during payment init
+        if (metadataTenantId != null && !metadataTenantId.isEmpty()) {
+            String transactionTenantId = transaction.getTenantId();
+            if (!metadataTenantId.equals(transactionTenantId)) {
+                log.warn(
+                    "[StripePaymentAdapter] TENANT MISMATCH DETECTED! PaymentIntent metadata has tenantId='{}' but UserPaymentTransaction has tenantId='{}'. Fixing transaction tenant.",
+                    metadataTenantId,
+                    transactionTenantId
+                );
+                transaction.setTenantId(metadataTenantId);
+                // Also update TenantContext for subsequent operations in this request
+                com.nextjstemplate.security.TenantContext.setCurrentTenant(metadataTenantId);
+            }
+        }
+
         log.info(
-            "[StripePaymentAdapter] Found payment transaction: id={}, eventId={}, transactionType={}",
+            "[StripePaymentAdapter] Found payment transaction: id={}, eventId={}, transactionType={}, tenantId={}",
             transaction.getId(),
             transaction.getEvent() != null ? transaction.getEvent().getId() : null,
-            transaction.getTransactionType()
+            transaction.getTransactionType(),
+            transaction.getTenantId()
         );
 
         // Update transaction status to SUCCEEDED
@@ -949,26 +1064,42 @@ public class StripePaymentAdapter implements PaymentService {
         // CRITICAL: If this is a ticket purchase, create EventTicketTransaction and generate QR code
         Long eventId = transaction.getEvent() != null ? transaction.getEvent().getId() : null;
         if (eventId != null || "TICKET_SALE".equals(transaction.getTransactionType())) {
-            log.info("[StripePaymentAdapter] This is a ticket purchase (eventId={}), triggering ticket generation", eventId);
-
-            try {
-                // Call synchronous ticket generation service
-                // This will:
-                // 1. Create or find EventTicketTransaction
-                // 2. Generate QR code
-                // 3. Send ticket email
-                ticketGenerationService.processTicketGenerationSync(transaction, stripePaymentIntentId);
-
-                log.info("[StripePaymentAdapter] Successfully processed ticket generation for transaction {}", transaction.getId());
-            } catch (Exception e) {
-                log.error(
-                    "[StripePaymentAdapter] Failed to process ticket generation for transaction {}: {}",
-                    transaction.getId(),
-                    e.getMessage(),
-                    e
+            if (webhookTicketGenerationEnabled) {
+                log.info(
+                    "[StripePaymentAdapter] This is a ticket purchase (eventId={}), triggering ticket generation via webhook",
+                    eventId
                 );
-                // Don't fail the webhook - ticket generation can be retried
-                // But log the error for monitoring
+
+                try {
+                    // Call synchronous ticket generation service
+                    // This will:
+                    // 1. Create or find EventTicketTransaction
+                    // 2. Generate QR code
+                    // 3. Send ticket email
+                    // Pass the correct tenant ID from PaymentIntent metadata to ticket generation
+                    ticketGenerationService.processTicketGenerationSync(transaction, stripePaymentIntentId, metadataTenantId);
+
+                    log.info(
+                        "[StripePaymentAdapter] Successfully processed ticket generation for transaction {} via webhook",
+                        transaction.getId()
+                    );
+                } catch (Exception e) {
+                    log.error(
+                        "[StripePaymentAdapter] Failed to process ticket generation for transaction {}: {}",
+                        transaction.getId(),
+                        e.getMessage(),
+                        e
+                    );
+                    // Don't fail the webhook - ticket generation can be retried
+                    // But log the error for monitoring
+                }
+            } else {
+                log.info(
+                    "[StripePaymentAdapter] Webhook ticket generation is DISABLED. Skipping ticket generation for transaction {} (eventId={}). " +
+                    "Tickets should be created via frontend API calls or polling.",
+                    transaction.getId(),
+                    eventId
+                );
             }
         } else {
             log.debug(
@@ -1180,25 +1311,63 @@ public class StripePaymentAdapter implements PaymentService {
                 // CRITICAL: If this is a ticket purchase, trigger ticket generation
                 Long eventId = transactionFinal.getEvent() != null ? transactionFinal.getEvent().getId() : null;
                 if (eventId != null || "TICKET_SALE".equals(transactionFinal.getTransactionType())) {
-                    log.info(
-                        "[StripePaymentAdapter] This is a ticket purchase (eventId={}), triggering ticket generation via checkout session",
-                        eventId
-                    );
-
-                    try {
-                        ticketGenerationService.processTicketGenerationSync(transactionFinal, stripePaymentIntentIdFinal);
+                    if (webhookTicketGenerationEnabled) {
                         log.info(
-                            "[StripePaymentAdapter] Successfully processed ticket generation for transaction {} via checkout session",
-                            transactionFinal.getId()
+                            "[StripePaymentAdapter] This is a ticket purchase (eventId={}), triggering ticket generation via checkout session",
+                            eventId
                         );
-                    } catch (Exception e) {
-                        log.error(
-                            "[StripePaymentAdapter] Failed to process ticket generation for transaction {} via checkout session: {}",
+
+                        try {
+                            // CRITICAL: Extract tenantId from PaymentIntent metadata (source of truth)
+                            String checkoutTenantId = null;
+                            try {
+                                PaymentIntent pi = PaymentIntent.retrieve(stripePaymentIntentIdFinal);
+                                if (pi.getMetadata() != null) {
+                                    checkoutTenantId = pi.getMetadata().get("tenantId");
+                                    if (checkoutTenantId != null && !checkoutTenantId.isEmpty()) {
+                                        log.info(
+                                            "[StripePaymentAdapter] Extracted tenantId='{}' from PaymentIntent metadata for ticket generation (checkout session)",
+                                            checkoutTenantId
+                                        );
+                                    } else {
+                                        log.warn(
+                                            "[StripePaymentAdapter] PaymentIntent metadata missing tenantId, will use transaction tenantId or extract from PaymentIntent in ticket generation"
+                                        );
+                                    }
+                                }
+                            } catch (Exception e) {
+                                log.warn(
+                                    "[StripePaymentAdapter] Failed to retrieve PaymentIntent to extract tenantId: {}. Will use transaction tenantId or extract in ticket generation.",
+                                    e.getMessage()
+                                );
+                            }
+
+                            ticketGenerationService.processTicketGenerationSync(
+                                transactionFinal,
+                                stripePaymentIntentIdFinal,
+                                checkoutTenantId
+                            );
+                            log.info(
+                                "[StripePaymentAdapter] Successfully processed ticket generation for transaction {} via checkout session with tenantId={}",
+                                transactionFinal.getId(),
+                                checkoutTenantId != null ? checkoutTenantId : "extracted from PaymentIntent"
+                            );
+                        } catch (Exception e) {
+                            log.error(
+                                "[StripePaymentAdapter] Failed to process ticket generation for transaction {} via checkout session: {}",
+                                transactionFinal.getId(),
+                                e.getMessage(),
+                                e
+                            );
+                            // Don't fail the webhook - ticket generation can be retried
+                        }
+                    } else {
+                        log.info(
+                            "[StripePaymentAdapter] Webhook ticket generation is DISABLED. Skipping ticket generation for transaction {} via checkout session (eventId={}). " +
+                            "Tickets should be created via frontend API calls or polling.",
                             transactionFinal.getId(),
-                            e.getMessage(),
-                            e
+                            eventId
                         );
-                        // Don't fail the webhook - ticket generation can be retried
                     }
                 } else {
                     log.debug(

@@ -3,6 +3,7 @@ package com.nextjstemplate.web.rest;
 import com.nextjstemplate.repository.EventTicketTransactionItemRepository;
 import com.nextjstemplate.service.EventTicketTransactionItemQueryService;
 import com.nextjstemplate.service.EventTicketTransactionItemService;
+import com.nextjstemplate.service.PaymentProviderValidationService;
 import com.nextjstemplate.service.criteria.EventTicketTransactionItemCriteria;
 import com.nextjstemplate.service.dto.EventTicketTransactionItemDTO;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
@@ -47,14 +48,18 @@ public class EventTicketTransactionItemResource {
 
     private final EventTicketTransactionItemQueryService eventTicketTransactionItemQueryService;
 
+    private final PaymentProviderValidationService paymentProviderValidationService;
+
     public EventTicketTransactionItemResource(
         EventTicketTransactionItemService eventTicketTransactionItemService,
         EventTicketTransactionItemRepository eventTicketTransactionItemRepository,
-        EventTicketTransactionItemQueryService eventTicketTransactionItemQueryService
+        EventTicketTransactionItemQueryService eventTicketTransactionItemQueryService,
+        PaymentProviderValidationService paymentProviderValidationService
     ) {
         this.eventTicketTransactionItemService = eventTicketTransactionItemService;
         this.eventTicketTransactionItemRepository = eventTicketTransactionItemRepository;
         this.eventTicketTransactionItemQueryService = eventTicketTransactionItemQueryService;
+        this.paymentProviderValidationService = paymentProviderValidationService;
     }
 
     /**
@@ -74,6 +79,29 @@ public class EventTicketTransactionItemResource {
         @Valid @RequestBody EventTicketTransactionItemDTO eventTicketTransactionItemDTO
     ) throws URISyntaxException {
         log.debug("REST request to save EventTicketTransactionItem : {}", eventTicketTransactionItemDTO);
+
+        // CRITICAL: Validate triple combination (tenantId, paymentMethodDomainId, webhookSecret) at the beginning
+        // This ensures early validation and immediate bad request response if validation fails
+        String tenantId = eventTicketTransactionItemDTO.getTenantId();
+        String paymentMethodDomainId = eventTicketTransactionItemDTO.getPaymentMethodDomainId();
+        paymentProviderValidationService.validateTripleCombination(tenantId, paymentMethodDomainId, ENTITY_NAME);
+
+        // CRITICAL: Log tenantId from incoming DTO to diagnose NULL tenantId issue
+        String incomingTenantId = eventTicketTransactionItemDTO.getTenantId();
+        log.info(
+            "Received EventTicketTransactionItem DTO with tenantId='{}', transactionId={}, ticketTypeId={}",
+            incomingTenantId,
+            eventTicketTransactionItemDTO.getTransactionId(),
+            eventTicketTransactionItemDTO.getTicketTypeId()
+        );
+
+        if (incomingTenantId == null || incomingTenantId.isEmpty()) {
+            log.error(
+                "CRITICAL: EventTicketTransactionItem DTO received with NULL or EMPTY tenantId! DTO: {}",
+                eventTicketTransactionItemDTO
+            );
+        }
+
         if (eventTicketTransactionItemDTO.getId() != null) {
             throw new BadRequestAlertException("A new eventTicketTransactionItem cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -251,6 +279,30 @@ public class EventTicketTransactionItemResource {
         @Valid @RequestBody List<EventTicketTransactionItemDTO> eventTicketTransactionItemDTOs
     ) {
         log.debug("REST request to save bulk EventTicketTransactionItems : {}", eventTicketTransactionItemDTOs);
+
+        // CRITICAL: Validate triple combination (tenantId, paymentMethodDomainId, webhookSecret) for each item at the beginning
+        // This ensures early validation and immediate bad request response if validation fails
+        for (int i = 0; i < eventTicketTransactionItemDTOs.size(); i++) {
+            EventTicketTransactionItemDTO dto = eventTicketTransactionItemDTOs.get(i);
+            String tenantId = dto.getTenantId();
+            String paymentMethodDomainId = dto.getPaymentMethodDomainId();
+            paymentProviderValidationService.validateTripleCombination(tenantId, paymentMethodDomainId, ENTITY_NAME);
+
+            // CRITICAL: Log tenantId from each incoming DTO to diagnose NULL tenantId issue
+            String incomingTenantId = dto.getTenantId();
+            log.info(
+                "Received EventTicketTransactionItem DTO[{}] with tenantId='{}', transactionId={}, ticketTypeId={}",
+                i,
+                incomingTenantId,
+                dto.getTransactionId(),
+                dto.getTicketTypeId()
+            );
+
+            if (incomingTenantId == null || incomingTenantId.isEmpty()) {
+                log.error("CRITICAL: EventTicketTransactionItem DTO[{}] received with NULL or EMPTY tenantId! DTO: {}", i, dto);
+            }
+        }
+
         List<EventTicketTransactionItemDTO> result = eventTicketTransactionItemService.saveAll(eventTicketTransactionItemDTOs);
         return ResponseEntity.ok().body(result);
     }

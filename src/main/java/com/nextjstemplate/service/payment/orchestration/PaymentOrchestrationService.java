@@ -637,7 +637,8 @@ public class PaymentOrchestrationService {
                 // Trigger ticket generation (QR code and email) if not already done
                 try {
                     // Use donation ID as payment reference for TicketGenerationService compatibility
-                    ticketGenerationService.processTicketGenerationSync(paymentTransaction, donationId);
+                    // Note: correctTenantId is null for Givebutter donations (no PaymentIntent metadata)
+                    ticketGenerationService.processTicketGenerationSync(paymentTransaction, donationId, null);
                 } catch (Exception e) {
                     log.error(
                         "Failed to process ticket generation for existing ticket transaction {}: {}",
@@ -736,9 +737,11 @@ public class PaymentOrchestrationService {
             // Trigger ticket generation (QR code and email)
             try {
                 // Use donation ID as payment reference for TicketGenerationService compatibility
+                // Note: correctTenantId is null for Givebutter donations (no PaymentIntent metadata)
                 ticketGenerationService.processTicketGenerationSync(
                     paymentTransaction,
-                    donationId != null ? donationId : paymentTransaction.getExternalTransactionId()
+                    donationId != null ? donationId : paymentTransaction.getExternalTransactionId(),
+                    null
                 );
                 log.info("Successfully processed ticket generation for Givebutter payment {}", paymentTransaction.getId());
             } catch (Exception e) {

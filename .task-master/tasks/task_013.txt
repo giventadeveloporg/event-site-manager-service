@@ -1,18 +1,23 @@
 # Task ID: 13
-# Title: Implement webhook processing endpoints
+# Title: Enhance Stripe webhook handler for subscription events
 # Status: pending
-# Dependencies: 3 ⏱️, 4 ⏱️, 5 ⏱️, 7 ⏱️
+# Dependencies: 11 ⏱️, 12 ⏱️
 # Priority: high
-# Description: Create webhook endpoints for all payment providers with proper signature verification and idempotent processing.
+# Description: Update existing webhook handler to process subscription-related Stripe events.
 # Details:
-- Implement /api/webhooks/stripe endpoint for Stripe events
-- Implement /api/webhooks/paypal endpoint for PayPal events
-- Add webhook support for Zeffy if provided
-- Implement webhook endpoint for Revolut events
-- Add signature verification for all webhooks
-- Implement rate-limiting for webhook requests
-- Log all webhook payloads in payment_webhook_log
-- Ensure idempotent processing of webhook events
+- Enhance existing webhook handler
+- Add handlers for subscription events:
+  - checkout.session.completed
+  - customer.subscription.created
+  - customer.subscription.updated
+  - customer.subscription.deleted
+  - invoice.payment_succeeded
+  - invoice.payment_failed
+- Implement webhook signature verification
+- Extract metadata from events
+- Call appropriate service methods
+- Add error handling and logging
+- Follow pattern from TicketGenerationService for race condition prevention
 
 # Test Strategy:
-Test webhook endpoints with sample payloads from each provider. Verify signature verification, idempotency, and event processing.
+Test webhook handlers with sample Stripe event payloads. Verify correct subscription updates.

@@ -1,15 +1,19 @@
 # Task ID: 12
-# Title: Implement ACP endpoints
+# Title: Create MembershipSubscriptionService
 # Status: pending
-# Dependencies: 3 ⏱️
-# Priority: medium
-# Description: Implement Stripe Instant Checkout (ACP) endpoints with feature flag support.
+# Dependencies: 4 ⏱️, 6 ⏱️, 8 ⏱️, 11 ⏱️
+# Priority: high
+# Description: Implement service layer for membership subscription management with business logic.
 # Details:
-- Implement POST /api/payments/providers/stripe/instant-checkout endpoint
-- Create ACP REST endpoints according to Stripe spec (Create/Update/Complete/Cancel checkout)
-- Wrap existing Stripe PaymentIntent creation inside CompleteCheckout handler
-- Gate endpoints behind supports_acp flag in payment_provider_config
-- Implement fallback to standard PaymentIntent if feature disabled
+- Create MembershipSubscriptionService class
+- Implement findOrCreateSubscription method with duplicate prevention
+- Implement subscription creation
+- Implement subscription updates
+- Implement subscription cancellation
+- Add trial period calculation
+- Add period date calculation
+- Handle subscription status transitions
+- Implement tenant context propagation for async methods
 
 # Test Strategy:
-Test the endpoints with the supports_acp flag enabled and disabled. Verify ACP session creation and fallback mechanism.
+Unit test service methods with mocked dependencies. Test business logic for subscription lifecycle.

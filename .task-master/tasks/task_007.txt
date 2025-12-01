@@ -1,14 +1,15 @@
 # Task ID: 7
-# Title: Implement RevolutPaymentAdapter
+# Title: Create MembershipPlanMapper
 # Status: pending
-# Dependencies: 2 ⏱️
+# Dependencies: 1 ⏱️, 5 ⏱️
 # Priority: medium
-# Description: Create the Revolut adapter for card sessions with support for redirect-based SCA and settlement webhooks.
+# Description: Create mapper for converting between MembershipPlan entity and DTO.
 # Details:
-- Implement RevolutPaymentAdapter for creating card sessions
-- Add support for redirect-based Strong Customer Authentication (SCA)
-- Process settlement webhooks
-- Handle payment_succeeded, payment_failed, settlement_created events
+- Create MembershipPlanMapper interface/class
+- Implement toDto() method to convert entity to DTO
+- Implement toEntity() method to convert DTO to entity
+- Use MapStruct or manual mapping
+- Handle nested objects if needed
 
 # Test Strategy:
-Test the adapter with Revolut test environment. Verify card session creation, SCA flow, and webhook processing.
+Test conversion in both directions with various data scenarios.

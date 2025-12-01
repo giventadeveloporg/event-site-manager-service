@@ -35,4 +35,14 @@ public interface PaymentProviderConfigRepository
         @Param("tenantId") String tenantId,
         @Param("paymentUseCase") PaymentUseCase paymentUseCase
     );
+
+    /**
+     * Find payment provider config by tenant ID and Payment Method Domain ID.
+     * Used for triple validation (tenantId, paymentMethodDomainId, webhookSecret).
+     *
+     * @param tenantId Tenant ID
+     * @param paymentMethodDomainId Payment Method Domain ID (Stripe Payment Method Domain ID, e.g., pmd_*)
+     * @return Optional containing the payment provider config if found
+     */
+    Optional<PaymentProviderConfig> findByTenantIdAndPaymentMethodDomainId(String tenantId, String paymentMethodDomainId);
 }

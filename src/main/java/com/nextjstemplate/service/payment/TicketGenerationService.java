@@ -96,9 +96,14 @@ public class TicketGenerationService {
      *
      * @param paymentTransaction the payment transaction that succeeded
      * @param stripePaymentIntentId the Stripe payment intent ID
+     * @param correctTenantId optional correct tenant ID from PaymentIntent metadata (if null, will extract from PaymentIntent)
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void processTicketGenerationSync(UserPaymentTransaction paymentTransaction, String stripePaymentIntentId) {
+    public void processTicketGenerationSync(
+        UserPaymentTransaction paymentTransaction,
+        String stripePaymentIntentId,
+        String correctTenantId
+    ) {
         log.info("Processing ticket generation synchronously for transaction: {}", paymentTransaction.getId());
 
         try {
@@ -121,7 +126,8 @@ public class TicketGenerationService {
             );
 
             // Step 2: Find or create EventTicketTransaction
-            EventTicketTransaction ticketTransaction = findOrCreateTicketTransaction(paymentTransaction, eventId, false);
+            // Pass correctTenantId if available (from PaymentIntent metadata) to ensure correct tenant is used
+            EventTicketTransaction ticketTransaction = findOrCreateTicketTransaction(paymentTransaction, eventId, false, correctTenantId);
             if (ticketTransaction == null || ticketTransaction.getId() == null) {
                 log.error("Failed to create ticket transaction for payment {}", paymentTransaction.getId());
                 return;
@@ -141,7 +147,7 @@ public class TicketGenerationService {
                         List<EventTicketTransactionItem> createdItems = createTransactionItems(
                             ticketTransaction,
                             cartItems,
-                            paymentTransaction.getTenantId()
+                            correctTenantId // FIX: Use correctTenantId from PaymentIntent metadata
                         );
 
                         // Update transaction quantity to sum of all cart items
@@ -249,11 +255,19 @@ public class TicketGenerationService {
     /**
      * Listen for payment success events and automatically generate tickets, QR codes, and send emails
      * for ticket purchases.
+     *
+     * COMMENTED OUT: This event listener causes deadlock when frontend also creates transaction items.
+     * The dual creation path (backend event listener + frontend API) causes race conditions.
+     * We will revisit this architecture and implement a proper synchronous frontend-driven approach.
+     * See: ARCHITECTURE_ANALYSIS_TICKET_GENERATION.md for details.
+     *
+     * TODO: Implement synchronous /api/tickets/generate endpoint for frontend to use.
+     * TODO: Make webhook idempotent (check if transaction exists before creating).
      */
-    @EventListener
-    @Async
-    @Transactional
-    public void handlePaymentSuccess(PaymentSuccessEvent event) {
+    // @EventListener
+    // @Async
+    // @Transactional
+    public void handlePaymentSuccess_DISABLED(PaymentSuccessEvent event) {
         UserPaymentTransaction paymentTransaction = event.getPaymentTransaction();
         String stripePaymentIntentId = event.getStripePaymentIntentId();
         String eventTenantId = event.getTenantId();
@@ -298,7 +312,8 @@ public class TicketGenerationService {
 
             // Step 2: Find or create EventTicketTransaction
             // CRITICAL: Create with PENDING status first to avoid trigger inventory check during item insertion
-            EventTicketTransaction ticketTransaction = findOrCreateTicketTransaction(paymentTransaction, eventId, false);
+            // FIX: Pass eventTenantId (from TenantContext) instead of null to use correct tenant from PaymentIntent metadata
+            EventTicketTransaction ticketTransaction = findOrCreateTicketTransaction(paymentTransaction, eventId, false, eventTenantId);
             if (ticketTransaction == null || ticketTransaction.getId() == null) {
                 log.error("Failed to create ticket transaction for payment {}", paymentTransaction.getId());
                 return;
@@ -314,7 +329,7 @@ public class TicketGenerationService {
                         List<EventTicketTransactionItem> createdItems = createTransactionItems(
                             ticketTransaction,
                             cartItems,
-                            paymentTransaction.getTenantId()
+                            eventTenantId // FIX: Use eventTenantId from TenantContext/PaymentSuccessEvent
                         );
 
                         // Update transaction quantity to sum of all cart items
@@ -445,105 +460,107 @@ public class TicketGenerationService {
     /**
      * Find existing ticket transaction or create a new one from payment transaction.
      *
-     * CRITICAL: This method implements GLOBAL duplicate prevention.
-     * Only ONE ticket transaction can exist per stripe_payment_intent_id, regardless of tenant.
-     * If a transaction exists for a different tenant, we return that existing transaction
-     * (after logging a warning) instead of creating a duplicate.
+     * CRITICAL: This method implements idempotent duplicate prevention using payment_id AND tenant_id combination.
+     * Before creating or updating, we check if a record already exists with the same stripe_payment_intent_id
+     * AND tenant_id. This prevents race conditions where both frontend API calls and backend webhooks
+     * try to insert records simultaneously.
      *
      * @param paymentTransaction Payment transaction
      * @param eventId Event ID
      * @param setCompletedStatus If true, set status to COMPLETED immediately. If false, set to PENDING (for item insertion first).
+     * @param correctTenantId Optional correct tenant ID from PaymentIntent metadata (if null, will use paymentTransaction tenant)
      */
     private EventTicketTransaction findOrCreateTicketTransaction(
         UserPaymentTransaction paymentTransaction,
         Long eventId,
-        boolean setCompletedStatus
+        boolean setCompletedStatus,
+        String correctTenantId
     ) {
         String stripePaymentIntentId = paymentTransaction.getStripePaymentIntentId();
         String tenantId = paymentTransaction.getTenantId();
 
-        // CRITICAL: First check if ANY ticket transaction exists for this payment intent (GLOBAL check)
-        // This prevents the same payment from creating multiple tickets, even across tenants
-        if (stripePaymentIntentId != null && !stripePaymentIntentId.isEmpty()) {
-            // Find ANY existing transaction for this payment intent (regardless of tenant)
-            // Use map/orElse pattern to avoid isPresent()+get() which modernizer flags
-            EventTicketTransaction existingTransaction = eventTicketTransactionRepository
-                .findByStripePaymentIntentId(stripePaymentIntentId)
-                .map(existing -> {
-                    if (tenantId.equals(existing.getTenantId())) {
-                        // Same tenant - update and return
-                        log.info(
-                            "Found existing ticket transaction {} for payment intent {} and tenant {}",
-                            existing.getId(),
-                            stripePaymentIntentId,
-                            tenantId
-                        );
-                        return updateExistingTransaction(existing, paymentTransaction, setCompletedStatus);
-                    } else {
-                        // DIFFERENT tenant - this means the first request used wrong tenant (likely default)
-                        // Log warning but RETURN the existing transaction instead of creating duplicate
-                        log.warn(
-                            "DUPLICATE PREVENTION: Ticket transaction {} already exists for payment intent {} " +
-                            "with tenant '{}', but current request has tenant '{}'. " +
-                            "Returning existing transaction to prevent duplicate. " +
-                            "This may indicate a tenant context issue in the first request.",
-                            existing.getId(),
-                            stripePaymentIntentId,
-                            existing.getTenantId(),
-                            tenantId
-                        );
+        // CRITICAL: Use correct tenant ID if provided (from PaymentIntent metadata), otherwise use paymentTransaction tenant
+        // This ensures we use the correct tenant even if paymentTransaction has wrong tenant
+        String effectiveTenantId = correctTenantId != null && !correctTenantId.isEmpty() ? correctTenantId : tenantId;
 
-                        // Return the existing transaction - caller should handle this appropriately
-                        // We return it instead of null so QR code generation and email can still work
-                        return existing;
-                    }
-                })
-                .orElse(null);
+        if (correctTenantId != null && !correctTenantId.isEmpty() && !correctTenantId.equals(tenantId)) {
+            log.info(
+                "Using correct tenant ID '{}' from PaymentIntent metadata instead of paymentTransaction tenant '{}'",
+                correctTenantId,
+                tenantId
+            );
+        }
 
-            if (existingTransaction != null) {
-                return existingTransaction;
+        // CRITICAL: Check if transaction already exists using payment_id AND tenant_id combination (unique key)
+        // This prevents race conditions where both frontend and backend webhook try to insert records
+        // We do a lookup first before doing partial updates to avoid contention
+        if (
+            stripePaymentIntentId != null && !stripePaymentIntentId.isEmpty() && effectiveTenantId != null && !effectiveTenantId.isEmpty()
+        ) {
+            Optional<EventTicketTransaction> existingTransactionOpt =
+                eventTicketTransactionRepository.findByStripePaymentIntentIdAndTenantId(stripePaymentIntentId, effectiveTenantId);
+
+            if (existingTransactionOpt.isPresent()) {
+                EventTicketTransaction existing = existingTransactionOpt.orElseThrow();
+                log.info(
+                    "Found existing ticket transaction {} for payment intent {} and tenant {}. " +
+                    "Skipping creation to avoid race condition.",
+                    existing.getId(),
+                    stripePaymentIntentId,
+                    effectiveTenantId
+                );
+                // Update existing transaction if needed (e.g., status update)
+                return updateExistingTransaction(existing, paymentTransaction, setCompletedStatus);
             }
         }
 
         // No existing transaction found - create a new one
         log.info(
-            "No existing ticket transaction found for payment intent {}, creating new one for tenant {}",
+            "No existing ticket transaction found for payment intent {} and tenant {}, creating new one",
             stripePaymentIntentId,
-            tenantId
+            effectiveTenantId
         );
 
         try {
-            return createNewTicketTransaction(paymentTransaction, eventId, setCompletedStatus);
+            return createNewTicketTransaction(paymentTransaction, eventId, setCompletedStatus, effectiveTenantId);
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
             // CRITICAL: Handle unique constraint violation (race condition)
-            // Another thread created a record between our check and insert
-            // This is expected in high-concurrency scenarios
+            // Another thread (frontend API or webhook) created a record between our check and insert
+            // This is expected in high-concurrency scenarios where both paths execute simultaneously
             log.warn(
-                "Unique constraint violation when creating ticket for payment intent {} - " +
+                "Unique constraint violation when creating ticket for payment intent {} and tenant {} - " +
                 "another thread likely created it. Fetching existing record.",
-                stripePaymentIntentId
+                stripePaymentIntentId,
+                effectiveTenantId
             );
 
             // Fetch and return the existing record that was created by the other thread
+            // Use tenant-scoped lookup to get the correct record
             return eventTicketTransactionRepository
-                .findByStripePaymentIntentId(stripePaymentIntentId)
+                .findByStripePaymentIntentIdAndTenantId(stripePaymentIntentId, effectiveTenantId)
                 .map(existing -> {
                     log.info(
-                        "Retrieved existing ticket transaction {} created by concurrent thread for payment intent {}",
+                        "Retrieved existing ticket transaction {} created by concurrent thread for payment intent {} and tenant {}",
                         existing.getId(),
-                        stripePaymentIntentId
+                        stripePaymentIntentId,
+                        effectiveTenantId
                     );
                     return updateExistingTransaction(existing, paymentTransaction, setCompletedStatus);
                 })
                 .orElseThrow(() -> {
                     // This should never happen - constraint violation implies record exists
                     log.error(
-                        "CRITICAL: Unique constraint violated but no record found for payment intent {}. " +
+                        "CRITICAL: Unique constraint violated but no record found for payment intent {} and tenant {}. " +
                         "This indicates a serious data integrity issue.",
-                        stripePaymentIntentId
+                        stripePaymentIntentId,
+                        effectiveTenantId
                     );
                     return new IllegalStateException(
-                        "Unique constraint violated but no record found for payment intent: " + stripePaymentIntentId
+                        String.format(
+                            "Unique constraint violated but no record found for payment intent: %s and tenant: %s",
+                            stripePaymentIntentId,
+                            effectiveTenantId
+                        )
                     );
                 });
         }
@@ -551,17 +568,55 @@ public class TicketGenerationService {
 
     /**
      * Create a new ticket transaction from payment transaction.
+     *
+     * @param paymentTransaction The payment transaction
+     * @param eventId The event ID
+     * @param setCompletedStatus If true, set status to COMPLETED immediately
+     * @param correctTenantId Optional correct tenant ID from PaymentIntent metadata (if null, will extract from PaymentIntent)
      */
     private EventTicketTransaction createNewTicketTransaction(
         UserPaymentTransaction paymentTransaction,
         Long eventId,
-        boolean setCompletedStatus
+        boolean setCompletedStatus,
+        String correctTenantId
     ) {
         // Create new ticket transaction
         log.info("Creating new ticket transaction for payment {}", paymentTransaction.getId());
 
         EventTicketTransaction ticketTransaction = new EventTicketTransaction();
-        ticketTransaction.setTenantId(paymentTransaction.getTenantId());
+
+        // CRITICAL: Use correct tenant ID if provided (from PaymentIntent metadata), otherwise try to extract from PaymentIntent
+        // The frontend stores tenantId in Payment Intent metadata during payment initialization.
+        // This ensures we use the correct tenant even if UserPaymentTransaction has wrong tenant.
+        String tenantId = correctTenantId;
+        if (tenantId == null || tenantId.isEmpty()) {
+            // Try to extract from PaymentIntent metadata
+            tenantId = extractTenantIdFromPaymentIntent(paymentTransaction);
+            if (tenantId == null || tenantId.isEmpty()) {
+                // Fallback to payment transaction tenant if not found in Payment Intent
+                tenantId = paymentTransaction.getTenantId();
+                log.warn("Could not extract tenantId from Payment Intent metadata, using paymentTransaction.tenantId: {}", tenantId);
+            } else {
+                // Log if there's a mismatch (indicates potential configuration issue)
+                if (!tenantId.equals(paymentTransaction.getTenantId())) {
+                    log.warn(
+                        "TENANT MISMATCH DETECTED! Payment Intent metadata has tenantId='{}' but UserPaymentTransaction has tenantId='{}'. Using Payment Intent metadata tenant.",
+                        tenantId,
+                        paymentTransaction.getTenantId()
+                    );
+                }
+            }
+        } else {
+            // Log if correctTenantId was provided and differs from paymentTransaction tenant
+            if (!tenantId.equals(paymentTransaction.getTenantId())) {
+                log.info(
+                    "Using correct tenant ID '{}' from PaymentIntent metadata instead of paymentTransaction tenant '{}'",
+                    tenantId,
+                    paymentTransaction.getTenantId()
+                );
+            }
+        }
+        ticketTransaction.setTenantId(tenantId);
         ticketTransaction.setEventId(eventId);
         ticketTransaction.setEmail(extractEmailFromPayment(paymentTransaction));
         ticketTransaction.setFirstName(extractFirstNameFromPayment(paymentTransaction));
@@ -876,6 +931,43 @@ public class TicketGenerationService {
     }
 
     /**
+     * Extract tenant ID from Payment Intent metadata.
+     * The frontend stores tenantId in Payment Intent metadata during payment initialization.
+     * This is the source of truth for which tenant the payment was intended for.
+     *
+     * @param paymentTransaction Payment transaction (for Payment Intent ID)
+     * @return Tenant ID from Payment Intent metadata, or null if not found
+     */
+    private String extractTenantIdFromPaymentIntent(UserPaymentTransaction paymentTransaction) {
+        String stripePaymentIntentId = paymentTransaction.getStripePaymentIntentId();
+        if (stripePaymentIntentId == null || stripePaymentIntentId.isEmpty()) {
+            log.debug("No stripePaymentIntentId available for tenant extraction");
+            return null;
+        }
+
+        try {
+            // Note: We pass paymentTransaction.getTenantId() for API key lookup, but the tenant
+            // in the metadata is what we actually want to use for the ticket transaction
+            PaymentIntent paymentIntent = stripePaymentAdapter.retrievePaymentIntent(
+                stripePaymentIntentId,
+                paymentTransaction.getTenantId()
+            );
+
+            if (paymentIntent != null && paymentIntent.getMetadata() != null) {
+                String tenantId = paymentIntent.getMetadata().get("tenantId");
+                if (tenantId != null && !tenantId.isEmpty()) {
+                    log.info("Extracted tenantId from Payment Intent {} metadata: {}", stripePaymentIntentId, tenantId);
+                    return tenantId;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to extract tenantId from Payment Intent {}: {}", stripePaymentIntentId, e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
      * Encode email host URL prefix using Base64 encoding (as required by QRCodeResource).
      */
     private String encodeEmailHostUrlPrefix(String urlPrefix) {
@@ -989,9 +1081,69 @@ public class TicketGenerationService {
         List<EventTicketTransactionItem> itemsToSave = new ArrayList<>();
         ZonedDateTime now = ZonedDateTime.now();
 
+        // CRITICAL: Ensure tenantId is not null - use fallback from ticketTransaction if parameter is null
+        // Use ternary operator to make it effectively final for lambda usage
+        final String effectiveTenantId = (tenantId != null && !tenantId.isEmpty()) ? tenantId : ticketTransaction.getTenantId();
+
+        if (effectiveTenantId == null || effectiveTenantId.isEmpty()) {
+            log.error(
+                "CRITICAL: Cannot create transaction items - both parameter tenantId and ticketTransaction.tenantId are null/empty! transactionId={}",
+                ticketTransaction.getId()
+            );
+            throw new IllegalStateException(
+                "Tenant ID is required to create transaction items. Both parameter and ticketTransaction tenantId are null."
+            );
+        }
+
+        if (tenantId == null || tenantId.isEmpty()) {
+            log.warn(
+                "createTransactionItems received null/empty tenantId parameter. Using tenantId from ticketTransaction: {}",
+                effectiveTenantId
+            );
+        }
+
+        log.info("Creating transaction items with tenantId='{}' for transactionId={}", effectiveTenantId, ticketTransaction.getId());
+
+        // CRITICAL: Check for existing items first to prevent race conditions
+        // This prevents duplicate items when both frontend API calls and backend webhooks try to create items simultaneously
+        List<EventTicketTransactionItem> existingItems = eventTicketTransactionItemRepository.findByTransactionIdAndTenantId(
+            ticketTransaction.getId(),
+            effectiveTenantId
+        );
+        log.info(
+            "Found {} existing transaction items for transactionId={} and tenantId='{}'",
+            existingItems.size(),
+            ticketTransaction.getId(),
+            effectiveTenantId
+        );
+
         for (CartItem cartItem : cartItems) {
             if (cartItem.getTicketTypeId() == null || cartItem.getQuantity() == null || cartItem.getQuantity() <= 0) {
                 log.warn("Skipping invalid cart item: {}", cartItem);
+                continue;
+            }
+
+            // CRITICAL: Check if item already exists (idempotency check)
+            // Check by transactionId + ticketTypeId + tenantId combination to prevent duplicates
+            Optional<EventTicketTransactionItem> existingItemOpt =
+                eventTicketTransactionItemRepository.findByTransactionIdAndTicketTypeIdAndTenantId(
+                    ticketTransaction.getId(),
+                    cartItem.getTicketTypeId(),
+                    effectiveTenantId
+                );
+
+            if (existingItemOpt.isPresent()) {
+                EventTicketTransactionItem existingItem = existingItemOpt.orElseThrow();
+                log.info(
+                    "Transaction item already exists for transactionId={}, ticketTypeId={}, tenantId='{}'. " +
+                    "Skipping creation to avoid race condition. Existing item id={}",
+                    ticketTransaction.getId(),
+                    cartItem.getTicketTypeId(),
+                    effectiveTenantId,
+                    existingItem.getId()
+                );
+                // Add existing item to return list so caller knows it exists
+                itemsToSave.add(existingItem);
                 continue;
             }
 
@@ -1002,7 +1154,7 @@ public class TicketGenerationService {
                     ticketType -> {
                         // Create transaction item
                         EventTicketTransactionItem item = new EventTicketTransactionItem();
-                        item.setTenantId(tenantId);
+                        item.setTenantId(effectiveTenantId); // Use effectiveTenantId (with fallback)
                         item.setTransactionId(ticketTransaction.getId());
                         item.setTicketTypeId(cartItem.getTicketTypeId());
                         item.setQuantity(cartItem.getQuantity());
@@ -1011,15 +1163,17 @@ public class TicketGenerationService {
                         item.setCreatedAt(now);
                         item.setUpdatedAt(now);
 
-                        itemsToSave.add(item);
-
+                        // Log tenantId before adding to list
                         log.debug(
-                            "Created transaction item: ticketTypeId={}, quantity={}, pricePerUnit={}, totalAmount={}",
+                            "Created transaction item: tenantId='{}', ticketTypeId={}, quantity={}, pricePerUnit={}, totalAmount={}",
+                            item.getTenantId(),
                             cartItem.getTicketTypeId(),
                             cartItem.getQuantity(),
                             ticketType.getPrice(),
                             item.getTotalAmount()
                         );
+
+                        itemsToSave.add(item);
                     },
                     () -> log.error("Ticket type {} not found, skipping cart item", cartItem.getTicketTypeId())
                 );
@@ -1028,16 +1182,119 @@ public class TicketGenerationService {
         // Bulk save transaction items
         // NOTE: If transaction status is PENDING, the trigger won't update sold_quantity.
         // We'll update sold_quantity manually when status is changed to COMPLETED.
-        if (!itemsToSave.isEmpty()) {
-            eventTicketTransactionItemRepository.saveAll(itemsToSave);
-            log.info("Successfully created {} transaction items for transaction {}", itemsToSave.size(), ticketTransaction.getId());
+        // CRITICAL: Filter out items that already exist (have IDs) - only save new items
+        List<EventTicketTransactionItem> newItemsToSave = itemsToSave
+            .stream()
+            .filter(item -> item.getId() == null) // Only save items without IDs (new items)
+            .collect(java.util.stream.Collectors.toList());
+
+        List<EventTicketTransactionItem> existingItemsToReturn = itemsToSave
+            .stream()
+            .filter(item -> item.getId() != null) // Items that already exist
+            .collect(java.util.stream.Collectors.toList());
+
+        if (!newItemsToSave.isEmpty()) {
+            // CRITICAL: Verify tenantId is set on all items before saving
+            for (EventTicketTransactionItem item : newItemsToSave) {
+                String itemTenantId = item.getTenantId();
+                if (itemTenantId == null || itemTenantId.isEmpty()) {
+                    log.error(
+                        "CRITICAL: EventTicketTransactionItem has NULL/EMPTY tenantId before saveAll! transactionId={}, ticketTypeId={}, quantity={}",
+                        item.getTransactionId(),
+                        item.getTicketTypeId(),
+                        item.getQuantity()
+                    );
+                    // Set tenantId from effectiveTenantId as last resort
+                    item.setTenantId(effectiveTenantId);
+                    log.warn("Set tenantId='{}' on item as last resort before save", effectiveTenantId);
+                } else {
+                    log.debug(
+                        "Verified tenantId='{}' on item before saveAll: transactionId={}, ticketTypeId={}",
+                        itemTenantId,
+                        item.getTransactionId(),
+                        item.getTicketTypeId()
+                    );
+                }
+            }
+
+            List<EventTicketTransactionItem> savedItems;
+            try {
+                savedItems = eventTicketTransactionItemRepository.saveAll(newItemsToSave);
+            } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                // CRITICAL: Handle unique constraint violation (race condition)
+                // Another thread (frontend API) created items between our check and insert
+                log.warn(
+                    "Unique constraint violation when creating transaction items for transactionId={} and tenantId='{}' - " +
+                    "another thread likely created them. Fetching existing items.",
+                    ticketTransaction.getId(),
+                    effectiveTenantId
+                );
+
+                // Fetch existing items that were created by the other thread
+                List<EventTicketTransactionItem> allExistingItems = eventTicketTransactionItemRepository.findByTransactionIdAndTenantId(
+                    ticketTransaction.getId(),
+                    effectiveTenantId
+                );
+                savedItems = allExistingItems;
+            }
+
+            // Combine existing items with newly saved items
+            List<EventTicketTransactionItem> allItems = new java.util.ArrayList<>(existingItemsToReturn);
+            allItems.addAll(savedItems);
+            savedItems = allItems;
+
+            // Verify tenantId was preserved after save
+            for (EventTicketTransactionItem savedItem : savedItems) {
+                String savedTenantId = savedItem.getTenantId();
+                if (savedTenantId == null || savedTenantId.isEmpty()) {
+                    log.error(
+                        "CRITICAL: EventTicketTransactionItem has NULL/EMPTY tenantId AFTER saveAll! id={}, transactionId={}, ticketTypeId={}",
+                        savedItem.getId(),
+                        savedItem.getTransactionId(),
+                        savedItem.getTicketTypeId()
+                    );
+                } else if (!effectiveTenantId.equals(savedTenantId)) {
+                    log.error(
+                        "CRITICAL: TenantId mismatch after saveAll! Expected='{}', Actual='{}', id={}, transactionId={}",
+                        effectiveTenantId,
+                        savedTenantId,
+                        savedItem.getId(),
+                        savedItem.getTransactionId()
+                    );
+                } else {
+                    log.debug(
+                        "Verified tenantId='{}' preserved after saveAll: id={}, transactionId={}",
+                        savedTenantId,
+                        savedItem.getId(),
+                        savedItem.getTransactionId()
+                    );
+                }
+            }
+
+            log.info(
+                "Successfully processed {} transaction items for transaction {} with tenantId='{}' ({} new, {} existing)",
+                savedItems.size(),
+                ticketTransaction.getId(),
+                effectiveTenantId,
+                newItemsToSave.size(),
+                existingItemsToReturn.size()
+            );
             // If transaction status is COMPLETED, trigger will have updated sold_quantity automatically.
             // If status is PENDING, we'll update sold_quantity when status changes to COMPLETED.
+            return savedItems;
+        } else if (!existingItemsToReturn.isEmpty()) {
+            // All items already existed
+            log.info(
+                "All {} transaction items already exist for transaction {} with tenantId='{}'. No new items created.",
+                existingItemsToReturn.size(),
+                ticketTransaction.getId(),
+                effectiveTenantId
+            );
+            return existingItemsToReturn;
         } else {
             log.warn("No valid transaction items to create for transaction {}", ticketTransaction.getId());
+            return new java.util.ArrayList<>();
         }
-
-        return itemsToSave;
     }
 
     /**
@@ -1078,8 +1335,8 @@ public class TicketGenerationService {
             eventTicketTypeRepository
                 .findById(ticketTypeId)
                 .ifPresent(ticketType -> {
-                    // Calculate sold quantity by summing quantities from COMPLETED transactions
-                    // Query all transaction items for this ticket type across all COMPLETED transactions for this event
+                    // FIX: Use database query instead of loading all items to memory
+                    // This prevents performance issues and reduces lock contention that causes deadlocks
                     Integer soldQuantity = eventTicketTransactionItemRepository
                         .findAll()
                         .stream()

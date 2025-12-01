@@ -1,14 +1,17 @@
 # Task ID: 10
-# Title: Implement payment status endpoint
+# Title: Create MembershipPlanService
 # Status: pending
-# Dependencies: 9 ⏱️
-# Priority: medium
-# Description: Create the endpoint for fetching payment status, used for polling by the frontend for Revolut/Zelle pending flows.
+# Dependencies: 3 ⏱️, 5 ⏱️, 7 ⏱️
+# Priority: high
+# Description: Implement service layer for membership plan management with CRUD operations and Stripe integration.
 # Details:
-- Implement GET /api/payments/{transactionId} endpoint
-- Expose payment method details, settlement info, failure reasons
-- Support polling for pending transactions
-- Retrieve status from appropriate provider adapter
+- Create MembershipPlanService class
+- Implement CRUD operations (create, read, update, delete)
+- Add Stripe Product/Price creation
+- Implement validation logic
+- Add plan code uniqueness validation
+- Handle plan updates with active subscriptions
+- Support soft delete functionality
 
 # Test Strategy:
-Test the endpoint with different transaction states. Verify status updates correctly for pending transactions.
+Unit test service methods with mocked dependencies. Test business logic for plan creation, updates, and deletion.

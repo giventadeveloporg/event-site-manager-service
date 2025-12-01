@@ -1,0 +1,19 @@
+# Task ID: 22
+# Title: Create unit tests for MembershipSubscriptionService
+# Status: pending
+# Dependencies: 12 ⏱️
+# Priority: low
+# Description: Implement comprehensive unit tests for the membership subscription service.
+# Details:
+- Create unit tests for MembershipSubscriptionService
+- Test findOrCreateSubscription method
+- Test subscription creation
+- Test subscription updates
+- Test subscription cancellation
+- Test trial period calculation
+- Test status transitions
+- Test tenant context propagation
+- Mock repository and Stripe dependencies
+
+# Test Strategy:
+Use JUnit and Mockito to test service methods with various scenarios.

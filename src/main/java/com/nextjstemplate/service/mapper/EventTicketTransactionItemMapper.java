@@ -15,6 +15,7 @@ import org.mapstruct.*;
 public interface EventTicketTransactionItemMapper extends EntityMapper<EventTicketTransactionItemDTO, EventTicketTransactionItem> {
     /*@Mapping(target = "transaction", source = "transaction", qualifiedByName = "eventTicketTransactionId")
     @Mapping(target = "ticketType", source = "ticketType", qualifiedByName = "eventTicketTypeId")*/
+    @Mapping(target = "tenantId", source = "tenantId") // Explicit mapping to ensure tenantId is mapped
     EventTicketTransactionItemDTO toDto(EventTicketTransactionItem s);
 
     @Named("eventTicketTransactionId")

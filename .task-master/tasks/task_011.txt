@@ -1,15 +1,18 @@
 # Task ID: 11
-# Title: Implement refund endpoint
+# Title: Create StripeSubscriptionService
 # Status: pending
-# Dependencies: 9 ⏱️
-# Priority: medium
-# Description: Create the endpoint for issuing full/partial refunds through the respective adapter.
+# Dependencies: None
+# Priority: high
+# Description: Implement service for Stripe subscription management with customer and subscription operations.
 # Details:
-- Implement POST /api/payments/{transactionId}/refund endpoint
-- Support full and partial refunds
-- Route to appropriate provider adapter based on original payment method
-- Log refund metadata in payment_transaction
-- Handle provider-specific refund requirements
+- Create StripeSubscriptionService class
+- Implement Stripe Customer creation/retrieval
+- Implement Stripe Subscription creation
+- Implement Stripe Subscription update
+- Implement Stripe Subscription cancellation
+- Handle trial periods
+- Add error handling and logging
+- Use existing Stripe infrastructure
 
 # Test Strategy:
-Test the endpoint with different providers. Verify refund processing and transaction status updates.
+Unit test with Stripe SDK test mode. Mock Stripe responses for unit tests.

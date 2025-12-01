@@ -4,6 +4,7 @@ import com.nextjstemplate.repository.EventTicketTransactionRepository;
 import com.nextjstemplate.service.EmailSenderService;
 import com.nextjstemplate.service.EventTicketTransactionQueryService;
 import com.nextjstemplate.service.EventTicketTransactionService;
+import com.nextjstemplate.service.PaymentProviderValidationService;
 import com.nextjstemplate.service.criteria.EventTicketTransactionCriteria;
 import com.nextjstemplate.service.dto.EventTicketTransactionDTO;
 import com.nextjstemplate.service.dto.EventTicketTransactionStatisticsDTO;
@@ -53,25 +54,34 @@ public class EventTicketTransactionResource {
 
     private final EmailSenderService emailSenderService;
 
+    private final PaymentProviderValidationService paymentProviderValidationService;
+
     public EventTicketTransactionResource(
         EventTicketTransactionService eventTicketTransactionService,
         EventTicketTransactionRepository eventTicketTransactionRepository,
         EventTicketTransactionQueryService eventTicketTransactionQueryService,
-        EmailSenderService emailSenderService
+        EmailSenderService emailSenderService,
+        PaymentProviderValidationService paymentProviderValidationService
     ) {
         this.eventTicketTransactionService = eventTicketTransactionService;
         this.eventTicketTransactionRepository = eventTicketTransactionRepository;
         this.eventTicketTransactionQueryService = eventTicketTransactionQueryService;
         this.emailSenderService = emailSenderService;
+        this.paymentProviderValidationService = paymentProviderValidationService;
     }
 
     /**
      * {@code POST  /event-ticket-transactions} : Create a new
      * eventTicketTransaction.
      *
+     * This endpoint is idempotent - if a transaction with the same stripePaymentIntentId
+     * already exists, it returns the existing transaction instead of creating a duplicate.
+     * This prevents race conditions between webhook processing and frontend requests.
+     *
      * @param eventTicketTransactionDTO the eventTicketTransactionDTO to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
      *         body the new eventTicketTransactionDTO, or with status
+     *         {@code 200 (OK)} if transaction already exists, or with status
      *         {@code 400 (Bad Request)} if the eventTicketTransaction has already
      *         an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
@@ -81,9 +91,42 @@ public class EventTicketTransactionResource {
         @Valid @RequestBody EventTicketTransactionDTO eventTicketTransactionDTO
     ) throws URISyntaxException {
         log.debug("REST request to save EventTicketTransaction : {}", eventTicketTransactionDTO);
+
+        // CRITICAL: Validate triple combination (tenantId, paymentMethodDomainId, webhookSecret) at the beginning
+        // This ensures early validation and immediate bad request response if validation fails
+        String tenantId = eventTicketTransactionDTO.getTenantId();
+        String paymentMethodDomainId = eventTicketTransactionDTO.getPaymentMethodDomainId();
+        paymentProviderValidationService.validateTripleCombination(tenantId, paymentMethodDomainId, ENTITY_NAME);
+
         if (eventTicketTransactionDTO.getId() != null) {
             throw new BadRequestAlertException("A new eventTicketTransaction cannot already have an ID", ENTITY_NAME, "idexists");
         }
+
+        // Check for existing transaction by stripePaymentIntentId AND tenantId to ensure idempotency
+        // This prevents duplicate key errors when webhook and frontend race to create the same transaction
+        // CRITICAL: Must check by tenant ID to ensure tenant isolation - same payment intent can exist for different tenants
+        String paymentIntentId = eventTicketTransactionDTO.getStripePaymentIntentId();
+        if (paymentIntentId != null && !paymentIntentId.isEmpty() && tenantId != null && !tenantId.isEmpty()) {
+            Optional<EventTicketTransactionDTO> existingTransaction = eventTicketTransactionService.findByStripePaymentIntentIdAndTenantId(
+                paymentIntentId,
+                tenantId
+            );
+            if (existingTransaction.isPresent()) {
+                EventTicketTransactionDTO existing = existingTransaction.orElseThrow();
+                log.info(
+                    "Transaction already exists for stripePaymentIntentId: {} and tenantId: {}, returning existing transaction with id: {}",
+                    paymentIntentId,
+                    tenantId,
+                    existing.getId()
+                );
+                // Return existing transaction with 200 OK (not 201 Created) to indicate it wasn't newly created
+                return ResponseEntity
+                    .ok()
+                    .headers(HeaderUtil.createAlert(applicationName, "eventTicketTransaction.exists", existing.getId().toString()))
+                    .body(existing);
+            }
+        }
+
         EventTicketTransactionDTO result = eventTicketTransactionService.save(eventTicketTransactionDTO);
         return ResponseEntity
             .created(new URI("/api/event-ticket-transactions/" + result.getId()))

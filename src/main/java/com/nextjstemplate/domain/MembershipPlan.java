@@ -8,8 +8,6 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 /**
  * A MembershipPlan.
@@ -79,8 +77,7 @@ public class MembershipPlan implements Serializable {
     @Column(name = "max_attendees_per_event")
     private Integer maxAttendeesPerEvent;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "features_json", columnDefinition = "jsonb")
+    @Column(name = "features_json", columnDefinition = "text")
     private String featuresJson;
 
     @Size(max = 255)

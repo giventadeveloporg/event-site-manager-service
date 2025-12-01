@@ -1,14 +1,15 @@
 # Task ID: 5
-# Title: Implement ZeffyPaymentAdapter
+# Title: Create MembershipPlanDTO
 # Status: pending
-# Dependencies: 2 ⏱️
+# Dependencies: 1 ⏱️
 # Priority: medium
-# Description: Create the Zeffy adapter for donation API integration with fallback instructions.
+# Description: Create DTO for MembershipPlan entity with validation annotations matching OpenAPI schema.
 # Details:
-- Implement ZeffyPaymentAdapter for donation API integration
-- Create fallback instructions mechanism if Zeffy is unavailable
-- Add support for importing payout CSV or processing webhooks
-- Implement helper endpoint for returning Zeffy campaign info/embedded URL
+- Create MembershipPlanDTO class
+- Add all fields from MembershipPlan entity
+- Add validation annotations (@NotNull, @Size, etc.)
+- Match OpenAPI schema in documentation/Swagger_API_Docs/api-docs.json
+- Implement serialization/deserialization support
 
 # Test Strategy:
-Test the adapter with Zeffy test environment if available. Verify donation flow and CSV import functionality.
+Test validation with invalid data and ensure serialization/deserialization works correctly.

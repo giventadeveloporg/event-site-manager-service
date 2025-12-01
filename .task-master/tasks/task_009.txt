@@ -1,15 +1,14 @@
 # Task ID: 9
-# Title: Implement payment initialization endpoint
+# Title: Add unique index on membership_subscription.stripe_subscription_id
 # Status: pending
-# Dependencies: 3 ⏱️, 4 ⏱️, 5 ⏱️, 6 ⏱️, 7 ⏱️, 8 ⏱️
+# Dependencies: None
 # Priority: high
-# Description: Create the main payment initialization endpoint that returns provider-neutral session details.
+# Description: Create Liquibase migration to add unique index on stripe_subscription_id to prevent duplicate subscriptions.
 # Details:
-- Implement POST /api/payments/initialize endpoint
-- Return PaymentSessionResponse with provider hint, clientSecret/sessionUrl, publishable key
-- Support payment types: TICKET_SALE, DONATION, DONATION_CEFI, OFFERING, MEMBERSHIP_SUBSCRIPTION
-- Route to appropriate provider adapter based on tenant configuration
-- Derive schema from Swagger API docs
+- Create Liquibase migration file in src/main/resources/config/liquibase/changelog/
+- Add createIndex with unique=true on membership_subscription.stripe_subscription_id
+- Include comment explaining purpose (race condition prevention)
+- Pattern based on existing unique constraint on event_ticket_transaction.stripe_payment_intent_id
 
 # Test Strategy:
-Test the endpoint with different payment types and tenant configurations. Verify correct provider selection and response format.
+Verify index is created correctly in database and prevents duplicate stripe_subscription_id values.

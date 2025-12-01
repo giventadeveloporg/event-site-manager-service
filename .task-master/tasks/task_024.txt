@@ -1,0 +1,20 @@
+# Task ID: 24
+# Title: Create integration test for Stripe webhook handling
+# Status: pending
+# Dependencies: 13 ⏱️
+# Priority: low
+# Description: Implement integration test for webhook event processing to verify correct subscription updates.
+# Details:
+- Create integration test for webhook handler
+- Test processing of sample events:
+  - checkout.session.completed
+  - customer.subscription.created
+  - customer.subscription.updated
+  - customer.subscription.deleted
+  - invoice.payment_succeeded
+  - invoice.payment_failed
+- Verify correct database updates
+- Use Spring Boot Test
+
+# Test Strategy:
+Use Spring Boot Test to verify webhook handler correctly processes events and updates database.

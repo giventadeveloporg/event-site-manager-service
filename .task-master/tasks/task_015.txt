@@ -1,16 +1,20 @@
 # Task ID: 15
-# Title: Implement finance admin APIs
+# Title: Create MembershipSubscriptionResource controller
 # Status: pending
-# Dependencies: 14 ⏱️
+# Dependencies: 6 ⏱️, 12 ⏱️
 # Priority: medium
-# Description: Create admin APIs for reporting settlements and invoices, and for triggering auto-debit for outstanding invoices.
+# Description: Implement REST controller for membership subscription endpoints.
 # Details:
-- Implement GET /api/finance/settlements endpoint for reporting
-- Implement GET /api/finance/invoices endpoint for invoice listing
-- Create POST /api/finance/invoices/{id}/charge endpoint to trigger auto-debit
-- Add support for Stripe Billing/ACH for invoice charging
-- Implement proper authentication and authorization for admin endpoints
-- Log all admin actions related to settlements/invoices
+- Create MembershipSubscriptionResource class
+- Implement GET /api/membership-subscriptions (with filtering)
+- Implement GET /api/membership-subscriptions/by-user/{userId}
+- Implement GET /api/membership-subscriptions/{id}
+- Implement POST /api/membership-subscriptions
+- Implement PATCH /api/membership-subscriptions/{id}
+- Add pagination support
+- Add sorting support
+- Include x-total-count header
+- Add proper error handling
 
 # Test Strategy:
-Test admin APIs with different user roles. Verify proper authorization, data retrieval, and invoice charging functionality.
+Test endpoints with MockMvc. Verify correct responses, pagination, and error handling.

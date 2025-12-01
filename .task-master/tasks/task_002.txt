@@ -1,16 +1,15 @@
 # Task ID: 2
-# Title: Implement PaymentService interface and core orchestration layer
+# Title: Verify and update MembershipSubscription entity
 # Status: pending
-# Dependencies: 1 ⏱️
+# Dependencies: None
 # Priority: high
-# Description: Create the core payment service interface that all provider adapters will implement, along with the orchestration layer that routes payment requests.
+# Description: Verify the MembershipSubscription entity matches the database schema and add necessary relationships and validations.
 # Details:
-- Define PaymentService interface with methods: initialize, confirm, cancel, refund, webhook handling, supportedMethods
-- Implement the payment orchestration service as the entry point for all payment operations
-- Create provider selection logic based on tenant configuration
-- Implement fallback ordering mechanism
-- Build configuration layer to access payment_provider_config settings
-- Create secure credential storage with AES-256-GCM encryption
+- Verify MembershipSubscription entity matches database schema in Latest_Schema_Post__Blob_Claude_11.sql
+- Add relationships to UserProfile and MembershipPlan (@ManyToOne)
+- Add validation annotations for fields
+- Ensure all fields from database are present
+- Add tenantId field for multi-tenant support
 
 # Test Strategy:
-Unit test the orchestration layer with mock providers to ensure proper routing of requests based on tenant configuration.
+Verify entity can be persisted to database and relationships work correctly.

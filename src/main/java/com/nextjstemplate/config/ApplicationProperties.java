@@ -16,6 +16,7 @@ public class ApplicationProperties {
     private final Monitoring monitoring = new Monitoring();
     private final Urls urls = new Urls();
     private final Payment payment = new Payment();
+    private final Webhook webhook = new Webhook();
 
     public Cors getCors() {
         return cors;
@@ -35,6 +36,10 @@ public class ApplicationProperties {
 
     public Payment getPayment() {
         return payment;
+    }
+
+    public Webhook getWebhook() {
+        return webhook;
     }
 
     public static class Cors {
@@ -188,6 +193,34 @@ public class ApplicationProperties {
 
             public void setKey(String key) {
                 this.key = key;
+            }
+        }
+    }
+
+    public static class Webhook {
+
+        private final TicketGeneration ticketGeneration = new TicketGeneration();
+
+        public TicketGeneration getTicketGeneration() {
+            return ticketGeneration;
+        }
+
+        public static class TicketGeneration {
+
+            /**
+             * Enable/disable ticket generation via webhooks.
+             * When disabled, webhooks will still update payment status but won't create tickets.
+             * Tickets will only be created via frontend API calls or polling.
+             * Default: false (disabled)
+             */
+            private boolean enabled = false;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
             }
         }
     }

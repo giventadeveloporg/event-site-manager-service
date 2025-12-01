@@ -1,17 +1,19 @@
 # Task ID: 17
-# Title: Implement comprehensive testing suite
+# Title: Implement subscription status transition logic
 # Status: pending
-# Dependencies: 9 ⏱️, 10 ⏱️, 11 ⏱️, 12 ⏱️, 13 ⏱️, 14 ⏱️, 15 ⏱️
-# Priority: high
-# Description: Create unit tests, integration tests, contract tests, and end-to-end tests for all payment flows.
+# Dependencies: 12 ⏱️
+# Priority: medium
+# Description: Add business logic for handling subscription status transitions based on events.
 # Details:
-- Create unit tests for each provider adapter
-- Implement integration tests for payment initialization covering all providers
-- Add contract tests using Swagger schema
-- Create end-to-end tests for Stripe and PayPal flows in staging
-- Implement tests for the settlement job
-- Add tests for webhook processing
-- Create tests for admin finance APIs
+- Implement status transition logic in MembershipSubscriptionService
+- Handle transitions:
+  - TRIAL → ACTIVE (trial ends, payment succeeds)
+  - ACTIVE → PAST_DUE (payment fails)
+  - PAST_DUE → ACTIVE (payment succeeds)
+  - ACTIVE → CANCELLED (user cancels)
+  - CANCELLED → EXPIRED (period ends)
+- Add validation for valid transitions
+- Update subscription dates during transitions
 
 # Test Strategy:
-Run the full test suite and verify all payment flows work correctly. Ensure test coverage for edge cases and error handling.
+Test each transition scenario with unit tests. Verify correct status updates and date calculations.
