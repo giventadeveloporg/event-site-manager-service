@@ -69,6 +69,9 @@ public class EventMediaCriteria implements Serializable, Criteria {
     private BooleanFilter isFeaturedEventImage;
 
     private BooleanFilter isLiveEventImage;
+
+    private BooleanFilter isEmailHeaderImage;
+
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -119,6 +122,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.isHomePageHeroImage = other.optionalIsHomePageHeroImage().map(BooleanFilter::copy).orElse(null);
         this.isFeaturedEventImage = other.optionalIsFeaturedEventImage().map(BooleanFilter::copy).orElse(null);
         this.isLiveEventImage = other.optionalIsLiveEventImage().map(BooleanFilter::copy).orElse(null);
+        this.isEmailHeaderImage = other.optionalIsEmailHeaderImage().map(BooleanFilter::copy).orElse(null);
 
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
@@ -510,6 +514,25 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.isLiveEventImage = isLiveEventImage;
     }
 
+    public BooleanFilter getIsEmailHeaderImage() {
+        return isEmailHeaderImage;
+    }
+
+    public Optional<BooleanFilter> optionalIsEmailHeaderImage() {
+        return Optional.ofNullable(isEmailHeaderImage);
+    }
+
+    public BooleanFilter isEmailHeaderImage() {
+        if (isEmailHeaderImage == null) {
+            setIsEmailHeaderImage(new BooleanFilter());
+        }
+        return isEmailHeaderImage;
+    }
+
+    public void setIsEmailHeaderImage(BooleanFilter isEmailHeaderImage) {
+        this.isEmailHeaderImage = isEmailHeaderImage;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -702,6 +725,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             Objects.equals(isHomePageHeroImage, that.isHomePageHeroImage) &&
             Objects.equals(isFeaturedEventImage, that.isFeaturedEventImage) &&
             Objects.equals(isLiveEventImage, that.isLiveEventImage) &&
+            Objects.equals(isEmailHeaderImage, that.isEmailHeaderImage) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(eventId, that.eventId) &&
@@ -743,6 +767,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             isHomePageHeroImage,
             isFeaturedEventImage,
             isLiveEventImage,
+            isEmailHeaderImage,
             createdAt,
             updatedAt,
             eventId,
@@ -785,6 +810,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             optionalIsHomePageHeroImage().map(f -> "isHomePageHeroImage=" + f + ", ").orElse("") +
             optionalIsFeaturedEventImage().map(f -> "isFeaturedEventImage=" + f + ", ").orElse("") +
             optionalIsLiveEventImage().map(f -> "isLiveEventImage=" + f + ", ").orElse("") +
+            optionalIsEmailHeaderImage().map(f -> "isEmailHeaderImage=" + f + ", ").orElse("") +
 
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +

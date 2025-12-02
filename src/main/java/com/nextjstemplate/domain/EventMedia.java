@@ -111,6 +111,9 @@ public class EventMedia implements Serializable {
     @Column(name = "is_live_event_image", nullable = false)
     private Boolean isLiveEventImage;
 
+    @Column(name = "is_email_header_image")
+    private Boolean isEmailHeaderImage;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -478,6 +481,19 @@ public class EventMedia implements Serializable {
         this.isLiveEventImage = isLiveEventImage;
     }
 
+    public Boolean getIsEmailHeaderImage() {
+        return this.isEmailHeaderImage;
+    }
+
+    public EventMedia isEmailHeaderImage(Boolean isEmailHeaderImage) {
+        this.setIsEmailHeaderImage(isEmailHeaderImage);
+        return this;
+    }
+
+    public void setIsEmailHeaderImage(Boolean isEmailHeaderImage) {
+        this.isEmailHeaderImage = isEmailHeaderImage;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return this.createdAt;
     }
@@ -685,6 +701,7 @@ public class EventMedia implements Serializable {
             ", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
             ", isFeaturedEventImage='" + getIsFeaturedEventImage() + "'" +
             ", isLiveEventImage='" + getIsLiveEventImage() + "'" +
+            ", isEmailHeaderImage='" + getIsEmailHeaderImage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", eventId=" + getEventId() +

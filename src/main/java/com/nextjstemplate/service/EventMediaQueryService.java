@@ -227,6 +227,9 @@ public class EventMediaQueryService extends QueryService<EventMedia> {
             if (criteria.getIsLiveEventImage() != null) {
                 specification = specification.and(buildSpecification(criteria.getIsLiveEventImage(), EventMedia_.isLiveEventImage));
             }
+            if (criteria.getIsEmailHeaderImage() != null) {
+                specification = specification.and(buildSpecification(criteria.getIsEmailHeaderImage(), EventMedia_.isEmailHeaderImage));
+            }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), EventMedia_.createdAt));
             }

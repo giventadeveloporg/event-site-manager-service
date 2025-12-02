@@ -470,6 +470,58 @@
         }
       }
     },
+    "/api/membership-plans/{id}": {
+      "get": {
+        "tags": ["membership-plan-resource"],
+        "operationId": "getMembershipPlan",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipPlanDTO" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["membership-plan-resource"],
+        "operationId": "updateMembershipPlan",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipPlanDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipPlanDTO" } } }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["membership-plan-resource"],
+        "operationId": "deleteMembershipPlan",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "tags": ["membership-plan-resource"],
+        "operationId": "partialUpdateMembershipPlan",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/MembershipPlanDTO" } },
+            "application/merge-patch+json": { "schema": { "$ref": "#/components/schemas/MembershipPlanDTO" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipPlanDTO" } } }
+          }
+        }
+      }
+    },
     "/api/focus-groups/{id}": {
       "get": {
         "tags": ["focus-group-resource"],
@@ -1682,6 +1734,37 @@
         }
       }
     },
+    "/api/event-details/{id}/recurring-series": {
+      "get": {
+        "tags": ["event-details-resource"],
+        "operationId": "getRecurringSeries",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/EventDetailsDTO" } } }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["event-details-resource"],
+        "operationId": "updateRecurringSeries",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateRecurringSeriesRequest" } } },
+          "required": true
+        },
+        "responses": { "200": { "description": "OK" } }
+      },
+      "delete": {
+        "tags": ["event-details-resource"],
+        "operationId": "deleteRecurringSeries",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
     "/api/event-contacts/{id}": {
       "get": {
         "tags": ["event-contacts-resource"],
@@ -2227,12 +2310,12 @@
           "required": true
         },
         "responses": {
-          "403": {
-            "description": "Access denied - admin privileges required",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
-          },
           "200": {
             "description": "Role updated successfully",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
+          },
+          "403": {
+            "description": "Access denied - admin privileges required",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
           },
           "404": {
@@ -5482,6 +5565,157 @@
         }
       }
     },
+    "/api/membership-subscriptions": {
+      "get": {
+        "tags": ["membership-subscription-resource"],
+        "operationId": "getAllMembershipSubscriptions",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 20 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subscriptionStatus.equals", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["membership-subscription-resource"],
+        "operationId": "createMembershipSubscription",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/membership-subscriptions/{id}/resume": {
+      "post": {
+        "tags": ["membership-subscription-resource"],
+        "operationId": "resumeSubscription",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/membership-subscriptions/{id}/change-plan": {
+      "post": {
+        "tags": ["membership-subscription-resource"],
+        "operationId": "changePlan",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "integer", "format": "int64" } } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/membership-subscriptions/{id}/cancel": {
+      "post": {
+        "tags": ["membership-subscription-resource"],
+        "operationId": "cancelSubscription",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/membership-plans": {
+      "get": {
+        "tags": ["membership-plan-resource"],
+        "operationId": "getAllMembershipPlans",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 20 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "isActive.equals", "in": "query", "required": false, "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MembershipPlanDTO" } } }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["membership-plan-resource"],
+        "operationId": "createMembershipPlan",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipPlanDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipPlanDTO" } } }
+          }
+        }
+      }
+    },
     "/api/focus-groups": {
       "get": {
         "tags": ["focus-group-resource"],
@@ -6364,6 +6598,166 @@
           { "name": "isActive.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
           { "name": "isActive.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
           { "name": "isActive.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "saleStartDate.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleStartDate.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "saleStartDate.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "saleStartDate.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "saleStartDate.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleStartDate.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleStartDate.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "saleStartDate.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "saleStartDate.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "saleEndDate.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleEndDate.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "saleEndDate.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "saleEndDate.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "saleEndDate.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleEndDate.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleEndDate.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "saleEndDate.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "saleEndDate.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "minQuantityPerOrder.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          { "name": "minQuantityPerOrder.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          {
+            "name": "minQuantityPerOrder.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "minQuantityPerOrder.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          { "name": "minQuantityPerOrder.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "minQuantityPerOrder.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "minQuantityPerOrder.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "minQuantityPerOrder.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
+          {
+            "name": "minQuantityPerOrder.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
+          {
+            "name": "maxQuantityPerOrder.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          { "name": "maxQuantityPerOrder.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          {
+            "name": "maxQuantityPerOrder.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "maxQuantityPerOrder.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          { "name": "maxQuantityPerOrder.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "maxQuantityPerOrder.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "maxQuantityPerOrder.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "maxQuantityPerOrder.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
+          {
+            "name": "maxQuantityPerOrder.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
+          { "name": "requiresApproval.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "requiresApproval.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "requiresApproval.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "requiresApproval.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          {
+            "name": "requiresApproval.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          { "name": "sortOrder.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "sortOrder.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
+          {
+            "name": "sortOrder.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
           { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
           { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
           {
@@ -10013,6 +10407,34 @@
         }
       }
     },
+    "/api/event-medias/upload/email-header-image": {
+      "post": {
+        "tags": ["event-media-resource"],
+        "operationId": "uploadEmailHeaderImage",
+        "parameters": [
+          { "name": "eventId", "in": "query", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "tenantId", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "title", "in": "query", "required": false, "schema": { "type": "string", "default": "Email Header Image" } },
+          {
+            "name": "description",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "Email header image for ticket confirmation emails" }
+          },
+          { "name": "isPublic", "in": "query", "required": false, "schema": { "type": "boolean", "default": true } }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "required": ["file"], "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EventMediaDTO" } } } }
+        }
+      }
+    },
     "/api/event-medias/upload/contact": {
       "post": {
         "tags": ["event-media-resource"],
@@ -12066,6 +12488,21 @@
           "200": {
             "description": "OK",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EventDetailsDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/event-details/{id}/generate-recurring-events": {
+      "post": {
+        "tags": ["event-details-resource"],
+        "operationId": "generateRecurringEvents",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/EventDetailsDTO" } } }
+            }
           }
         }
       }
@@ -14412,16 +14849,16 @@
         "parameters": [{ "name": "X-Clerk-Signature", "in": "header", "required": false, "schema": { "type": "string" } }],
         "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } }, "required": true },
         "responses": {
-          "200": {
-            "description": "Webhook processed successfully",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
-          },
           "401": {
             "description": "Invalid signature",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
           },
           "400": {
             "description": "Invalid payload",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
+          },
+          "200": {
+            "description": "Webhook processed successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
           }
         }
@@ -14748,12 +15185,12 @@
           "required": true
         },
         "responses": {
-          "401": {
-            "description": "Invalid credentials",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignInResponse" } } }
-          },
           "200": {
             "description": "User authenticated successfully",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignInResponse" } } }
+          },
+          "401": {
+            "description": "Invalid credentials",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignInResponse" } } }
           },
           "400": {
@@ -14811,6 +15248,43 @@
           "400": {
             "description": "Invalid request",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RefreshTokenResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/membership-subscriptions/{id}": {
+      "get": {
+        "tags": ["membership-subscription-resource"],
+        "operationId": "getMembershipSubscription",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["membership-subscription-resource"],
+        "operationId": "deleteMembershipSubscription",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "tags": ["membership-subscription-resource"],
+        "operationId": "partialUpdateMembershipSubscription",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } },
+            "application/merge-patch+json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } }
           }
         }
       }
@@ -17713,6 +18187,51 @@
         }
       }
     },
+    "/api/membership-subscriptions/by-user/{userId}": {
+      "get": {
+        "tags": ["membership-subscription-resource"],
+        "operationId": "getActiveSubscriptionByUser",
+        "parameters": [
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "tenantId", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/membership-subscriptions/by-stripe/{stripeSubscriptionId}": {
+      "get": {
+        "tags": ["membership-subscription-resource"],
+        "operationId": "getSubscriptionByStripeId",
+        "parameters": [{ "name": "stripeSubscriptionId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/membership-plans/by-code": {
+      "get": {
+        "tags": ["membership-plan-resource"],
+        "operationId": "getMembershipPlanByCode",
+        "parameters": [
+          { "name": "tenantId", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "planCode", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipPlanDTO" } } }
+          }
+        }
+      }
+    },
     "/api/focus-groups/count": {
       "get": {
         "tags": ["focus-group-resource"],
@@ -18450,6 +18969,166 @@
           { "name": "isActive.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
           { "name": "isActive.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
           { "name": "isActive.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "saleStartDate.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleStartDate.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "saleStartDate.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "saleStartDate.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "saleStartDate.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleStartDate.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleStartDate.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "saleStartDate.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "saleStartDate.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "saleEndDate.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleEndDate.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "saleEndDate.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "saleEndDate.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "saleEndDate.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleEndDate.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "saleEndDate.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "saleEndDate.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "saleEndDate.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "minQuantityPerOrder.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          { "name": "minQuantityPerOrder.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          {
+            "name": "minQuantityPerOrder.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "minQuantityPerOrder.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          { "name": "minQuantityPerOrder.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "minQuantityPerOrder.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "minQuantityPerOrder.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "minQuantityPerOrder.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
+          {
+            "name": "minQuantityPerOrder.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
+          {
+            "name": "maxQuantityPerOrder.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          { "name": "maxQuantityPerOrder.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          {
+            "name": "maxQuantityPerOrder.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "maxQuantityPerOrder.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          { "name": "maxQuantityPerOrder.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "maxQuantityPerOrder.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "maxQuantityPerOrder.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "maxQuantityPerOrder.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
+          {
+            "name": "maxQuantityPerOrder.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
+          { "name": "requiresApproval.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "requiresApproval.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "requiresApproval.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "requiresApproval.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          {
+            "name": "requiresApproval.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          { "name": "sortOrder.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "sortOrder.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "sortOrder.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
+          {
+            "name": "sortOrder.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int32" } }
+          },
           { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
           { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
           {
@@ -25754,12 +26433,12 @@
         "description": "Get details of the currently authenticated user",
         "operationId": "getCurrentUser",
         "responses": {
-          "404": {
-            "description": "User not found",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
-          },
           "200": {
             "description": "User details retrieved successfully",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
+          },
+          "404": {
+            "description": "User not found",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
           },
           "401": {
@@ -26459,6 +27138,19 @@
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" },
           "metadata": { "type": "string" },
+          "donationMetadata": { "type": "string" },
+          "eventRecurrenceMetadata": { "type": "string" },
+          "emailHeaderImageUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
+          "isRecurring": { "type": "boolean" },
+          "recurrencePattern": { "type": "string", "enum": ["DAILY", "WEEKLY", "BIWEEKLY", "MONTHLY"] },
+          "recurrenceInterval": { "type": "integer", "format": "int32" },
+          "recurrenceEndType": { "type": "string", "enum": ["END_DATE", "OCCURRENCES"] },
+          "recurrenceEndDate": { "type": "string", "format": "date" },
+          "recurrenceOccurrences": { "type": "integer", "format": "int32" },
+          "recurrenceWeeklyDays": { "type": "array", "items": { "type": "integer", "format": "int32" } },
+          "recurrenceMonthlyDay": { "type": "integer", "format": "int32" },
+          "parentEventId": { "type": "integer", "format": "int64" },
+          "recurrenceSeriesId": { "type": "integer", "format": "int64" },
           "createdBy": { "$ref": "#/components/schemas/UserProfileDTO" },
           "eventType": { "$ref": "#/components/schemas/EventTypeDetailsDTO" },
           "discountCodes": { "uniqueItems": true, "type": "array", "items": { "$ref": "#/components/schemas/DiscountCodeDTO" } }
@@ -26552,6 +27244,7 @@
         "properties": {
           "id": { "type": "integer", "format": "int64" },
           "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "paymentMethodDomainId": { "maxLength": 255, "minLength": 0, "type": "string" },
           "transactionReference": { "maxLength": 255, "minLength": 0, "type": "string" },
           "email": { "maxLength": 255, "minLength": 0, "type": "string" },
           "firstName": { "maxLength": 255, "minLength": 0, "type": "string" },
@@ -26733,6 +27426,7 @@
         "properties": {
           "id": { "type": "integer", "format": "int64" },
           "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "paymentMethodDomainId": { "maxLength": 255, "minLength": 0, "type": "string" },
           "transactionId": { "type": "integer", "format": "int64" },
           "ticketTypeId": { "type": "integer", "format": "int64" },
           "quantity": { "minimum": 1, "type": "integer", "format": "int32" },
@@ -26751,7 +27445,7 @@
           "id": { "type": "integer", "format": "int64" },
           "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
           "name": { "maxLength": 255, "minLength": 0, "type": "string" },
-          "description": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "description": { "type": "string" },
           "isServiceFeeIncluded": { "type": "boolean" },
           "serviceFee": { "type": "number" },
           "price": { "type": "number" },
@@ -26760,6 +27454,12 @@
           "soldQuantity": { "type": "integer", "format": "int32" },
           "remainingQuantity": { "type": "integer", "format": "int32" },
           "isActive": { "type": "boolean" },
+          "saleStartDate": { "type": "string", "format": "date-time" },
+          "saleEndDate": { "type": "string", "format": "date-time" },
+          "minQuantityPerOrder": { "type": "integer", "format": "int32" },
+          "maxQuantityPerOrder": { "type": "integer", "format": "int32" },
+          "requiresApproval": { "type": "boolean" },
+          "sortOrder": { "type": "integer", "format": "int32" },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" },
           "event": { "$ref": "#/components/schemas/EventDetailsDTO" }
@@ -26782,6 +27482,30 @@
           "items": { "type": "array", "items": { "$ref": "#/components/schemas/EventTicketTransactionItemDTO" } },
           "eventDetails": { "$ref": "#/components/schemas/EventDetailsDTO" },
           "eventTicketTypes": { "type": "array", "items": { "$ref": "#/components/schemas/EventTicketTypeDTO" } }
+        }
+      },
+      "MembershipPlanDTO": {
+        "required": ["billingInterval", "currency", "isActive", "planCode", "planName", "planType", "price", "tenantId"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "planName": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "planCode": { "maxLength": 100, "minLength": 0, "type": "string" },
+          "description": { "type": "string" },
+          "planType": { "pattern": "SUBSCRIPTION|ONE_TIME|FREEMIUM", "type": "string" },
+          "billingInterval": { "pattern": "MONTHLY|QUARTERLY|YEARLY|ONE_TIME", "type": "string" },
+          "price": { "minimum": 0.0, "exclusiveMinimum": false, "type": "number" },
+          "currency": { "maxLength": 3, "minLength": 3, "type": "string" },
+          "trialDays": { "minimum": 0, "type": "integer", "format": "int32" },
+          "isActive": { "type": "boolean" },
+          "maxEventsPerMonth": { "type": "integer", "format": "int32" },
+          "maxAttendeesPerEvent": { "type": "integer", "format": "int32" },
+          "featuresJson": { "type": "string" },
+          "stripePriceId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "stripeProductId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
       "FocusGroupDTO": {
@@ -27142,6 +27866,23 @@
           "event": { "$ref": "#/components/schemas/EventDetailsDTO" }
         }
       },
+      "RecurrenceConfig": {
+        "required": ["endType", "pattern"],
+        "type": "object",
+        "properties": {
+          "pattern": { "type": "string", "enum": ["DAILY", "WEEKLY", "BIWEEKLY", "MONTHLY"] },
+          "interval": { "minimum": 1, "type": "integer", "format": "int32" },
+          "endType": { "type": "string", "enum": ["END_DATE", "OCCURRENCES"] },
+          "endDate": { "type": "string", "format": "date" },
+          "occurrences": { "maximum": 1000, "minimum": 1, "type": "integer", "format": "int32" },
+          "weeklyDays": { "type": "array", "items": { "type": "integer", "format": "int32" } },
+          "monthlyDay": { "maximum": 31, "minimum": 1, "type": "integer", "format": "int32" }
+        }
+      },
+      "UpdateRecurringSeriesRequest": {
+        "type": "object",
+        "properties": { "recurrenceConfig": { "$ref": "#/components/schemas/RecurrenceConfig" }, "regenerateEvents": { "type": "boolean" } }
+      },
       "EventContactsDTO": {
         "required": ["createdAt", "name", "phone", "updatedAt"],
         "type": "object",
@@ -27422,10 +28163,21 @@
           "failureReason": { "type": "string" },
           "metadata": { "type": "object", "additionalProperties": { "type": "object" } },
           "stripePaymentIntentId": { "type": "string" },
+          "tenantId": { "type": "string" },
           "ticketTransactionId": { "type": "integer", "format": "int64" },
           "qrCodeUrl": { "type": "string" },
           "emailSent": { "type": "boolean" },
           "eventId": { "type": "integer", "format": "int64" }
+        }
+      },
+      "PaymentItem": {
+        "type": "object",
+        "properties": {
+          "itemType": { "type": "string" },
+          "itemId": { "type": "integer", "format": "int64" },
+          "description": { "type": "string" },
+          "quantity": { "type": "integer", "format": "int32" },
+          "unitPrice": { "type": "number" }
         }
       },
       "PaymentSessionRequest": {
@@ -27442,12 +28194,48 @@
           "description": { "type": "string" },
           "customerEmail": { "type": "string" },
           "customerName": { "type": "string" },
+          "customerPhone": { "type": "string" },
+          "discountCode": { "type": "string" },
           "eventId": { "type": "integer", "format": "int64" },
           "membershipPlanId": { "type": "integer", "format": "int64" },
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/PaymentItem" } },
           "metadata": { "type": "object", "additionalProperties": { "type": "object" } },
           "returnUrl": { "type": "string" },
           "cancelUrl": { "type": "string" },
           "requiresConfirmation": { "type": "boolean" }
+        }
+      },
+      "MembershipSubscriptionDTO": {
+        "required": [
+          "cancelAtPeriodEnd",
+          "currentPeriodEnd",
+          "currentPeriodStart",
+          "membershipPlanId",
+          "subscriptionStatus",
+          "tenantId",
+          "userProfileId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "userProfileId": { "type": "integer", "format": "int64" },
+          "membershipPlanId": { "type": "integer", "format": "int64" },
+          "subscriptionStatus": { "pattern": "ACTIVE|TRIAL|CANCELLED|PAST_DUE|EXPIRED|SUSPENDED", "type": "string" },
+          "currentPeriodStart": { "type": "string", "format": "date" },
+          "currentPeriodEnd": { "type": "string", "format": "date" },
+          "trialStart": { "type": "string", "format": "date" },
+          "trialEnd": { "type": "string", "format": "date" },
+          "cancelAtPeriodEnd": { "type": "boolean" },
+          "cancelledAt": { "type": "string", "format": "date-time" },
+          "cancellationReason": { "type": "string" },
+          "stripeSubscriptionId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "stripeCustomerId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "paymentProviderConfigId": { "type": "integer", "format": "int64" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "membershipPlan": { "$ref": "#/components/schemas/MembershipPlanDTO" },
+          "userProfile": { "$ref": "#/components/schemas/UserProfileDTO" }
         }
       },
       "AidaDTO": {

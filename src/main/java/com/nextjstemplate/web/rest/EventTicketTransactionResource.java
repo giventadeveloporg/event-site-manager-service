@@ -96,6 +96,7 @@ public class EventTicketTransactionResource {
         // This ensures early validation and immediate bad request response if validation fails
         String tenantId = eventTicketTransactionDTO.getTenantId();
         String paymentMethodDomainId = eventTicketTransactionDTO.getPaymentMethodDomainId();
+        log.debug("tenantId: {} and  paymentMethodDomainId :  {} ", tenantId, paymentMethodDomainId);
         paymentProviderValidationService.validateTripleCombination(tenantId, paymentMethodDomainId, ENTITY_NAME);
 
         if (eventTicketTransactionDTO.getId() != null) {

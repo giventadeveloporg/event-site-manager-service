@@ -77,6 +77,8 @@ public class EventMediaDTO implements Serializable {
     @NotNull
     private Boolean isLiveEventImage;
 
+    private Boolean isEmailHeaderImage;
+
     private Long eventId;
 
     private Long uploadedById;
@@ -301,6 +303,14 @@ public class EventMediaDTO implements Serializable {
         this.isLiveEventImage = isLiveEventImage;
     }
 
+    public Boolean getIsEmailHeaderImage() {
+        return isEmailHeaderImage;
+    }
+
+    public void setIsEmailHeaderImage(Boolean isEmailHeaderImage) {
+        this.isEmailHeaderImage = isEmailHeaderImage;
+    }
+
     public Long getEventId() {
         return eventId;
     }
@@ -443,9 +453,10 @@ public class EventMediaDTO implements Serializable {
             ", featuredVideoUrl='" + getFeaturedVideoUrl() + "'" +
             ", isHeroImage='" + getIsHeroImage() + "'" +
             ", isActiveHeroImage='" + getIsActiveHeroImage() + "'" +
-			", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
+            ", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
             ", isFeaturedEventImage='" + getIsFeaturedEventImage() + "'" +
             ", isLiveEventImage='" + getIsLiveEventImage() + "'" +
+            ", isEmailHeaderImage='" + getIsEmailHeaderImage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", startDisplayingFromDate='" + getStartDisplayingFromDate() + "'" +

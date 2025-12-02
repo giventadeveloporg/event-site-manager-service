@@ -14,8 +14,10 @@ import com.nextjstemplate.repository.EventProgramDirectorsRepository;
 import com.nextjstemplate.repository.EventSponsorsJoinRepository;
 import com.nextjstemplate.repository.EventSponsorsRepository;
 import com.nextjstemplate.repository.ExecutiveCommitteeTeamMemberRepository;
+import com.nextjstemplate.service.EventDetailsService;
 import com.nextjstemplate.service.EventMediaService;
 import com.nextjstemplate.service.S3Service;
+import com.nextjstemplate.service.dto.EventDetailsDTO;
 import com.nextjstemplate.service.dto.EventMediaDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -62,6 +64,8 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     private final EventProgramDirectorsRepository eventProgramDirectorsRepository;
 
+    private final EventDetailsService eventDetailsService;
+
     @Autowired
     public EventMediaServiceImpl(
         EventMediaRepository eventMediaRepository,
@@ -72,7 +76,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         EventSponsorsRepository eventSponsorsRepository,
         EventSponsorsJoinRepository eventSponsorsJoinRepository,
         EventFeaturedPerformersRepository eventFeaturedPerformersRepository,
-        EventProgramDirectorsRepository eventProgramDirectorsRepository
+        EventProgramDirectorsRepository eventProgramDirectorsRepository,
+        EventDetailsService eventDetailsService
     ) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
@@ -83,6 +88,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         this.eventSponsorsJoinRepository = eventSponsorsJoinRepository;
         this.eventFeaturedPerformersRepository = eventFeaturedPerformersRepository;
         this.eventProgramDirectorsRepository = eventProgramDirectorsRepository;
+        this.eventDetailsService = eventDetailsService;
     }
 
     @Override
@@ -1546,6 +1552,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         mediaDTO.setIsHomePageHeroImage(false);
         mediaDTO.setIsFeaturedEventImage(false);
         mediaDTO.setIsLiveEventImage(false);
+        mediaDTO.setIsEmailHeaderImage(true);
         mediaDTO.setStartDisplayingFromDate(LocalDate.now());
         mediaDTO.setCreatedAt(ZonedDateTime.now());
         mediaDTO.setUpdatedAt(ZonedDateTime.now());
@@ -1553,10 +1560,22 @@ public class EventMediaServiceImpl implements EventMediaService {
         EventMediaDTO savedMedia = save(mediaDTO);
         log.debug("Created EventMedia record for email header image: {}", savedMedia.getId());
 
-        // 6. Update event_details table with email header image URL
-        event.setEmailHeaderImageUrl(s3Url);
-        eventRepository.save(event);
-        log.info("Updated event {} with email header image URL: {}", eventId, s3Url);
+        // 6. Update event_details table with email header image URL using EventDetailsService
+        try {
+            EventDetailsDTO eventDetailsDTO = eventDetailsService
+                .findOne(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("EventDetails not found: " + eventId));
+
+            eventDetailsDTO.setEmailHeaderImageUrl(s3Url);
+            eventDetailsService.update(eventDetailsDTO);
+            log.info("Updated event {} with email header image URL via EventDetailsService: {}", eventId, s3Url);
+        } catch (Exception e) {
+            log.error("Failed to update EventDetailsDTO with email header image URL for event {}: {}", eventId, e.getMessage(), e);
+            // Fallback to direct entity update if service update fails
+            event.setEmailHeaderImageUrl(s3Url);
+            eventRepository.save(event);
+            log.warn("Updated event {} with email header image URL via direct entity update (fallback)", eventId);
+        }
 
         return savedMedia;
     }
