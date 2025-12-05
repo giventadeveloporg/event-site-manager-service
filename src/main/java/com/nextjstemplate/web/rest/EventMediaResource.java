@@ -703,6 +703,183 @@ public class EventMediaResource {
     }
 
     /**
+     * POST /event-medias/upload/promotional-email-header-image : Upload promotional email header image.
+     */
+    @PostMapping(value = "/upload/promotional-email-header-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadPromotionalEmailHeaderImage(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("eventId") Long eventId,
+        @RequestParam("promotionId") Long promotionId,
+        @RequestParam(value = "tenantId", required = false) String tenantId,
+        @RequestParam(value = "title", required = false, defaultValue = "Promotional Email Header Image") String title,
+        @RequestParam(value = "description", required = false, defaultValue = "Promotional email header image") String description,
+        @RequestParam(value = "isPublic", required = false, defaultValue = "true") Boolean isPublic,
+        Authentication authentication
+    ) throws URISyntaxException {
+        log.debug("REST request to upload promotional email header image for event: {}, promotion: {}", eventId, promotionId);
+
+        // Get tenantId from context if not provided
+        String finalTenantId = tenantId;
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            try {
+                finalTenantId = com.nextjstemplate.security.TenantContext.getCurrentTenant();
+                log.debug("Tenant ID from context: {}", finalTenantId);
+            } catch (Exception e) {
+                log.warn("Could not get tenant ID from context: {}", e.getMessage());
+            }
+        }
+
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            throw new BadRequestAlertException("Tenant ID is required", ENTITY_NAME, "tenantIdRequired");
+        }
+
+        try {
+            EventMediaDTO result = eventMediaService.uploadPromotionalEmailHeaderImage(
+                eventId,
+                promotionId,
+                file,
+                finalTenantId,
+                title,
+                description,
+                isPublic
+            );
+            return ResponseEntity
+                .created(new URI("/api/event-medias/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        } catch (EntityNotFoundException e) {
+            log.error("Event or promotion template not found: eventId={}, promotionId={}", eventId, promotionId);
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "notFound");
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid request: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidRequest");
+        } catch (Exception e) {
+            log.error("Failed to upload promotional email header image", e);
+            throw new BadRequestAlertException(
+                "Failed to upload promotional email header image: " + e.getMessage(),
+                ENTITY_NAME,
+                "uploadFailed"
+            );
+        }
+    }
+
+    /**
+     * POST /event-medias/upload/promotional-email-footer-image : Upload promotional email footer image.
+     */
+    @PostMapping(value = "/upload/promotional-email-footer-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadPromotionalEmailFooterImage(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("eventId") Long eventId,
+        @RequestParam("promotionId") Long promotionId,
+        @RequestParam(value = "tenantId", required = false) String tenantId,
+        @RequestParam(value = "title", required = false, defaultValue = "Promotional Email Footer Image") String title,
+        @RequestParam(value = "description", required = false, defaultValue = "Promotional email footer image") String description,
+        @RequestParam(value = "isPublic", required = false, defaultValue = "true") Boolean isPublic,
+        Authentication authentication
+    ) throws URISyntaxException {
+        log.debug("REST request to upload promotional email footer image for event: {}, promotion: {}", eventId, promotionId);
+
+        // Get tenantId from context if not provided
+        String finalTenantId = tenantId;
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            try {
+                finalTenantId = com.nextjstemplate.security.TenantContext.getCurrentTenant();
+                log.debug("Tenant ID from context: {}", finalTenantId);
+            } catch (Exception e) {
+                log.warn("Could not get tenant ID from context: {}", e.getMessage());
+            }
+        }
+
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            throw new BadRequestAlertException("Tenant ID is required", ENTITY_NAME, "tenantIdRequired");
+        }
+
+        try {
+            EventMediaDTO result = eventMediaService.uploadPromotionalEmailFooterImage(
+                eventId,
+                promotionId,
+                file,
+                finalTenantId,
+                title,
+                description,
+                isPublic
+            );
+            return ResponseEntity
+                .created(new URI("/api/event-medias/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        } catch (EntityNotFoundException e) {
+            log.error("Event or promotion template not found: eventId={}, promotionId={}", eventId, promotionId);
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "notFound");
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid request: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidRequest");
+        } catch (Exception e) {
+            log.error("Failed to upload promotional email footer image", e);
+            throw new BadRequestAlertException(
+                "Failed to upload promotional email footer image: " + e.getMessage(),
+                ENTITY_NAME,
+                "uploadFailed"
+            );
+        }
+    }
+
+    /**
+     * POST /event-medias/upload/focus-group-cover-image : Upload focus group cover image.
+     */
+    @PostMapping(value = "/upload/focus-group-cover-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadFocusGroupCoverImage(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("focusGroupId") Long focusGroupId,
+        @RequestParam(value = "tenantId", required = false) String tenantId,
+        @RequestParam(value = "title", required = false, defaultValue = "Focus Group Cover Image") String title,
+        @RequestParam(value = "description", required = false, defaultValue = "Cover image for focus group") String description,
+        @RequestParam(value = "isPublic", required = false, defaultValue = "true") Boolean isPublic,
+        Authentication authentication
+    ) throws URISyntaxException {
+        log.debug("REST request to upload focus group cover image for focus group: {}", focusGroupId);
+
+        // Get tenantId from context if not provided
+        String finalTenantId = tenantId;
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            try {
+                finalTenantId = com.nextjstemplate.security.TenantContext.getCurrentTenant();
+                log.debug("Tenant ID from context: {}", finalTenantId);
+            } catch (Exception e) {
+                log.warn("Could not get tenant ID from context: {}", e.getMessage());
+            }
+        }
+
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            throw new BadRequestAlertException("Tenant ID is required", ENTITY_NAME, "tenantIdRequired");
+        }
+
+        try {
+            EventMediaDTO result = eventMediaService.uploadFocusGroupCoverImage(
+                focusGroupId,
+                file,
+                finalTenantId,
+                title,
+                description,
+                isPublic
+            );
+            return ResponseEntity
+                .created(new URI("/api/event-medias/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        } catch (EntityNotFoundException e) {
+            log.error("Focus group not found: {}", focusGroupId);
+            throw new BadRequestAlertException("Focus group not found: " + focusGroupId, ENTITY_NAME, "focusGroupNotFound");
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid request: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidRequest");
+        } catch (Exception e) {
+            log.error("Failed to upload focus group cover image", e);
+            throw new BadRequestAlertException("Failed to upload focus group cover image: " + e.getMessage(), ENTITY_NAME, "uploadFailed");
+        }
+    }
+
+    /**
      * POST /event-medias/upload/contact : Upload photo for contact.
      */
     @PostMapping(value = "/upload/contact", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

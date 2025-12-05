@@ -71,6 +71,33 @@ public class TenantSettingsDTO implements Serializable {
     @Size(max = 1048)
     private String whatsappWebhookToken;
 
+    @Size(max = 2048)
+    private String emailFooterHtmlUrl;
+
+    @Size(max = 2048)
+    private String logoImageUrl;
+
+    @Size(max = 255)
+    private String addressLine1;
+
+    @Size(max = 255)
+    private String addressLine2;
+
+    @Size(max = 50)
+    private String phoneNumber;
+
+    @Size(max = 20)
+    private String zipCode;
+
+    @Size(max = 100)
+    private String country;
+
+    @Size(max = 100)
+    private String stateProvince;
+
+    @Size(max = 255)
+    private String email;
+
     @NotNull
     private ZonedDateTime createdAt;
 
@@ -271,6 +298,78 @@ public class TenantSettingsDTO implements Serializable {
         this.whatsappWebhookToken = whatsappWebhookToken;
     }
 
+    public String getEmailFooterHtmlUrl() {
+        return emailFooterHtmlUrl;
+    }
+
+    public void setEmailFooterHtmlUrl(String emailFooterHtmlUrl) {
+        this.emailFooterHtmlUrl = emailFooterHtmlUrl;
+    }
+
+    public String getLogoImageUrl() {
+        return logoImageUrl;
+    }
+
+    public void setLogoImageUrl(String logoImageUrl) {
+        this.logoImageUrl = logoImageUrl;
+    }
+
+    public String getAddressLine1() {
+        return addressLine1;
+    }
+
+    public void setAddressLine1(String addressLine1) {
+        this.addressLine1 = addressLine1;
+    }
+
+    public String getAddressLine2() {
+        return addressLine2;
+    }
+
+    public void setAddressLine2(String addressLine2) {
+        this.addressLine2 = addressLine2;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getStateProvince() {
+        return stateProvince;
+    }
+
+    public void setStateProvince(String stateProvince) {
+        this.stateProvince = stateProvince;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
@@ -344,6 +443,15 @@ public class TenantSettingsDTO implements Serializable {
                 ", twilioWhatsappFrom='" + getTwilioWhatsappFrom() + "'" +
                 ", whatsappWebhookUrl='" + getWhatsappWebhookUrl() + "'" +
                 ", whatsappWebhookToken='" + getWhatsappWebhookToken() + "'" +
+                ", emailFooterHtmlUrl='" + getEmailFooterHtmlUrl() + "'" +
+                ", logoImageUrl='" + getLogoImageUrl() + "'" +
+                ", addressLine1='" + getAddressLine1() + "'" +
+                ", addressLine2='" + getAddressLine2() + "'" +
+                ", phoneNumber='" + getPhoneNumber() + "'" +
+                ", zipCode='" + getZipCode() + "'" +
+                ", country='" + getCountry() + "'" +
+                ", stateProvince='" + getStateProvince() + "'" +
+                ", email='" + getEmail() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 ", tenantOrganization=" + getTenantOrganization() +

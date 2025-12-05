@@ -2,6 +2,7 @@ package com.nextjstemplate.service;
 
 import com.nextjstemplate.service.dto.TenantSettingsDTO;
 import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Service Interface for managing {@link com.nextjstemplate.domain.TenantSettings}.
@@ -45,4 +46,22 @@ public interface TenantSettingsService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * Upload email footer HTML file and update tenant settings.
+     *
+     * @param tenantId the tenant ID
+     * @param file the HTML file to upload
+     * @return the updated tenant settings DTO
+     */
+    TenantSettingsDTO uploadEmailFooterHtml(String tenantId, MultipartFile file);
+
+    /**
+     * Upload tenant logo image and update tenant settings.
+     *
+     * @param tenantId the tenant ID
+     * @param file the image file to upload
+     * @return the updated tenant settings DTO
+     */
+    TenantSettingsDTO uploadTenantLogo(String tenantId, MultipartFile file);
 }

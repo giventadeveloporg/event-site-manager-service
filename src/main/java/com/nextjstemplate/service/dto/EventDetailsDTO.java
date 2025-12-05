@@ -105,6 +105,10 @@ public class EventDetailsDTO implements Serializable {
     @Size(max = 2048)
     private String emailHeaderImageUrl;
 
+    @NotNull
+    @Size(max = 255)
+    private String fromEmail;
+
     // Recurrence fields
     private Boolean isRecurring;
 
@@ -394,6 +398,14 @@ public class EventDetailsDTO implements Serializable {
 
     public void setEmailHeaderImageUrl(String emailHeaderImageUrl) {
         this.emailHeaderImageUrl = emailHeaderImageUrl;
+    }
+
+    public String getFromEmail() {
+        return fromEmail;
+    }
+
+    public void setFromEmail(String fromEmail) {
+        this.fromEmail = fromEmail;
     }
 
     public Boolean getIsRecurring() {

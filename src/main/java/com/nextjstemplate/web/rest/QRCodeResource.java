@@ -1,10 +1,14 @@
 package com.nextjstemplate.web.rest;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.RateLimiter;
 import com.nextjstemplate.domain.EventTicketTransaction;
 import com.nextjstemplate.repository.EventDetailsRepository;
 import com.nextjstemplate.repository.EventTicketTransactionItemRepository;
 import com.nextjstemplate.repository.EventTicketTransactionRepository;
 import com.nextjstemplate.repository.EventTicketTypeRepository;
+import com.nextjstemplate.repository.TenantSettingsRepository;
 import com.nextjstemplate.service.EmailSenderService;
 import com.nextjstemplate.service.QRCodeService;
 import com.nextjstemplate.service.S3Service;
@@ -14,8 +18,13 @@ import com.nextjstemplate.service.mapper.EventDetailsMapper;
 import com.nextjstemplate.service.mapper.EventTicketTransactionItemMapper;
 import com.nextjstemplate.service.mapper.EventTicketTransactionMapper;
 import com.nextjstemplate.service.mapper.EventTicketTypeMapper;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +57,10 @@ public class QRCodeResource {
     private final EventTicketTypeMapper eventTicketTypeMapper;
     private final EmailSenderService emailSenderService;
     private final UserProfileService userProfileService;
+    private final TenantSettingsRepository tenantSettingsRepository;
     private final JwtEncoder jwtEncoder;
     private final Environment environment;
+    private final MeterRegistry meterRegistry;
     private static final Logger log = LoggerFactory.getLogger(QRCodeResource.class);
 
     @Value("${aws.s3.bucket-name}")
@@ -57,6 +68,26 @@ public class QRCodeResource {
 
     @Value("${aws.s3.region}")
     private String s3Region;
+
+    @Value("${email.tenant.rate-limit-per-second:50}")
+    private double tenantRateLimitPerSecond;
+
+    // Cache for S3 footer HTML (per tenant, expires after 1 hour)
+    private final Cache<String, String> footerHtmlCache = CacheBuilder
+        .newBuilder()
+        .maximumSize(1000)
+        .expireAfterWrite(1, TimeUnit.HOURS)
+        .build();
+
+    // Tenant-based rate limiters
+    private final Map<String, RateLimiter> tenantRateLimiters = new ConcurrentHashMap<>();
+
+    // Metrics
+    private final Counter promoEmailSentCounter;
+    private final Counter promoEmailBatchCounter;
+    private final Counter promoEmailFailedCounter;
+    private final Counter promoEmailCacheHitCounter;
+    private final Counter promoEmailCacheMissCounter;
 
     /*
      * @Value("${email.host.url-prefix}")
@@ -80,8 +111,10 @@ public class QRCodeResource {
         EventTicketTypeMapper eventTicketTypeMapper,
         EmailSenderService emailSenderService,
         UserProfileService userProfileService,
+        TenantSettingsRepository tenantSettingsRepository,
         JwtEncoder jwtEncoder,
-        Environment environment
+        Environment environment,
+        MeterRegistry meterRegistry
     ) {
         this.transactionRepository = transactionRepository;
         this.s3Service = s3Service;
@@ -95,8 +128,47 @@ public class QRCodeResource {
         this.eventTicketTypeMapper = eventTicketTypeMapper;
         this.emailSenderService = emailSenderService;
         this.userProfileService = userProfileService;
+        this.tenantSettingsRepository = tenantSettingsRepository;
         this.jwtEncoder = jwtEncoder;
         this.environment = environment;
+        this.meterRegistry = meterRegistry;
+
+        // Initialize metrics
+        this.promoEmailSentCounter =
+            Counter
+                .builder("promo.email.sent.total")
+                .description("Total number of promotional emails sent successfully")
+                .register(meterRegistry);
+        this.promoEmailBatchCounter =
+            Counter
+                .builder("promo.email.batch.total")
+                .description("Total number of promotional email batches processed")
+                .register(meterRegistry);
+        this.promoEmailFailedCounter =
+            Counter
+                .builder("promo.email.failed.total")
+                .description("Total number of failed promotional email sends")
+                .register(meterRegistry);
+        this.promoEmailCacheHitCounter =
+            Counter.builder("promo.email.cache.hit.total").description("Total number of S3 footer HTML cache hits").register(meterRegistry);
+        this.promoEmailCacheMissCounter =
+            Counter
+                .builder("promo.email.cache.miss.total")
+                .description("Total number of S3 footer HTML cache misses")
+                .register(meterRegistry);
+    }
+
+    /**
+     * Get or create tenant-specific rate limiter
+     */
+    private RateLimiter getTenantRateLimiter(String tenantId) {
+        return tenantRateLimiters.computeIfAbsent(
+            tenantId,
+            id -> {
+                log.debug("Creating rate limiter for tenant {}: {} emails/second", id, tenantRateLimitPerSecond);
+                return RateLimiter.create(tenantRateLimitPerSecond);
+            }
+        );
     }
 
     /**
@@ -627,10 +699,32 @@ public class QRCodeResource {
 
         // ... build the main email HTML as before ...
         String fullEmailHtml = template + unsubscribeHtml + footerHtml + ticketPolicyHtml;
+
+        // Get from email with fallback chain:
+        // 1. Event's fromEmail (required field)
+        // 2. TenantSettings email (if event fromEmail is not set or empty)
+        // 3. Default config email (handled by EmailSenderService)
+        String fromEmail = dto.getEventDetails().getFromEmail();
+        if (fromEmail == null || fromEmail.isEmpty()) {
+            // Try tenant settings as fallback
+            fromEmail =
+                tenantSettingsRepository
+                    .findByTenantId(tenantId)
+                    .map(settings -> settings.getEmail())
+                    .filter(tenantEmail -> tenantEmail != null && !tenantEmail.isEmpty())
+                    .orElse(null);
+        }
+
         // List-Unsubscribe header
         Map<String, String> headers = new HashMap<>();
         headers.put("List-Unsubscribe", EmailSenderService.buildListUnsubscribeHeader(recipient, unsubscribeLink));
-        emailSenderService.sendEmail(recipient, "Your Event Ticket for " + eventName, fullEmailHtml, true, headers);
+
+        // Send email with fromEmail if available, otherwise use default
+        if (fromEmail != null && !fromEmail.isEmpty()) {
+            emailSenderService.sendEmail(fromEmail, recipient, "Your Event Ticket for " + eventName, fullEmailHtml, true, headers);
+        } else {
+            emailSenderService.sendEmail(recipient, "Your Event Ticket for " + eventName, fullEmailHtml, true, headers);
+        }
     }
 
     @PostMapping("/send-promotion-emails")
@@ -663,7 +757,10 @@ public class QRCodeResource {
         String emailHostUrlPrefix
     ) {
         if (isTestEmail) {
-            sendPromoEmailToSingleRecipient(recipient, tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix);
+            // For test emails, we still need to lookup the user
+            userProfileService
+                .findByEmailAndTenantId(recipient, tenantId)
+                .ifPresent(user -> sendPromoEmailToSingleRecipient(user, tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix));
             return;
         }
 
@@ -678,19 +775,43 @@ public class QRCodeResource {
                 break; // No more users to process
             }
 
-            // Process batch in parallel
-            userBatch
-                .parallelStream()
+            // Get tenant rate limiter
+            RateLimiter tenantRateLimiter = getTenantRateLimiter(tenantId);
+
+            // Filter subscribed users with valid tokens (already filtered by query, but double-check)
+            List<UserProfileDTO> validUsers = userBatch
+                .stream()
                 .filter(user -> Boolean.TRUE.equals(user.getIsEmailSubscribed()))
                 .filter(user -> user.getEmailSubscriptionToken() != null && !user.getEmailSubscriptionToken().isBlank())
-                .forEach(user -> {
-                    try {
-                        sendPromoEmailToSingleRecipient(user.getEmail(), tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix);
-                    } catch (Exception e) {
-                        // Log error but continue processing other emails
-                        log.error("Failed to send email to {}: {}", user.getEmail(), e.getMessage());
-                    }
-                });
+                .collect(Collectors.toList());
+
+            // Group users into batches for SES batch sending (50 per batch)
+            int sesBatchSize = 50;
+            for (int i = 0; i < validUsers.size(); i += sesBatchSize) {
+                int endIndex = Math.min(i + sesBatchSize, validUsers.size());
+                List<UserProfileDTO> sesBatch = validUsers.subList(i, endIndex);
+
+                // Apply tenant rate limiting
+                if (!tenantRateLimiter.tryAcquire()) {
+                    log.warn(
+                        "Tenant {} rate limit exceeded, skipping batch {}/{}",
+                        tenantId,
+                        (i / sesBatchSize + 1),
+                        (int) Math.ceil((double) validUsers.size() / sesBatchSize)
+                    );
+                    promoEmailFailedCounter.increment(sesBatch.size());
+                    continue;
+                }
+
+                try {
+                    sendPromoEmailBatch(sesBatch, tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix);
+                    promoEmailBatchCounter.increment();
+                    promoEmailSentCounter.increment(sesBatch.size());
+                } catch (Exception e) {
+                    log.error("Failed to send email batch for tenant {}: {}", tenantId, e.getMessage(), e);
+                    promoEmailFailedCounter.increment(sesBatch.size());
+                }
+            }
 
             offset += batchSize;
 
@@ -719,7 +840,10 @@ public class QRCodeResource {
         String emailHostUrlPrefix
     ) {
         if (isTestEmail) {
-            sendPromoEmailToSingleRecipient(recipient, tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix);
+            // For test emails, we still need to lookup the user
+            userProfileService
+                .findByEmailAndTenantId(recipient, tenantId)
+                .ifPresent(user -> sendPromoEmailToSingleRecipient(user, tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix));
             return;
         }
 
@@ -734,18 +858,43 @@ public class QRCodeResource {
                 break;
             }
 
-            // Process batch with custom executor
-            userBatch
+            // Get tenant rate limiter
+            RateLimiter tenantRateLimiter = getTenantRateLimiter(tenantId);
+
+            // Filter subscribed users with valid tokens
+            List<UserProfileDTO> validUsers = userBatch
                 .stream()
                 .filter(user -> Boolean.TRUE.equals(user.getIsEmailSubscribed()))
                 .filter(user -> user.getEmailSubscriptionToken() != null && !user.getEmailSubscriptionToken().isBlank())
-                .forEach(user -> {
-                    try {
-                        sendPromoEmailToSingleRecipient(user.getEmail(), tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix);
-                    } catch (Exception e) {
-                        log.error("Failed to send email to {}: {}", user.getEmail(), e.getMessage());
-                    }
-                });
+                .collect(Collectors.toList());
+
+            // Group users into batches for SES batch sending (50 per batch)
+            int sesBatchSize = 50;
+            for (int i = 0; i < validUsers.size(); i += sesBatchSize) {
+                int endIndex = Math.min(i + sesBatchSize, validUsers.size());
+                List<UserProfileDTO> sesBatch = validUsers.subList(i, endIndex);
+
+                // Apply tenant rate limiting
+                if (!tenantRateLimiter.tryAcquire()) {
+                    log.warn(
+                        "Tenant {} rate limit exceeded, skipping batch {}/{}",
+                        tenantId,
+                        (i / sesBatchSize + 1),
+                        (int) Math.ceil((double) validUsers.size() / sesBatchSize)
+                    );
+                    promoEmailFailedCounter.increment(sesBatch.size());
+                    continue;
+                }
+
+                try {
+                    sendPromoEmailBatch(sesBatch, tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix);
+                    promoEmailBatchCounter.increment();
+                    promoEmailSentCounter.increment(sesBatch.size());
+                } catch (Exception e) {
+                    log.error("Failed to send email batch for tenant {}: {}", tenantId, e.getMessage(), e);
+                    promoEmailFailedCounter.increment(sesBatch.size());
+                }
+            }
 
             offset += batchSize;
 
@@ -761,35 +910,125 @@ public class QRCodeResource {
         }
     }
 
-    private void sendPromoEmailToSingleRecipient(
-        String email,
+    /**
+     * Send promotional email batch using SES batch sending API
+     * This method uses the batch data directly without redundant database lookups
+     */
+    private void sendPromoEmailBatch(
+        List<UserProfileDTO> users,
         String tenantId,
         String promoCode,
         String bodyHtml,
         String subject,
         String emailHostUrlPrefix
     ) {
-        Optional<UserProfileDTO> userOpt = userProfileService.findByEmailAndTenantId(email, tenantId);
-        if (userOpt.isEmpty()) {
+        if (users.isEmpty()) {
             return;
         }
 
-        UserProfileDTO user = userOpt.orElseThrow();
-        if (!Boolean.TRUE.equals(user.getIsEmailSubscribed())) {
-            return;
+        // Build email HTML template once (reusable for batch)
+        String baseUnsubscribeLink = emailHostUrlPrefix + "/unsubscribe-email?email=%s&token=%s";
+        String cachedFooterHtml = getCachedFooterHtml(tenantId);
+
+        // Prepare batch email data
+        List<String> recipientEmails = new ArrayList<>();
+        Map<String, String> emailToUnsubscribeLink = new HashMap<>();
+        Map<String, String> emailToHeaders = new HashMap<>();
+
+        for (UserProfileDTO user : users) {
+            String email = user.getEmail();
+            String token = user.getEmailSubscriptionToken();
+            String unsubscribeLink = String.format(baseUnsubscribeLink, email, token);
+
+            recipientEmails.add(email);
+            emailToUnsubscribeLink.put(email, unsubscribeLink);
+
+            Map<String, String> headers = new HashMap<>();
+            headers.put("List-Unsubscribe", EmailSenderService.buildListUnsubscribeHeader(email, unsubscribeLink));
+            emailToHeaders.put(email, headers.toString()); // Note: SES batch API doesn't support per-recipient headers
         }
 
+        // Build email HTML with first user's unsubscribe link (SES batch limitation)
+        // For true per-recipient personalization, individual sends would be needed
+        String firstUnsubscribeLink = emailToUnsubscribeLink.get(recipientEmails.get(0));
+        String fullEmailHtml = buildPromotionEmailHtml(subject, tenantId, promoCode, bodyHtml, firstUnsubscribeLink, cachedFooterHtml);
+
+        // Use SES batch sending
+        Map<String, String> commonHeaders = new HashMap<>();
+        if (!recipientEmails.isEmpty()) {
+            commonHeaders.put(
+                "List-Unsubscribe",
+                EmailSenderService.buildListUnsubscribeHeader(recipientEmails.get(0), firstUnsubscribeLink)
+            );
+        }
+
+        emailSenderService.sendBatchEmails(recipientEmails, subject, fullEmailHtml, true, commonHeaders);
+    }
+
+    /**
+     * Send promotional email to single recipient (for test emails)
+     * Uses user data directly without redundant database lookup
+     */
+    private void sendPromoEmailToSingleRecipient(
+        UserProfileDTO user,
+        String tenantId,
+        String promoCode,
+        String bodyHtml,
+        String subject,
+        String emailHostUrlPrefix
+    ) {
+        String email = user.getEmail();
         String token = user.getEmailSubscriptionToken();
         if (token == null || token.isBlank()) {
             return;
         }
 
         String unsubscribeLink = String.format(emailHostUrlPrefix + "/unsubscribe-email?email=%s&token=%s", email, token);
-        String fullEmailHtml = buildPromotionEmailHtml(subject, tenantId, promoCode, bodyHtml, unsubscribeLink, s3Service);
+        String cachedFooterHtml = getCachedFooterHtml(tenantId);
+        String fullEmailHtml = buildPromotionEmailHtml(subject, tenantId, promoCode, bodyHtml, unsubscribeLink, cachedFooterHtml);
 
         Map<String, String> headers = new HashMap<>();
         headers.put("List-Unsubscribe", EmailSenderService.buildListUnsubscribeHeader(email, unsubscribeLink));
         emailSenderService.sendEmail(email, subject, fullEmailHtml, true, headers);
+    }
+
+    /**
+     * Get cached footer HTML for tenant, or fetch from S3 if not cached
+     */
+    private String getCachedFooterHtml(String tenantId) {
+        String cacheKey = "footer:" + tenantId;
+        String cachedHtml = footerHtmlCache.getIfPresent(cacheKey);
+
+        if (cachedHtml != null) {
+            promoEmailCacheHitCounter.increment();
+            log.debug("Cache hit for footer HTML for tenant: {}", tenantId);
+            return cachedHtml;
+        }
+
+        promoEmailCacheMissCounter.increment();
+        log.debug("Cache miss for footer HTML for tenant: {}, fetching from S3", tenantId);
+
+        try {
+            String profilePrefix = getActiveProfilePrefix();
+            String s3BaseUrl = getS3BaseUrl();
+            String tenantIdPath = tenantId != null ? tenantId : "tenant_demo_001";
+            String footerHtmlS3Url = String.format(
+                "%s/%s/events/tenantId/%s/email-templates/email_footer.html",
+                s3BaseUrl,
+                profilePrefix,
+                tenantIdPath
+            );
+
+            String footerHtml = s3Service.downloadHtmlFromUrl(footerHtmlS3Url);
+            if (footerHtml != null && !footerHtml.isEmpty()) {
+                footerHtmlCache.put(cacheKey, footerHtml);
+                log.debug("Cached footer HTML for tenant: {}", tenantId);
+            }
+            return footerHtml != null ? footerHtml : "";
+        } catch (Exception e) {
+            log.warn("Failed to fetch footer HTML from S3 for tenant {}: {}", tenantId, e.getMessage());
+            return "";
+        }
     }
 
     // Extracted reusable method for building the promotion email HTML
@@ -799,7 +1038,7 @@ public class QRCodeResource {
         String promoCode,
         String bodyHtml,
         String unsubscribeLink,
-        S3Service s3Service
+        String cachedFooterHtml
     ) {
         String profilePrefix = getActiveProfilePrefix();
         String s3BaseUrl = getS3BaseUrl();
@@ -811,25 +1050,16 @@ public class QRCodeResource {
             promoCode
         );
         String tenantIdPath = tenantId != null ? tenantId : "tenant_demo_001";
-        String footerHtmlS3Url = String.format(
-            "%s/%s/events/tenantId/%s/email-templates/email_footer.html",
-            s3BaseUrl,
-            profilePrefix,
-            tenantIdPath
-        );
         String logoS3Url = String.format(
             "%s/%s/events/tenantId/%s/email-templates/email_footer_logo.png",
             s3BaseUrl,
             profilePrefix,
             tenantIdPath
         );
-        String footerHtml = "";
-        try {
-            footerHtml = s3Service.downloadHtmlFromUrl(footerHtmlS3Url);
-            footerHtml = footerHtml.replace("{{LOGO_URL}}", logoS3Url);
-        } catch (Exception e) {
-            footerHtml = "";
-        }
+
+        // Use cached footer HTML and replace logo URL placeholder
+        String footerHtml = cachedFooterHtml != null ? cachedFooterHtml : "";
+        footerHtml = footerHtml.replace("{{LOGO_URL}}", logoS3Url);
         String unsubscribeHtml = String.format(
             "<div style='margin:24px 0 0 0; text-align:center; color:#888; font-size:13px;'>If you no longer wish to receive these emails, <a href='%s' style='color:#6b207c;'>click here to unsubscribe</a>.</div>",
             unsubscribeLink

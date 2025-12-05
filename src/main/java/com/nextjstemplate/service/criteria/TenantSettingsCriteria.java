@@ -73,6 +73,10 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private StringFilter whatsappWebhookToken;
 
+    private StringFilter emailFooterHtmlUrl;
+
+    private StringFilter logoImageUrl;
+
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -81,16 +85,14 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private Boolean distinct;
 
-    public TenantSettingsCriteria() {
-    }
+    public TenantSettingsCriteria() {}
 
     public TenantSettingsCriteria(TenantSettingsCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.tenantId = other.optionalTenantId().map(StringFilter::copy).orElse(null);
         this.allowUserRegistration = other.optionalAllowUserRegistration().map(BooleanFilter::copy).orElse(null);
         this.requireAdminApproval = other.optionalRequireAdminApproval().map(BooleanFilter::copy).orElse(null);
-        this.enableWhatsappIntegration = other.optionalEnableWhatsappIntegration().map(BooleanFilter::copy)
-                .orElse(null);
+        this.enableWhatsappIntegration = other.optionalEnableWhatsappIntegration().map(BooleanFilter::copy).orElse(null);
         this.enableEmailMarketing = other.optionalEnableEmailMarketing().map(BooleanFilter::copy).orElse(null);
         this.whatsappApiKey = other.optionalWhatsappApiKey().map(StringFilter::copy).orElse(null);
         this.emailProviderConfig = other.optionalEmailProviderConfig().map(StringFilter::copy).orElse(null);
@@ -102,17 +104,16 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.platformFeePercentage = other.optionalPlatformFeePercentage().map(BigDecimalFilter::copy).orElse(null);
         this.customCss = other.optionalCustomCss().map(StringFilter::copy).orElse(null);
         this.customJs = other.optionalCustomJs().map(StringFilter::copy).orElse(null);
-        this.showEventsSectionInHomePage = other.optionalShowEventsSectionInHomePage().map(BooleanFilter::copy)
-                .orElse(null);
-        this.showTeamMembersSectionInHomePage = other.optionalShowTeamMembersSectionInHomePage()
-                .map(BooleanFilter::copy).orElse(null);
-        this.showSponsorsSectionInHomePage = other.optionalShowSponsorsSectionInHomePage().map(BooleanFilter::copy)
-                .orElse(null);
+        this.showEventsSectionInHomePage = other.optionalShowEventsSectionInHomePage().map(BooleanFilter::copy).orElse(null);
+        this.showTeamMembersSectionInHomePage = other.optionalShowTeamMembersSectionInHomePage().map(BooleanFilter::copy).orElse(null);
+        this.showSponsorsSectionInHomePage = other.optionalShowSponsorsSectionInHomePage().map(BooleanFilter::copy).orElse(null);
         this.twilioAccountSid = other.optionalTwilioAccountSid().map(StringFilter::copy).orElse(null);
         this.twilioAuthToken = other.optionalTwilioAuthToken().map(StringFilter::copy).orElse(null);
         this.twilioWhatsappFrom = other.optionalTwilioWhatsappFrom().map(StringFilter::copy).orElse(null);
         this.whatsappWebhookUrl = other.optionalWhatsappWebhookUrl().map(StringFilter::copy).orElse(null);
         this.whatsappWebhookToken = other.optionalWhatsappWebhookToken().map(StringFilter::copy).orElse(null);
+        this.emailFooterHtmlUrl = other.optionalEmailFooterHtmlUrl().map(StringFilter::copy).orElse(null);
+        this.logoImageUrl = other.optionalLogoImageUrl().map(StringFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.tenantOrganizationId = other.optionalTenantOrganizationId().map(LongFilter::copy).orElse(null);
@@ -580,6 +581,44 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.whatsappWebhookToken = whatsappWebhookToken;
     }
 
+    public StringFilter getEmailFooterHtmlUrl() {
+        return emailFooterHtmlUrl;
+    }
+
+    public Optional<StringFilter> optionalEmailFooterHtmlUrl() {
+        return Optional.ofNullable(emailFooterHtmlUrl);
+    }
+
+    public StringFilter emailFooterHtmlUrl() {
+        if (emailFooterHtmlUrl == null) {
+            setEmailFooterHtmlUrl(new StringFilter());
+        }
+        return emailFooterHtmlUrl;
+    }
+
+    public void setEmailFooterHtmlUrl(StringFilter emailFooterHtmlUrl) {
+        this.emailFooterHtmlUrl = emailFooterHtmlUrl;
+    }
+
+    public StringFilter getLogoImageUrl() {
+        return logoImageUrl;
+    }
+
+    public Optional<StringFilter> optionalLogoImageUrl() {
+        return Optional.ofNullable(logoImageUrl);
+    }
+
+    public StringFilter logoImageUrl() {
+        if (logoImageUrl == null) {
+            setLogoImageUrl(new StringFilter());
+        }
+        return logoImageUrl;
+    }
+
+    public void setLogoImageUrl(StringFilter logoImageUrl) {
+        this.logoImageUrl = logoImageUrl;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -665,67 +704,74 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             return false;
         }
         final TenantSettingsCriteria that = (TenantSettingsCriteria) o;
-        return (Objects.equals(id, that.id) &&
-                Objects.equals(tenantId, that.tenantId) &&
-                Objects.equals(allowUserRegistration, that.allowUserRegistration) &&
-                Objects.equals(requireAdminApproval, that.requireAdminApproval) &&
-                Objects.equals(enableWhatsappIntegration, that.enableWhatsappIntegration) &&
-                Objects.equals(enableEmailMarketing, that.enableEmailMarketing) &&
-                Objects.equals(whatsappApiKey, that.whatsappApiKey) &&
-                Objects.equals(emailProviderConfig, that.emailProviderConfig) &&
-                Objects.equals(maxEventsPerMonth, that.maxEventsPerMonth) &&
-                Objects.equals(maxAttendeesPerEvent, that.maxAttendeesPerEvent) &&
-                Objects.equals(enableGuestRegistration, that.enableGuestRegistration) &&
-                Objects.equals(maxGuestsPerAttendee, that.maxGuestsPerAttendee) &&
-                Objects.equals(defaultEventCapacity, that.defaultEventCapacity) &&
-                Objects.equals(platformFeePercentage, that.platformFeePercentage) &&
-                Objects.equals(customCss, that.customCss) &&
-                Objects.equals(customJs, that.customJs) &&
-                Objects.equals(showEventsSectionInHomePage, that.showEventsSectionInHomePage) &&
-                Objects.equals(showTeamMembersSectionInHomePage, that.showTeamMembersSectionInHomePage) &&
-                Objects.equals(showSponsorsSectionInHomePage, that.showSponsorsSectionInHomePage) &&
-                Objects.equals(twilioAccountSid, that.twilioAccountSid) &&
-                Objects.equals(twilioAuthToken, that.twilioAuthToken) &&
-                Objects.equals(twilioWhatsappFrom, that.twilioWhatsappFrom) &&
-                Objects.equals(whatsappWebhookUrl, that.whatsappWebhookUrl) &&
-                Objects.equals(whatsappWebhookToken, that.whatsappWebhookToken) &&
-                Objects.equals(createdAt, that.createdAt) &&
-                Objects.equals(updatedAt, that.updatedAt) &&
-                Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
-                Objects.equals(distinct, that.distinct));
+        return (
+            Objects.equals(id, that.id) &&
+            Objects.equals(tenantId, that.tenantId) &&
+            Objects.equals(allowUserRegistration, that.allowUserRegistration) &&
+            Objects.equals(requireAdminApproval, that.requireAdminApproval) &&
+            Objects.equals(enableWhatsappIntegration, that.enableWhatsappIntegration) &&
+            Objects.equals(enableEmailMarketing, that.enableEmailMarketing) &&
+            Objects.equals(whatsappApiKey, that.whatsappApiKey) &&
+            Objects.equals(emailProviderConfig, that.emailProviderConfig) &&
+            Objects.equals(maxEventsPerMonth, that.maxEventsPerMonth) &&
+            Objects.equals(maxAttendeesPerEvent, that.maxAttendeesPerEvent) &&
+            Objects.equals(enableGuestRegistration, that.enableGuestRegistration) &&
+            Objects.equals(maxGuestsPerAttendee, that.maxGuestsPerAttendee) &&
+            Objects.equals(defaultEventCapacity, that.defaultEventCapacity) &&
+            Objects.equals(platformFeePercentage, that.platformFeePercentage) &&
+            Objects.equals(customCss, that.customCss) &&
+            Objects.equals(customJs, that.customJs) &&
+            Objects.equals(showEventsSectionInHomePage, that.showEventsSectionInHomePage) &&
+            Objects.equals(showTeamMembersSectionInHomePage, that.showTeamMembersSectionInHomePage) &&
+            Objects.equals(showSponsorsSectionInHomePage, that.showSponsorsSectionInHomePage) &&
+            Objects.equals(twilioAccountSid, that.twilioAccountSid) &&
+            Objects.equals(twilioAuthToken, that.twilioAuthToken) &&
+            Objects.equals(twilioWhatsappFrom, that.twilioWhatsappFrom) &&
+            Objects.equals(whatsappWebhookUrl, that.whatsappWebhookUrl) &&
+            Objects.equals(whatsappWebhookToken, that.whatsappWebhookToken) &&
+            Objects.equals(emailFooterHtmlUrl, that.emailFooterHtmlUrl) &&
+            Objects.equals(logoImageUrl, that.logoImageUrl) &&
+            Objects.equals(createdAt, that.createdAt) &&
+            Objects.equals(updatedAt, that.updatedAt) &&
+            Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
+            Objects.equals(distinct, that.distinct)
+        );
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-                id,
-                tenantId,
-                allowUserRegistration,
-                requireAdminApproval,
-                enableWhatsappIntegration,
-                enableEmailMarketing,
-                whatsappApiKey,
-                emailProviderConfig,
-                maxEventsPerMonth,
-                maxAttendeesPerEvent,
-                enableGuestRegistration,
-                maxGuestsPerAttendee,
-                defaultEventCapacity,
-                platformFeePercentage,
-                customCss,
-                customJs,
-                showEventsSectionInHomePage,
-                showTeamMembersSectionInHomePage,
-                showSponsorsSectionInHomePage,
-                twilioAccountSid,
-                twilioAuthToken,
-                twilioWhatsappFrom,
-                whatsappWebhookUrl,
-                whatsappWebhookToken,
-                createdAt,
-                updatedAt,
-                tenantOrganizationId,
-                distinct);
+            id,
+            tenantId,
+            allowUserRegistration,
+            requireAdminApproval,
+            enableWhatsappIntegration,
+            enableEmailMarketing,
+            whatsappApiKey,
+            emailProviderConfig,
+            maxEventsPerMonth,
+            maxAttendeesPerEvent,
+            enableGuestRegistration,
+            maxGuestsPerAttendee,
+            defaultEventCapacity,
+            platformFeePercentage,
+            customCss,
+            customJs,
+            showEventsSectionInHomePage,
+            showTeamMembersSectionInHomePage,
+            showSponsorsSectionInHomePage,
+            twilioAccountSid,
+            twilioAuthToken,
+            twilioWhatsappFrom,
+            whatsappWebhookUrl,
+            whatsappWebhookToken,
+            emailFooterHtmlUrl,
+            logoImageUrl,
+            createdAt,
+            updatedAt,
+            tenantOrganizationId,
+            distinct
+        );
     }
 
     // prettier-ignore
@@ -759,6 +805,8 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalTwilioWhatsappFrom().map(f -> "twilioWhatsappFrom=" + f + ", ").orElse("") +
                 optionalWhatsappWebhookUrl().map(f -> "whatsappWebhookUrl=" + f + ", ").orElse("") +
                 optionalWhatsappWebhookToken().map(f -> "whatsappWebhookToken=" + f + ", ").orElse("") +
+                optionalEmailFooterHtmlUrl().map(f -> "emailFooterHtmlUrl=" + f + ", ").orElse("") +
+                optionalLogoImageUrl().map(f -> "logoImageUrl=" + f + ", ").orElse("") +
                 optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
                 optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
                 optionalTenantOrganizationId().map(f -> "tenantOrganizationId=" + f + ", ").orElse("") +

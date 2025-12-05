@@ -183,4 +183,58 @@ public interface S3Service {
      * @return S3 path string
      */
     String generateEmailHeaderImagePath(String tenantId, Long eventId, String originalFilename);
+
+    /**
+     * Generate S3 path for promotional email header images.
+     * Path format: {profile}/events/tenantId/{tenantId}/event-id/{eventId}/promotional_email_templates/promotion-id/{promotionId}/email_header_image_{timestamp}_{uuid}.{ext}
+     *
+     * @param tenantId Tenant ID
+     * @param eventId Event ID
+     * @param promotionId Promotion email template ID
+     * @param originalFilename Original filename from upload
+     * @return S3 path string
+     */
+    String generatePromotionalEmailHeaderImagePath(String tenantId, Long eventId, Long promotionId, String originalFilename);
+
+    /**
+     * Generate S3 path for promotional email footer images.
+     * Path format: {profile}/events/tenantId/{tenantId}/event-id/{eventId}/promotional_email_templates/promotion-id/{promotionId}/email_footer_image_{timestamp}_{uuid}.{ext}
+     *
+     * @param tenantId Tenant ID
+     * @param eventId Event ID
+     * @param promotionId Promotion email template ID
+     * @param originalFilename Original filename from upload
+     * @return S3 path string
+     */
+    String generatePromotionalEmailFooterImagePath(String tenantId, Long eventId, Long promotionId, String originalFilename);
+
+    /**
+     * Generate S3 path for tenant email footer HTML.
+     * Path format: {profile}/media/tenantId/{tenantId}/email_templates/email_footer.html
+     *
+     * @param tenantId Tenant ID
+     * @return S3 path string
+     */
+    String generateTenantEmailFooterHtmlPath(String tenantId);
+
+    /**
+     * Generate S3 path for tenant logo image.
+     * Path format: {profile}/media/tenantId/{tenantId}/tenant_logo/{filename}_{timestamp}_{uuid}.{ext}
+     *
+     * @param tenantId Tenant ID
+     * @param originalFilename Original filename from upload
+     * @return S3 path string
+     */
+    String generateTenantLogoImagePath(String tenantId, String originalFilename);
+
+    /**
+     * Generate S3 path for focus group cover images.
+     * Path format: {profile}/media/tenantId/{tenantId}/focus-groups/focus-group-id/{focusGroupId}/cover_image_{timestamp}_{uuid}.{ext}
+     *
+     * @param tenantId Tenant ID
+     * @param focusGroupId Focus Group ID
+     * @param originalFilename Original filename from upload
+     * @return S3 path string
+     */
+    String generateFocusGroupCoverImagePath(String tenantId, Long focusGroupId, String originalFilename);
 }

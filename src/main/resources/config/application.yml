@@ -209,6 +209,11 @@ application:
 # AWS S3 Configuration
 # ===================================================================
 aws:
+  ses:
+    # AWS SES rate limit per second (adjust based on your SES account limits)
+    # Default: 200 emails/second (production SES account)
+    # Sandbox: 1 email/second
+    rate-limit-per-second: 200
   s3:
     access-key: ${AWS_ACCESS_KEY_ID}
     secret-key: ${AWS_SECRET_ACCESS_KEY}
@@ -231,6 +236,10 @@ qrcode:
 email:
   host:
     url-prefix: ${EMAIL_HOST_URL_PREFIX}
+  # Tenant-based rate limiting for promotional emails
+  # Each tenant can send up to this many emails per second
+  tenant:
+    rate-limit-per-second: 50
 
 # ===================================================================
 # WhatsApp Integration Configuration

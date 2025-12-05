@@ -470,6 +470,58 @@
         }
       }
     },
+    "/api/promotion-email-templates/{id}": {
+      "get": {
+        "tags": ["promotion-email-template-resource"],
+        "operationId": "getPromotionEmailTemplate",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PromotionEmailTemplateDTO" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["promotion-email-template-resource"],
+        "operationId": "updatePromotionEmailTemplate",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PromotionEmailTemplateFormDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PromotionEmailTemplateDTO" } } }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["promotion-email-template-resource"],
+        "operationId": "deletePromotionEmailTemplate",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "tags": ["promotion-email-template-resource"],
+        "operationId": "partialUpdatePromotionEmailTemplate",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/PromotionEmailTemplateDTO" } },
+            "application/merge-patch+json": { "schema": { "$ref": "#/components/schemas/PromotionEmailTemplateDTO" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PromotionEmailTemplateDTO" } } }
+          }
+        }
+      }
+    },
     "/api/membership-plans/{id}": {
       "get": {
         "tags": ["membership-plan-resource"],
@@ -2279,12 +2331,12 @@
           "required": true
         },
         "responses": {
-          "403": {
-            "description": "Access denied - admin privileges required",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
-          },
           "200": {
             "description": "Status updated successfully",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
+          },
+          "403": {
+            "description": "Access denied - admin privileges required",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
           },
           "404": {
@@ -2310,12 +2362,12 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "Role updated successfully",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
-          },
           "403": {
             "description": "Access denied - admin privileges required",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
+          },
+          "200": {
+            "description": "Role updated successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
           },
           "404": {
@@ -4763,6 +4815,30 @@
             "required": false,
             "schema": { "type": "array", "items": { "type": "string" } }
           },
+          { "name": "emailFooterHtmlUrl.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailFooterHtmlUrl.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailFooterHtmlUrl.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailFooterHtmlUrl.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailFooterHtmlUrl.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "emailFooterHtmlUrl.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "emailFooterHtmlUrl.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "logoImageUrl.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "logoImageUrl.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "logoImageUrl.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "logoImageUrl.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "logoImageUrl.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "logoImageUrl.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "logoImageUrl.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
           { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
           { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
           {
@@ -4888,6 +4964,46 @@
         "requestBody": {
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantSettingsDTO" } } },
           "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantSettingsDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/tenant-settings/upload/tenant-logo": {
+      "post": {
+        "tags": ["tenant-settings-resource"],
+        "operationId": "uploadTenantLogo",
+        "parameters": [{ "name": "tenantId", "in": "query", "required": false, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "required": ["file"], "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantSettingsDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/tenant-settings/upload/email-footer-html": {
+      "post": {
+        "tags": ["tenant-settings-resource"],
+        "operationId": "uploadEmailFooterHtml",
+        "parameters": [{ "name": "tenantId", "in": "query", "required": false, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "required": ["file"], "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } }
+            }
+          }
         },
         "responses": {
           "200": {
@@ -5439,6 +5555,270 @@
         },
         "responses": {
           "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/QrCodeUsageDTO" } } } }
+        }
+      }
+    },
+    "/api/promotion-email-templates": {
+      "get": {
+        "tags": ["promotion-email-template-resource"],
+        "operationId": "getAllPromotionEmailTemplates",
+        "parameters": [
+          { "name": "id.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "tenantId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "tenantId.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "tenantId.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "eventId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "eventId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "eventId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "templateName.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "templateName.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "templateName.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "templateName.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "templateName.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "templateName.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "templateName.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "subject.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "subject.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "subject.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "promotionCode.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "promotionCode.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "promotionCode.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "discountCodeId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          {
+            "name": "discountCodeId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "discountCodeId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "discountCodeId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "discountCodeId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "discountCodeId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "isActive.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "isActive.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "createdById.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "createdById.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          {
+            "name": "createdById.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "createdById.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "createdById.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "createdById.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "createdById.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "createdById.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "createdById.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "createdAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "createdAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "createdAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "createdAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "updatedAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "updatedAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "updatedAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "updatedAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "updatedAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 20 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/PromotionEmailTemplateDTO" } } }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["promotion-email-template-resource"],
+        "operationId": "createPromotionEmailTemplate",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PromotionEmailTemplateFormDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PromotionEmailTemplateDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/promotion-email-templates/{id}/send-to-subscribed": {
+      "post": {
+        "tags": ["promotion-email-template-resource"],
+        "operationId": "sendBulkEmailToSubscribedMembers",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
+          }
+        }
+      }
+    },
+    "/api/promotion-email-templates/{id}/send-test": {
+      "post": {
+        "tags": ["promotion-email-template-resource"],
+        "operationId": "sendTestEmail",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
+          }
+        }
+      }
+    },
+    "/api/promotion-email-templates/{id}/send-bulk": {
+      "post": {
+        "tags": ["promotion-email-template-resource"],
+        "operationId": "sendBulkEmail",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SendPromotionEmailDTO" } } } },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
+          }
         }
       }
     },
@@ -9980,6 +10360,21 @@
             "required": false,
             "schema": { "type": "array", "items": { "type": "boolean" } }
           },
+          { "name": "isEmailHeaderImage.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isEmailHeaderImage.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isEmailHeaderImage.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "isEmailHeaderImage.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          {
+            "name": "isEmailHeaderImage.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
           { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
           { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
           {
@@ -10358,6 +10753,74 @@
         }
       }
     },
+    "/api/event-medias/upload/promotional-email-header-image": {
+      "post": {
+        "tags": ["event-media-resource"],
+        "operationId": "uploadPromotionalEmailHeaderImage",
+        "parameters": [
+          { "name": "eventId", "in": "query", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "promotionId", "in": "query", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "tenantId", "in": "query", "required": false, "schema": { "type": "string" } },
+          {
+            "name": "title",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "Promotional Email Header Image" }
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "Promotional email header image" }
+          },
+          { "name": "isPublic", "in": "query", "required": false, "schema": { "type": "boolean", "default": true } }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "required": ["file"], "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EventMediaDTO" } } } }
+        }
+      }
+    },
+    "/api/event-medias/upload/promotional-email-footer-image": {
+      "post": {
+        "tags": ["event-media-resource"],
+        "operationId": "uploadPromotionalEmailFooterImage",
+        "parameters": [
+          { "name": "eventId", "in": "query", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "promotionId", "in": "query", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "tenantId", "in": "query", "required": false, "schema": { "type": "string" } },
+          {
+            "name": "title",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "Promotional Email Footer Image" }
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "Promotional email footer image" }
+          },
+          { "name": "isPublic", "in": "query", "required": false, "schema": { "type": "boolean", "default": true } }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "required": ["file"], "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EventMediaDTO" } } } }
+        }
+      }
+    },
     "/api/event-medias/upload/program-director": {
       "post": {
         "tags": ["event-media-resource"],
@@ -10369,6 +10832,34 @@
           { "name": "description", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "tenantId", "in": "query", "required": true, "schema": { "type": "string" } },
           { "name": "isPublic", "in": "query", "required": false, "schema": { "type": "boolean" } }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "required": ["file"], "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EventMediaDTO" } } } }
+        }
+      }
+    },
+    "/api/event-medias/upload/focus-group-cover-image": {
+      "post": {
+        "tags": ["event-media-resource"],
+        "operationId": "uploadFocusGroupCoverImage",
+        "parameters": [
+          { "name": "focusGroupId", "in": "query", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "tenantId", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "title", "in": "query", "required": false, "schema": { "type": "string", "default": "Focus Group Cover Image" } },
+          {
+            "name": "description",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "Cover image for focus group" }
+          },
+          { "name": "isPublic", "in": "query", "required": false, "schema": { "type": "boolean", "default": true } }
         ],
         "requestBody": {
           "content": {
@@ -17528,6 +18019,30 @@
             "required": false,
             "schema": { "type": "array", "items": { "type": "string" } }
           },
+          { "name": "emailFooterHtmlUrl.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailFooterHtmlUrl.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailFooterHtmlUrl.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailFooterHtmlUrl.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailFooterHtmlUrl.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "emailFooterHtmlUrl.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "emailFooterHtmlUrl.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "logoImageUrl.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "logoImageUrl.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "logoImageUrl.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "logoImageUrl.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "logoImageUrl.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "logoImageUrl.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "logoImageUrl.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
           { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
           { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
           {
@@ -18078,6 +18593,610 @@
           },
           {
             "name": "attendeeId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "integer", "format": "int64" } } } }
+        }
+      }
+    },
+    "/api/promotion-email-templates/count": {
+      "get": {
+        "tags": ["promotion-email-template-resource"],
+        "operationId": "countPromotionEmailTemplates",
+        "parameters": [
+          { "name": "id.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "tenantId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "tenantId.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "tenantId.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "eventId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "eventId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "eventId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "templateName.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "templateName.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "templateName.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "templateName.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "templateName.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "templateName.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "templateName.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "subject.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "subject.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "subject.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "promotionCode.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "promotionCode.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "promotionCode.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "discountCodeId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          {
+            "name": "discountCodeId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "discountCodeId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "discountCodeId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "discountCodeId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "discountCodeId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "isActive.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "isActive.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "createdById.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "createdById.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          {
+            "name": "createdById.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "createdById.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "createdById.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "createdById.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "createdById.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "createdById.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "createdById.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "createdAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "createdAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "createdAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "createdAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "updatedAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "updatedAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "updatedAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "updatedAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "updatedAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "integer", "format": "int64" } } } }
+        }
+      }
+    },
+    "/api/promotion-email-sent-logs": {
+      "get": {
+        "tags": ["promotion-email-sent-log-resource"],
+        "operationId": "getAllPromotionEmailSentLogs",
+        "parameters": [
+          { "name": "id.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "tenantId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "tenantId.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "tenantId.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "templateId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "templateId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "templateId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "eventId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "eventId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "eventId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "recipientEmail.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "recipientEmail.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "recipientEmail.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "recipientEmail.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "recipientEmail.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "recipientEmail.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          {
+            "name": "recipientEmail.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "subject.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "subject.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "subject.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "promotionCode.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "promotionCode.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "promotionCode.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "discountCodeId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          {
+            "name": "discountCodeId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "discountCodeId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "discountCodeId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "discountCodeId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "discountCodeId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "sentAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "sentAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "sentAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "isTestEmail.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isTestEmail.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isTestEmail.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isTestEmail.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "isTestEmail.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "emailStatus.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "emailStatus.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "emailStatus.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "errorMessage.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "errorMessage.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "errorMessage.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "errorMessage.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "errorMessage.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "errorMessage.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "errorMessage.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "sentById.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "sentById.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "sentById.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 20 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/PromotionEmailSentLogDTO" } } }
+            }
+          }
+        }
+      }
+    },
+    "/api/promotion-email-sent-logs/{id}": {
+      "get": {
+        "tags": ["promotion-email-sent-log-resource"],
+        "operationId": "getPromotionEmailSentLog",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PromotionEmailSentLogDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/promotion-email-sent-logs/statistics/{eventId}": {
+      "get": {
+        "tags": ["promotion-email-sent-log-resource"],
+        "operationId": "getEmailStatistics",
+        "parameters": [{ "name": "eventId", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
+          }
+        }
+      }
+    },
+    "/api/promotion-email-sent-logs/count": {
+      "get": {
+        "tags": ["promotion-email-sent-log-resource"],
+        "operationId": "countPromotionEmailSentLogs",
+        "parameters": [
+          { "name": "id.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "tenantId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "tenantId.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "tenantId.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "templateId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "templateId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "templateId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "templateId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "eventId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "eventId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "eventId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "recipientEmail.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "recipientEmail.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "recipientEmail.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "recipientEmail.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "recipientEmail.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "recipientEmail.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          {
+            "name": "recipientEmail.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "subject.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "subject.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "subject.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "subject.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "promotionCode.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "promotionCode.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "promotionCode.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "promotionCode.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "discountCodeId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          {
+            "name": "discountCodeId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "discountCodeId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "discountCodeId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "discountCodeId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "discountCodeId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "discountCodeId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "sentAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "sentAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "sentAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "sentAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "isTestEmail.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isTestEmail.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isTestEmail.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isTestEmail.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "isTestEmail.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "emailStatus.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "emailStatus.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "emailStatus.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "errorMessage.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "errorMessage.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "errorMessage.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "errorMessage.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "errorMessage.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "errorMessage.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "errorMessage.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "sentById.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "sentById.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "sentById.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "sentById.notIn",
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
@@ -22137,6 +23256,21 @@
           },
           {
             "name": "isLiveEventImage.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          { "name": "isEmailHeaderImage.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isEmailHeaderImage.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isEmailHeaderImage.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "isEmailHeaderImage.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          {
+            "name": "isEmailHeaderImage.notIn",
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "boolean" } }
@@ -27097,6 +28231,7 @@
           "endDate",
           "endTime",
           "featuredEventPriorityRanking",
+          "fromEmail",
           "isFeaturedEvent",
           "liveEventPriorityRanking",
           "promotionStartDate",
@@ -27141,6 +28276,7 @@
           "donationMetadata": { "type": "string" },
           "eventRecurrenceMetadata": { "type": "string" },
           "emailHeaderImageUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
+          "fromEmail": { "maxLength": 255, "minLength": 0, "type": "string" },
           "isRecurring": { "type": "boolean" },
           "recurrencePattern": { "type": "string", "enum": ["DAILY", "WEEKLY", "BIWEEKLY", "MONTHLY"] },
           "recurrenceInterval": { "type": "integer", "format": "int32" },
@@ -27371,6 +28507,15 @@
           "twilioWhatsappFrom": { "maxLength": 50, "minLength": 0, "type": "string" },
           "whatsappWebhookUrl": { "maxLength": 1048, "minLength": 0, "type": "string" },
           "whatsappWebhookToken": { "maxLength": 1048, "minLength": 0, "type": "string" },
+          "emailFooterHtmlUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
+          "logoImageUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
+          "addressLine1": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "addressLine2": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "phoneNumber": { "maxLength": 50, "minLength": 0, "type": "string" },
+          "zipCode": { "maxLength": 20, "minLength": 0, "type": "string" },
+          "country": { "maxLength": 100, "minLength": 0, "type": "string" },
+          "stateProvince": { "maxLength": 100, "minLength": 0, "type": "string" },
+          "email": { "maxLength": 255, "minLength": 0, "type": "string" },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" },
           "tenantOrganization": { "$ref": "#/components/schemas/TenantOrganizationDTO" }
@@ -27482,6 +28627,47 @@
           "items": { "type": "array", "items": { "$ref": "#/components/schemas/EventTicketTransactionItemDTO" } },
           "eventDetails": { "$ref": "#/components/schemas/EventDetailsDTO" },
           "eventTicketTypes": { "type": "array", "items": { "$ref": "#/components/schemas/EventTicketTypeDTO" } }
+        }
+      },
+      "PromotionEmailTemplateFormDTO": {
+        "required": ["bodyHtml", "fromEmail", "subject", "templateName"],
+        "type": "object",
+        "properties": {
+          "eventId": { "type": "integer", "format": "int64" },
+          "templateName": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "subject": { "maxLength": 500, "minLength": 0, "type": "string" },
+          "fromEmail": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "bodyHtml": { "type": "string" },
+          "footerHtml": { "type": "string" },
+          "headerImageUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
+          "footerImageUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
+          "discountCodeId": { "type": "integer", "format": "int64" },
+          "isActive": { "type": "boolean" }
+        }
+      },
+      "PromotionEmailTemplateDTO": {
+        "required": ["bodyHtml", "createdAt", "eventId", "fromEmail", "subject", "templateName", "tenantId", "updatedAt"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "eventId": { "type": "integer", "format": "int64" },
+          "templateName": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "subject": { "maxLength": 500, "minLength": 0, "type": "string" },
+          "fromEmail": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "bodyHtml": { "type": "string" },
+          "footerHtml": { "type": "string" },
+          "headerImageUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
+          "footerImageUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
+          "promotionCode": { "maxLength": 50, "minLength": 0, "type": "string" },
+          "discountCodeId": { "type": "integer", "format": "int64" },
+          "isActive": { "type": "boolean" },
+          "createdById": { "type": "integer", "format": "int64" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "event": { "$ref": "#/components/schemas/EventDetailsDTO" },
+          "discountCode": { "$ref": "#/components/schemas/DiscountCodeDTO" },
+          "createdBy": { "$ref": "#/components/schemas/UserProfileDTO" }
         }
       },
       "MembershipPlanDTO": {
@@ -27747,6 +28933,7 @@
           "isHomePageHeroImage": { "type": "boolean" },
           "isFeaturedEventImage": { "type": "boolean" },
           "isLiveEventImage": { "type": "boolean" },
+          "isEmailHeaderImage": { "type": "boolean" },
           "eventId": { "type": "integer", "format": "int64" },
           "uploadedById": { "type": "integer", "format": "int64" },
           "createdAt": { "type": "string", "format": "date-time" },
@@ -28115,6 +29302,18 @@
           "headerImagePath": { "type": "string" },
           "footerPath": { "type": "string" },
           "testEmail": { "type": "boolean" }
+        }
+      },
+      "SendPromotionEmailDTO": {
+        "required": ["isTestEmail", "templateId"],
+        "type": "object",
+        "properties": {
+          "templateId": { "type": "integer", "format": "int64" },
+          "recipientEmail": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "isTestEmail": { "type": "boolean" },
+          "subjectOverride": { "maxLength": 500, "minLength": 0, "type": "string" },
+          "bodyHtmlOverride": { "type": "string" },
+          "recipientEmails": { "type": "array", "items": { "type": "string" } }
         }
       },
       "RefundRequest": {
@@ -28507,6 +29706,29 @@
           "readRate": { "type": "number", "format": "double" },
           "totalRecipients": { "type": "integer", "format": "int64" },
           "uniqueRecipients": { "type": "integer", "format": "int64" }
+        }
+      },
+      "PromotionEmailSentLogDTO": {
+        "required": ["emailStatus", "eventId", "recipientEmail", "sentAt", "subject", "templateId", "tenantId"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "templateId": { "type": "integer", "format": "int64" },
+          "eventId": { "type": "integer", "format": "int64" },
+          "recipientEmail": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "subject": { "maxLength": 500, "minLength": 0, "type": "string" },
+          "promotionCode": { "maxLength": 50, "minLength": 0, "type": "string" },
+          "discountCodeId": { "type": "integer", "format": "int64" },
+          "sentAt": { "type": "string", "format": "date-time" },
+          "isTestEmail": { "type": "boolean" },
+          "emailStatus": { "type": "string", "enum": ["SENT", "FAILED", "BOUNCED"] },
+          "errorMessage": { "type": "string" },
+          "sentById": { "type": "integer", "format": "int64" },
+          "template": { "$ref": "#/components/schemas/PromotionEmailTemplateDTO" },
+          "event": { "$ref": "#/components/schemas/EventDetailsDTO" },
+          "discountCode": { "$ref": "#/components/schemas/DiscountCodeDTO" },
+          "sentBy": { "$ref": "#/components/schemas/UserProfileDTO" }
         }
       },
       "EventTicketTransactionStatisticsDTO": {

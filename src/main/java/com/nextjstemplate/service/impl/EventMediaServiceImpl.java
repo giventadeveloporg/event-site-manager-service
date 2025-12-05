@@ -7,6 +7,7 @@ import com.nextjstemplate.domain.EventProgramDirectors;
 import com.nextjstemplate.domain.EventSponsors;
 import com.nextjstemplate.domain.EventSponsorsJoin;
 import com.nextjstemplate.domain.ExecutiveCommitteeTeamMember;
+import com.nextjstemplate.domain.PromotionEmailTemplate;
 import com.nextjstemplate.repository.EventDetailsRepository;
 import com.nextjstemplate.repository.EventFeaturedPerformersRepository;
 import com.nextjstemplate.repository.EventMediaRepository;
@@ -14,12 +15,18 @@ import com.nextjstemplate.repository.EventProgramDirectorsRepository;
 import com.nextjstemplate.repository.EventSponsorsJoinRepository;
 import com.nextjstemplate.repository.EventSponsorsRepository;
 import com.nextjstemplate.repository.ExecutiveCommitteeTeamMemberRepository;
+import com.nextjstemplate.repository.PromotionEmailTemplateRepository;
 import com.nextjstemplate.service.EventDetailsService;
 import com.nextjstemplate.service.EventMediaService;
+import com.nextjstemplate.service.FocusGroupService;
+import com.nextjstemplate.service.PromotionEmailTemplateService;
 import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.dto.EventDetailsDTO;
 import com.nextjstemplate.service.dto.EventMediaDTO;
+import com.nextjstemplate.service.dto.FocusGroupDTO;
+import com.nextjstemplate.service.dto.PromotionEmailTemplateDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
+import com.nextjstemplate.service.mapper.PromotionEmailTemplateMapper;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -66,6 +73,14 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     private final EventDetailsService eventDetailsService;
 
+    private final PromotionEmailTemplateRepository promotionEmailTemplateRepository;
+
+    private final PromotionEmailTemplateService promotionEmailTemplateService;
+
+    private final PromotionEmailTemplateMapper promotionEmailTemplateMapper;
+
+    private final FocusGroupService focusGroupService;
+
     @Autowired
     public EventMediaServiceImpl(
         EventMediaRepository eventMediaRepository,
@@ -77,7 +92,11 @@ public class EventMediaServiceImpl implements EventMediaService {
         EventSponsorsJoinRepository eventSponsorsJoinRepository,
         EventFeaturedPerformersRepository eventFeaturedPerformersRepository,
         EventProgramDirectorsRepository eventProgramDirectorsRepository,
-        EventDetailsService eventDetailsService
+        EventDetailsService eventDetailsService,
+        PromotionEmailTemplateRepository promotionEmailTemplateRepository,
+        PromotionEmailTemplateService promotionEmailTemplateService,
+        PromotionEmailTemplateMapper promotionEmailTemplateMapper,
+        FocusGroupService focusGroupService
     ) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
@@ -89,6 +108,10 @@ public class EventMediaServiceImpl implements EventMediaService {
         this.eventFeaturedPerformersRepository = eventFeaturedPerformersRepository;
         this.eventProgramDirectorsRepository = eventProgramDirectorsRepository;
         this.eventDetailsService = eventDetailsService;
+        this.promotionEmailTemplateRepository = promotionEmailTemplateRepository;
+        this.promotionEmailTemplateService = promotionEmailTemplateService;
+        this.promotionEmailTemplateMapper = promotionEmailTemplateMapper;
+        this.focusGroupService = focusGroupService;
     }
 
     @Override
@@ -1575,6 +1598,325 @@ public class EventMediaServiceImpl implements EventMediaService {
             event.setEmailHeaderImageUrl(s3Url);
             eventRepository.save(event);
             log.warn("Updated event {} with email header image URL via direct entity update (fallback)", eventId);
+        }
+
+        return savedMedia;
+    }
+
+    @Override
+    public EventMediaDTO uploadPromotionalEmailHeaderImage(
+        Long eventId,
+        Long promotionId,
+        MultipartFile file,
+        String tenantId,
+        String title,
+        String description,
+        Boolean isPublic
+    ) {
+        log.debug(
+            "Request to upload promotional email header image: eventId={}, promotionId={}, tenantId={}",
+            eventId,
+            promotionId,
+            tenantId
+        );
+
+        // 1. Validate event exists
+        EventDetails event = eventRepository
+            .findById(eventId)
+            .orElseThrow(() -> new EntityNotFoundException("Event not found: " + eventId));
+
+        // 2. Validate promotion template exists
+        PromotionEmailTemplate promotionTemplate = promotionEmailTemplateRepository
+            .findById(promotionId)
+            .orElseThrow(() -> new EntityNotFoundException("Promotion email template not found: " + promotionId));
+
+        // Validate template belongs to event and tenant
+        if (!promotionTemplate.getEventId().equals(eventId)) {
+            throw new IllegalArgumentException("Promotion template does not belong to the specified event");
+        }
+        if (!promotionTemplate.getTenantId().equals(tenantId)) {
+            throw new IllegalArgumentException("Promotion template does not belong to the specified tenant");
+        }
+
+        // 3. Validate file
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        // Validate file type (images only)
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("File must be an image");
+        }
+
+        // Validate file size (max 10MB)
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("File size must be less than 10MB");
+        }
+
+        // 4. Generate S3 path
+        String s3Path = s3Service.generatePromotionalEmailHeaderImagePath(tenantId, eventId, promotionId, file.getOriginalFilename());
+
+        // 5. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+        log.debug("Uploaded promotional email header image to S3: {}", s3Url);
+
+        // 6. Create EventMedia record for audit/tracking
+        EventMediaDTO mediaDTO = new EventMediaDTO();
+        mediaDTO.setEventId(eventId);
+        mediaDTO.setTenantId(tenantId);
+        mediaDTO.setTitle(title != null && !title.isEmpty() ? title : "Promotional Email Header Image");
+        mediaDTO.setDescription(
+            description != null && !description.isEmpty()
+                ? description
+                : "Promotional email header image for template: " + promotionTemplate.getTemplateName()
+        );
+        mediaDTO.setFileUrl(s3Url);
+        mediaDTO.setEventMediaType("PROMOTIONAL_EMAIL_HEADER_IMAGE");
+        mediaDTO.setStorageType("S3");
+        mediaDTO.setIsPublic(isPublic != null ? isPublic : true);
+        mediaDTO.setPriorityRanking(0);
+        mediaDTO.setIsHomePageHeroImage(false);
+        mediaDTO.setIsFeaturedEventImage(false);
+        mediaDTO.setIsLiveEventImage(false);
+        mediaDTO.setIsEmailHeaderImage(false);
+        mediaDTO.setStartDisplayingFromDate(LocalDate.now());
+        mediaDTO.setCreatedAt(ZonedDateTime.now());
+        mediaDTO.setUpdatedAt(ZonedDateTime.now());
+
+        EventMediaDTO savedMedia = save(mediaDTO);
+        log.debug("Created EventMedia record for promotional email header image: {}", savedMedia.getId());
+
+        // 7. Update promotion_email_template table with header image URL using PromotionEmailTemplateService
+        try {
+            PromotionEmailTemplateDTO templateDTO = promotionEmailTemplateMapper.toDto(promotionTemplate);
+            templateDTO.setHeaderImageUrl(s3Url);
+            promotionEmailTemplateService.partialUpdate(promotionId, templateDTO);
+            log.info("Updated promotion template {} with header image URL via PromotionEmailTemplateService: {}", promotionId, s3Url);
+        } catch (Exception e) {
+            log.error(
+                "Failed to update PromotionEmailTemplateDTO with header image URL for template {}: {}",
+                promotionId,
+                e.getMessage(),
+                e
+            );
+            // Fallback to direct entity update if service update fails
+            try {
+                promotionTemplate.setHeaderImageUrl(s3Url);
+                promotionTemplate.setUpdatedAt(ZonedDateTime.now());
+                promotionEmailTemplateRepository.save(promotionTemplate);
+                log.warn("Updated promotion template {} with header image URL via direct entity update (fallback)", promotionId);
+            } catch (Exception fallbackException) {
+                log.error(
+                    "Failed to update PromotionEmailTemplate with header image URL via fallback for template {}: {}",
+                    promotionId,
+                    fallbackException.getMessage(),
+                    fallbackException
+                );
+                throw new RuntimeException("Failed to update promotion template with header image URL", fallbackException);
+            }
+        }
+
+        return savedMedia;
+    }
+
+    @Override
+    public EventMediaDTO uploadPromotionalEmailFooterImage(
+        Long eventId,
+        Long promotionId,
+        MultipartFile file,
+        String tenantId,
+        String title,
+        String description,
+        Boolean isPublic
+    ) {
+        log.debug(
+            "Request to upload promotional email footer image: eventId={}, promotionId={}, tenantId={}",
+            eventId,
+            promotionId,
+            tenantId
+        );
+
+        // 1. Validate event exists
+        EventDetails event = eventRepository
+            .findById(eventId)
+            .orElseThrow(() -> new EntityNotFoundException("Event not found: " + eventId));
+
+        // 2. Validate promotion template exists
+        PromotionEmailTemplate promotionTemplate = promotionEmailTemplateRepository
+            .findById(promotionId)
+            .orElseThrow(() -> new EntityNotFoundException("Promotion email template not found: " + promotionId));
+
+        // Validate template belongs to event and tenant
+        if (!promotionTemplate.getEventId().equals(eventId)) {
+            throw new IllegalArgumentException("Promotion template does not belong to the specified event");
+        }
+        if (!promotionTemplate.getTenantId().equals(tenantId)) {
+            throw new IllegalArgumentException("Promotion template does not belong to the specified tenant");
+        }
+
+        // 3. Validate file
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        // Validate file type (images only)
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("File must be an image");
+        }
+
+        // Validate file size (max 10MB)
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("File size must be less than 10MB");
+        }
+
+        // 4. Generate S3 path
+        String s3Path = s3Service.generatePromotionalEmailFooterImagePath(tenantId, eventId, promotionId, file.getOriginalFilename());
+
+        // 5. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+        log.debug("Uploaded promotional email footer image to S3: {}", s3Url);
+
+        // 6. Create EventMedia record for audit/tracking
+        EventMediaDTO mediaDTO = new EventMediaDTO();
+        mediaDTO.setEventId(eventId);
+        mediaDTO.setTenantId(tenantId);
+        mediaDTO.setTitle(title != null && !title.isEmpty() ? title : "Promotional Email Footer Image");
+        mediaDTO.setDescription(
+            description != null && !description.isEmpty()
+                ? description
+                : "Promotional email footer image for template: " + promotionTemplate.getTemplateName()
+        );
+        mediaDTO.setFileUrl(s3Url);
+        mediaDTO.setEventMediaType("PROMOTIONAL_EMAIL_FOOTER_IMAGE");
+        mediaDTO.setStorageType("S3");
+        mediaDTO.setIsPublic(isPublic != null ? isPublic : true);
+        mediaDTO.setPriorityRanking(0);
+        mediaDTO.setIsHomePageHeroImage(false);
+        mediaDTO.setIsFeaturedEventImage(false);
+        mediaDTO.setIsLiveEventImage(false);
+        mediaDTO.setIsEmailHeaderImage(false);
+        mediaDTO.setStartDisplayingFromDate(LocalDate.now());
+        mediaDTO.setCreatedAt(ZonedDateTime.now());
+        mediaDTO.setUpdatedAt(ZonedDateTime.now());
+
+        EventMediaDTO savedMedia = save(mediaDTO);
+        log.debug("Created EventMedia record for promotional email footer image: {}", savedMedia.getId());
+
+        // 7. Update promotion_email_template table with footer image URL using PromotionEmailTemplateService
+        try {
+            PromotionEmailTemplateDTO templateDTO = promotionEmailTemplateMapper.toDto(promotionTemplate);
+            templateDTO.setFooterImageUrl(s3Url);
+            promotionEmailTemplateService.partialUpdate(promotionId, templateDTO);
+            log.info("Updated promotion template {} with footer image URL via PromotionEmailTemplateService: {}", promotionId, s3Url);
+        } catch (Exception e) {
+            log.error(
+                "Failed to update PromotionEmailTemplateDTO with footer image URL for template {}: {}",
+                promotionId,
+                e.getMessage(),
+                e
+            );
+            // Fallback to direct entity update if service update fails
+            try {
+                promotionTemplate.setFooterImageUrl(s3Url);
+                promotionTemplate.setUpdatedAt(ZonedDateTime.now());
+                promotionEmailTemplateRepository.save(promotionTemplate);
+                log.warn("Updated promotion template {} with footer image URL via direct entity update (fallback)", promotionId);
+            } catch (Exception fallbackException) {
+                log.error(
+                    "Failed to update PromotionEmailTemplate with footer image URL via fallback for template {}: {}",
+                    promotionId,
+                    fallbackException.getMessage(),
+                    fallbackException
+                );
+                throw new RuntimeException("Failed to update promotion template with footer image URL", fallbackException);
+            }
+        }
+
+        return savedMedia;
+    }
+
+    @Override
+    public EventMediaDTO uploadFocusGroupCoverImage(
+        Long focusGroupId,
+        MultipartFile file,
+        String tenantId,
+        String title,
+        String description,
+        Boolean isPublic
+    ) {
+        log.debug("Request to upload focus group cover image: focusGroupId={}, tenantId={}", focusGroupId, tenantId);
+
+        // 1. Validate focus group exists
+        FocusGroupDTO focusGroup = focusGroupService
+            .findOne(focusGroupId)
+            .orElseThrow(() -> new EntityNotFoundException("Focus group not found: " + focusGroupId));
+
+        // Validate focus group belongs to tenant
+        if (!focusGroup.getTenantId().equals(tenantId)) {
+            throw new IllegalArgumentException("Focus group does not belong to the specified tenant");
+        }
+
+        // 2. Validate file
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        // Validate file type (images only)
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("File must be an image");
+        }
+
+        // Validate file size (max 10MB)
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("File size must be less than 10MB");
+        }
+
+        // 3. Generate S3 path
+        String s3Path = s3Service.generateFocusGroupCoverImagePath(tenantId, focusGroupId, file.getOriginalFilename());
+
+        // 4. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+        log.debug("Uploaded focus group cover image to S3: {}", s3Url);
+
+        // 5. Create EventMedia record for audit/tracking
+        EventMediaDTO mediaDTO = new EventMediaDTO();
+        mediaDTO.setEventId(null); // Focus group cover image is not event-specific
+        mediaDTO.setTenantId(tenantId);
+        mediaDTO.setTitle(title != null && !title.isEmpty() ? title : "Focus Group Cover Image");
+        mediaDTO.setDescription(
+            description != null && !description.isEmpty() ? description : "Cover image for focus group: " + focusGroup.getName()
+        );
+        mediaDTO.setFileUrl(s3Url);
+        mediaDTO.setEventMediaType("FOCUS_GROUP_COVER_IMAGE");
+        mediaDTO.setStorageType("S3");
+        mediaDTO.setIsPublic(isPublic != null ? isPublic : true);
+        mediaDTO.setPriorityRanking(0);
+        mediaDTO.setIsHomePageHeroImage(false);
+        mediaDTO.setIsFeaturedEventImage(false);
+        mediaDTO.setIsLiveEventImage(false);
+        mediaDTO.setIsEmailHeaderImage(false);
+        mediaDTO.setStartDisplayingFromDate(LocalDate.now());
+        mediaDTO.setCreatedAt(ZonedDateTime.now());
+        mediaDTO.setUpdatedAt(ZonedDateTime.now());
+
+        EventMediaDTO savedMedia = save(mediaDTO);
+        log.debug("Created EventMedia record for focus group cover image: {}", savedMedia.getId());
+
+        // 6. Update focus_group table with cover image URL using FocusGroupService
+        try {
+            FocusGroupDTO focusGroupDTO = focusGroupService
+                .findOne(focusGroupId)
+                .orElseThrow(() -> new EntityNotFoundException("FocusGroup not found: " + focusGroupId));
+
+            focusGroupDTO.setCoverImageUrl(s3Url);
+            focusGroupService.update(focusGroupDTO);
+            log.info("Updated focus group {} with cover image URL via FocusGroupService: {}", focusGroupId, s3Url);
+        } catch (Exception e) {
+            log.error("Failed to update FocusGroupDTO with cover image URL for focus group {}: {}", focusGroupId, e.getMessage(), e);
+            throw new RuntimeException("Failed to update focus group with cover image URL", e);
         }
 
         return savedMedia;

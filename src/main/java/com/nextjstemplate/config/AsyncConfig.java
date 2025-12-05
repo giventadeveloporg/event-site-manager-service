@@ -13,11 +13,13 @@ public class AsyncConfig {
     @Bean(name = "emailTaskExecutor")
     public Executor emailTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10); // Core threads for email processing
-        executor.setMaxPoolSize(20); // Maximum threads for email processing
-        executor.setQueueCapacity(500); // Queue capacity for pending email tasks
+        executor.setCorePoolSize(50); // Core threads for email processing
+        executor.setMaxPoolSize(100); // Maximum threads for email processing
+        executor.setQueueCapacity(2000); // Queue capacity for pending email tasks
         executor.setThreadNamePrefix("EmailTask-");
         executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setKeepAliveSeconds(60); // Keep threads alive for 60 seconds
+        executor.setAllowCoreThreadTimeOut(false); // Don't timeout core threads
         executor.initialize();
         return executor;
     }

@@ -156,6 +156,11 @@ public class EventDetails implements Serializable {
     @Column(name = "email_header_image_url", length = 2048)
     private String emailHeaderImageUrl;
 
+    @NotNull
+    @Size(max = 255)
+    @Column(name = "from_email", length = 255, nullable = false)
+    private String fromEmail;
+
     // Recurrence fields
     @Column(name = "is_recurring")
     private Boolean isRecurring;
@@ -667,6 +672,19 @@ public class EventDetails implements Serializable {
     public EventDetails emailHeaderImageUrl(String emailHeaderImageUrl) {
         this.setEmailHeaderImageUrl(emailHeaderImageUrl);
         return this;
+    }
+
+    public String getFromEmail() {
+        return this.fromEmail;
+    }
+
+    public EventDetails fromEmail(String fromEmail) {
+        this.setFromEmail(fromEmail);
+        return this;
+    }
+
+    public void setFromEmail(String fromEmail) {
+        this.fromEmail = fromEmail;
     }
 
     public Boolean getIsRecurring() {

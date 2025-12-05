@@ -248,4 +248,74 @@ public interface EventMediaService {
         String description,
         Boolean isPublic
     );
+
+    /**
+     * Upload promotional email header image for a promotion template.
+     * Uploads an image to S3 and updates the promotion_email_template.header_image_url field.
+     * Also creates an EventMedia record for audit/tracking.
+     *
+     * @param eventId Event ID
+     * @param promotionId Promotion email template ID
+     * @param file Multipart file to upload
+     * @param tenantId Tenant ID
+     * @param title Optional title (defaults to "Promotional Email Header Image")
+     * @param description Optional description (defaults to "Promotional email header image")
+     * @param isPublic Optional public flag (defaults to true)
+     * @return EventMediaDTO with uploaded image details
+     */
+    EventMediaDTO uploadPromotionalEmailHeaderImage(
+        Long eventId,
+        Long promotionId,
+        MultipartFile file,
+        String tenantId,
+        String title,
+        String description,
+        Boolean isPublic
+    );
+
+    /**
+     * Upload promotional email footer image for a promotion template.
+     * Uploads an image to S3 and updates the promotion_email_template.footer_image_url field.
+     * Also creates an EventMedia record for audit/tracking.
+     *
+     * @param eventId Event ID
+     * @param promotionId Promotion email template ID
+     * @param file Multipart file to upload
+     * @param tenantId Tenant ID
+     * @param title Optional title (defaults to "Promotional Email Footer Image")
+     * @param description Optional description (defaults to "Promotional email footer image")
+     * @param isPublic Optional public flag (defaults to true)
+     * @return EventMediaDTO with uploaded image details
+     */
+    EventMediaDTO uploadPromotionalEmailFooterImage(
+        Long eventId,
+        Long promotionId,
+        MultipartFile file,
+        String tenantId,
+        String title,
+        String description,
+        Boolean isPublic
+    );
+
+    /**
+     * Upload focus group cover image.
+     * Uploads an image to S3 and updates the focus_group.cover_image_url field.
+     * Also creates an EventMedia record for audit/tracking.
+     *
+     * @param focusGroupId Focus Group ID
+     * @param file Multipart file to upload
+     * @param tenantId Tenant ID
+     * @param title Optional title (defaults to "Focus Group Cover Image")
+     * @param description Optional description (defaults to "Cover image for focus group")
+     * @param isPublic Optional public flag (defaults to true)
+     * @return EventMediaDTO with uploaded image details
+     */
+    EventMediaDTO uploadFocusGroupCoverImage(
+        Long focusGroupId,
+        MultipartFile file,
+        String tenantId,
+        String title,
+        String description,
+        Boolean isPublic
+    );
 }

@@ -2,14 +2,18 @@ package com.nextjstemplate.service.impl;
 
 import com.nextjstemplate.domain.TenantSettings;
 import com.nextjstemplate.repository.TenantSettingsRepository;
+import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.TenantSettingsService;
 import com.nextjstemplate.service.dto.TenantSettingsDTO;
 import com.nextjstemplate.service.mapper.TenantSettingsMapper;
+import jakarta.persistence.EntityNotFoundException;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Service Implementation for managing {@link com.nextjstemplate.domain.TenantSettings}.
@@ -24,9 +28,16 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
 
     private final TenantSettingsMapper tenantSettingsMapper;
 
-    public TenantSettingsServiceImpl(TenantSettingsRepository tenantSettingsRepository, TenantSettingsMapper tenantSettingsMapper) {
+    private final S3Service s3Service;
+
+    public TenantSettingsServiceImpl(
+        TenantSettingsRepository tenantSettingsRepository,
+        TenantSettingsMapper tenantSettingsMapper,
+        S3Service s3Service
+    ) {
         this.tenantSettingsRepository = tenantSettingsRepository;
         this.tenantSettingsMapper = tenantSettingsMapper;
+        this.s3Service = s3Service;
     }
 
     @Override
@@ -71,5 +82,125 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     public void delete(Long id) {
         LOG.debug("Request to delete TenantSettings : {}", id);
         tenantSettingsRepository.deleteById(id);
+    }
+
+    @Override
+    public TenantSettingsDTO uploadEmailFooterHtml(String tenantId, MultipartFile file) {
+        LOG.debug("Request to upload email footer HTML for tenant: {}", tenantId);
+
+        // 1. Validate tenant settings exists
+        TenantSettings tenantSettings = tenantSettingsRepository
+            .findByTenantId(tenantId)
+            .orElseThrow(() -> new EntityNotFoundException("Tenant settings not found for tenant: " + tenantId));
+
+        // 2. Validate file
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        // Validate file type (HTML files)
+        String contentType = file.getContentType();
+        if (contentType == null || (!contentType.equals("text/html") && !file.getOriginalFilename().endsWith(".html"))) {
+            throw new IllegalArgumentException("File must be an HTML file");
+        }
+
+        // Validate file size (max 1MB for HTML)
+        if (file.getSize() > 1024 * 1024) {
+            throw new IllegalArgumentException("File size must be less than 1MB");
+        }
+
+        // 3. Generate S3 path
+        String s3Path = s3Service.generateTenantEmailFooterHtmlPath(tenantId);
+
+        // 4. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+        LOG.debug("Uploaded email footer HTML to S3: {}", s3Url);
+
+        // 5. Update tenant_settings table with email footer HTML URL
+        try {
+            TenantSettingsDTO settingsDTO = tenantSettingsMapper.toDto(tenantSettings);
+            settingsDTO.setEmailFooterHtmlUrl(s3Url);
+            settingsDTO.setUpdatedAt(ZonedDateTime.now());
+            return partialUpdate(settingsDTO)
+                .orElseThrow(() -> new RuntimeException("Failed to update tenant settings with email footer HTML URL"));
+        } catch (Exception e) {
+            LOG.error("Failed to update TenantSettingsDTO with email footer HTML URL for tenant {}: {}", tenantId, e.getMessage(), e);
+            // Fallback to direct entity update if service update fails
+            try {
+                tenantSettings.setEmailFooterHtmlUrl(s3Url);
+                tenantSettings.setUpdatedAt(ZonedDateTime.now());
+                TenantSettings saved = tenantSettingsRepository.save(tenantSettings);
+                LOG.warn("Updated tenant settings {} with email footer HTML URL via direct entity update (fallback)", tenantId);
+                return tenantSettingsMapper.toDto(saved);
+            } catch (Exception fallbackException) {
+                LOG.error(
+                    "Failed to update TenantSettings with email footer HTML URL via fallback for tenant {}: {}",
+                    tenantId,
+                    fallbackException.getMessage(),
+                    fallbackException
+                );
+                throw new RuntimeException("Failed to update tenant settings with email footer HTML URL", fallbackException);
+            }
+        }
+    }
+
+    @Override
+    public TenantSettingsDTO uploadTenantLogo(String tenantId, MultipartFile file) {
+        LOG.debug("Request to upload tenant logo for tenant: {}", tenantId);
+
+        // 1. Validate tenant settings exists
+        TenantSettings tenantSettings = tenantSettingsRepository
+            .findByTenantId(tenantId)
+            .orElseThrow(() -> new EntityNotFoundException("Tenant settings not found for tenant: " + tenantId));
+
+        // 2. Validate file
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        // Validate file type (images only)
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("File must be an image");
+        }
+
+        // Validate file size (max 5MB for logo)
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException("File size must be less than 5MB");
+        }
+
+        // 3. Generate S3 path
+        String s3Path = s3Service.generateTenantLogoImagePath(tenantId, file.getOriginalFilename());
+
+        // 4. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+        LOG.debug("Uploaded tenant logo to S3: {}", s3Url);
+
+        // 5. Update tenant_settings table with logo image URL
+        try {
+            TenantSettingsDTO settingsDTO = tenantSettingsMapper.toDto(tenantSettings);
+            settingsDTO.setLogoImageUrl(s3Url);
+            settingsDTO.setUpdatedAt(ZonedDateTime.now());
+            return partialUpdate(settingsDTO)
+                .orElseThrow(() -> new RuntimeException("Failed to update tenant settings with logo image URL"));
+        } catch (Exception e) {
+            LOG.error("Failed to update TenantSettingsDTO with logo image URL for tenant {}: {}", tenantId, e.getMessage(), e);
+            // Fallback to direct entity update if service update fails
+            try {
+                tenantSettings.setLogoImageUrl(s3Url);
+                tenantSettings.setUpdatedAt(ZonedDateTime.now());
+                TenantSettings saved = tenantSettingsRepository.save(tenantSettings);
+                LOG.warn("Updated tenant settings {} with logo image URL via direct entity update (fallback)", tenantId);
+                return tenantSettingsMapper.toDto(saved);
+            } catch (Exception fallbackException) {
+                LOG.error(
+                    "Failed to update TenantSettings with logo image URL via fallback for tenant {}: {}",
+                    tenantId,
+                    fallbackException.getMessage(),
+                    fallbackException
+                );
+                throw new RuntimeException("Failed to update tenant settings with logo image URL", fallbackException);
+            }
+        }
     }
 }

@@ -503,6 +503,52 @@ public class S3ServiceImpl implements S3Service {
         );
     }
 
+    @Override
+    public String generatePromotionalEmailHeaderImagePath(String tenantId, Long eventId, Long promotionId, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        // Default to .jpeg if no extension found
+        if (extension == null || extension.isEmpty()) {
+            extension = ".jpeg";
+        }
+        String profilePrefix = getActiveProfilePrefix();
+
+        return String.format(
+            "%s/events/tenantId/%s/event-id/%d/promotional_email_templates/promotion-id/%d/email_header_image_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            eventId,
+            promotionId,
+            timestamp,
+            uuid,
+            extension
+        );
+    }
+
+    @Override
+    public String generatePromotionalEmailFooterImagePath(String tenantId, Long eventId, Long promotionId, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        // Default to .jpeg if no extension found
+        if (extension == null || extension.isEmpty()) {
+            extension = ".jpeg";
+        }
+        String profilePrefix = getActiveProfilePrefix();
+
+        return String.format(
+            "%s/events/tenantId/%s/event-id/%d/promotional_email_templates/promotion-id/%d/email_footer_image_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            eventId,
+            promotionId,
+            timestamp,
+            uuid,
+            extension
+        );
+    }
+
     /**
      * Sanitize filename - remove special characters, keep alphanumeric, dots, hyphens, underscores
      */
@@ -512,5 +558,48 @@ public class S3ServiceImpl implements S3Service {
         }
         // Remove special characters, keep alphanumeric, dots, hyphens, underscores
         return filename.replaceAll("[^a-zA-Z0-9._-]", "_");
+    }
+
+    @Override
+    public String generateTenantEmailFooterHtmlPath(String tenantId) {
+        String profilePrefix = getActiveProfilePrefix();
+        return String.format("%s/media/tenantId/%s/email_templates/email_footer.html", profilePrefix, tenantId);
+    }
+
+    @Override
+    public String generateTenantLogoImagePath(String tenantId, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        // Default to .png if no extension found
+        if (extension == null || extension.isEmpty()) {
+            extension = ".png";
+        }
+        String profilePrefix = getActiveProfilePrefix();
+        String baseName = sanitizeFilename(getBaseFileName(originalFilename));
+
+        return String.format("%s/media/tenantId/%s/tenant_logo/%s_%s_%s%s", profilePrefix, tenantId, baseName, timestamp, uuid, extension);
+    }
+
+    @Override
+    public String generateFocusGroupCoverImagePath(String tenantId, Long focusGroupId, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        // Default to .jpeg if no extension found
+        if (extension == null || extension.isEmpty()) {
+            extension = ".jpeg";
+        }
+        String profilePrefix = getActiveProfilePrefix();
+
+        return String.format(
+            "%s/media/tenantId/%s/focus-groups/focus-group-id/%d/cover_image_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            focusGroupId,
+            timestamp,
+            uuid,
+            extension
+        );
     }
 }

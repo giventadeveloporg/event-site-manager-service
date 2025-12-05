@@ -230,6 +230,7 @@ public class RecurringEventGenerationServiceImpl implements RecurringEventGenera
         childEvent.setLiveEventPriorityRanking(parentEvent.getLiveEventPriorityRanking());
         childEvent.setMetadata(parentEvent.getMetadata());
         childEvent.setEmailHeaderImageUrl(parentEvent.getEmailHeaderImageUrl());
+        childEvent.setFromEmail(parentEvent.getFromEmail());
         childEvent.setCreatedBy(parentEvent.getCreatedBy());
         childEvent.setEventType(parentEvent.getEventType());
 

@@ -106,6 +106,42 @@ public class TenantSettings implements Serializable {
     @Column(name = "whatsapp_webhook_token", length = 1048)
     private String whatsappWebhookToken;
 
+    @Size(max = 2048)
+    @Column(name = "email_footer_html_url", length = 2048)
+    private String emailFooterHtmlUrl;
+
+    @Size(max = 2048)
+    @Column(name = "logo_image_url", length = 2048)
+    private String logoImageUrl;
+
+    @Size(max = 255)
+    @Column(name = "address_line_1", length = 255)
+    private String addressLine1;
+
+    @Size(max = 255)
+    @Column(name = "address_line_2", length = 255)
+    private String addressLine2;
+
+    @Size(max = 50)
+    @Column(name = "phone_number", length = 50)
+    private String phoneNumber;
+
+    @Size(max = 20)
+    @Column(name = "zip_code", length = 20)
+    private String zipCode;
+
+    @Size(max = 100)
+    @Column(name = "country", length = 100)
+    private String country;
+
+    @Size(max = 100)
+    @Column(name = "state_province", length = 100)
+    private String stateProvince;
+
+    @Size(max = 255)
+    @Column(name = "email", length = 255)
+    private String email;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -472,6 +508,123 @@ public class TenantSettings implements Serializable {
         this.whatsappWebhookToken = whatsappWebhookToken;
     }
 
+    public String getEmailFooterHtmlUrl() {
+        return this.emailFooterHtmlUrl;
+    }
+
+    public TenantSettings emailFooterHtmlUrl(String emailFooterHtmlUrl) {
+        this.setEmailFooterHtmlUrl(emailFooterHtmlUrl);
+        return this;
+    }
+
+    public void setEmailFooterHtmlUrl(String emailFooterHtmlUrl) {
+        this.emailFooterHtmlUrl = emailFooterHtmlUrl;
+    }
+
+    public String getLogoImageUrl() {
+        return this.logoImageUrl;
+    }
+
+    public TenantSettings logoImageUrl(String logoImageUrl) {
+        this.setLogoImageUrl(logoImageUrl);
+        return this;
+    }
+
+    public void setLogoImageUrl(String logoImageUrl) {
+        this.logoImageUrl = logoImageUrl;
+    }
+
+    public String getAddressLine1() {
+        return this.addressLine1;
+    }
+
+    public TenantSettings addressLine1(String addressLine1) {
+        this.setAddressLine1(addressLine1);
+        return this;
+    }
+
+    public void setAddressLine1(String addressLine1) {
+        this.addressLine1 = addressLine1;
+    }
+
+    public String getAddressLine2() {
+        return this.addressLine2;
+    }
+
+    public TenantSettings addressLine2(String addressLine2) {
+        this.setAddressLine2(addressLine2);
+        return this;
+    }
+
+    public void setAddressLine2(String addressLine2) {
+        this.addressLine2 = addressLine2;
+    }
+
+    public String getPhoneNumber() {
+        return this.phoneNumber;
+    }
+
+    public TenantSettings phoneNumber(String phoneNumber) {
+        this.setPhoneNumber(phoneNumber);
+        return this;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getZipCode() {
+        return this.zipCode;
+    }
+
+    public TenantSettings zipCode(String zipCode) {
+        this.setZipCode(zipCode);
+        return this;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+    }
+
+    public String getCountry() {
+        return this.country;
+    }
+
+    public TenantSettings country(String country) {
+        this.setCountry(country);
+        return this;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getStateProvince() {
+        return this.stateProvince;
+    }
+
+    public TenantSettings stateProvince(String stateProvince) {
+        this.setStateProvince(stateProvince);
+        return this;
+    }
+
+    public void setStateProvince(String stateProvince) {
+        this.stateProvince = stateProvince;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public TenantSettings email(String email) {
+        this.setEmail(email);
+        return this;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
     // setters here
 
@@ -521,6 +674,15 @@ public class TenantSettings implements Serializable {
                 ", twilioWhatsappFrom='" + getTwilioWhatsappFrom() + "'" +
                 ", whatsappWebhookUrl='" + getWhatsappWebhookUrl() + "'" +
                 ", whatsappWebhookToken='" + getWhatsappWebhookToken() + "'" +
+                ", emailFooterHtmlUrl='" + getEmailFooterHtmlUrl() + "'" +
+                ", logoImageUrl='" + getLogoImageUrl() + "'" +
+                ", addressLine1='" + getAddressLine1() + "'" +
+                ", addressLine2='" + getAddressLine2() + "'" +
+                ", phoneNumber='" + getPhoneNumber() + "'" +
+                ", zipCode='" + getZipCode() + "'" +
+                ", country='" + getCountry() + "'" +
+                ", stateProvince='" + getStateProvince() + "'" +
+                ", email='" + getEmail() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";
