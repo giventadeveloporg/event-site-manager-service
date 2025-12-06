@@ -185,3 +185,4 @@ dev.js
 # Sensitive configuration files - DO NOT COMMIT
 scripts/stripe-config.properties
 scripts/stripe-config-insert.sql
+/.run/NextjsTemplateBootApp.run.xml
