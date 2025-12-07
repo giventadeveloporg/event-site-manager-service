@@ -1,0 +1,15 @@
+# Task ID: 16
+# Title: Integrate with Event System
+# Status: pending
+# Dependencies: 10 ⏱️, 11 ⏱️
+# Priority: high
+# Description: Ensure proper integration with existing EventDetails entity and service
+# Details:
+Implement integration:
+- Validate event exists and belongs to tenant
+- Retrieve event registrants for bulk email
+- Use existing event service/repository
+- Handle error cases gracefully
+
+# Test Strategy:
+Test validation logic and integration with event system. Mock event service for unit tests.

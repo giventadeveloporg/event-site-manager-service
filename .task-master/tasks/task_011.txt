@@ -1,0 +1,21 @@
+# Task ID: 11
+# Title: Implement PromotionEmailService
+# Status: pending
+# Dependencies: 3 ⏱️, 5 ⏱️, 8 ⏱️, 10 ⏱️
+# Priority: high
+# Description: Create service for sending test and bulk emails, with logging functionality
+# Details:
+Implement service with methods:
+- sendTestEmail(templateId, recipientEmail, tenantId, userId) - Send test email
+- sendBulkEmail(templateId, recipientEmails, tenantId, userId) - Send bulk emails
+- buildEmailContent(template, overrides) - Build final email content
+- logEmailSent(logEntry) - Log sent email
+
+Integration points:
+- Use existing email service infrastructure
+- Retrieve event registrants from EventAttendee/EventTicketTransaction tables
+- Handle email sending failures gracefully
+- Log all email attempts (success and failure)
+
+# Test Strategy:
+Test email building logic, integration with email service, and error handling. Mock external dependencies.

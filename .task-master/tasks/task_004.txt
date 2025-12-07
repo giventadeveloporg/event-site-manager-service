@@ -1,0 +1,15 @@
+# Task ID: 4
+# Title: Create PromotionEmailTemplateRepository
+# Status: pending
+# Dependencies: 2 ⏱️
+# Priority: high
+# Description: Create Spring Data JPA repository interface for PromotionEmailTemplate with custom query methods
+# Details:
+Implement repository interface with:
+- Standard CRUD operations (inherited from JpaRepository)
+- findByTenantIdAndEventId - Find templates by tenant and event
+- findByTenantIdAndIsActive - Find active templates
+- findByTenantIdAndEventIdAndTemplateName - Check uniqueness
+
+# Test Strategy:
+Test repository methods with integration tests to verify queries return expected results.

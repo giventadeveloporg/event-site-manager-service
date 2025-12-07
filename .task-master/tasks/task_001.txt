@@ -1,0 +1,15 @@
+# Task ID: 1
+# Title: Create Database Migration Script
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Create SQL migration script to add promotion_email_template and promotion_email_sent_log tables
+# Details:
+Create migration script that follows existing project conventions to add two new tables:
+- promotion_email_template - Stores email templates with appropriate columns
+- promotion_email_sent_log - Tracks sent emails
+- Define foreign keys, indexes, and add table comments for documentation
+- Follow reference in documentation/promotion_email_redesign/migrations/001_create_promotion_tables.sql
+
+# Test Strategy:
+Verify that the migration script runs without errors and creates the tables with correct structure, constraints, and indexes.

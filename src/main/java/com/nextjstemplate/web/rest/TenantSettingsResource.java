@@ -306,4 +306,52 @@ public class TenantSettingsResource {
             throw new BadRequestAlertException("Failed to upload tenant logo: " + e.getMessage(), ENTITY_NAME, "uploadFailed");
         }
     }
+
+    /**
+     * {@code POST  /tenant-settings/upload/email-header-image} : Upload email header image.
+     *
+     * @param file the image file to upload.
+     * @param tenantId the tenant ID (optional, will be retrieved from context if not provided).
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated tenantSettingsDTO.
+     */
+    @PostMapping(value = "/upload/email-header-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<TenantSettingsDTO> uploadEmailHeaderImage(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam(value = "tenantId", required = false) String tenantId,
+        Authentication authentication
+    ) throws URISyntaxException {
+        LOG.debug("REST request to upload email header image");
+
+        // Get tenantId from context if not provided
+        String finalTenantId = tenantId;
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            try {
+                finalTenantId = com.nextjstemplate.security.TenantContext.getCurrentTenant();
+                LOG.debug("Tenant ID from context: {}", finalTenantId);
+            } catch (Exception e) {
+                LOG.warn("Could not get tenant ID from context: {}", e.getMessage());
+            }
+        }
+
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            throw new BadRequestAlertException("Tenant ID is required", ENTITY_NAME, "tenantIdRequired");
+        }
+
+        try {
+            TenantSettingsDTO result = tenantSettingsService.uploadEmailHeaderImage(finalTenantId, file);
+            return ResponseEntity
+                .ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        } catch (EntityNotFoundException e) {
+            LOG.error("Tenant settings not found: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "tenantSettingsNotFound");
+        } catch (IllegalArgumentException e) {
+            LOG.error("Invalid request: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidRequest");
+        } catch (Exception e) {
+            LOG.error("Failed to upload email header image", e);
+            throw new BadRequestAlertException("Failed to upload email header image: " + e.getMessage(), ENTITY_NAME, "uploadFailed");
+        }
+    }
 }

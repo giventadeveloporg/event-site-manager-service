@@ -1,0 +1,15 @@
+# Task ID: 17
+# Title: Integrate with Discount Code System
+# Status: pending
+# Dependencies: 10 ⏱️, 11 ⏱️
+# Priority: high
+# Description: Link templates to discount codes and retrieve discount code details
+# Details:
+Implement integration:
+- Validate discount code exists and belongs to event
+- Retrieve discount code details for email content
+- Use existing DiscountCode entity/repository
+- Handle cases where discount code is not provided
+
+# Test Strategy:
+Test validation logic and integration with discount code system. Mock discount code service for unit tests.

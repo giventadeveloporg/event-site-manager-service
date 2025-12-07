@@ -1,0 +1,16 @@
+# Task ID: 2
+# Title: Create PromotionEmailTemplate Entity
+# Status: pending
+# Dependencies: 1 ⏱️
+# Priority: high
+# Description: Create JPA entity class for promotion_email_template table with all required fields and relationships
+# Details:
+Implement JPA entity class with:
+- All table columns mapped to entity fields (id, tenantId, eventId, templateName, subject, bodyHtml, etc.)
+- Define relationships to EventDetails, DiscountCode, UserProfile
+- Add validation annotations (NotNull, Size, etc.)
+- Implement equals/hashCode methods
+- Add audit fields handling (createdAt, updatedAt)
+
+# Test Strategy:
+Test entity mapping with basic persistence tests. Verify that all fields are correctly mapped and relationships are properly defined.

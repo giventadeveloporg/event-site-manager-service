@@ -1,0 +1,14 @@
+# Task ID: 9
+# Title: Create PromotionEmailSentLogDTO
+# Status: pending
+# Dependencies: 3 ⏱️
+# Priority: medium
+# Description: Create DTO for sent log entries
+# Details:
+Implement DTO with:
+- All relevant fields from PromotionEmailSentLog entity
+- Appropriate nested DTOs
+- Ensure it matches OpenAPI schema definition
+
+# Test Strategy:
+Verify DTO serialization/deserialization works correctly with JSON.

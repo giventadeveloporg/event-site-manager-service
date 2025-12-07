@@ -1,0 +1,16 @@
+# Task ID: 5
+# Title: Create PromotionEmailSentLogRepository
+# Status: pending
+# Dependencies: 3 ⏱️
+# Priority: medium
+# Description: Create Spring Data JPA repository interface for PromotionEmailSentLog with custom query methods
+# Details:
+Implement repository interface with:
+- Standard CRUD operations
+- findByTenantIdAndEventId - Find logs by event
+- findByTenantIdAndTemplateId - Find logs by template
+- findByTenantIdAndSentAtBetween - Find logs by date range
+- findByTenantIdAndEmailStatus - Find logs by status
+
+# Test Strategy:
+Test repository methods with integration tests to verify queries return expected results.

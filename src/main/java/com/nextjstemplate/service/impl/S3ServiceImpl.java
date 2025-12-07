@@ -582,6 +582,29 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
+    public String generateTenantEmailHeaderImagePath(String tenantId, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        // Default to .png if no extension found
+        if (extension == null || extension.isEmpty()) {
+            extension = ".png";
+        }
+        String profilePrefix = getActiveProfilePrefix();
+        String baseName = sanitizeFilename(getBaseFileName(originalFilename));
+
+        return String.format(
+            "%s/media/tenantId/%s/email_header_image/%s_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            baseName,
+            timestamp,
+            uuid,
+            extension
+        );
+    }
+
+    @Override
     public String generateFocusGroupCoverImagePath(String tenantId, Long focusGroupId, String originalFilename) {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);

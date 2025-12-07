@@ -114,6 +114,10 @@ public class TenantSettings implements Serializable {
     private String emailFooterHtmlUrl;
 
     @Size(max = 2048)
+    @Column(name = "email_header_image_url", length = 2048)
+    private String emailHeaderImageUrl;
+
+    @Size(max = 2048)
     @Column(name = "logo_image_url", length = 2048)
     private String logoImageUrl;
 
@@ -537,6 +541,19 @@ public class TenantSettings implements Serializable {
         this.emailFooterHtmlUrl = emailFooterHtmlUrl;
     }
 
+    public String getEmailHeaderImageUrl() {
+        return this.emailHeaderImageUrl;
+    }
+
+    public TenantSettings emailHeaderImageUrl(String emailHeaderImageUrl) {
+        this.setEmailHeaderImageUrl(emailHeaderImageUrl);
+        return this;
+    }
+
+    public void setEmailHeaderImageUrl(String emailHeaderImageUrl) {
+        this.emailHeaderImageUrl = emailHeaderImageUrl;
+    }
+
     public String getLogoImageUrl() {
         return this.logoImageUrl;
     }
@@ -692,6 +709,7 @@ public class TenantSettings implements Serializable {
                 ", whatsappWebhookUrl='" + getWhatsappWebhookUrl() + "'" +
                 ", whatsappWebhookToken='" + getWhatsappWebhookToken() + "'" +
                 ", emailFooterHtmlUrl='" + getEmailFooterHtmlUrl() + "'" +
+                ", emailHeaderImageUrl='" + getEmailHeaderImageUrl() + "'" +
                 ", logoImageUrl='" + getLogoImageUrl() + "'" +
                 ", addressLine1='" + getAddressLine1() + "'" +
                 ", addressLine2='" + getAddressLine2() + "'" +

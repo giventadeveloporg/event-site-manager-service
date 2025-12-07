@@ -2,7 +2,7 @@
   "meta": {
     "projectName": "Task Master",
     "version": "1.5.0",
-    "source": ".task-master/MEMBERSHIP_SUBSCRIPTION_BACKEND_PRD.html",
+    "source": ".task-master/BACKEND_PRD.html",
     "description": "Tasks generated from PRD",
     "totalTasksGenerated": 25,
     "tasksIncluded": 25
@@ -10,253 +10,253 @@
   "tasks": [
     {
       "id": 1,
-      "title": "Verify and update MembershipPlan entity",
-      "description": "Verify the MembershipPlan entity matches the database schema and add necessary relationships and validations.",
+      "title": "Create Database Migration Script",
+      "description": "Create SQL migration script to add promotion_email_template and promotion_email_sent_log tables",
       "status": "pending",
       "dependencies": [],
       "priority": "high",
-      "details": "- Verify MembershipPlan entity matches database schema in Latest_Schema_Post__Blob_Claude_11.sql\n- Add relationships to other entities (@ManyToOne, @OneToMany)\n- Add validation annotations for fields\n- Ensure all fields from database are present\n- Add tenantId field for multi-tenant support",
-      "testStrategy": "Verify entity can be persisted to database and relationships work correctly."
+      "details": "Create migration script that follows existing project conventions to add two new tables:\n- promotion_email_template - Stores email templates with appropriate columns\n- promotion_email_sent_log - Tracks sent emails\n- Define foreign keys, indexes, and add table comments for documentation\n- Follow reference in documentation/promotion_email_redesign/migrations/001_create_promotion_tables.sql",
+      "testStrategy": "Verify that the migration script runs without errors and creates the tables with correct structure, constraints, and indexes."
     },
     {
       "id": 2,
-      "title": "Verify and update MembershipSubscription entity",
-      "description": "Verify the MembershipSubscription entity matches the database schema and add necessary relationships and validations.",
+      "title": "Create PromotionEmailTemplate Entity",
+      "description": "Create JPA entity class for promotion_email_template table with all required fields and relationships",
       "status": "pending",
-      "dependencies": [],
+      "dependencies": [1],
       "priority": "high",
-      "details": "- Verify MembershipSubscription entity matches database schema in Latest_Schema_Post__Blob_Claude_11.sql\n- Add relationships to UserProfile and MembershipPlan (@ManyToOne)\n- Add validation annotations for fields\n- Ensure all fields from database are present\n- Add tenantId field for multi-tenant support",
-      "testStrategy": "Verify entity can be persisted to database and relationships work correctly."
+      "details": "Implement JPA entity class with:\n- All table columns mapped to entity fields (id, tenantId, eventId, templateName, subject, bodyHtml, etc.)\n- Define relationships to EventDetails, DiscountCode, UserProfile\n- Add validation annotations (NotNull, Size, etc.)\n- Implement equals/hashCode methods\n- Add audit fields handling (createdAt, updatedAt)",
+      "testStrategy": "Test entity mapping with basic persistence tests. Verify that all fields are correctly mapped and relationships are properly defined."
     },
     {
       "id": 3,
-      "title": "Create MembershipPlanRepository",
-      "description": "Create repository interface for MembershipPlan entity with custom query methods.",
+      "title": "Create PromotionEmailSentLog Entity",
+      "description": "Create JPA entity class for promotion_email_sent_log table with all required fields and relationships",
       "status": "pending",
       "dependencies": [1],
       "priority": "high",
-      "details": "- Create MembershipPlanRepository interface extending JpaRepository\n- Add custom query methods:\n  - findByTenantId\n  - findByTenantIdAndIsActive\n  - findByTenantIdAndPlanCode\n  - existsByTenantIdAndPlanCode",
-      "testStrategy": "Test repository methods with JUnit to ensure they return expected results."
+      "details": "Implement JPA entity class with:\n- All table columns mapped to entity fields\n- Define relationships to PromotionEmailTemplate, EventDetails, DiscountCode, UserProfile\n- Add validation annotations\n- Create enum for emailStatus (SENT, FAILED, BOUNCED)",
+      "testStrategy": "Test entity mapping with basic persistence tests. Verify that all fields are correctly mapped and relationships are properly defined."
     },
     {
       "id": 4,
-      "title": "Create MembershipSubscriptionRepository",
-      "description": "Create repository interface for MembershipSubscription entity with custom query methods.",
+      "title": "Create PromotionEmailTemplateRepository",
+      "description": "Create Spring Data JPA repository interface for PromotionEmailTemplate with custom query methods",
       "status": "pending",
       "dependencies": [2],
       "priority": "high",
-      "details": "- Create MembershipSubscriptionRepository interface extending JpaRepository\n- Add custom query methods:\n  - findByStripeSubscriptionId\n  - existsByStripeSubscriptionId\n  - findByUserProfileIdAndSubscriptionStatusIn\n  - findByTenantIdAndSubscriptionStatus\n  - findByStripeSubscriptionIdAndTenantId",
-      "testStrategy": "Test repository methods with JUnit to ensure they return expected results."
+      "details": "Implement repository interface with:\n- Standard CRUD operations (inherited from JpaRepository)\n- findByTenantIdAndEventId - Find templates by tenant and event\n- findByTenantIdAndIsActive - Find active templates\n- findByTenantIdAndEventIdAndTemplateName - Check uniqueness",
+      "testStrategy": "Test repository methods with integration tests to verify queries return expected results."
     },
     {
       "id": 5,
-      "title": "Create MembershipPlanDTO",
-      "description": "Create DTO for MembershipPlan entity with validation annotations matching OpenAPI schema.",
+      "title": "Create PromotionEmailSentLogRepository",
+      "description": "Create Spring Data JPA repository interface for PromotionEmailSentLog with custom query methods",
       "status": "pending",
-      "dependencies": [1],
+      "dependencies": [3],
       "priority": "medium",
-      "details": "- Create MembershipPlanDTO class\n- Add all fields from MembershipPlan entity\n- Add validation annotations (@NotNull, @Size, etc.)\n- Match OpenAPI schema in documentation/Swagger_API_Docs/api-docs.json\n- Implement serialization/deserialization support",
-      "testStrategy": "Test validation with invalid data and ensure serialization/deserialization works correctly."
+      "details": "Implement repository interface with:\n- Standard CRUD operations\n- findByTenantIdAndEventId - Find logs by event\n- findByTenantIdAndTemplateId - Find logs by template\n- findByTenantIdAndSentAtBetween - Find logs by date range\n- findByTenantIdAndEmailStatus - Find logs by status",
+      "testStrategy": "Test repository methods with integration tests to verify queries return expected results."
     },
     {
       "id": 6,
-      "title": "Create MembershipSubscriptionDTO",
-      "description": "Create DTO for MembershipSubscription entity with validation annotations matching OpenAPI schema.",
+      "title": "Create PromotionEmailTemplateDTO",
+      "description": "Create DTO class for promotion email templates matching OpenAPI schema",
       "status": "pending",
       "dependencies": [2],
-      "priority": "medium",
-      "details": "- Create MembershipSubscriptionDTO class\n- Add all fields from MembershipSubscription entity\n- Add validation annotations (@NotNull, @Size, etc.)\n- Match OpenAPI schema in documentation/Swagger_API_Docs/api-docs.json\n- Add optional relation fields (membershipPlan, userProfile)\n- Implement serialization/deserialization support",
-      "testStrategy": "Test validation with invalid data and ensure serialization/deserialization works correctly."
+      "priority": "high",
+      "details": "Implement DTO class with:\n- All fields from entity\n- Nested DTOs (EventDetailsDTO, DiscountCodeDTO, UserProfileDTO)\n- Ensure it matches OpenAPI schema definition",
+      "testStrategy": "Verify DTO serialization/deserialization works correctly with JSON."
     },
     {
       "id": 7,
-      "title": "Create MembershipPlanMapper",
-      "description": "Create mapper for converting between MembershipPlan entity and DTO.",
+      "title": "Create PromotionEmailTemplateFormDTO",
+      "description": "Create form DTO for template create/update operations",
       "status": "pending",
-      "dependencies": [1, 5],
-      "priority": "medium",
-      "details": "- Create MembershipPlanMapper interface/class\n- Implement toDto() method to convert entity to DTO\n- Implement toEntity() method to convert DTO to entity\n- Use MapStruct or manual mapping\n- Handle nested objects if needed",
-      "testStrategy": "Test conversion in both directions with various data scenarios."
+      "dependencies": [2],
+      "priority": "high",
+      "details": "Implement form DTO with fields:\n- eventId, templateName, subject, bodyHtml, headerImageUrl, footerImageUrl, discountCodeId, isActive\n- Add validation annotations\n- Include appropriate constructors and conversion methods",
+      "testStrategy": "Test validation rules and conversion to/from entity."
     },
     {
       "id": 8,
-      "title": "Create MembershipSubscriptionMapper",
-      "description": "Create mapper for converting between MembershipSubscription entity and DTO.",
+      "title": "Create SendPromotionEmailDTO",
+      "description": "Create DTO for email sending requests",
       "status": "pending",
-      "dependencies": [2, 6],
-      "priority": "medium",
-      "details": "- Create MembershipSubscriptionMapper interface/class\n- Implement toDto() method to convert entity to DTO\n- Implement toEntity() method to convert DTO to entity\n- Use MapStruct or manual mapping\n- Handle nested objects (membershipPlan, userProfile)",
-      "testStrategy": "Test conversion in both directions with various data scenarios."
+      "dependencies": [],
+      "priority": "high",
+      "details": "Implement DTO with fields:\n- templateId, recipientEmail (optional), isTestEmail, subjectOverride (optional), bodyHtmlOverride (optional)\n- Add validation annotations\n- Include appropriate constructors",
+      "testStrategy": "Test validation rules and verify it can be properly serialized/deserialized."
     },
     {
       "id": 9,
-      "title": "Add unique index on membership_subscription.stripe_subscription_id",
-      "description": "Create Liquibase migration to add unique index on stripe_subscription_id to prevent duplicate subscriptions.",
+      "title": "Create PromotionEmailSentLogDTO",
+      "description": "Create DTO for sent log entries",
       "status": "pending",
-      "dependencies": [],
-      "priority": "high",
-      "details": "- Create Liquibase migration file in src/main/resources/config/liquibase/changelog/\n- Add createIndex with unique=true on membership_subscription.stripe_subscription_id\n- Include comment explaining purpose (race condition prevention)\n- Pattern based on existing unique constraint on event_ticket_transaction.stripe_payment_intent_id",
-      "testStrategy": "Verify index is created correctly in database and prevents duplicate stripe_subscription_id values."
+      "dependencies": [3],
+      "priority": "medium",
+      "details": "Implement DTO with:\n- All relevant fields from PromotionEmailSentLog entity\n- Appropriate nested DTOs\n- Ensure it matches OpenAPI schema definition",
+      "testStrategy": "Verify DTO serialization/deserialization works correctly with JSON."
     },
     {
       "id": 10,
-      "title": "Create MembershipPlanService",
-      "description": "Implement service layer for membership plan management with CRUD operations and Stripe integration.",
+      "title": "Implement PromotionEmailTemplateService",
+      "description": "Create service layer for template operations with CRUD methods and business logic",
       "status": "pending",
-      "dependencies": [3, 5, 7],
+      "dependencies": [2, 4, 6, 7],
       "priority": "high",
-      "details": "- Create MembershipPlanService class\n- Implement CRUD operations (create, read, update, delete)\n- Add Stripe Product/Price creation\n- Implement validation logic\n- Add plan code uniqueness validation\n- Handle plan updates with active subscriptions\n- Support soft delete functionality",
-      "testStrategy": "Unit test service methods with mocked dependencies. Test business logic for plan creation, updates, and deletion."
+      "details": "Implement service with methods:\n- createTemplate(formDTO, tenantId, userId) - Create new template\n- updateTemplate(id, formDTO, tenantId) - Update existing template\n- getTemplate(id, tenantId) - Get template by ID\n- listTemplates(criteria, tenantId) - List templates with filtering\n- deleteTemplate(id, tenantId) - Soft delete (set isActive=false)\n- validateTemplateName(name, eventId, tenantId, excludeId) - Check uniqueness\n\nEnforce business rules:\n- Template name must be unique per event per tenant\n- Event must exist and belong to tenant\n- Discount code (if provided) must exist and belong to event\n- Auto-set createdById and updatedAt timestamps",
+      "testStrategy": "Write unit tests covering all methods and business rules. Test validation logic and error handling."
     },
     {
       "id": 11,
-      "title": "Create StripeSubscriptionService",
-      "description": "Implement service for Stripe subscription management with customer and subscription operations.",
+      "title": "Implement PromotionEmailService",
+      "description": "Create service for sending test and bulk emails, with logging functionality",
       "status": "pending",
-      "dependencies": [],
+      "dependencies": [3, 5, 8, 10],
       "priority": "high",
-      "details": "- Create StripeSubscriptionService class\n- Implement Stripe Customer creation/retrieval\n- Implement Stripe Subscription creation\n- Implement Stripe Subscription update\n- Implement Stripe Subscription cancellation\n- Handle trial periods\n- Add error handling and logging\n- Use existing Stripe infrastructure",
-      "testStrategy": "Unit test with Stripe SDK test mode. Mock Stripe responses for unit tests."
+      "details": "Implement service with methods:\n- sendTestEmail(templateId, recipientEmail, tenantId, userId) - Send test email\n- sendBulkEmail(templateId, recipientEmails, tenantId, userId) - Send bulk emails\n- buildEmailContent(template, overrides) - Build final email content\n- logEmailSent(logEntry) - Log sent email\n\nIntegration points:\n- Use existing email service infrastructure\n- Retrieve event registrants from EventAttendee/EventTicketTransaction tables\n- Handle email sending failures gracefully\n- Log all email attempts (success and failure)",
+      "testStrategy": "Test email building logic, integration with email service, and error handling. Mock external dependencies."
     },
     {
       "id": 12,
-      "title": "Create MembershipSubscriptionService",
-      "description": "Implement service layer for membership subscription management with business logic.",
+      "title": "Implement PromotionEmailSentLogService",
+      "description": "Create service for querying email logs with filtering capabilities",
       "status": "pending",
-      "dependencies": [4, 6, 8, 11],
-      "priority": "high",
-      "details": "- Create MembershipSubscriptionService class\n- Implement findOrCreateSubscription method with duplicate prevention\n- Implement subscription creation\n- Implement subscription updates\n- Implement subscription cancellation\n- Add trial period calculation\n- Add period date calculation\n- Handle subscription status transitions\n- Implement tenant context propagation for async methods",
-      "testStrategy": "Unit test service methods with mocked dependencies. Test business logic for subscription lifecycle."
+      "dependencies": [3, 5, 9],
+      "priority": "medium",
+      "details": "Implement service with methods:\n- listLogs(criteria, tenantId) - List logs with filtering\n- getLog(id, tenantId) - Get log entry by ID\n- getEmailStatistics(eventId, tenantId) - Get email statistics (optional)",
+      "testStrategy": "Test query methods with various filter combinations. Verify tenant isolation works correctly."
     },
     {
       "id": 13,
-      "title": "Enhance Stripe webhook handler for subscription events",
-      "description": "Update existing webhook handler to process subscription-related Stripe events.",
+      "title": "Implement Template CRUD Endpoints",
+      "description": "Create REST controller endpoints for template operations",
       "status": "pending",
-      "dependencies": [11, 12],
+      "dependencies": [10],
       "priority": "high",
-      "details": "- Enhance existing webhook handler\n- Add handlers for subscription events:\n  - checkout.session.completed\n  - customer.subscription.created\n  - customer.subscription.updated\n  - customer.subscription.deleted\n  - invoice.payment_succeeded\n  - invoice.payment_failed\n- Implement webhook signature verification\n- Extract metadata from events\n- Call appropriate service methods\n- Add error handling and logging\n- Follow pattern from TicketGenerationService for race condition prevention",
-      "testStrategy": "Test webhook handlers with sample Stripe event payloads. Verify correct subscription updates."
+      "details": "Implement endpoints:\n- GET /api/promotion-email-templates - List templates with filtering\n- GET /api/promotion-email-templates/{id} - Get template by ID\n- POST /api/promotion-email-templates - Create new template\n- PATCH /api/promotion-email-templates/{id} - Update template\n- DELETE /api/promotion-email-templates/{id} - Delete template (soft delete)\n\nSupport query parameters for filtering and pagination\nEnsure proper validation of tenant ID from security context",
+      "testStrategy": "Write integration tests for all endpoints. Test filtering, pagination, error responses, and security constraints."
     },
     {
       "id": 14,
-      "title": "Create MembershipPlanResource controller",
-      "description": "Implement REST controller for membership plan endpoints.",
+      "title": "Implement Email Sending Endpoints",
+      "description": "Create REST controller endpoints for sending test and bulk emails",
       "status": "pending",
-      "dependencies": [5, 10],
-      "priority": "medium",
-      "details": "- Create MembershipPlanResource class\n- Implement GET /api/membership-plans (with filtering)\n- Implement GET /api/membership-plans/{id}\n- Implement POST /api/membership-plans\n- Implement PUT /api/membership-plans/{id}\n- Implement PATCH /api/membership-plans/{id}\n- Implement DELETE /api/membership-plans/{id}\n- Add pagination support\n- Add sorting support\n- Include x-total-count header\n- Add proper error handling",
-      "testStrategy": "Test endpoints with MockMvc. Verify correct responses, pagination, and error handling."
+      "dependencies": [11],
+      "priority": "high",
+      "details": "Implement endpoints:\n- POST /api/promotion-email-templates/{id}/send-test - Send test email\n- POST /api/promotion-email-templates/{id}/send-bulk - Send bulk email\n\nRequirements:\n- Test email: Send to single recipient\n- Bulk email: Send to all event registrants if recipientEmails not provided\n- Log all email attempts\n- Return detailed success/failure counts",
+      "testStrategy": "Test both endpoints with various scenarios including success and failure cases. Verify logging functionality."
     },
     {
       "id": 15,
-      "title": "Create MembershipSubscriptionResource controller",
-      "description": "Implement REST controller for membership subscription endpoints.",
+      "title": "Implement Log Query Endpoints",
+      "description": "Create REST controller endpoints for querying email logs",
       "status": "pending",
-      "dependencies": [6, 12],
+      "dependencies": [12],
       "priority": "medium",
-      "details": "- Create MembershipSubscriptionResource class\n- Implement GET /api/membership-subscriptions (with filtering)\n- Implement GET /api/membership-subscriptions/by-user/{userId}\n- Implement GET /api/membership-subscriptions/{id}\n- Implement POST /api/membership-subscriptions\n- Implement PATCH /api/membership-subscriptions/{id}\n- Add pagination support\n- Add sorting support\n- Include x-total-count header\n- Add proper error handling",
-      "testStrategy": "Test endpoints with MockMvc. Verify correct responses, pagination, and error handling."
+      "details": "Implement endpoints:\n- GET /api/promotion-email-sent-logs - List sent email logs with filtering\n- GET /api/promotion-email-sent-logs/{id} - Get log entry by ID\n\nSupport query parameters for filtering by event, template, date range, status, etc.\nImplement pagination",
+      "testStrategy": "Test endpoints with various filter combinations. Verify pagination works correctly."
     },
     {
       "id": 16,
-      "title": "Enhance billing endpoint for subscription management",
-      "description": "Update existing billing endpoint to support subscription creation and management.",
+      "title": "Integrate with Event System",
+      "description": "Ensure proper integration with existing EventDetails entity and service",
       "status": "pending",
-      "dependencies": [11, 12, 13],
-      "priority": "medium",
-      "details": "- Enhance /api/billing/manage-subscription endpoint\n- Add support for subscription creation\n- Implement Stripe Checkout Session creation for subscriptions\n- Return checkout session URL\n- Handle subscription upgrades/downgrades\n- Handle subscription cancellation\n- Add proper error handling and validation",
-      "testStrategy": "Test endpoint with different subscription scenarios. Verify correct Checkout Session creation."
+      "dependencies": [10, 11],
+      "priority": "high",
+      "details": "Implement integration:\n- Validate event exists and belongs to tenant\n- Retrieve event registrants for bulk email\n- Use existing event service/repository\n- Handle error cases gracefully",
+      "testStrategy": "Test validation logic and integration with event system. Mock event service for unit tests."
     },
     {
       "id": 17,
-      "title": "Implement subscription status transition logic",
-      "description": "Add business logic for handling subscription status transitions based on events.",
+      "title": "Integrate with Discount Code System",
+      "description": "Link templates to discount codes and retrieve discount code details",
       "status": "pending",
-      "dependencies": [12],
-      "priority": "medium",
-      "details": "- Implement status transition logic in MembershipSubscriptionService\n- Handle transitions:\n  - TRIAL → ACTIVE (trial ends, payment succeeds)\n  - ACTIVE → PAST_DUE (payment fails)\n  - PAST_DUE → ACTIVE (payment succeeds)\n  - ACTIVE → CANCELLED (user cancels)\n  - CANCELLED → EXPIRED (period ends)\n- Add validation for valid transitions\n- Update subscription dates during transitions",
-      "testStrategy": "Test each transition scenario with unit tests. Verify correct status updates and date calculations."
+      "dependencies": [10, 11],
+      "priority": "high",
+      "details": "Implement integration:\n- Validate discount code exists and belongs to event\n- Retrieve discount code details for email content\n- Use existing DiscountCode entity/repository\n- Handle cases where discount code is not provided",
+      "testStrategy": "Test validation logic and integration with discount code system. Mock discount code service for unit tests."
     },
     {
       "id": 18,
-      "title": "Implement trial period calculation logic",
-      "description": "Add logic for calculating trial periods and handling trial expirations.",
+      "title": "Integrate with Email Service",
+      "description": "Use existing email sending infrastructure for promotion emails",
       "status": "pending",
-      "dependencies": [12],
-      "priority": "medium",
-      "details": "- Add trial period calculation in MembershipSubscriptionService\n- Set trial_start and trial_end dates\n- Set initial subscription_status to TRIAL when applicable\n- Handle trial expiration\n- Update current_period dates based on trial\n- Handle Stripe trial period synchronization",
-      "testStrategy": "Test trial period calculation with different scenarios. Verify correct date calculations and status updates."
+      "dependencies": [11],
+      "priority": "high",
+      "details": "Implement integration:\n- Reuse existing email service/configuration\n- Support HTML email content\n- Handle email sending errors\n- Implement proper error handling and retries if needed",
+      "testStrategy": "Test integration with email service. Mock email service for unit tests."
     },
     {
       "id": 19,
-      "title": "Implement subscription cancellation logic",
-      "description": "Add logic for handling subscription cancellations with proper status updates.",
+      "title": "Integrate with User Profile System",
+      "description": "Track who created templates and sent emails by linking to UserProfile",
       "status": "pending",
-      "dependencies": [12],
+      "dependencies": [10, 11],
       "priority": "medium",
-      "details": "- Add cancellation logic in MembershipSubscriptionService\n- Set cancel_at_period_end flag\n- Store cancellation_reason\n- Cancel Stripe subscription at period end\n- Handle immediate cancellation if needed\n- Update subscription status when period ends\n- Set cancelled_at timestamp",
-      "testStrategy": "Test cancellation scenarios with different timing options. Verify correct status updates and Stripe calls."
+      "details": "Implement integration:\n- Link createdById to UserProfile\n- Link sentById to UserProfile\n- Retrieve user details for audit trail\n- Handle cases where user no longer exists",
+      "testStrategy": "Test integration with user profile system. Mock user service for unit tests."
     },
     {
       "id": 20,
-      "title": "Implement subscription upgrade/downgrade logic",
-      "description": "Add logic for handling plan changes (upgrades and downgrades) with proper proration.",
+      "title": "Update Swagger/OpenAPI Documentation",
+      "description": "Add API documentation for all new endpoints",
       "status": "pending",
-      "dependencies": [12],
+      "dependencies": [13, 14, 15],
       "priority": "medium",
-      "details": "- Add upgrade/downgrade logic in MembershipSubscriptionService\n- Create new Stripe Subscription with new Price ID\n- Cancel old Stripe Subscription\n- Create new membership_subscription record\n- Set old subscription status to CANCELLED\n- Handle proration if applicable\n- Update current_period dates",
-      "testStrategy": "Test upgrade and downgrade scenarios. Verify correct subscription creation and cancellation."
+      "details": "Update documentation:\n- Document all endpoints with proper annotations\n- Define request/response schemas\n- Add example requests/responses\n- Document query parameters\n- Add error response documentation\n- Ensure documentation matches implementation",
+      "testStrategy": "Verify that Swagger UI correctly displays all endpoints and that the generated documentation is accurate."
     },
     {
       "id": 21,
-      "title": "Create unit tests for MembershipPlanService",
-      "description": "Implement comprehensive unit tests for the membership plan service.",
+      "title": "Write Unit Tests for Services",
+      "description": "Implement comprehensive unit tests for all service layer components",
       "status": "pending",
-      "dependencies": [10],
-      "priority": "low",
-      "details": "- Create unit tests for MembershipPlanService\n- Test CRUD operations\n- Test validation logic\n- Test Stripe integration\n- Test error handling\n- Mock repository and Stripe dependencies",
-      "testStrategy": "Use JUnit and Mockito to test service methods with various scenarios."
+      "dependencies": [10, 11, 12],
+      "priority": "medium",
+      "details": "Write tests for:\n- Template creation/update/delete logic\n- Email sending logic\n- Validation rules\n- Error handling\n- Edge cases\n\nUse mocking for external dependencies",
+      "testStrategy": "Aim for high code coverage. Test happy paths and error scenarios."
     },
     {
       "id": 22,
-      "title": "Create unit tests for MembershipSubscriptionService",
-      "description": "Implement comprehensive unit tests for the membership subscription service.",
+      "title": "Write Integration Tests for REST Endpoints",
+      "description": "Implement integration tests for all REST API endpoints",
       "status": "pending",
-      "dependencies": [12],
-      "priority": "low",
-      "details": "- Create unit tests for MembershipSubscriptionService\n- Test findOrCreateSubscription method\n- Test subscription creation\n- Test subscription updates\n- Test subscription cancellation\n- Test trial period calculation\n- Test status transitions\n- Test tenant context propagation\n- Mock repository and Stripe dependencies",
-      "testStrategy": "Use JUnit and Mockito to test service methods with various scenarios."
+      "dependencies": [13, 14, 15],
+      "priority": "medium",
+      "details": "Write tests for:\n- All CRUD operations\n- Email sending endpoints\n- Filtering and pagination\n- Error scenarios\n- Security constraints\n\nUse test database and mock external services where appropriate",
+      "testStrategy": "Test API contract compliance, status codes, response formats, and error handling."
     },
     {
       "id": 23,
-      "title": "Create integration tests for REST endpoints",
-      "description": "Implement integration tests for the REST controllers to verify API functionality.",
+      "title": "Implement Error Handling",
+      "description": "Ensure robust error handling across the application",
       "status": "pending",
-      "dependencies": [14, 15, 16],
-      "priority": "low",
-      "details": "- Create integration tests for REST endpoints\n- Test MembershipPlanResource endpoints\n- Test MembershipSubscriptionResource endpoints\n- Test enhanced billing endpoint\n- Test pagination and filtering\n- Test error responses\n- Use Spring Boot Test and MockMvc",
-      "testStrategy": "Use Spring Boot Test with MockMvc to test endpoints with various request scenarios."
+      "dependencies": [10, 11, 12, 13, 14, 15],
+      "priority": "medium",
+      "details": "Implement error handling:\n- Return appropriate HTTP status codes\n- Provide clear error messages in response body\n- Log errors for debugging\n- Handle validation errors gracefully\n- Handle database constraint violations\n- Handle email sending failures",
+      "testStrategy": "Test error scenarios and verify appropriate status codes and error messages are returned."
     },
     {
       "id": 24,
-      "title": "Create integration test for Stripe webhook handling",
-      "description": "Implement integration test for webhook event processing to verify correct subscription updates.",
+      "title": "Implement Security Measures",
+      "description": "Ensure all endpoints are properly secured with tenant isolation",
       "status": "pending",
-      "dependencies": [13],
-      "priority": "low",
-      "details": "- Create integration test for webhook handler\n- Test processing of sample events:\n  - checkout.session.completed\n  - customer.subscription.created\n  - customer.subscription.updated\n  - customer.subscription.deleted\n  - invoice.payment_succeeded\n  - invoice.payment_failed\n- Verify correct database updates\n- Use Spring Boot Test",
-      "testStrategy": "Use Spring Boot Test to verify webhook handler correctly processes events and updates database."
+      "dependencies": [13, 14, 15],
+      "priority": "high",
+      "details": "Implement security measures:\n- Validate tenant ID from security context for all endpoints\n- Ensure users can only access templates for their tenant\n- Validate user permissions (admin only)\n- Sanitize HTML content in email body\n- Validate email addresses\n- Implement rate limiting for email sending endpoints",
+      "testStrategy": "Test tenant isolation, permission checks, and input sanitization."
     },
     {
       "id": 25,
-      "title": "Create end-to-end test for subscription flow",
-      "description": "Implement E2E test for the complete subscription lifecycle.",
+      "title": "Optimize Performance",
+      "description": "Implement performance optimizations for database queries and email sending",
       "status": "pending",
-      "dependencies": [13, 16, 17, 18, 19, 20],
+      "dependencies": [10, 11, 12, 13, 14, 15],
       "priority": "low",
-      "details": "- Create E2E test for subscription flow\n- Test complete subscription creation\n- Test webhook processing\n- Test subscription management\n- Test subscription cancellation\n- Test multi-tenant isolation\n- Use Stripe test mode\n- Verify correct database state",
-      "testStrategy": "Create comprehensive test that walks through entire subscription lifecycle with Stripe test mode."
+      "details": "Implement optimizations:\n- Ensure database indexes are used effectively\n- Implement pagination for list endpoints\n- Consider async processing for bulk emails\n- Optimize email sending batch size\n- Add caching where appropriate",
+      "testStrategy": "Perform load testing to verify performance under load. Check query execution plans."
     }
   ]
 }

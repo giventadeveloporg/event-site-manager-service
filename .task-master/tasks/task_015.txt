@@ -1,0 +1,16 @@
+# Task ID: 15
+# Title: Implement Log Query Endpoints
+# Status: pending
+# Dependencies: 12 ⏱️
+# Priority: medium
+# Description: Create REST controller endpoints for querying email logs
+# Details:
+Implement endpoints:
+- GET /api/promotion-email-sent-logs - List sent email logs with filtering
+- GET /api/promotion-email-sent-logs/{id} - Get log entry by ID
+
+Support query parameters for filtering by event, template, date range, status, etc.
+Implement pagination
+
+# Test Strategy:
+Test endpoints with various filter combinations. Verify pagination works correctly.

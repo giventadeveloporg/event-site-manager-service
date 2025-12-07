@@ -77,6 +77,9 @@ public class TenantSettingsDTO implements Serializable {
     private String emailFooterHtmlUrl;
 
     @Size(max = 2048)
+    private String emailHeaderImageUrl;
+
+    @Size(max = 2048)
     private String logoImageUrl;
 
     @Size(max = 255)
@@ -316,6 +319,14 @@ public class TenantSettingsDTO implements Serializable {
         this.emailFooterHtmlUrl = emailFooterHtmlUrl;
     }
 
+    public String getEmailHeaderImageUrl() {
+        return emailHeaderImageUrl;
+    }
+
+    public void setEmailHeaderImageUrl(String emailHeaderImageUrl) {
+        this.emailHeaderImageUrl = emailHeaderImageUrl;
+    }
+
     public String getLogoImageUrl() {
         return logoImageUrl;
     }
@@ -455,6 +466,7 @@ public class TenantSettingsDTO implements Serializable {
                 ", whatsappWebhookUrl='" + getWhatsappWebhookUrl() + "'" +
                 ", whatsappWebhookToken='" + getWhatsappWebhookToken() + "'" +
                 ", emailFooterHtmlUrl='" + getEmailFooterHtmlUrl() + "'" +
+                ", emailHeaderImageUrl='" + getEmailHeaderImageUrl() + "'" +
                 ", logoImageUrl='" + getLogoImageUrl() + "'" +
                 ", addressLine1='" + getAddressLine1() + "'" +
                 ", addressLine2='" + getAddressLine2() + "'" +

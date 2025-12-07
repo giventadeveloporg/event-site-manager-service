@@ -192,6 +192,10 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
                 specification =
                     specification.and(buildStringSpecification(criteria.getEmailFooterHtmlUrl(), TenantSettings_.emailFooterHtmlUrl));
             }
+            if (criteria.getEmailHeaderImageUrl() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getEmailHeaderImageUrl(), TenantSettings_.emailHeaderImageUrl));
+            }
             if (criteria.getLogoImageUrl() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getLogoImageUrl(), TenantSettings_.logoImageUrl));
             }

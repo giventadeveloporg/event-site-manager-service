@@ -203,4 +203,79 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
             }
         }
     }
+
+    @Override
+    public TenantSettingsDTO uploadEmailHeaderImage(String tenantId, MultipartFile file) {
+        LOG.debug("Request to upload email header image for tenant: {}", tenantId);
+
+        // 1. Validate tenant settings exists
+        TenantSettings tenantSettings = tenantSettingsRepository
+            .findByTenantId(tenantId)
+            .orElseThrow(() -> new EntityNotFoundException("Tenant settings not found for tenant: " + tenantId));
+
+        // 2. Validate file
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        // Validate file type (images only: PNG, JPG, JPEG, GIF, WEBP)
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("File must be an image");
+        }
+
+        // Validate specific image types
+        String filename = file.getOriginalFilename();
+        if (filename != null) {
+            String lowerFilename = filename.toLowerCase();
+            boolean isValidImageType =
+                lowerFilename.endsWith(".png") ||
+                lowerFilename.endsWith(".jpg") ||
+                lowerFilename.endsWith(".jpeg") ||
+                lowerFilename.endsWith(".gif") ||
+                lowerFilename.endsWith(".webp");
+            if (!isValidImageType) {
+                throw new IllegalArgumentException("File must be an image (PNG, JPG, JPEG, GIF, or WEBP)");
+            }
+        }
+
+        // Validate file size (max 5MB for email header image)
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException("File size must be less than 5MB");
+        }
+
+        // 3. Generate S3 path
+        String s3Path = s3Service.generateTenantEmailHeaderImagePath(tenantId, file.getOriginalFilename());
+
+        // 4. Upload to S3
+        String s3Url = s3Service.uploadFile(s3Path, file);
+        LOG.debug("Uploaded email header image to S3: {}", s3Url);
+
+        // 5. Update tenant_settings table with email header image URL
+        try {
+            TenantSettingsDTO settingsDTO = tenantSettingsMapper.toDto(tenantSettings);
+            settingsDTO.setEmailHeaderImageUrl(s3Url);
+            settingsDTO.setUpdatedAt(ZonedDateTime.now());
+            return partialUpdate(settingsDTO)
+                .orElseThrow(() -> new RuntimeException("Failed to update tenant settings with email header image URL"));
+        } catch (Exception e) {
+            LOG.error("Failed to update TenantSettingsDTO with email header image URL for tenant {}: {}", tenantId, e.getMessage(), e);
+            // Fallback to direct entity update if service update fails
+            try {
+                tenantSettings.setEmailHeaderImageUrl(s3Url);
+                tenantSettings.setUpdatedAt(ZonedDateTime.now());
+                TenantSettings saved = tenantSettingsRepository.save(tenantSettings);
+                LOG.warn("Updated tenant settings {} with email header image URL via direct entity update (fallback)", tenantId);
+                return tenantSettingsMapper.toDto(saved);
+            } catch (Exception fallbackException) {
+                LOG.error(
+                    "Failed to update TenantSettings with email header image URL via fallback for tenant {}: {}",
+                    tenantId,
+                    fallbackException.getMessage(),
+                    fallbackException
+                );
+                throw new RuntimeException("Failed to update tenant settings with email header image URL", fallbackException);
+            }
+        }
+    }
 }
