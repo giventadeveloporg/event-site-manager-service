@@ -45,8 +45,7 @@ public class FocusGroup implements Serializable {
     @Column(name = "slug", length = 80, nullable = false)
     private String slug;
 
-    @Lob
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Size(max = 1024)
