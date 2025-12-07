@@ -26,6 +26,8 @@ public class TenantSettingsDTO implements Serializable {
 
     private Boolean enableEmailMarketing;
 
+    private Boolean isMembershipSubscriptionEnabled;
+
     @Size(max = 500)
     private String whatsappApiKey;
 
@@ -152,6 +154,14 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setEnableEmailMarketing(Boolean enableEmailMarketing) {
         this.enableEmailMarketing = enableEmailMarketing;
+    }
+
+    public Boolean getIsMembershipSubscriptionEnabled() {
+        return isMembershipSubscriptionEnabled;
+    }
+
+    public void setIsMembershipSubscriptionEnabled(Boolean isMembershipSubscriptionEnabled) {
+        this.isMembershipSubscriptionEnabled = isMembershipSubscriptionEnabled;
     }
 
     public String getWhatsappApiKey() {
@@ -425,6 +435,7 @@ public class TenantSettingsDTO implements Serializable {
                 ", requireAdminApproval='" + getRequireAdminApproval() + "'" +
                 ", enableWhatsappIntegration='" + getEnableWhatsappIntegration() + "'" +
                 ", enableEmailMarketing='" + getEnableEmailMarketing() + "'" +
+                ", isMembershipSubscriptionEnabled='" + getIsMembershipSubscriptionEnabled() + "'" +
                 ", whatsappApiKey='" + getWhatsappApiKey() + "'" +
                 ", emailProviderConfig='" + getEmailProviderConfig() + "'" +
                 ", maxEventsPerMonth=" + getMaxEventsPerMonth() +
