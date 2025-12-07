@@ -1,0 +1,14 @@
+# Task ID: 12
+# Title: Implement PromotionEmailSentLogService
+# Status: pending
+# Dependencies: 3 ⏱️, 5 ⏱️, 9 ⏱️
+# Priority: medium
+# Description: Create service for querying email logs with filtering capabilities
+# Details:
+Implement service with methods:
+- listLogs(criteria, tenantId) - List logs with filtering
+- getLog(id, tenantId) - Get log entry by ID
+- getEmailStatistics(eventId, tenantId) - Get email statistics (optional)
+
+# Test Strategy:
+Test query methods with various filter combinations. Verify tenant isolation works correctly.

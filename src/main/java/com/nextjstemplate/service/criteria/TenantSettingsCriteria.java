@@ -77,6 +77,8 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private StringFilter emailFooterHtmlUrl;
 
+    private StringFilter emailHeaderImageUrl;
+
     private StringFilter logoImageUrl;
 
     private ZonedDateTimeFilter createdAt;
@@ -116,6 +118,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.whatsappWebhookUrl = other.optionalWhatsappWebhookUrl().map(StringFilter::copy).orElse(null);
         this.whatsappWebhookToken = other.optionalWhatsappWebhookToken().map(StringFilter::copy).orElse(null);
         this.emailFooterHtmlUrl = other.optionalEmailFooterHtmlUrl().map(StringFilter::copy).orElse(null);
+        this.emailHeaderImageUrl = other.optionalEmailHeaderImageUrl().map(StringFilter::copy).orElse(null);
         this.logoImageUrl = other.optionalLogoImageUrl().map(StringFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
@@ -622,6 +625,25 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.emailFooterHtmlUrl = emailFooterHtmlUrl;
     }
 
+    public StringFilter getEmailHeaderImageUrl() {
+        return emailHeaderImageUrl;
+    }
+
+    public Optional<StringFilter> optionalEmailHeaderImageUrl() {
+        return Optional.ofNullable(emailHeaderImageUrl);
+    }
+
+    public StringFilter emailHeaderImageUrl() {
+        if (emailHeaderImageUrl == null) {
+            setEmailHeaderImageUrl(new StringFilter());
+        }
+        return emailHeaderImageUrl;
+    }
+
+    public void setEmailHeaderImageUrl(StringFilter emailHeaderImageUrl) {
+        this.emailHeaderImageUrl = emailHeaderImageUrl;
+    }
+
     public StringFilter getLogoImageUrl() {
         return logoImageUrl;
     }
@@ -753,6 +775,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(whatsappWebhookUrl, that.whatsappWebhookUrl) &&
             Objects.equals(whatsappWebhookToken, that.whatsappWebhookToken) &&
             Objects.equals(emailFooterHtmlUrl, that.emailFooterHtmlUrl) &&
+            Objects.equals(emailHeaderImageUrl, that.emailHeaderImageUrl) &&
             Objects.equals(logoImageUrl, that.logoImageUrl) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
@@ -790,6 +813,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             whatsappWebhookUrl,
             whatsappWebhookToken,
             emailFooterHtmlUrl,
+            emailHeaderImageUrl,
             logoImageUrl,
             createdAt,
             updatedAt,
@@ -831,6 +855,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalWhatsappWebhookUrl().map(f -> "whatsappWebhookUrl=" + f + ", ").orElse("") +
                 optionalWhatsappWebhookToken().map(f -> "whatsappWebhookToken=" + f + ", ").orElse("") +
                 optionalEmailFooterHtmlUrl().map(f -> "emailFooterHtmlUrl=" + f + ", ").orElse("") +
+                optionalEmailHeaderImageUrl().map(f -> "emailHeaderImageUrl=" + f + ", ").orElse("") +
                 optionalLogoImageUrl().map(f -> "logoImageUrl=" + f + ", ").orElse("") +
                 optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
                 optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +

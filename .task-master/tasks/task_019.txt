@@ -1,0 +1,15 @@
+# Task ID: 19
+# Title: Integrate with User Profile System
+# Status: pending
+# Dependencies: 10 ⏱️, 11 ⏱️
+# Priority: medium
+# Description: Track who created templates and sent emails by linking to UserProfile
+# Details:
+Implement integration:
+- Link createdById to UserProfile
+- Link sentById to UserProfile
+- Retrieve user details for audit trail
+- Handle cases where user no longer exists
+
+# Test Strategy:
+Test integration with user profile system. Mock user service for unit tests.

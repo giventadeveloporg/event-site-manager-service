@@ -1,0 +1,14 @@
+# Task ID: 8
+# Title: Create SendPromotionEmailDTO
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Create DTO for email sending requests
+# Details:
+Implement DTO with fields:
+- templateId, recipientEmail (optional), isTestEmail, subjectOverride (optional), bodyHtmlOverride (optional)
+- Add validation annotations
+- Include appropriate constructors
+
+# Test Strategy:
+Test validation rules and verify it can be properly serialized/deserialized.

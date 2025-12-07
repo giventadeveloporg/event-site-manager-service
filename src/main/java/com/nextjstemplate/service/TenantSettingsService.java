@@ -64,4 +64,13 @@ public interface TenantSettingsService {
      * @return the updated tenant settings DTO
      */
     TenantSettingsDTO uploadTenantLogo(String tenantId, MultipartFile file);
+
+    /**
+     * Upload email header image and update tenant settings.
+     *
+     * @param tenantId the tenant ID
+     * @param file the image file to upload
+     * @return the updated tenant settings DTO
+     */
+    TenantSettingsDTO uploadEmailHeaderImage(String tenantId, MultipartFile file);
 }

@@ -1,0 +1,19 @@
+# Task ID: 13
+# Title: Implement Template CRUD Endpoints
+# Status: pending
+# Dependencies: 10 ⏱️
+# Priority: high
+# Description: Create REST controller endpoints for template operations
+# Details:
+Implement endpoints:
+- GET /api/promotion-email-templates - List templates with filtering
+- GET /api/promotion-email-templates/{id} - Get template by ID
+- POST /api/promotion-email-templates - Create new template
+- PATCH /api/promotion-email-templates/{id} - Update template
+- DELETE /api/promotion-email-templates/{id} - Delete template (soft delete)
+
+Support query parameters for filtering and pagination
+Ensure proper validation of tenant ID from security context
+
+# Test Strategy:
+Write integration tests for all endpoints. Test filtering, pagination, error responses, and security constraints.

@@ -1,0 +1,17 @@
+# Task ID: 20
+# Title: Update Swagger/OpenAPI Documentation
+# Status: pending
+# Dependencies: 13 ⏱️, 14 ⏱️, 15 ⏱️
+# Priority: medium
+# Description: Add API documentation for all new endpoints
+# Details:
+Update documentation:
+- Document all endpoints with proper annotations
+- Define request/response schemas
+- Add example requests/responses
+- Document query parameters
+- Add error response documentation
+- Ensure documentation matches implementation
+
+# Test Strategy:
+Verify that Swagger UI correctly displays all endpoints and that the generated documentation is accurate.

@@ -1,0 +1,14 @@
+# Task ID: 6
+# Title: Create PromotionEmailTemplateDTO
+# Status: pending
+# Dependencies: 2 ⏱️
+# Priority: high
+# Description: Create DTO class for promotion email templates matching OpenAPI schema
+# Details:
+Implement DTO class with:
+- All fields from entity
+- Nested DTOs (EventDetailsDTO, DiscountCodeDTO, UserProfileDTO)
+- Ensure it matches OpenAPI schema definition
+
+# Test Strategy:
+Verify DTO serialization/deserialization works correctly with JSON.

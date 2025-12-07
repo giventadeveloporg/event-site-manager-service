@@ -1,0 +1,14 @@
+# Task ID: 7
+# Title: Create PromotionEmailTemplateFormDTO
+# Status: pending
+# Dependencies: 2 ⏱️
+# Priority: high
+# Description: Create form DTO for template create/update operations
+# Details:
+Implement form DTO with fields:
+- eventId, templateName, subject, bodyHtml, headerImageUrl, footerImageUrl, discountCodeId, isActive
+- Add validation annotations
+- Include appropriate constructors and conversion methods
+
+# Test Strategy:
+Test validation rules and conversion to/from entity.

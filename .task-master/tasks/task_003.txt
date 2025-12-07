@@ -1,0 +1,15 @@
+# Task ID: 3
+# Title: Create PromotionEmailSentLog Entity
+# Status: pending
+# Dependencies: 1 ⏱️
+# Priority: high
+# Description: Create JPA entity class for promotion_email_sent_log table with all required fields and relationships
+# Details:
+Implement JPA entity class with:
+- All table columns mapped to entity fields
+- Define relationships to PromotionEmailTemplate, EventDetails, DiscountCode, UserProfile
+- Add validation annotations
+- Create enum for emailStatus (SENT, FAILED, BOUNCED)
+
+# Test Strategy:
+Test entity mapping with basic persistence tests. Verify that all fields are correctly mapped and relationships are properly defined.
