@@ -37,6 +37,8 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private BooleanFilter enableEmailMarketing;
 
+    private BooleanFilter isMembershipSubscriptionEnabled;
+
     private StringFilter whatsappApiKey;
 
     private StringFilter emailProviderConfig;
@@ -94,6 +96,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.requireAdminApproval = other.optionalRequireAdminApproval().map(BooleanFilter::copy).orElse(null);
         this.enableWhatsappIntegration = other.optionalEnableWhatsappIntegration().map(BooleanFilter::copy).orElse(null);
         this.enableEmailMarketing = other.optionalEnableEmailMarketing().map(BooleanFilter::copy).orElse(null);
+        this.isMembershipSubscriptionEnabled = other.optionalIsMembershipSubscriptionEnabled().map(BooleanFilter::copy).orElse(null);
         this.whatsappApiKey = other.optionalWhatsappApiKey().map(StringFilter::copy).orElse(null);
         this.emailProviderConfig = other.optionalEmailProviderConfig().map(StringFilter::copy).orElse(null);
         this.maxEventsPerMonth = other.optionalMaxEventsPerMonth().map(IntegerFilter::copy).orElse(null);
@@ -237,6 +240,25 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     public void setEnableEmailMarketing(BooleanFilter enableEmailMarketing) {
         this.enableEmailMarketing = enableEmailMarketing;
+    }
+
+    public BooleanFilter getIsMembershipSubscriptionEnabled() {
+        return isMembershipSubscriptionEnabled;
+    }
+
+    public Optional<BooleanFilter> optionalIsMembershipSubscriptionEnabled() {
+        return Optional.ofNullable(isMembershipSubscriptionEnabled);
+    }
+
+    public BooleanFilter isMembershipSubscriptionEnabled() {
+        if (isMembershipSubscriptionEnabled == null) {
+            setIsMembershipSubscriptionEnabled(new BooleanFilter());
+        }
+        return isMembershipSubscriptionEnabled;
+    }
+
+    public void setIsMembershipSubscriptionEnabled(BooleanFilter isMembershipSubscriptionEnabled) {
+        this.isMembershipSubscriptionEnabled = isMembershipSubscriptionEnabled;
     }
 
     public StringFilter getWhatsappApiKey() {
@@ -711,6 +733,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(requireAdminApproval, that.requireAdminApproval) &&
             Objects.equals(enableWhatsappIntegration, that.enableWhatsappIntegration) &&
             Objects.equals(enableEmailMarketing, that.enableEmailMarketing) &&
+            Objects.equals(isMembershipSubscriptionEnabled, that.isMembershipSubscriptionEnabled) &&
             Objects.equals(whatsappApiKey, that.whatsappApiKey) &&
             Objects.equals(emailProviderConfig, that.emailProviderConfig) &&
             Objects.equals(maxEventsPerMonth, that.maxEventsPerMonth) &&
@@ -747,6 +770,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             requireAdminApproval,
             enableWhatsappIntegration,
             enableEmailMarketing,
+            isMembershipSubscriptionEnabled,
             whatsappApiKey,
             emailProviderConfig,
             maxEventsPerMonth,
@@ -784,6 +808,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalRequireAdminApproval().map(f -> "requireAdminApproval=" + f + ", ").orElse("") +
                 optionalEnableWhatsappIntegration().map(f -> "enableWhatsappIntegration=" + f + ", ").orElse("") +
                 optionalEnableEmailMarketing().map(f -> "enableEmailMarketing=" + f + ", ").orElse("") +
+                optionalIsMembershipSubscriptionEnabled().map(f -> "isMembershipSubscriptionEnabled=" + f + ", ").orElse("") +
                 optionalWhatsappApiKey().map(f -> "whatsappApiKey=" + f + ", ").orElse("") +
                 optionalEmailProviderConfig().map(f -> "emailProviderConfig=" + f + ", ").orElse("") +
                 optionalMaxEventsPerMonth().map(f -> "maxEventsPerMonth=" + f + ", ").orElse("") +

@@ -43,6 +43,9 @@ public class TenantSettings implements Serializable {
     @Column(name = "enable_email_marketing")
     private Boolean enableEmailMarketing;
 
+    @Column(name = "is_membership_subscription_enabled")
+    private Boolean isMembershipSubscriptionEnabled;
+
     @Size(max = 500)
     @Column(name = "whatsapp_api_key", length = 500)
     private String whatsappApiKey;
@@ -233,6 +236,19 @@ public class TenantSettings implements Serializable {
 
     public void setEnableEmailMarketing(Boolean enableEmailMarketing) {
         this.enableEmailMarketing = enableEmailMarketing;
+    }
+
+    public Boolean getIsMembershipSubscriptionEnabled() {
+        return this.isMembershipSubscriptionEnabled;
+    }
+
+    public TenantSettings isMembershipSubscriptionEnabled(Boolean isMembershipSubscriptionEnabled) {
+        this.setIsMembershipSubscriptionEnabled(isMembershipSubscriptionEnabled);
+        return this;
+    }
+
+    public void setIsMembershipSubscriptionEnabled(Boolean isMembershipSubscriptionEnabled) {
+        this.isMembershipSubscriptionEnabled = isMembershipSubscriptionEnabled;
     }
 
     public String getWhatsappApiKey() {
@@ -656,6 +672,7 @@ public class TenantSettings implements Serializable {
                 ", requireAdminApproval='" + getRequireAdminApproval() + "'" +
                 ", enableWhatsappIntegration='" + getEnableWhatsappIntegration() + "'" +
                 ", enableEmailMarketing='" + getEnableEmailMarketing() + "'" +
+                ", isMembershipSubscriptionEnabled='" + getIsMembershipSubscriptionEnabled() + "'" +
                 ", whatsappApiKey='" + getWhatsappApiKey() + "'" +
                 ", emailProviderConfig='" + getEmailProviderConfig() + "'" +
                 ", maxEventsPerMonth=" + getMaxEventsPerMonth() +

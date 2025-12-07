@@ -108,6 +108,12 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
                 specification =
                     specification.and(buildSpecification(criteria.getEnableEmailMarketing(), TenantSettings_.enableEmailMarketing));
             }
+            if (criteria.getIsMembershipSubscriptionEnabled() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getIsMembershipSubscriptionEnabled(), TenantSettings_.isMembershipSubscriptionEnabled)
+                    );
+            }
             if (criteria.getWhatsappApiKey() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getWhatsappApiKey(), TenantSettings_.whatsappApiKey));
             }
