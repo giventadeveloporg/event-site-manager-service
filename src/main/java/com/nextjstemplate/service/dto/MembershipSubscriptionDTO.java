@@ -58,6 +58,16 @@ public class MembershipSubscriptionDTO implements Serializable {
 
     private ZonedDateTime updatedAt;
 
+    private ZonedDateTime lastReconciliationAt;
+
+    private ZonedDateTime lastStripeSyncAt;
+
+    @Size(max = 20)
+    @Pattern(regexp = "PENDING|SUCCESS|FAILED|SKIPPED")
+    private String reconciliationStatus = "PENDING";
+
+    private String reconciliationError;
+
     // Optional related DTOs for expanded responses
     private MembershipPlanDTO membershipPlan;
 
@@ -199,6 +209,38 @@ public class MembershipSubscriptionDTO implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public ZonedDateTime getLastReconciliationAt() {
+        return lastReconciliationAt;
+    }
+
+    public void setLastReconciliationAt(ZonedDateTime lastReconciliationAt) {
+        this.lastReconciliationAt = lastReconciliationAt;
+    }
+
+    public ZonedDateTime getLastStripeSyncAt() {
+        return lastStripeSyncAt;
+    }
+
+    public void setLastStripeSyncAt(ZonedDateTime lastStripeSyncAt) {
+        this.lastStripeSyncAt = lastStripeSyncAt;
+    }
+
+    public String getReconciliationStatus() {
+        return reconciliationStatus;
+    }
+
+    public void setReconciliationStatus(String reconciliationStatus) {
+        this.reconciliationStatus = reconciliationStatus;
+    }
+
+    public String getReconciliationError() {
+        return reconciliationError;
+    }
+
+    public void setReconciliationError(String reconciliationError) {
+        this.reconciliationError = reconciliationError;
+    }
+
     public MembershipPlanDTO getMembershipPlan() {
         return membershipPlan;
     }
@@ -255,6 +297,9 @@ public class MembershipSubscriptionDTO implements Serializable {
             ", stripeCustomerId='" + getStripeCustomerId() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
+            ", lastReconciliationAt='" + getLastReconciliationAt() + "'" +
+            ", lastStripeSyncAt='" + getLastStripeSyncAt() + "'" +
+            ", reconciliationStatus='" + getReconciliationStatus() + "'" +
             "}";
     }
 }

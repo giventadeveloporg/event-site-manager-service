@@ -92,6 +92,19 @@ public class MembershipSubscription implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
 
+    @Column(name = "last_reconciliation_at")
+    private ZonedDateTime lastReconciliationAt;
+
+    @Column(name = "last_stripe_sync_at")
+    private ZonedDateTime lastStripeSyncAt;
+
+    @Size(max = 20)
+    @Column(name = "reconciliation_status", length = 20)
+    private String reconciliationStatus = "PENDING";
+
+    @Column(name = "reconciliation_error", columnDefinition = "text")
+    private String reconciliationError;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -315,6 +328,58 @@ public class MembershipSubscription implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public ZonedDateTime getLastReconciliationAt() {
+        return this.lastReconciliationAt;
+    }
+
+    public MembershipSubscription lastReconciliationAt(ZonedDateTime lastReconciliationAt) {
+        this.setLastReconciliationAt(lastReconciliationAt);
+        return this;
+    }
+
+    public void setLastReconciliationAt(ZonedDateTime lastReconciliationAt) {
+        this.lastReconciliationAt = lastReconciliationAt;
+    }
+
+    public ZonedDateTime getLastStripeSyncAt() {
+        return this.lastStripeSyncAt;
+    }
+
+    public MembershipSubscription lastStripeSyncAt(ZonedDateTime lastStripeSyncAt) {
+        this.setLastStripeSyncAt(lastStripeSyncAt);
+        return this;
+    }
+
+    public void setLastStripeSyncAt(ZonedDateTime lastStripeSyncAt) {
+        this.lastStripeSyncAt = lastStripeSyncAt;
+    }
+
+    public String getReconciliationStatus() {
+        return this.reconciliationStatus;
+    }
+
+    public MembershipSubscription reconciliationStatus(String reconciliationStatus) {
+        this.setReconciliationStatus(reconciliationStatus);
+        return this;
+    }
+
+    public void setReconciliationStatus(String reconciliationStatus) {
+        this.reconciliationStatus = reconciliationStatus;
+    }
+
+    public String getReconciliationError() {
+        return this.reconciliationError;
+    }
+
+    public MembershipSubscription reconciliationError(String reconciliationError) {
+        this.setReconciliationError(reconciliationError);
+        return this;
+    }
+
+    public void setReconciliationError(String reconciliationError) {
+        this.reconciliationError = reconciliationError;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -359,6 +424,15 @@ public class MembershipSubscription implements Serializable {
             "'" +
             ", updatedAt='" +
             getUpdatedAt() +
+            "'" +
+            ", lastReconciliationAt='" +
+            getLastReconciliationAt() +
+            "'" +
+            ", lastStripeSyncAt='" +
+            getLastStripeSyncAt() +
+            "'" +
+            ", reconciliationStatus='" +
+            getReconciliationStatus() +
             "'" +
             "}"
         );
