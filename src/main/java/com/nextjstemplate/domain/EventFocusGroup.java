@@ -13,7 +13,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  */
 @Entity
 @Table(
-    name = "event_focus_group",
+    name = "event_focus_groups",
     uniqueConstraints = { @UniqueConstraint(name = "uq_event_focus_group", columnNames = { "tenant_id", "event_id", "focus_group_id" }) }
 )
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
