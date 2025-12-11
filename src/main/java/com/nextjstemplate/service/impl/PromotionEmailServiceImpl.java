@@ -12,10 +12,13 @@ import com.nextjstemplate.repository.PromotionEmailSentLogRepository;
 import com.nextjstemplate.repository.PromotionEmailTemplateRepository;
 import com.nextjstemplate.repository.TenantSettingsRepository;
 import com.nextjstemplate.repository.UserProfileRepository;
+import com.nextjstemplate.service.BatchJobEmailService;
 import com.nextjstemplate.service.EmailSenderService;
 import com.nextjstemplate.service.PromotionEmailService;
 import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.UserProfileService;
+import com.nextjstemplate.service.dto.BatchJobEmailResponse;
+import com.nextjstemplate.service.dto.RecipientType;
 import com.nextjstemplate.service.dto.UserProfileDTO;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -43,6 +46,8 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
 
     private final UserProfileService userProfileService;
 
+    private final BatchJobEmailService batchJobEmailService;
+
     private final EventAttendeeRepository eventAttendeeRepository;
 
     private final TenantSettingsRepository tenantSettingsRepository;
@@ -63,6 +68,7 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
         PromotionEmailSentLogRepository promotionEmailSentLogRepository,
         EmailSenderService emailSenderService,
         UserProfileService userProfileService,
+        BatchJobEmailService batchJobEmailService,
         EventAttendeeRepository eventAttendeeRepository,
         TenantSettingsRepository tenantSettingsRepository,
         S3Service s3Service,
@@ -72,6 +78,7 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
         this.promotionEmailSentLogRepository = promotionEmailSentLogRepository;
         this.emailSenderService = emailSenderService;
         this.userProfileService = userProfileService;
+        this.batchJobEmailService = batchJobEmailService;
         this.eventAttendeeRepository = eventAttendeeRepository;
         this.tenantSettingsRepository = tenantSettingsRepository;
         this.s3Service = s3Service;
@@ -167,39 +174,50 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
             log.debug("Retrieved {} recipient emails from event registrants", finalRecipientEmails.size());
         }
 
-        int sentCount = 0;
-        int failedCount = 0;
+        // Refactored to use batch job service instead of looping through emails
+        log.info(
+            "Triggering batch email job for template {} and tenant {} with {} recipients",
+            templateId,
+            tenantId,
+            finalRecipientEmails != null ? finalRecipientEmails.size() : "null (will fetch from batch service)"
+        );
 
-        // Send emails in batches
-        int batchSize = 50; // SES recommended batch size
-        for (int i = 0; i < finalRecipientEmails.size(); i += batchSize) {
-            int endIndex = Math.min(i + batchSize, finalRecipientEmails.size());
-            List<String> batch = finalRecipientEmails.subList(i, endIndex);
-
-            try {
-                emailSenderService.sendBatchEmails(fromEmail, batch, subject, bodyHtml, true, new HashMap<>());
-                sentCount += batch.size();
-
-                // Log successful emails
-                for (String email : batch) {
-                    logEmailSent(template, email, subject, tenantId, userId, false, EmailStatus.SENT, null);
-                }
-            } catch (Exception e) {
-                log.error("Failed to send email batch: {}", e.getMessage(), e);
-                failedCount += batch.size();
-
-                // Log failed emails
-                for (String email : batch) {
-                    logEmailSent(template, email, subject, tenantId, userId, false, EmailStatus.FAILED, e.getMessage());
-                }
-            }
-        }
+        // Trigger batch job service - it will handle email sending asynchronously
+        // Pass recipientEmails if provided, otherwise batch service will fetch them
+        // Set recipientType to EVENT_ATTENDEES for event registrants
+        BatchJobEmailResponse response = batchJobEmailService.triggerEmailBatch(
+            tenantId,
+            templateId,
+            50,
+            10000,
+            finalRecipientEmails,
+            userId,
+            RecipientType.EVENT_ATTENDEES
+        );
 
         Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("sentCount", sentCount);
-        result.put("failedCount", failedCount);
-        result.put("totalCount", finalRecipientEmails.size());
+        if (response != null && Boolean.TRUE.equals(response.getSuccess())) {
+            log.info(
+                "Batch email job triggered successfully. JobExecutionId: {}, ProcessedCount: {}",
+                response.getJobExecutionId(),
+                response.getProcessedCount()
+            );
+            result.put("success", true);
+            result.put("sentCount", response.getSuccessCount() != null ? response.getSuccessCount().intValue() : 0);
+            result.put("failedCount", response.getFailedCount() != null ? response.getFailedCount().intValue() : 0);
+            result.put(
+                "totalCount",
+                response.getProcessedCount() != null ? response.getProcessedCount().intValue() : finalRecipientEmails.size()
+            );
+            result.put("jobExecutionId", response.getJobExecutionId());
+        } else {
+            log.error("Failed to trigger batch email job. Message: {}", response != null ? response.getMessage() : "null response");
+            result.put("success", false);
+            result.put("sentCount", 0);
+            result.put("failedCount", finalRecipientEmails.size());
+            result.put("totalCount", finalRecipientEmails.size());
+            result.put("error", response != null ? response.getMessage() : "Unknown error");
+        }
 
         return result;
     }
@@ -238,39 +256,51 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
 
         log.debug("Retrieved {} subscribed member emails for tenant: {}", subscribedEmails.size(), tenantId);
 
-        int sentCount = 0;
-        int failedCount = 0;
+        // Refactored to use batch job service instead of looping through emails
+        log.info(
+            "Triggering batch email job for template {} and tenant {} with {} subscribed members",
+            templateId,
+            tenantId,
+            subscribedEmails.size()
+        );
 
-        // Send emails in batches
-        int batchSize = 50; // SES recommended batch size
-        for (int i = 0; i < subscribedEmails.size(); i += batchSize) {
-            int endIndex = Math.min(i + batchSize, subscribedEmails.size());
-            List<String> batch = subscribedEmails.subList(i, endIndex);
-
-            try {
-                emailSenderService.sendBatchEmails(fromEmail, batch, subject, bodyHtml, true, new HashMap<>());
-                sentCount += batch.size();
-
-                // Log successful emails
-                for (String email : batch) {
-                    logEmailSent(template, email, subject, tenantId, userId, false, EmailStatus.SENT, null);
-                }
-            } catch (Exception e) {
-                log.error("Failed to send email batch to subscribed members: {}", e.getMessage(), e);
-                failedCount += batch.size();
-
-                // Log failed emails
-                for (String email : batch) {
-                    logEmailSent(template, email, subject, tenantId, userId, false, EmailStatus.FAILED, e.getMessage());
-                }
-            }
-        }
+        // Trigger batch job service - it will handle email sending asynchronously
+        // Pass null for recipientEmails so batch service will fetch subscribed members
+        // Set recipientType to SUBSCRIBED_MEMBERS for subscribed members
+        BatchJobEmailResponse response = batchJobEmailService.triggerEmailBatch(
+            tenantId,
+            templateId,
+            null,
+            userId,
+            RecipientType.SUBSCRIBED_MEMBERS
+        );
 
         Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("sentCount", sentCount);
-        result.put("failedCount", failedCount);
-        result.put("totalCount", subscribedEmails.size());
+        if (response != null && Boolean.TRUE.equals(response.getSuccess())) {
+            log.info(
+                "Batch email job triggered successfully for subscribed members. JobExecutionId: {}, ProcessedCount: {}",
+                response.getJobExecutionId(),
+                response.getProcessedCount()
+            );
+            result.put("success", true);
+            result.put("sentCount", response.getSuccessCount() != null ? response.getSuccessCount().intValue() : 0);
+            result.put("failedCount", response.getFailedCount() != null ? response.getFailedCount().intValue() : 0);
+            result.put(
+                "totalCount",
+                response.getProcessedCount() != null ? response.getProcessedCount().intValue() : subscribedEmails.size()
+            );
+            result.put("jobExecutionId", response.getJobExecutionId());
+        } else {
+            log.error(
+                "Failed to trigger batch email job for subscribed members. Message: {}",
+                response != null ? response.getMessage() : "null response"
+            );
+            result.put("success", false);
+            result.put("sentCount", 0);
+            result.put("failedCount", subscribedEmails.size());
+            result.put("totalCount", subscribedEmails.size());
+            result.put("error", response != null ? response.getMessage() : "Unknown error");
+        }
 
         return result;
     }

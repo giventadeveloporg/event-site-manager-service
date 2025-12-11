@@ -9,11 +9,13 @@ import com.nextjstemplate.repository.EventTicketTransactionItemRepository;
 import com.nextjstemplate.repository.EventTicketTransactionRepository;
 import com.nextjstemplate.repository.EventTicketTypeRepository;
 import com.nextjstemplate.repository.TenantSettingsRepository;
+import com.nextjstemplate.service.BatchJobEmailService;
 import com.nextjstemplate.service.EmailSenderService;
 import com.nextjstemplate.service.QRCodeService;
 import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.UserProfileService;
 import com.nextjstemplate.service.dto.*;
+import com.nextjstemplate.service.dto.BatchJobEmailResponse;
 import com.nextjstemplate.service.mapper.EventDetailsMapper;
 import com.nextjstemplate.service.mapper.EventTicketTransactionItemMapper;
 import com.nextjstemplate.service.mapper.EventTicketTransactionMapper;
@@ -57,6 +59,7 @@ public class QRCodeResource {
     private final EventTicketTypeMapper eventTicketTypeMapper;
     private final EmailSenderService emailSenderService;
     private final UserProfileService userProfileService;
+    private final BatchJobEmailService batchJobEmailService;
     private final TenantSettingsRepository tenantSettingsRepository;
     private final JwtEncoder jwtEncoder;
     private final Environment environment;
@@ -111,6 +114,7 @@ public class QRCodeResource {
         EventTicketTypeMapper eventTicketTypeMapper,
         EmailSenderService emailSenderService,
         UserProfileService userProfileService,
+        BatchJobEmailService batchJobEmailService,
         TenantSettingsRepository tenantSettingsRepository,
         JwtEncoder jwtEncoder,
         Environment environment,
@@ -128,6 +132,7 @@ public class QRCodeResource {
         this.eventTicketTypeMapper = eventTicketTypeMapper;
         this.emailSenderService = emailSenderService;
         this.userProfileService = userProfileService;
+        this.batchJobEmailService = batchJobEmailService;
         this.tenantSettingsRepository = tenantSettingsRepository;
         this.jwtEncoder = jwtEncoder;
         this.environment = environment;
@@ -757,12 +762,19 @@ public class QRCodeResource {
         String emailHostUrlPrefix
     ) {
         if (isTestEmail) {
-            // For test emails, we still need to lookup the user
+            // For test emails, we still need to lookup the user and send directly
             userProfileService
                 .findByEmailAndTenantId(recipient, tenantId)
                 .ifPresent(user -> sendPromoEmailToSingleRecipient(user, tenantId, promoCode, bodyHtml, subject, emailHostUrlPrefix));
             return;
         }
+
+        // NOTE: sendPromoEmails is for promo code emails, not template-based emails.
+        // The batch job API requires templateId, so this method cannot use the batch job service.
+        // Keeping the original loop-based implementation for promo emails.
+        // TODO: Consider refactoring promo emails to use email templates or update batch job service to support promo code emails without templates.
+
+        log.info("Sending promo emails for tenant {} using original implementation (batch job service requires templateId)", tenantId);
 
         // Use batch processing for large email lists
         int batchSize = 100; // Process 100 emails at a time
