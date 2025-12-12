@@ -1,56 +1,16 @@
-services:
-  #  # PostgreSQL Database
-  #  postgres:
-  #    image: postgres:13
-  #    container_name: malayalees-postgres
-  #    environment:
-  #      POSTGRES_DB: malayalees_us_site
-  #      POSTGRES_USER: postgres
-  #      POSTGRES_PASSWORD: password
-  #      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
-  #    ports:
-  #      - "5432:5432"
-  #    volumes:
-  #      - postgres_data:/var/lib/postgresql/data
-  #      - ./src/main/resources/sqls:/docker-entrypoint-initdb.d
-  #      - ./init-scripts:/docker-entrypoint-initdb.d
-  #    healthcheck:
-  #      test: ["CMD-SHELL", "pg_isready -U postgres -d malayalees_us_site"]
-  #      interval: 10s
-  #      timeout: 5s
-  #      retries: 10
-  #      start_period: 30s
-  #    networks:
-  #      - event-mgmnt-site-network
-  #
-  #  # Redis Cache
-  #  redis:
-  #    image: redis:6-alpine
-  #    container_name: malayalees-redis
-  #    ports:
-  #      - "6379:6379"
-  #    volumes:
-  #      - redis_data:/data
-  #    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-  #    healthcheck:
-  #      test: ["CMD", "redis-cli", "ping"]
-  #      interval: 10s
-  #      timeout: 5s
-  #      retries: 10
-  #      start_period: 30s
-  #    networks:
-  #      - event-mgmnt-site-network
+name: event-mgmnt-site
 
+services:
   # Spring Boot Application
   app:
-    #    env_file:
-    #      - .env
+    env_file:
+      - ../../../../.env
     build:
       context: .
       dockerfile: Dockerfile.local
     container_name: event-mgmnt-site-app
     ports:
-      - '8080:8080'
+      - '127.0.0.1:8080:8080'
     environment:
       # Spring Configuration
       SPRING_PROFILES_ACTIVE: dev
@@ -59,11 +19,16 @@ services:
       # Disable Liquibase
       SPRING_LIQUIBASE_ENABLED: false
 
-      # Database Configuration
-      RDS_ENDPOINT: ${RDS_ENDPOINT}
+      # Database Configuration - Use container name for Docker networking
+      RDS_ENDPOINT: ${RDS_ENDPOINT:-event_site_manager_db-postgresql-1}
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+
+      # Batch Jobs Service Configuration - Use container name for Docker networking
+      BATCH_JOBS_SERVICE_URL: ${BATCH_JOBS_SERVICE_URL:-http://batch-jobs:8081/batch-jobs}
+      BATCH_JOBS_SERVICE_TIMEOUT: ${BATCH_JOBS_SERVICE_TIMEOUT:-30000}
+      BATCH_JOBS_SERVICE_ENABLED: ${BATCH_JOBS_SERVICE_ENABLED:-true}
 
       # PostgreSQL Caching Configuration
       CACHE_TYPE: ${CACHE_TYPE}
@@ -97,6 +62,22 @@ services:
       # JHipster Mail Configuration
       JHIPSTER_MAIL_FROM: ${JHIPSTER_MAIL_FROM}
       JHIPSTER_MAIL_BASE_URL: ${JHIPSTER_MAIL_BASE_URL}
+
+      # Clerk Configuration
+      CLERK_AFTER_SIGN_IN_URL: ${CLERK_AFTER_SIGN_IN_URL}
+      CLERK_AFTER_SIGN_UP_URL: ${CLERK_AFTER_SIGN_UP_URL}
+      CLERK_FRONTEND_API: ${CLERK_FRONTEND_API}
+      CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      CLERK_SIGN_IN_URL: ${CLERK_SIGN_IN_URL}
+      CLERK_SIGN_UP_URL: ${CLERK_SIGN_UP_URL}
+      CLERK_WEBHOOK_SECRET: ${CLERK_WEBHOOK_SECRET}
+
+      # Payment Configuration
+      PAYMENT_ENCRYPTION_KEY: ${PAYMENT_ENCRYPTION_KEY}
+
+      # Server Configuration
+      SERVER_PORT: ${SERVER_PORT:-8080}
     volumes:
       - ../../../../logs:/var/log/spring-boot-app
       - ../../../../target:/app/target
@@ -108,56 +89,8 @@ services:
       start_period: 120s
     networks:
       - event-mgmnt-site-network
-
-#  # pgAdmin (Database Management UI)
-#  pgadmin:
-#    image: dpage/pgadmin4:latest
-#    container_name: malayalees-pgadmin
-#    environment:
-#      PGADMIN_DEFAULT_EMAIL: admin@local.com
-#      PGADMIN_DEFAULT_PASSWORD: admin
-#      PGADMIN_CONFIG_SERVER_MODE: 'False'
-#    ports:
-#      - "5050:80"
-#    volumes:
-#      - pgadmin_data:/var/lib/pgadmin
-#    depends_on:
-#      - postgres
-#    networks:
-#      - event-mgmnt-site-network
-#
-#  # Redis Commander (Redis Management UI)
-#  redis-commander:
-#    image: rediscommander/redis-commander:latest
-#    container_name: malayalees-redis-commander
-#    environment:
-#      REDIS_HOSTS: local:redis:6379
-#      HTTP_USER: admin
-#      HTTP_PASSWORD: admin
-#    ports:
-#      - "8081:8081"
-#    depends_on:
-#      - redis
-#    networks:
-#      - event-mgmnt-site-network
-#
-#  # MailHog (Email Testing)
-#  mailhog:
-#    image: mailhog/mailhog:latest
-#    container_name: malayalees-mailhog
-#    ports:
-#      - "1025:1025"  # SMTP
-#      - "8025:8025"  # Web UI
-#    networks:
-#      - event-mgmnt-site-network
-#
-#volumes:
-#  postgres_data:
-#    driver: local
-#  redis_data:
-#    driver: local
-#  pgadmin_data:
-#    driver: local
+      - postgres-network
+      - batch-jobs-network
 
 networks:
   event-mgmnt-site-network:
@@ -165,3 +98,11 @@ networks:
     ipam:
       config:
         - subnet: 172.20.0.0/16
+  # Connect to PostgreSQL network (external - created by postgres docker-compose)
+  postgres-network:
+    external: true
+    name: event_site_manager_db_default
+  # Connect to batch-jobs network (external - created by batch-jobs docker-compose)
+  batch-jobs-network:
+    external: true
+    name: event-site-manager-batch-jobs_batch-jobs-network

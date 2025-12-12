@@ -46,4 +46,4 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
     -Dspring.liquibase.enabled=true"
 
 # Run the application
-ENTRYPOINT ["sh", "-c", "if [ -f /app/target/*.jar ]; then java $JAVA_OPTS -jar /app/target/*.jar; else echo 'Error: JAR file not found in /app/target/. Please run: mvn clean package -DskipTests'; exit 1; fi"]
+ENTRYPOINT ["sh", "-c", "JAR_FILE=$(find /app/target -name '*.jar' -type f | head -n 1); if [ -n \"$JAR_FILE\" ] && [ -f \"$JAR_FILE\" ]; then echo \"Starting application with JAR: $JAR_FILE\"; java $JAVA_OPTS -jar \"$JAR_FILE\"; else echo 'Error: JAR file not found in /app/target/. Please run: mvn clean package -DskipTests'; echo 'Contents of /app/target:'; ls -la /app/target/ 2>/dev/null || echo 'Directory /app/target does not exist'; exit 1; fi"]
