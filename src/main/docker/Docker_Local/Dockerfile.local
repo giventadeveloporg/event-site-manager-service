@@ -27,6 +27,23 @@ RUN mkdir -p /var/log/spring-boot-app && \
 # Change ownership of the application
 RUN chown -R spring:spring /app
 
+# Create entrypoint script
+RUN echo '#!/bin/sh\n\
+JAR_FILE=$(find /app/target -name "*.jar" -type f | head -n 1)\n\
+if [ -n "$JAR_FILE" ] && [ -f "$JAR_FILE" ]; then\n\
+  echo "Starting application with JAR: $JAR_FILE"\n\
+  if [ -n "$JAVA_OPTS" ]; then\n\
+    exec java $JAVA_OPTS -jar "$JAR_FILE"\n\
+  else\n\
+    exec java -jar "$JAR_FILE"\n\
+  fi\n\
+else\n\
+  echo "Error: JAR file not found in /app/target/. Please run: mvn clean package -DskipTests"\n\
+  echo "Contents of /app/target:"\n\
+  ls -la /app/target/ 2>/dev/null || echo "Directory /app/target does not exist"\n\
+  exit 1\n\
+fi' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh && chown spring:spring /app/entrypoint.sh
+
 # Switch to non-root user
 USER spring
 
@@ -46,4 +63,4 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
     -Dspring.liquibase.enabled=true"
 
 # Run the application
-ENTRYPOINT ["sh", "-c", "JAR_FILE=$(find /app/target -name '*.jar' -type f | head -n 1); if [ -n \"$JAR_FILE\" ] && [ -f \"$JAR_FILE\" ]; then echo \"Starting application with JAR: $JAR_FILE\"; java $JAVA_OPTS -jar \"$JAR_FILE\"; else echo 'Error: JAR file not found in /app/target/. Please run: mvn clean package -DskipTests'; echo 'Contents of /app/target:'; ls -la /app/target/ 2>/dev/null || echo 'Directory /app/target does not exist'; exit 1; fi"]
+ENTRYPOINT ["/app/entrypoint.sh"]

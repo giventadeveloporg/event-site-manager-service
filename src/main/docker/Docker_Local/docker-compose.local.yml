@@ -3,8 +3,12 @@ name: event-mgmnt-site
 services:
   # Spring Boot Application
   app:
+    # Load .env file from project root
+    # Note: env_file loads variables into container, but ${VARIABLE} syntax in environment section
+    # is resolved from current working directory or shell environment
     env_file:
       - ../../../../.env
+    # Alternative: If .env is in Docker_Local directory, use: - .env
     build:
       context: .
       dockerfile: Dockerfile.local
@@ -14,16 +18,17 @@ services:
     environment:
       # Spring Configuration
       SPRING_PROFILES_ACTIVE: dev
-      JAVA_OPTS: ${JAVA_OPTS:-Xmx512m -Xms256m}
+      JAVA_OPTS: ${JAVA_OPTS:--Xmx512m -Xms256m}
 
       # Disable Liquibase
       SPRING_LIQUIBASE_ENABLED: false
 
       # Database Configuration - Use container name for Docker networking
       RDS_ENDPOINT: ${RDS_ENDPOINT:-event_site_manager_db-postgresql-1}
-      DB_NAME: ${DB_NAME}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      # Note: These should be set in .env file, but providing defaults for local dev
+      DB_NAME: ${DB_NAME:-postgres}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
 
       # Batch Jobs Service Configuration - Use container name for Docker networking
       BATCH_JOBS_SERVICE_URL: ${BATCH_JOBS_SERVICE_URL:-http://batch-jobs:8081/batch-jobs}
@@ -35,14 +40,16 @@ services:
       POSTGRES_CACHE_TABLE: ${POSTGRES_CACHE_TABLE}
 
       # JWT Authentication Configuration
-      JWT_API_AUTH_USERNAME: ${JWT_API_AUTH_USERNAME}
-      JWT_API_AUTH_PASSWORD: ${JWT_API_AUTH_PASSWORD}
+      # Note: Defaults match application-dev.yml
+      JWT_API_AUTH_USERNAME: ${JWT_API_AUTH_USERNAME:-admin}
+      JWT_API_AUTH_PASSWORD: ${JWT_API_AUTH_PASSWORD:-admin}
 
       # AWS Configuration (Direct Assignment for Docker Development)
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_REGION: ${AWS_REGION}
-      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      # Note: Defaults match application-dev.yml for local development
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-local-dev-key}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-local-dev-secret}
+      AWS_REGION: ${AWS_REGION:-us-east-2}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-eventapp-media-bucket}
 
       # Twilio Configuration
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
@@ -54,14 +61,16 @@ services:
       EMAIL_HOST_URL_PREFIX: ${EMAIL_HOST_URL_PREFIX}
 
       # JHipster Security Configuration
-      JHIPSTER_SECURITY_AUTHENTICATION_JWT_SECRET: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_SECRET}
-      JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET}
-      JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS}
-      JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS_FOR_REMEMBER_ME: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS_FOR_REMEMBER_ME}
+      # Note: These defaults match application-dev.yml values for local development
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_SECRET: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_SECRET:-dummy-secret-key-for-local-development-only-change-in-production}
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET:-OTBjY2UxOWE1NjI4YWU4ZmJkZjliNzYwOTBiM2Y3MmJkMzRlZGVhNTE0MDFjNWZkZTM4MDk4MzkxZmEzMDg3NzEzMTk3YjZiYTVhNTAzZmE0NjQ5ODFjMjcyYTIxOTZiMGQ4ZDE5ODIwMTI1Yzk2YjMzNmY4ZDdkM2U4Mzk0MWU=}
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS:-86400}
+      JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS_FOR_REMEMBER_ME: ${JHIPSTER_SECURITY_AUTHENTICATION_JWT_TOKEN_VALIDITY_IN_SECONDS_FOR_REMEMBER_ME:-2592000}
 
       # JHipster Mail Configuration
-      JHIPSTER_MAIL_FROM: ${JHIPSTER_MAIL_FROM}
-      JHIPSTER_MAIL_BASE_URL: ${JHIPSTER_MAIL_BASE_URL}
+      # Note: Defaults for local development
+      JHIPSTER_MAIL_FROM: ${JHIPSTER_MAIL_FROM:-event-site-manager@local.com}
+      JHIPSTER_MAIL_BASE_URL: ${JHIPSTER_MAIL_BASE_URL:-http://localhost:8080}
 
       # Clerk Configuration
       CLERK_AFTER_SIGN_IN_URL: ${CLERK_AFTER_SIGN_IN_URL}
