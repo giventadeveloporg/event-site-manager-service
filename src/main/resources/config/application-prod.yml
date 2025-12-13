@@ -79,9 +79,11 @@ server:
   # ===================================================================
 
   cache:
+    # Primary cache: Caffeine (fast in-memory)
     type: caffeine
     caffeine:
       spec: maximumSize=1000,expireAfterWrite=7200s # Larger cache for prod (1000 entries, 2 hours TTL)
+    # Note: PostgreSQL cache configuration is in postgresql-cache section (see application.yml)
 
 # ===================================================================
 # JHipster specific properties

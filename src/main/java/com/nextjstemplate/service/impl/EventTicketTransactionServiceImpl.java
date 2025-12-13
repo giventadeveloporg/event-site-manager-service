@@ -18,6 +18,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,7 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
     }
 
     @Override
+    @CacheEvict(value = "eventTicketTransactions", allEntries = true)
     public EventTicketTransactionDTO save(EventTicketTransactionDTO eventTicketTransactionDTO) {
         log.debug("Request to save EventTicketTransaction : {}", eventTicketTransactionDTO);
 
@@ -175,6 +178,7 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
     }
 
     @Override
+    @CacheEvict(value = "eventTicketTransactions", allEntries = true)
     public EventTicketTransactionDTO update(EventTicketTransactionDTO eventTicketTransactionDTO) {
         log.debug("Request to update EventTicketTransaction : {}", eventTicketTransactionDTO);
         EventTicketTransaction eventTicketTransaction = eventTicketTransactionMapper.toEntity(eventTicketTransactionDTO);
@@ -206,12 +210,14 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "eventTicketTransactions", key = "#id", unless = "#result == null")
     public Optional<EventTicketTransactionDTO> findOne(Long id) {
         log.debug("Request to get EventTicketTransaction : {}", id);
         return eventTicketTransactionRepository.findById(id).map(eventTicketTransactionMapper::toDto);
     }
 
     @Override
+    @CacheEvict(value = "eventTicketTransactions", allEntries = true)
     public void delete(Long id) {
         log.debug("Request to delete EventTicketTransaction : {}", id);
         eventTicketTransactionRepository.deleteById(id);

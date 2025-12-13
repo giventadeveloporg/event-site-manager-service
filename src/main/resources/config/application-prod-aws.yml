@@ -151,6 +151,7 @@ spring:
 
   # Cache Configuration
   cache:
+    # Primary cache: Redis (ElastiCache)
     type: redis
     redis:
       time-to-live: 600000 # 10 minutes
@@ -158,6 +159,7 @@ spring:
       enable-statistics: true
       key-prefix: 'event-site-manager:'
       use-key-prefix: true
+    # Note: PostgreSQL cache configuration is in postgresql-cache section (see application.yml)
 
   # Session Management
   session:

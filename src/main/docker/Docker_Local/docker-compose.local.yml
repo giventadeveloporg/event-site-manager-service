@@ -3,12 +3,11 @@ name: event-mgmnt-site
 services:
   # Spring Boot Application
   app:
-    # Load .env file from project root
-    # Note: env_file loads variables into container, but ${VARIABLE} syntax in environment section
-    # is resolved from current working directory or shell environment
+    # Load .env file from the same directory as docker-compose.local.yml
+    # Docker Compose automatically reads .env from the same directory for variable substitution
+    # env_file loads variables into the container environment
     env_file:
-      - ../../../../.env
-    # Alternative: If .env is in Docker_Local directory, use: - .env
+      - .env
     build:
       context: .
       dockerfile: Dockerfile.local
@@ -35,9 +34,11 @@ services:
       BATCH_JOBS_SERVICE_TIMEOUT: ${BATCH_JOBS_SERVICE_TIMEOUT:-30000}
       BATCH_JOBS_SERVICE_ENABLED: ${BATCH_JOBS_SERVICE_ENABLED:-true}
 
-      # PostgreSQL Caching Configuration
-      CACHE_TYPE: ${CACHE_TYPE}
-      POSTGRES_CACHE_TABLE: ${POSTGRES_CACHE_TABLE}
+      # PostgreSQL Caching Configuration - Defaults provided in application.yml
+      # These are optional - defaults will be used if not set
+      CACHE_TYPE: ${CACHE_TYPE:-caffeine}
+      POSTGRES_CACHE_TABLE: ${POSTGRES_CACHE_TABLE:-event_site_app_cache}
+      POSTGRES_CACHE_ENABLED: ${POSTGRES_CACHE_ENABLED:-true}
 
       # JWT Authentication Configuration
       # Note: Defaults match application-dev.yml

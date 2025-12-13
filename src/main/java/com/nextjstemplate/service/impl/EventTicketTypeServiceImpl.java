@@ -8,6 +8,8 @@ import com.nextjstemplate.service.mapper.EventTicketTypeMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class EventTicketTypeServiceImpl implements EventTicketTypeService {
     }
 
     @Override
+    @CacheEvict(value = "eventTicketTypes", allEntries = true)
     public EventTicketTypeDTO save(EventTicketTypeDTO eventTicketTypeDTO) {
         log.debug("Request to save EventTicketType : {}", eventTicketTypeDTO);
         EventTicketType eventTicketType = eventTicketTypeMapper.toEntity(eventTicketTypeDTO);
@@ -40,6 +43,7 @@ public class EventTicketTypeServiceImpl implements EventTicketTypeService {
     }
 
     @Override
+    @CacheEvict(value = "eventTicketTypes", allEntries = true)
     public EventTicketTypeDTO update(EventTicketTypeDTO eventTicketTypeDTO) {
         log.debug("Request to update EventTicketType : {}", eventTicketTypeDTO);
         EventTicketType eventTicketType = eventTicketTypeMapper.toEntity(eventTicketTypeDTO);
@@ -71,12 +75,14 @@ public class EventTicketTypeServiceImpl implements EventTicketTypeService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "eventTicketTypes", key = "#id", unless = "#result == null")
     public Optional<EventTicketTypeDTO> findOne(Long id) {
         log.debug("Request to get EventTicketType : {}", id);
         return eventTicketTypeRepository.findById(id).map(eventTicketTypeMapper::toDto);
     }
 
     @Override
+    @CacheEvict(value = "eventTicketTypes", allEntries = true)
     public void delete(Long id) {
         log.debug("Request to delete EventTicketType : {}", id);
         eventTicketTypeRepository.deleteById(id);

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+    Migration: Add unique constraint on event_ticket_transaction.stripe_payment_intent_id
+    Purpose: Prevent duplicate ticket transactions for the same Stripe payment intent
+    Date: 2025-11-27
+    Issue: Race condition between webhook processing and polling was creating duplicate
+           ticket transactions with the same stripe_payment_intent_id but different tenant_ids
+    -->
+
+    <changeSet id="20251127-01-cleanup-duplicates" author="system" dbms="postgresql">
+        <comment>Clean up existing duplicate event_ticket_transaction records before adding unique constraint</comment>
+
+        <!-- Delete duplicate records, keeping the one with most complete data -->
+        <sql>
+            WITH records_to_keep AS (
+                SELECT DISTINCT ON (stripe_payment_intent_id) id
+                FROM event_ticket_transaction
+                WHERE stripe_payment_intent_id IS NOT NULL AND stripe_payment_intent_id != ''
+                ORDER BY stripe_payment_intent_id,
+                         CASE WHEN first_name IS NOT NULL AND first_name != '' THEN 0 ELSE 1 END,
+                         CASE WHEN qr_code_image_url IS NOT NULL AND qr_code_image_url != '' THEN 0 ELSE 1 END,
+                         CASE WHEN tenant_id != 'tenant_demo_001' THEN 0 ELSE 1 END,
+                         created_at DESC
+            )
+            DELETE FROM event_ticket_transaction
+            WHERE stripe_payment_intent_id IS NOT NULL
+              AND stripe_payment_intent_id != ''
+              AND id NOT IN (SELECT id FROM records_to_keep);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20251127-02-add-unique-index" author="system" dbms="postgresql">
+        <comment>Add unique index on stripe_payment_intent_id to prevent future duplicates</comment>
+
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="ux_event_ticket_stripe_payment_intent"/>
+            </not>
+        </preConditions>
+
+        <sql>
+            CREATE UNIQUE INDEX ux_event_ticket_stripe_payment_intent
+            ON event_ticket_transaction (stripe_payment_intent_id)
+            WHERE stripe_payment_intent_id IS NOT NULL AND stripe_payment_intent_id != '';
+        </sql>
+
+        <rollback>
+            <sql>DROP INDEX IF EXISTS ux_event_ticket_stripe_payment_intent;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="20251127-03-add-index-comment" author="system" dbms="postgresql">
+        <comment>Add documentation comment to the index</comment>
+
+        <sql>
+            COMMENT ON INDEX ux_event_ticket_stripe_payment_intent IS
+            'Unique constraint to prevent duplicate ticket transactions for the same Stripe payment intent. Added Nov 2025 to fix race condition between webhook and polling.';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+
+
+
+
+
+
+
+
+
+
+
+
+

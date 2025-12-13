@@ -5,7 +5,6 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.info.GitProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +13,7 @@ import tech.jhipster.config.cache.PrefixedKeyGenerator;
 
 /**
  * Unified Cache Configuration for all profiles
- * Uses Spring Boot's auto-configured Caffeine cache manager
+ * Uses CompositeCacheManager for L1/L2 cache pattern with configurable TTL
  */
 @Configuration
 @EnableCaching
@@ -26,16 +25,17 @@ public class UnifiedCacheConfiguration {
     @Autowired(required = false)
     private BuildProperties buildProperties;
 
+    @Autowired
+    private CompositeCacheManager compositeCacheManager;
+
     /**
-     * Primary cache manager using Caffeine
-     * This will work with spring.cache.type=caffeine configuration
+     * Primary cache manager - CompositeCacheManager with L1 (Caffeine) and L2 (PostgreSQL) support
+     * Configured with per-cache TTL settings from application.yml
      */
     @Bean
     @Primary
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-        // Let Spring Boot auto-configure the Caffeine specs from application.yml
-        return cacheManager;
+        return compositeCacheManager;
     }
 
     /**

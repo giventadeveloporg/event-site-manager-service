@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +51,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
+    @CacheEvict(value = { "userProfiles", "userProfilesByUserId", "userProfilesByEmail" }, allEntries = true)
     public UserProfileDTO save(UserProfileDTO userProfileDTO) {
         log.debug("Request to save UserProfile : {}", userProfileDTO);
         UserProfile userProfile = userProfileMapper.toEntity(userProfileDTO);
@@ -74,6 +77,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
+    @CacheEvict(value = { "userProfiles", "userProfilesByUserId", "userProfilesByEmail" }, allEntries = true)
     public UserProfileDTO update(UserProfileDTO userProfileDTO) {
         log.debug("Request to update UserProfile : {}", userProfileDTO);
         UserProfile userProfile = userProfileMapper.toEntity(userProfileDTO);
@@ -126,20 +130,27 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
+    @Cacheable(value = "userProfiles", key = "#id", unless = "#result == null")
     public Optional<UserProfileDTO> findOne(Long id) {
         log.debug("Request to get UserProfile : {}", id);
         return userProfileRepository.findById(id).map(this::refreshEmailSubscriptionTokenIfNeeded).map(userProfileMapper::toDto);
     }
 
     @Override
+    @CacheEvict(value = { "userProfiles", "userProfilesByUserId", "userProfilesByEmail" }, allEntries = true)
     public void delete(Long id) {
         log.debug("Request to delete UserProfile : {}", id);
         userProfileRepository.deleteById(id);
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
+    @Cacheable(
+        value = "userProfilesByUserId",
+        key = "#userId + '_' + (T(com.nextjstemplate.security.TenantContext).getCurrentTenant() != null ? T(com.nextjstemplate.security.TenantContext).getCurrentTenant() : 'no-tenant')",
+        unless = "#result == null"
+    )
     public Optional<UserProfileDTO> findByUserId(String userId) {
         log.debug("Request to get UserProfile by user ID : {}", userId);
 
@@ -164,7 +175,8 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
+    @Cacheable(value = "userProfilesByEmail", key = "#email", unless = "#result == null")
     public Optional<UserProfileDTO> findByEmail(String email) {
         log.debug("Request to get UserProfile by email : {}", email);
         return userProfileRepository.findByEmail(email).map(this::refreshEmailSubscriptionTokenIfNeeded).map(userProfileMapper::toDto);

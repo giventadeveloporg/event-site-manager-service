@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -81,6 +82,7 @@ public class ClerkIntegrationServiceImpl implements ClerkIntegrationService {
     }
 
     @Override
+    @Cacheable(value = "clerkUsers", key = "'userById:' + #clerkUserId", unless = "#result == null")
     public Optional<Map<String, Object>> getUserById(String clerkUserId) {
         log.debug("Fetching user from Clerk with ID: {}", clerkUserId);
 
@@ -110,6 +112,7 @@ public class ClerkIntegrationServiceImpl implements ClerkIntegrationService {
     }
 
     @Override
+    @Cacheable(value = "clerkUsers", key = "'userByEmail:' + #email", unless = "#result == null")
     public Optional<Map<String, Object>> getUserByEmail(String email) {
         log.debug("Fetching user from Clerk with email: {}", email);
 

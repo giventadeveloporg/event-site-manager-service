@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Migration: Add unique constraint on membership_subscription.stripe_subscription_id
+        Purpose: Prevent duplicate subscription records for the same Stripe subscription
+        Date: 2025-01-28
+        Pattern: Based on TicketGenerationService duplicate prevention approach
+
+        CRITICAL: This unique index is essential for preventing race conditions between:
+        1. checkout.session.completed webhook
+        2. customer.subscription.created webhook
+        3. Frontend polling that may trigger subscription creation
+
+        Without this constraint, concurrent webhook deliveries could create duplicate subscriptions.
+    -->
+
+    <changeSet id="202501280001-1" author="jhipster">
+        <comment>
+            Add unique index on membership_subscription.stripe_subscription_id to prevent duplicate
+            subscription records. This allows NULL values (for manual subscriptions) but enforces
+            uniqueness for non-null Stripe subscription IDs.
+        </comment>
+
+        <!-- Create unique partial index (allows NULLs, unique for non-null values) -->
+        <sql dbms="postgresql">
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_membership_subscription_stripe_id
+            ON membership_subscription(stripe_subscription_id)
+            WHERE stripe_subscription_id IS NOT NULL AND stripe_subscription_id != '';
+        </sql>
+
+        <!-- H2 fallback (H2 doesn't support partial indexes, use regular unique index) -->
+        <sql dbms="h2">
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_membership_subscription_stripe_id
+            ON membership_subscription(stripe_subscription_id);
+        </sql>
+    </changeSet>
+
+    <changeSet id="202501280001-2" author="jhipster">
+        <comment>
+            Add performance indexes for membership subscription queries.
+        </comment>
+
+        <!-- Index for user lookup with status filter -->
+        <createIndex indexName="idx_membership_subscription_user_status"
+                     tableName="membership_subscription">
+            <column name="user_profile_id"/>
+            <column name="subscription_status"/>
+        </createIndex>
+
+        <!-- Index for tenant + status queries -->
+        <createIndex indexName="idx_membership_subscription_tenant_status"
+                     tableName="membership_subscription">
+            <column name="tenant_id"/>
+            <column name="subscription_status"/>
+        </createIndex>
+
+        <!-- Index for period end date (for expiration queries) -->
+        <createIndex indexName="idx_membership_subscription_period_end"
+                     tableName="membership_subscription">
+            <column name="current_period_end"/>
+            <column name="subscription_status"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
+
+
+
+
+
+
+
+
+
+
+
+
+

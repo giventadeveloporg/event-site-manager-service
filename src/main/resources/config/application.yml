@@ -60,6 +60,29 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+  cache:
+    # Primary cache type - Caffeine for fast in-memory caching
+    # This is the default for all profiles (can be overridden in profile-specific configs)
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=3600s
+
+# ===================================================================
+# Cache TTL Configuration (per cache name in seconds)
+# ===================================================================
+cache:
+  ttl:
+    userProfiles: 3600 # 1 hour - User profiles by ID
+    userProfilesByUserId: 1800 # 30 minutes - User profiles by userId (frequently accessed)
+    userProfilesByEmail: 1800 # 30 minutes - User profiles by email
+    eventDetails: 7200 # 2 hours - Event details (less frequently changed)
+    eventMedia: 3600 # 1 hour - Event media
+    eventTicketTypes: 3600 # 1 hour - Ticket types
+    eventTicketTransactions: 1800 # 30 minutes - Transactions (more dynamic)
+    tenantSettings: 7200 # 2 hours - Tenant settings (rarely changed)
+    eventTypeDetails: 7200 # 2 hours - Event type details (rarely changed)
+    clerkUsers: 300 # 5 minutes - Clerk API responses (external, short TTL)
+  maxSize: 1000 # Maximum entries per cache
 
 springdoc:
   api-docs:
@@ -99,6 +122,7 @@ management:
           - prometheus
           - threaddump
           - caches
+          - cache
           - liquibase
   endpoint:
     health:
@@ -291,3 +315,28 @@ batch-jobs:
     url: ${BATCH_JOBS_SERVICE_URL:http://localhost:8081/batch-jobs}
     timeout: ${BATCH_JOBS_SERVICE_TIMEOUT:30000}
     enabled: ${BATCH_JOBS_SERVICE_ENABLED:true}
+
+# ===================================================================
+# Cache Configuration - Unified for all profiles
+# ===================================================================
+# Primary cache: Caffeine (fast in-memory cache) - configured in spring.cache above
+# Secondary cache: PostgreSQL (persistent cache for longer-term storage)
+# Both caches work together - Caffeine for fast access, PostgreSQL for persistence
+# PostgreSQL Cache Configuration (custom properties - available for all profiles)
+# Default values ensure cache works even if environment variables are not set
+# This is used as a secondary/persistent cache layer alongside Caffeine
+postgresql-cache:
+  enabled: ${POSTGRES_CACHE_ENABLED:true}
+  cache-type: ${CACHE_TYPE:caffeine} # Primary cache type, PostgreSQL is secondary
+  cache-table: ${POSTGRES_CACHE_TABLE:event_site_app_cache}
+  session-table: session_store
+  time-to-live: 600000 # 10 minutes
+  cache-null-values: false
+  enable-statistics: true
+  key-prefix: 'event-mgmnt-site:postgres-cache:'
+  use-key-prefix: true
+  cleanup-interval: 300000 # 5 minutes
+  max-cache-size: 10000
+  statistics:
+    enabled: true
+    log-interval: 60000 # 1 minute

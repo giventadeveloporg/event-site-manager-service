@@ -11,6 +11,8 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +43,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     }
 
     @Override
+    @CacheEvict(value = "tenantSettings", allEntries = true)
     public TenantSettingsDTO save(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to save TenantSettings : {}", tenantSettingsDTO);
         TenantSettings tenantSettings = tenantSettingsMapper.toEntity(tenantSettingsDTO);
@@ -49,6 +52,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     }
 
     @Override
+    @CacheEvict(value = "tenantSettings", allEntries = true)
     public TenantSettingsDTO update(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to update TenantSettings : {}", tenantSettingsDTO);
         TenantSettings tenantSettings = tenantSettingsMapper.toEntity(tenantSettingsDTO);
@@ -73,12 +77,14 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "tenantSettings", key = "#id", unless = "#result == null")
     public Optional<TenantSettingsDTO> findOne(Long id) {
         LOG.debug("Request to get TenantSettings : {}", id);
         return tenantSettingsRepository.findById(id).map(tenantSettingsMapper::toDto);
     }
 
     @Override
+    @CacheEvict(value = "tenantSettings", allEntries = true)
     public void delete(Long id) {
         LOG.debug("Request to delete TenantSettings : {}", id);
         tenantSettingsRepository.deleteById(id);

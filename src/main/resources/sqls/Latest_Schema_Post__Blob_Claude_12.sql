@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 16.0 (Debian 16.0-1.pgdg120+1)
+-- Dumped ffile:/E:/project_workspace/mosc-temp/code_html_template/SQLS/corrected_event_media_inserts.ordered.sqlrom database version 16.0 (Debian 16.0-1.pgdg120+1)
 -- Dumped by pg_dump version 17.0
 
 -- Started on 2025-06-08 23:51:02
@@ -11,7 +11,7 @@
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
---SET transaction_timeout = 0;
+--SET transactiofile:/E:/project_workspace/mosc-temp/code_html_template/SQLS/corrected_event_media_inserts.ordered.sqln_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -29,7 +29,6 @@ SET row_security = off;
 --CREATE DATABASE giventa_event_management WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
 
 
--- ALTER DATABASE giventa_event_management OWNER TO giventa_event_management;
 
 --\connect giventa_event_management
 
@@ -57,6 +56,8 @@ DROP TYPE IF EXISTS public.user_status_type CASCADE;
 DROP TYPE IF EXISTS public.event_admission_type CASCADE;
 DROP TYPE IF EXISTS public.transaction_type CASCADE;
 DROP TYPE IF EXISTS public.transaction_status CASCADE;
+DROP TYPE IF EXISTS public.focus_group_member_role_type CASCADE;
+DROP TYPE IF EXISTS public.focus_group_member_status_type CASCADE;
 
 
 -- Guest age group classifications
@@ -82,6 +83,12 @@ CREATE TYPE public.user_role_type AS ENUM ('MEMBER', 'ADMIN', 'SUPER_ADMIN', 'OR
 
 -- User status
 CREATE TYPE public.user_status_type AS ENUM ('ACTIVE', 'INACTIVE', 'PENDING_APPROVAL', 'SUSPENDED', 'BANNED');
+
+-- Focus group membership roles
+CREATE TYPE public.focus_group_member_role_type AS ENUM ('MEMBER', 'LEAD', 'ADMIN');
+
+-- Focus group membership status
+CREATE TYPE public.focus_group_member_status_type AS ENUM ('ACTIVE', 'INACTIVE', 'PENDING');
 
 -- Event admission types
 CREATE TYPE public.event_admission_type AS ENUM ('FREE', 'TICKETED', 'INVITATION_ONLY', 'DONATION_BASED');
@@ -118,6 +125,10 @@ DROP SEQUENCE IF EXISTS public.event_score_card_detail_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS public.event_score_card_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS public.event_live_update_attachment_id_seq  CASCADE;
 
+--spring batch job sequences
+DROP SEQUENCE IF EXISTS public.batch_job_seq CASCADE;
+DROP SEQUENCE IF EXISTS public.batch_job_execution_seq CASCADE;
+DROP SEQUENCE IF EXISTS public.batch_step_execution_seq CASCADE;
 
 -- ===================================================
 -- DROP EXISTING TABLES (in reverse dependency order)
@@ -137,7 +148,14 @@ DROP TABLE IF EXISTS public.event_poll_option CASCADE;
 DROP TABLE IF EXISTS public.event_poll CASCADE;
 DROP TABLE IF EXISTS public.event_ticket_transaction CASCADE;
 DROP TABLE IF EXISTS public.event_ticket_transaction_item CASCADE;
+-- Payment orchestration tables (drop children first, then parents)
+DROP TABLE IF EXISTS public.membership_subscription CASCADE;
+DROP TABLE IF EXISTS public.membership_subscription_reconciliation_log CASCADE;
+DROP TABLE IF EXISTS public.platform_invoice CASCADE;
 DROP TABLE IF EXISTS public.user_payment_transaction CASCADE;
+DROP TABLE IF EXISTS public.platform_settlement CASCADE;
+DROP TABLE IF EXISTS public.membership_plan CASCADE;
+DROP TABLE IF EXISTS public.payment_provider_config CASCADE;
 DROP TABLE IF EXISTS public.event_ticket_type CASCADE;
 DROP TABLE IF EXISTS public.event_organizer CASCADE;
 -- New event-related tables (in reverse dependency order)
@@ -147,6 +165,9 @@ DROP TABLE IF EXISTS public.event_sponsors_join CASCADE;
 DROP TABLE IF EXISTS public.event_sponsors CASCADE;
 DROP TABLE IF EXISTS public.event_contacts CASCADE;
 DROP TABLE IF EXISTS public.event_featured_performers CASCADE;
+
+
+DROP TABLE IF EXISTS public.event_recurrence_series CASCADE;
 DROP TABLE IF EXISTS public.event_details CASCADE;
 DROP TABLE IF EXISTS public.event_admin CASCADE;
 DROP TABLE IF EXISTS public.event_live_update_attachment CASCADE;
@@ -167,6 +188,27 @@ DROP TABLE IF EXISTS public.communication_campaign CASCADE;
 DROP TABLE IF EXISTS public.email_log CASCADE;
 DROP TABLE IF EXISTS public.whatsapp_log CASCADE;
 DROP TABLE IF EXISTS public.executive_committee_team_members CASCADE;
+DROP TABLE IF EXISTS public.event_focus_groups CASCADE;
+DROP TABLE IF EXISTS public.focus_group_members CASCADE;
+DROP TABLE IF EXISTS public.focus_group CASCADE;
+DROP TABLE IF EXISTS public.clerk_user_tenant CASCADE;
+DROP TABLE IF EXISTS public.clerk_organization_role CASCADE;
+DROP TABLE IF EXISTS public.promotion_email_template CASCADE;
+DROP TABLE IF EXISTS public.promotion_email_sent_log CASCADE;
+-- Drop existing tables if they exist (in reverse dependency order)
+-- Spring Batch metadata tables (drop child tables first, then parent tables)
+DROP TABLE IF EXISTS public.BATCH_STEP_EXECUTION_CONTEXT CASCADE;
+DROP TABLE IF EXISTS public.BATCH_JOB_EXECUTION_CONTEXT CASCADE;
+DROP TABLE IF EXISTS public.BATCH_STEP_EXECUTION CASCADE;
+DROP TABLE IF EXISTS public.BATCH_JOB_EXECUTION_PARAMS CASCADE;
+DROP TABLE IF EXISTS public.BATCH_JOB_EXECUTION CASCADE;
+DROP TABLE IF EXISTS public.BATCH_JOB_INSTANCE CASCADE;
+-- Custom application table (independent, no dependencies)
+DROP TABLE IF EXISTS public.batch_job_execution_log CASCADE;
+
+
+
+
 
 CREATE FUNCTION public.generate_attendee_qr_code() RETURNS trigger
     LANGUAGE plpgsql
@@ -182,7 +224,6 @@ END;
 $$;
 
 
--- ALTER FUNCTION public.generate_attendee_qr_code() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 272 (class 1255 OID 71151)
@@ -231,7 +272,6 @@ END;
 $$;
 
 
--- ALTER FUNCTION public.generate_enhanced_qr_code() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 273 (class 1255 OID 71150)
@@ -324,7 +364,6 @@ END;
 $$;
 
 
--- ALTER FUNCTION public.manage_ticket_inventory() OWNER TO giventa_event_management;
 
 
 --
@@ -363,7 +402,6 @@ END;
 $$;
 
 
--- ALTER FUNCTION public.update_ticket_sold_quantity() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 271 (class 1255 OID 70264)
@@ -380,7 +418,6 @@ END;
 $$;
 
 
--- ALTER FUNCTION public.update_updated_at_column() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 254 (class 1255 OID 71141)
@@ -406,7 +443,6 @@ END;
 $$;
 
 
--- ALTER FUNCTION public.validate_event_dates() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 257 (class 1255 OID 71147)
@@ -430,7 +466,6 @@ END;
 $$;
 
 
--- ALTER FUNCTION public.validate_event_dates_alt1() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 258 (class 1255 OID 71148)
@@ -454,7 +489,6 @@ END;
 $$;
 
 
--- ALTER FUNCTION public.validate_event_dates_alt2() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 270 (class 1255 OID 71149)
@@ -495,7 +529,6 @@ END;
 $$;
 
 
--- ALTER FUNCTION public.validate_event_details() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 224 (class 1259 OID 82754)
@@ -510,7 +543,6 @@ CREATE SEQUENCE public.sequence_generator
     CACHE 1;
 
 
--- ALTER SEQUENCE public.sequence_generator OWNER TO giventa_event_management;
 
 SET default_tablespace = '';
 
@@ -550,6 +582,16 @@ CREATE TABLE public.user_profile (
                                      user_role character varying(50),
                                      reviewed_by_admin_at timestamp without time zone,
                                      reviewed_by_admin_id bigint,
+                                     clerk_user_id VARCHAR(255),
+                                     clerk_session_id VARCHAR(255),
+                                     clerk_org_id VARCHAR(255),
+                                     clerk_org_role VARCHAR(100),
+                                     auth_provider VARCHAR(50),
+                                     auth_provider_user_id VARCHAR(255),
+                                     email_verified BOOLEAN DEFAULT FALSE,
+                                     profile_image_url_clerk VARCHAR(1024),
+                                     last_sign_in_at TIMESTAMP WITHOUT TIME ZONE,
+                                     clerk_metadata TEXT,
                                      created_at timestamp without time zone DEFAULT now() NOT NULL,
                                      updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                      CONSTRAINT check_email_format CHECK (((email IS NULL) OR ((email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text))),
@@ -561,11 +603,13 @@ CREATE TABLE public.user_profile (
     reviewed_at timestamp without time zone,
     approved_at timestamp without time zone,
     rejected_at timestamp without time zone,
-    CONSTRAINT user_profile_pkey PRIMARY KEY (id)
+    CONSTRAINT ux_user_profile__tenant_user UNIQUE (tenant_id, user_id),
+    CONSTRAINT uq_user_profile_email_tenant UNIQUE (email, tenant_id),
+    CONSTRAINT user_profile_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_user_profile_reviewed_by_admin FOREIGN KEY (reviewed_by_admin_id) REFERENCES public.user_profile(id) ON DELETE SET NULL
 );
 
 
--- ALTER TABLE public.user_profile OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3991 (class 0 OID 0)
@@ -595,11 +639,11 @@ CREATE TABLE public.bulk_operation_log (
                                            execution_time_ms integer,
                                            created_at timestamp without time zone DEFAULT now() NOT NULL,
                                            completed_at timestamp without time zone,
-                                           CONSTRAINT check_operation_counts CHECK ((((success_count + error_count) + skipped_count) <= target_count))
+                                           CONSTRAINT check_operation_counts CHECK ((((success_count + error_count) + skipped_count) <= target_count)),
+                                           CONSTRAINT fk_bulk_operation_log__performed_by FOREIGN KEY (performed_by) REFERENCES public.user_profile(id) ON DELETE SET NULL
 );
 
 
--- ALTER TABLE public.bulk_operation_log OWNER TO giventa_event_management;
 
 --
 -- TOC entry 225 (class 1259 OID 82755)
@@ -624,7 +668,6 @@ CREATE TABLE public.databasechangelog (
 );
 
 
--- ALTER TABLE public.databasechangelog OWNER TO giventa_event_management;
 
 --
 -- TOC entry 226 (class 1259 OID 82760)
@@ -639,7 +682,38 @@ CREATE TABLE public.databasechangeloglock (
 );
 
 
--- ALTER TABLE public.databasechangeloglock OWNER TO giventa_event_management;
+
+
+--
+-- TOC entry 232 (class 1259 OID 82847)
+-- Name: event_type_details; Type: TABLE; Schema: public; Owner: giventa_event_management
+--
+
+CREATE TABLE public.event_type_details (
+                                           id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                           tenant_id character varying(255),
+                                           name character varying(255) NOT NULL,
+                                           description text,
+                                           color character varying(7) DEFAULT '#3B82F6'::character varying,
+                                           icon character varying(100),
+                                           is_active boolean DEFAULT true,
+                                           display_order integer DEFAULT 0,
+                                           created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                           updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                           CONSTRAINT check_color_format CHECK (((color)::text ~* '^#[0-9A-Fa-f]{6}$'::text)),
+                                           CONSTRAINT ux_event_type_tenant_name UNIQUE (tenant_id, name),
+    CONSTRAINT event_type_details_pkey PRIMARY KEY (id)
+);
+
+
+
+--
+-- TOC entry 3981 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: TABLE event_type_details; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON TABLE public.event_type_details IS 'Event type classifications with visual customization';
 
 
 --
@@ -676,6 +750,8 @@ CREATE TABLE public.event_details (
                                       enable_waitlist bool DEFAULT true NULL,
                                       enable_qr_code bool DEFAULT false NULL,
                                       external_registration_url varchar(1024) NULL,
+                                      email_header_image_url VARCHAR(2048) NULL,
+                                      from_email character varying(255) NOT NULL,
                                       created_by_id int8 NULL,
                                       event_type_id int8 NULL,
                                       created_at timestamp DEFAULT now() NOT NULL,
@@ -686,16 +762,30 @@ CREATE TABLE public.event_details (
                                       is_featured_event BOOLEAN NOT NULL DEFAULT false,
                                       featured_event_priority_ranking INT4 NOT NULL DEFAULT 0,
                                       live_event_priority_ranking INT4 NOT NULL DEFAULT 0,
+                                      donation_metadata TEXT NULL,
+                                      event_recurrence_metadata TEXT NULL,
+                                      is_recurring bool DEFAULT false NULL,
+                                      recurrence_pattern varchar(50) NULL,
+                                      recurrence_interval int4 NULL,
+                                      recurrence_end_type varchar(20) NULL,
+                                      recurrence_end_date date NULL,
+                                      recurrence_occurrences int4 NULL,
+                                      recurrence_weekly_days int4[] NULL,
+                                      recurrence_monthly_day int4 NULL,
+                                      parent_event_id int8 NULL,
+                                      recurrence_series_id int8 NULL,
                                       CONSTRAINT check_age_ranges CHECK (((minimum_age IS NULL) OR (maximum_age IS NULL) OR (maximum_age >= minimum_age))),
                                       CONSTRAINT check_capacity_positive CHECK (((capacity IS NULL) OR (capacity > 0))),
                                       CONSTRAINT check_deadlines CHECK (((registration_deadline IS NULL) OR (cancellation_deadline IS NULL) OR (cancellation_deadline <= registration_deadline))),
                                       CONSTRAINT check_event_dates CHECK ((end_date >= start_date)),
                                       CONSTRAINT event_details_max_guests_per_attendee_check CHECK ((max_guests_per_attendee >= 0)),
-                                      CONSTRAINT event_details_pkey PRIMARY KEY (id)
+                                      CONSTRAINT event_details_pkey PRIMARY KEY (id),
+                                      CONSTRAINT fk_event__created_by_id FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL,
+                                      CONSTRAINT fk_event__event_type_id FOREIGN KEY (event_type_id) REFERENCES public.event_type_details(id) ON DELETE SET NULL,
+                                      CONSTRAINT fk_parent_event FOREIGN KEY (parent_event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.event_details OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3944 (class 0 OID 0)
@@ -769,6 +859,190 @@ COMMENT ON COLUMN public.event_details.is_sports_event IS 'Whether this event is
 COMMENT ON COLUMN public.event_details.is_live IS 'Whether this event is currently live and should be featured on the home page';
 
 
+--
+-- TOC entry 3952 (class 0 OID 0)
+-- Dependencies: 234
+-- Name: COLUMN event_details.metadata; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+--COMMENT ON COLUMN public.event_details.metadata IS 'Flexible TEXT field for event configuration stored as JSON string. Stores fundraiser settings, donation config, etc. Parse JSON in application code (e.g., Jackson ObjectMapper in Spring Boot).';
+
+
+--
+-- TOC entry 3953 (class 0 OID 0)
+-- Dependencies: 234
+-- Name: COLUMN event_details.is_recurring; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON COLUMN public.event_details.is_recurring IS 'Whether this event is part of a recurring series';
+
+
+--
+-- TOC entry 3954 (class 0 OID 0)
+-- Dependencies: 234
+-- Name: COLUMN event_details.parent_event_id; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON COLUMN public.event_details.parent_event_id IS 'Reference to parent event for recurring event series. NULL for parent events, set for child occurrences.';
+
+
+--
+-- TOC entry 3955 (class 0 OID 0)
+-- Dependencies: 234
+-- Name: COLUMN event_details.recurrence_series_id; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON COLUMN public.event_details.recurrence_series_id IS 'Series identifier for grouping recurring events. Set to parent event ID for all events in a series.';
+
+
+--
+-- TOC entry 256 (class 1259 OID 0)
+-- Name: event_recurrence_series; Type: TABLE; Schema: public; Owner: giventa_event_management
+--
+
+CREATE TABLE public.event_recurrence_series (
+                                                id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                tenant_id character varying(255) NULL,
+                                                parent_event_id bigint NOT NULL,
+                                                pattern character varying(50) NOT NULL,
+                                                interval integer NOT NULL,
+                                                end_type character varying(20) NOT NULL,
+                                                end_date date NULL,
+                                                occurrences integer NULL,
+                                                weekly_days integer[] NULL,
+                                                monthly_day integer NULL,
+                                                created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                                updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                                CONSTRAINT event_recurrence_series_pkey PRIMARY KEY (id),
+                                                CONSTRAINT check_recurrence_occurrences CHECK (((occurrences IS NULL) OR (occurrences > 0 AND occurrences <= 1000))),
+                                                CONSTRAINT check_recurrence_interval CHECK ((interval > 0)),
+                                                CONSTRAINT check_recurrence_end_type CHECK ((end_type IN ('END_DATE', 'OCCURRENCES'))),
+                                                CONSTRAINT fk_recurrence_series_parent_event FOREIGN KEY (parent_event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
+);
+
+
+
+
+--
+-- TOC entry 3956 (class 0 OID 0)
+-- Dependencies: 256
+-- Name: TABLE event_recurrence_series; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON TABLE public.event_recurrence_series IS 'Recurrence configuration for recurring event series. Stores pattern, interval, end conditions, and weekly/monthly specific settings.';
+
+
+--
+-- TOC entry 3957 (class 0 OID 0)
+-- Dependencies: 256
+-- Name: COLUMN event_recurrence_series.parent_event_id; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON COLUMN public.event_recurrence_series.parent_event_id IS 'Reference to the parent event that defines the recurring series';
+
+
+--
+-- TOC entry 3958 (class 0 OID 0)
+-- Dependencies: 256
+-- Name: COLUMN event_recurrence_series.pattern; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON COLUMN public.event_recurrence_series.pattern IS 'Recurrence pattern: DAILY, WEEKLY, BIWEEKLY, or MONTHLY';
+
+
+--
+-- TOC entry 3959 (class 0 OID 0)
+-- Dependencies: 256
+-- Name: COLUMN event_recurrence_series.interval; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON COLUMN public.event_recurrence_series.interval IS 'Interval for recurrence (e.g., every N days, weeks, or months)';
+
+
+--
+-- TOC entry 3960 (class 0 OID 0)
+-- Dependencies: 256
+-- Name: COLUMN event_recurrence_series.end_type; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON COLUMN public.event_recurrence_series.end_type IS 'How recurrence ends: END_DATE or OCCURRENCES';
+
+
+--
+-- TOC entry 3961 (class 0 OID 0)
+-- Dependencies: 256
+-- Name: COLUMN event_recurrence_series.weekly_days; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON COLUMN public.event_recurrence_series.weekly_days IS 'Array of weekday numbers (0=Sunday, 1=Monday, ..., 6=Saturday) for WEEKLY/BIWEEKLY patterns';
+
+
+--
+-- TOC entry 3962 (class 0 OID 0)
+-- Dependencies: 256
+-- Name: COLUMN event_recurrence_series.monthly_day; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON COLUMN public.event_recurrence_series.monthly_day IS 'Day of month (1-31) for MONTHLY pattern, or NULL if using last day of month';
+
+
+-- ===================================================
+-- Focus Groups (tenant-scoped)
+-- ===================================================
+
+CREATE TABLE public.focus_group (
+                                    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                    tenant_id character varying(255) NOT NULL,
+                                    name character varying(120) NOT NULL,
+                                    slug character varying(80) NOT NULL,
+                                    description text,
+                                    cover_image_url character varying(1024),
+                                    is_active boolean DEFAULT true,
+                                    created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                    CONSTRAINT focus_group_pkey PRIMARY KEY (id),
+                                    CONSTRAINT ux_focus_group__tenant_slug UNIQUE (tenant_id, slug),
+                                    CONSTRAINT ux_focus_group__tenant_name UNIQUE (tenant_id, name)
+);
+
+COMMENT ON TABLE public.focus_group IS 'Tenant-scoped focus groups (Career, Cultural, IT, NextGen, etc.)';
+
+
+CREATE TABLE public.focus_group_members (
+                                            id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                            tenant_id character varying(255) NOT NULL,
+                                            focus_group_id bigint NOT NULL,
+                                            user_profile_id bigint NOT NULL,
+    -- Use VARCHAR for compatibility with existing Java domain models; enums retained for future hardening
+                                            role character varying(50) NOT NULL DEFAULT 'MEMBER',
+                                            status character varying(50) NOT NULL DEFAULT 'PENDING',
+                                            created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                            updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                            CONSTRAINT focus_group_members_pkey PRIMARY KEY (id),
+                                            CONSTRAINT ux_focus_group_members__tenant_group_user UNIQUE (tenant_id, focus_group_id, user_profile_id),
+                                            CONSTRAINT fk_focus_group_members__group FOREIGN KEY (focus_group_id) REFERENCES public.focus_group(id) ON DELETE CASCADE,
+                                            CONSTRAINT fk_focus_group_members__user_profile FOREIGN KEY (user_profile_id) REFERENCES public.user_profile(id) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE public.focus_group_members IS 'Membership of focus groups by user_profile with roles/status';
+
+
+CREATE TABLE public.event_focus_groups (
+                                           id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                           tenant_id character varying(255) NOT NULL,
+                                           event_id bigint NOT NULL,
+                                           focus_group_id bigint NOT NULL,
+                                           created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                           updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                           CONSTRAINT event_focus_groups_pkey PRIMARY KEY (id),
+                                           CONSTRAINT ux_event_focus_groups__tenant_event_group UNIQUE (tenant_id, event_id, focus_group_id),
+                                           CONSTRAINT fk_event_focus_groups__group FOREIGN KEY (focus_group_id) REFERENCES public.focus_group(id) ON DELETE CASCADE,
+                                           CONSTRAINT fk_event_focus_groups__event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE public.event_focus_groups IS 'Join table mapping events to one or more focus groups';
+
+
 
 --
 -- TOC entry 251 (class 1259 OID 83147)
@@ -797,11 +1071,12 @@ CREATE TABLE public.event_guest_pricing (
                                             CONSTRAINT check_guest_pricing_amounts CHECK (((price >= (0)::numeric) AND ((early_bird_price IS NULL) OR (early_bird_price >= (0)::numeric)) AND ((group_discount_percentage IS NULL) OR ((group_discount_percentage >= (0)::numeric) AND (group_discount_percentage <= (100)::numeric))))),
                                             CONSTRAINT check_max_guests_positive CHECK (((max_guests IS NULL) OR (max_guests > 0))),
                                             CONSTRAINT check_valid_date_range CHECK (((valid_from IS NULL) OR (valid_to IS NULL) OR (valid_to >= valid_from))),
-                                            CONSTRAINT event_guest_pricing_price_check CHECK ((price >= (0)::numeric))
+                                            CONSTRAINT event_guest_pricing_price_check CHECK ((price >= (0)::numeric)),
+                                            CONSTRAINT ux_event_guest_pricing_event_age_tier UNIQUE (event_id, age_group, pricing_tier),
+                                            CONSTRAINT fk_event_guest_pricing__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.event_guest_pricing OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3955 (class 0 OID 0)
@@ -858,12 +1133,25 @@ COMMENT ON COLUMN public.event_guest_pricing.description IS 'Pricing description
 
 
 --
+-- TOC entry 219 (class 1259 OID 77427)
+-- Name: event_live_update_id_seq; Type: SEQUENCE; Schema: public; Owner: giventa_event_management
+--
+
+CREATE SEQUENCE public.event_live_update_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
 -- TOC entry 220 (class 1259 OID 77428)
 -- Name: event_live_update; Type: TABLE; Schema: public; Owner: giventa_event_management
 --
 
 CREATE TABLE public.event_live_update (
-                                          id bigint NOT NULL,
+                                          id bigint DEFAULT nextval('public.event_live_update_id_seq'::regclass) NOT NULL,
                                           event_id bigint NOT NULL,
                                           update_type character varying(20) NOT NULL,
                                           content_text text,
@@ -879,7 +1167,6 @@ CREATE TABLE public.event_live_update (
 );
 
 
--- ALTER TABLE public.event_live_update OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3962 (class 0 OID 0)
@@ -888,34 +1175,6 @@ CREATE TABLE public.event_live_update (
 --
 
 COMMENT ON TABLE public.event_live_update IS 'Live updates (text, image, video, etc.) for events';
-
-
---
--- TOC entry 222 (class 1259 OID 77446)
--- Name: event_live_update_attachment; Type: TABLE; Schema: public; Owner: giventa_event_management
---
-
-CREATE TABLE public.event_live_update_attachment (
-                                                     id bigint NOT NULL,
-                                                     live_update_id bigint NOT NULL,
-                                                     attachment_type character varying(20),
-                                                     attachment_url character varying(1024),
-                                                     display_order integer DEFAULT 0,
-                                                     metadata  VARCHAR(4096),
-                                                     created_at timestamp without time zone DEFAULT now(),
-                                                     updated_at timestamp without time zone DEFAULT now()
-);
-
-
--- ALTER TABLE public.event_live_update_attachment OWNER TO giventa_event_management;
-
---
--- TOC entry 3963 (class 0 OID 0)
--- Dependencies: 222
--- Name: TABLE event_live_update_attachment; Type: COMMENT; Schema: public; Owner: giventa_event_management
---
-
-COMMENT ON TABLE public.event_live_update_attachment IS 'Attachments (image, video, etc.) for live event updates';
 
 
 --
@@ -931,31 +1190,34 @@ CREATE SEQUENCE public.event_live_update_attachment_id_seq
     CACHE 1;
 
 
--- ALTER SEQUENCE public.event_live_update_attachment_id_seq OWNER TO giventa_event_management;
-
 --
--- TOC entry 3964 (class 0 OID 0)
--- Dependencies: 221
--- Name: event_live_update_attachment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: giventa_event_management
+-- TOC entry 222 (class 1259 OID 77446)
+-- Name: event_live_update_attachment; Type: TABLE; Schema: public; Owner: giventa_event_management
 --
 
-ALTER SEQUENCE public.event_live_update_attachment_id_seq OWNED BY public.event_live_update_attachment.id;
+CREATE TABLE public.event_live_update_attachment (
+                                                    id bigint DEFAULT nextval('public.event_live_update_attachment_id_seq'::regclass) NOT NULL,
+                                                    live_update_id bigint NOT NULL,
+                                                    attachment_type character varying(20),
+                                                    attachment_url character varying(1024),
+                                                    display_order integer DEFAULT 0,
+                                                    metadata  VARCHAR(4096),
+                                                    created_at timestamp without time zone DEFAULT now(),
+                                                    updated_at timestamp without time zone DEFAULT now(),
+                                                    CONSTRAINT event_live_update_attachment_live_update_id_fkey FOREIGN KEY (live_update_id) REFERENCES public.event_live_update(id) ON DELETE CASCADE
+);
+
 
 
 --
--- TOC entry 219 (class 1259 OID 77427)
--- Name: event_live_update_id_seq; Type: SEQUENCE; Schema: public; Owner: giventa_event_management
+-- TOC entry 3963 (class 0 OID 0)
+-- Dependencies: 222
+-- Name: TABLE event_live_update_attachment; Type: COMMENT; Schema: public; Owner: giventa_event_management
 --
 
-CREATE SEQUENCE public.event_live_update_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+COMMENT ON TABLE public.event_live_update_attachment IS 'Attachments (image, video, etc.) for live event updates';
 
 
--- ALTER SEQUENCE public.event_live_update_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3965 (class 0 OID 0)
@@ -963,7 +1225,6 @@ CREATE SEQUENCE public.event_live_update_id_seq
 -- Name: event_live_update_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: giventa_event_management
 --
 
-ALTER SEQUENCE public.event_live_update_id_seq OWNED BY public.event_live_update.id;
 
 --
 -- TOC entry 235 (class 1259 OID 82890)
@@ -979,11 +1240,13 @@ CREATE TABLE public.event_admin (
                                     created_at timestamp without time zone DEFAULT now() NOT NULL,
                                     updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                     user_id bigint,
-                                    created_by_id bigint
+                                    created_by_id bigint,
+                                    CONSTRAINT ux_event_admin_user_tenant UNIQUE (user_id, tenant_id),
+                                    CONSTRAINT fk_admin__created_by_id FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL,
+                                    CONSTRAINT fk_admin__user_id FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.event_admin OWNER TO giventa_event_management;
 
 --
 -- TOC entry 249 (class 1259 OID 83122)
@@ -997,17 +1260,17 @@ CREATE TABLE public.event_admin_audit_log (
                                               table_name character varying(255) NOT NULL,
                                               record_id character varying(255) NOT NULL,
                                               changes VARCHAR(8192) NULL,
-                                              old_values jsonb,
-                                              new_values jsonb,
+                                              old_values text,
+                                              new_values text,
                                               ip_address inet,
                                               user_agent text,
                                               session_id character varying(255),
                                               created_at timestamp without time zone DEFAULT now() NOT NULL,
-                                              admin_id bigint
+                                              admin_id bigint,
+                                              CONSTRAINT fk_admin_audit_log__admin_id FOREIGN KEY (admin_id) REFERENCES public.user_profile(id) ON DELETE SET NULL
 );
 
 
--- ALTER TABLE public.event_admin_audit_log OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3932 (class 0 OID 0)
@@ -1068,7 +1331,6 @@ CREATE TABLE public.event_attendee (
 );
 
 
--- ALTER TABLE public.event_attendee OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3934 (class 0 OID 0)
@@ -1138,11 +1400,12 @@ CREATE TABLE public.event_attendee_guest (
                                              first_name character varying(255),
                                              last_name character varying(255),
                                              email character varying(255),
-                                             phone character varying(255)
+                                             phone character varying(255),
+                                             CONSTRAINT fk_event_attendee_guest__approved_by_id FOREIGN KEY (approved_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL,
+                                             CONSTRAINT fk_event_attendee_guest__primary_attendee_id FOREIGN KEY (primary_attendee_id) REFERENCES public.event_attendee(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.event_attendee_guest OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3939 (class 0 OID 0)
@@ -1188,12 +1451,76 @@ CREATE TABLE public.event_calendar_entry (
                                              created_at timestamp without time zone DEFAULT now() NOT NULL,
                                              updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                              event_id bigint,
-                                             created_by_id bigint
+                                             created_by_id bigint,
+                                             CONSTRAINT ux_calendar_entry_provider_external UNIQUE (calendar_provider, external_event_id),
+                                             CONSTRAINT fk_calendar_event__created_by_id FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL,
+                                             CONSTRAINT fk_calendar_event__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.event_calendar_entry OWNER TO giventa_event_management;
 
+
+-- Table: event_sponsors
+-- Stores comprehensive sponsor/company information
+CREATE TABLE public.event_sponsors (
+                                       id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                       tenant_id character varying(255),
+                                       event_id int8 NULL,
+                                       name varchar(255) NOT NULL,
+                                       type varchar(100) NOT NULL,
+    -- Company information
+                                       company_name varchar(255) NULL,
+                                       tagline varchar(500) NULL,
+                                       description text NULL,
+                                       website_url varchar(1024) NULL,
+    -- Contact information
+                                       contact_email varchar(255) NULL,
+                                       contact_phone varchar(50) NULL,
+    -- Media URLs (AWS S3 or other cloud storage)
+                                       logo_url varchar(1024) NULL,
+                                       hero_image_url varchar(1024) NULL,
+                                       banner_image_url varchar(1024) NULL,
+    -- Status and metadata
+                                       is_active boolean DEFAULT true NOT NULL,
+                                       priority_ranking int4 DEFAULT 0 NOT NULL,
+    -- Social media links
+                                       facebook_url varchar(1024) NULL,
+                                       twitter_url varchar(1024) NULL,
+                                       linkedin_url varchar(1024) NULL,
+                                       instagram_url varchar(1024) NULL,
+    -- Timestamps
+                                       created_at timestamp DEFAULT now() NOT NULL,
+                                       updated_at timestamp DEFAULT now() NOT NULL,
+    -- Constraints
+                                       CONSTRAINT event_sponsors_pkey PRIMARY KEY (id),
+                                       CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
+                                       CONSTRAINT check_url_format_website CHECK (website_url IS NULL OR website_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_logo CHECK (logo_url IS NULL OR logo_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_hero CHECK (hero_image_url IS NULL OR hero_image_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_banner CHECK (banner_image_url IS NULL OR banner_image_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_facebook CHECK (facebook_url IS NULL OR facebook_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_twitter CHECK (twitter_url IS NULL OR twitter_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_linkedin CHECK (linkedin_url IS NULL OR linkedin_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_instagram CHECK (instagram_url IS NULL OR instagram_url ~* '^https?://.*'),
+    CONSTRAINT check_email_format CHECK (contact_email IS NULL OR contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT fk_event_sponsors_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
+);
+
+-- Table: event_sponsors_join
+-- Join table for many-to-many relationship between events and sponsors
+CREATE TABLE public.event_sponsors_join (
+                                            id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                            tenant_id character varying(255),
+                                            event_id bigint NOT NULL,
+                                            sponsor_id bigint NOT NULL,
+                                            custom_poster_url varchar(1024) NULL,
+                                            created_at timestamp DEFAULT now() NOT NULL,
+                                            CONSTRAINT event_sponsors_join_pkey PRIMARY KEY (id),
+                                            CONSTRAINT unique_event_sponsor UNIQUE (event_id, sponsor_id),
+                                            CONSTRAINT check_custom_poster_url_format CHECK (custom_poster_url IS NULL OR custom_poster_url ~* '^https?://.*'),
+                                            CONSTRAINT fk_event_sponsors_join_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
+                                            CONSTRAINT fk_event_sponsors_join_sponsor_id FOREIGN KEY (sponsor_id) REFERENCES public.event_sponsors(id) ON DELETE CASCADE
+    );
 
 --
 -- TOC entry 246 (class 1259 OID 83070)
@@ -1213,6 +1540,7 @@ CREATE TABLE public.event_media (
                                     file_size int8 NULL,
                                     is_public bool DEFAULT true NULL,
                                     event_flyer bool DEFAULT false NULL,
+                                    is_email_header_image bool DEFAULT false NULL,
                                     is_event_management_official_document bool DEFAULT false NULL,
                                     pre_signed_url varchar(2048) NULL,
                                     pre_signed_url_expires_at timestamp NULL,
@@ -1228,14 +1556,23 @@ CREATE TABLE public.event_media (
                                     updated_at timestamp DEFAULT now() NOT NULL,
                                     event_id int8 NULL,
                                     uploaded_by_id int8 NULL,
+                                    sponsor_id bigint NULL,
+                                    event_sponsors_join_id bigint NULL,
+                                    performer_id bigint NULL,
+                                    director_id bigint NULL,
+                                    priority_ranking INT4 NOT NULL DEFAULT 0,
                                     is_home_page_hero_image bool DEFAULT false NOT NULL,
                                     is_featured_event_image bool DEFAULT false NOT NULL,
                                     is_live_event_image bool DEFAULT false NOT NULL,
                                     CONSTRAINT check_download_count_non_negative CHECK ((download_count >= 0)),
-                                    CONSTRAINT check_file_size_positive CHECK (((file_size IS NULL) OR (file_size >= 0)))
+                                    CONSTRAINT check_file_size_positive CHECK (((file_size IS NULL) OR (file_size >= 0))),
+                                    CONSTRAINT check_priority_ranking_non_negative CHECK (priority_ranking >= 0),
+                                    CONSTRAINT fk_event_media__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
+                                    CONSTRAINT fk_event_media__uploaded_by_id FOREIGN KEY (uploaded_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL,
+                                    CONSTRAINT fk_event_media_sponsor_id FOREIGN KEY (sponsor_id) REFERENCES public.event_sponsors(id) ON DELETE CASCADE,
+                                    CONSTRAINT fk_event_media_event_sponsors_join_id FOREIGN KEY (event_sponsors_join_id) REFERENCES public.event_sponsors_join(id) ON DELETE CASCADE
 );
 
--- ALTER TABLE public.event_media OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3966 (class 0 OID 0)
@@ -1244,6 +1581,12 @@ CREATE TABLE public.event_media (
 --
 
 COMMENT ON COLUMN public.event_media.pre_signed_url IS 'Pre-signed URL for temporary access (max length 2048 chars)';
+
+COMMENT ON COLUMN public.event_media.sponsor_id IS 'Reference to sponsor for sponsor-specific media files. When set, this media file belongs to a specific sponsor.';
+
+COMMENT ON COLUMN public.event_media.event_sponsors_join_id IS 'Reference to event-sponsor join record for custom posters. When set, this media file is a custom poster for a specific event-sponsor combination.';
+
+COMMENT ON COLUMN public.event_media.priority_ranking IS 'Priority ranking for media files (sponsor or event-sponsor). Lower values indicate higher priority (0 = highest priority). Used to determine which image to display when multiple files are available.';
 
 
 --
@@ -1266,11 +1609,12 @@ CREATE TABLE public.event_organizer (
                                         updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                         event_id bigint,
                                         organizer_id bigint,
-                                        CONSTRAINT check_contact_email_format CHECK (((contact_email IS NULL) OR ((contact_email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text)))
+                                        CONSTRAINT check_contact_email_format CHECK (((contact_email IS NULL) OR ((contact_email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text))),
+                                        CONSTRAINT fk_event_organizer__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
+                                        CONSTRAINT fk_event_organizer__organizer_id FOREIGN KEY (organizer_id) REFERENCES public.user_profile(id) ON DELETE SET NULL
 );
 
 
--- ALTER TABLE public.event_organizer OWNER TO giventa_event_management;
 
 --
 -- TOC entry 243 (class 1259 OID 83028)
@@ -1295,11 +1639,12 @@ CREATE TABLE public.event_poll (
                                    created_by_id bigint,
                                    CONSTRAINT check_max_responses_positive CHECK ((max_responses_per_user > 0)),
                                    CONSTRAINT check_poll_dates CHECK (((end_date IS NULL) OR (end_date >= start_date))),
-                                   CONSTRAINT event_poll_pkey PRIMARY KEY (id)
+                                   CONSTRAINT event_poll_pkey PRIMARY KEY (id),
+                                   CONSTRAINT fk_poll__created_by_id FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL,
+                                   CONSTRAINT fk_poll__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.event_poll OWNER TO giventa_event_management;
 
 --
 -- TOC entry 244 (class 1259 OID 83045)
@@ -1315,11 +1660,11 @@ CREATE TABLE public.event_poll_option (
                                           created_at timestamp without time zone DEFAULT now() NOT NULL,
                                           updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                           poll_id bigint,
-                                          CONSTRAINT event_poll_option_pkey PRIMARY KEY (id)
+                                          CONSTRAINT event_poll_option_pkey PRIMARY KEY (id),
+                                          CONSTRAINT fk_poll_option__poll_id FOREIGN KEY (poll_id) REFERENCES public.event_poll(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.event_poll_option OWNER TO giventa_event_management;
 
 --
 -- TOC entry 245 (class 1259 OID 83057)
@@ -1336,19 +1681,54 @@ CREATE TABLE public.event_poll_response (
                                             updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                             poll_id bigint,
                                             poll_option_id bigint,
-                                            user_id bigint
+                                            user_id bigint,
+                                            CONSTRAINT ux_poll_response_user_option UNIQUE (poll_id, poll_option_id, user_id),
+                                            CONSTRAINT fk_poll_response__poll_id FOREIGN KEY (poll_id) REFERENCES public.event_poll(id) ON DELETE CASCADE,
+                                            CONSTRAINT fk_poll_response__poll_option_id FOREIGN KEY (poll_option_id) REFERENCES public.event_poll_option(id) ON DELETE CASCADE,
+                                            CONSTRAINT fk_poll_response__user_id FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.event_poll_response OWNER TO giventa_event_management;
 
 --
 -- TOC entry 216 (class 1259 OID 77393)
 -- Name: event_score_card; Type: TABLE; Schema: public; Owner: giventa_event_management
 --
 
+--
+-- TOC entry 217 (class 1259 OID 77410)
+-- Name: event_score_card_detail_id_seq; Type: SEQUENCE; Schema: public; Owner: giventa_event_management
+--
+
+CREATE SEQUENCE public.event_score_card_detail_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 215 (class 1259 OID 77392)
+-- Name: event_score_card_id_seq; Type: SEQUENCE; Schema: public; Owner: giventa_event_management
+--
+
+CREATE SEQUENCE public.event_score_card_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 216 (class 1259 OID 77393)
+-- Name: event_score_card; Type: TABLE; Schema: public; Owner: giventa_event_management
+--
+
+
 CREATE TABLE public.event_score_card (
-                                         id bigint NOT NULL,
+                                         id bigint DEFAULT nextval('public.event_score_card_id_seq'::regclass) NOT NULL,
                                          event_id bigint NOT NULL,
                                          team_a_name character varying(255) NOT NULL,
                                          team_b_name character varying(255) NOT NULL,
@@ -1361,7 +1741,6 @@ CREATE TABLE public.event_score_card (
 );
 
 
--- ALTER TABLE public.event_score_card OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3972 (class 0 OID 0)
@@ -1378,7 +1757,7 @@ COMMENT ON TABLE public.event_score_card IS 'Score card for sports events';
 --
 
 CREATE TABLE public.event_score_card_detail (
-                                                id bigint NOT NULL,
+                                                id bigint DEFAULT nextval('public.event_score_card_detail_id_seq'::regclass) NOT NULL,
                                                 score_card_id bigint NOT NULL,
                                                 team_name character varying(255) NOT NULL,
                                                 player_name character varying(255),
@@ -1386,11 +1765,11 @@ CREATE TABLE public.event_score_card_detail (
                                                 remarks text,
                                                 created_at timestamp without time zone DEFAULT now(),
                                                 updated_at timestamp without time zone DEFAULT now(),
-                                                CONSTRAINT event_score_card_detail_pkey PRIMARY KEY (id)
+                                                CONSTRAINT event_score_card_detail_pkey PRIMARY KEY (id),
+                                                CONSTRAINT fk_score_card_detail__score_card_id FOREIGN KEY (score_card_id) REFERENCES public.event_score_card(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.event_score_card_detail OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3973 (class 0 OID 0)
@@ -1401,44 +1780,6 @@ CREATE TABLE public.event_score_card_detail (
 COMMENT ON TABLE public.event_score_card_detail IS 'Detailed breakdown for event score cards (per player or per team)';
 
 
---
--- TOC entry 217 (class 1259 OID 77410)
--- Name: event_score_card_detail_id_seq; Type: SEQUENCE; Schema: public; Owner: giventa_event_management
---
-
-CREATE SEQUENCE public.event_score_card_detail_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
--- ALTER SEQUENCE public.event_score_card_detail_id_seq OWNER TO giventa_event_management;
-
---
--- TOC entry 3974 (class 0 OID 0)
--- Dependencies: 217
--- Name: event_score_card_detail_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: giventa_event_management
---
-
-ALTER SEQUENCE public.event_score_card_detail_id_seq OWNED BY public.event_score_card_detail.id;
-
-
---
--- TOC entry 215 (class 1259 OID 77392)
--- Name: event_score_card_id_seq; Type: SEQUENCE; Schema: public; Owner: giventa_event_management
---
-
-CREATE SEQUENCE public.event_score_card_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
--- ALTER SEQUENCE public.event_score_card_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3975 (class 0 OID 0)
@@ -1446,7 +1787,48 @@ CREATE SEQUENCE public.event_score_card_id_seq
 -- Name: event_score_card_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: giventa_event_management
 --
 
-ALTER SEQUENCE public.event_score_card_id_seq OWNED BY public.event_score_card.id;
+
+
+--
+-- TOC entry 227 (class 1259 OID 82765)
+-- Name: discount_code_id_seq; Type: SEQUENCE; Schema: public; Owner: giventa_event_management
+--
+
+CREATE SEQUENCE public.discount_code_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+
+--
+-- TOC entry 228 (class 1259 OID 82766)
+-- Name: discount_code; Type: TABLE; Schema: public; Owner: giventa_event_management
+--
+
+CREATE TABLE public.discount_code (
+                                      id bigint PRIMARY KEY DEFAULT nextval('public.discount_code_id_seq'::regclass),
+                                      code character varying(50) NOT NULL,
+                                      description character varying(255),
+                                      discount_type character varying(20) DEFAULT 'PERCENT'::character varying NOT NULL,
+                                      discount_value numeric(10,2) NOT NULL,
+                                      max_uses integer,
+                                      uses_count integer DEFAULT 0,
+                                      valid_from timestamp without time zone,
+                                      valid_to timestamp without time zone,
+                                      is_active boolean DEFAULT true,
+                                      created_at timestamp without time zone DEFAULT now(),
+                                      updated_at timestamp without time zone DEFAULT now(),
+                                      event_id bigint NOT NULL,
+                                      tenant_id character varying(255) NOT NULL,
+                                      CONSTRAINT discount_code_code_key UNIQUE (code),
+                                      CONSTRAINT fk_discount_code_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE public.discount_code IS 'Discount codes for ticket purchases, now per event and tenant.';
+
 
 
 --
@@ -1503,11 +1885,13 @@ CONSTRAINT check_email_format_transaction CHECK (((email)::text ~* '^[A-Za-z0-9.
     CONSTRAINT check_transaction_amounts CHECK (((total_amount >= (0)::numeric) AND (tax_amount >= (0)::numeric) AND (discount_amount >= (0)::numeric) AND (refund_amount >= (0)::numeric) AND (final_amount >= (0)::numeric))),
     CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE SET null,
-    CONSTRAINT event_ticket_transaction_pkey PRIMARY KEY (id)
+    CONSTRAINT event_ticket_transaction_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_ticket_transaction_reference UNIQUE (transaction_reference),
+    CONSTRAINT unique_stripe_payment_intent UNIQUE (stripe_payment_intent_id),
+    CONSTRAINT fk_ticket_transaction__discount_code_id FOREIGN KEY (discount_code_id) REFERENCES public.discount_code(id) ON DELETE SET NULL
 );
 
 
--- ALTER TABLE public.event_ticket_transaction OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3976 (class 0 OID 0)
@@ -1558,11 +1942,12 @@ CREATE TABLE public.event_ticket_type (
                                           CONSTRAINT check_quantities_positive CHECK ((((available_quantity IS NULL) OR (available_quantity >= 0)) AND (sold_quantity >= 0) AND (min_quantity_per_order > 0) AND (max_quantity_per_order >= min_quantity_per_order))),
                                           CONSTRAINT check_sale_dates CHECK (((sale_end_date IS NULL) OR (sale_start_date IS NULL) OR (sale_end_date >= sale_start_date))),
                                           CONSTRAINT check_sold_vs_available CHECK (((available_quantity IS NULL) OR (sold_quantity <= available_quantity))),
-                                          CONSTRAINT event_ticket_type_pkey PRIMARY KEY (id)
+                                          CONSTRAINT event_ticket_type_pkey PRIMARY KEY (id),
+                                          CONSTRAINT ux_event_ticket_type_event_code UNIQUE (event_id, code),
+                                          CONSTRAINT fk_ticket_type__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.event_ticket_type OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3979 (class 0 OID 0)
@@ -1583,40 +1968,10 @@ CREATE TABLE public.event_ticket_transaction_item (
                                                       total_amount NUMERIC(21,2) NOT NULL,
     -- Optionally: discount_amount, fee_amount, etc.
                                                       created_at TIMESTAMP DEFAULT now() NOT NULL,
-                                                      updated_at TIMESTAMP DEFAULT now() NOT NULL
+                                                      updated_at TIMESTAMP DEFAULT now() NOT NULL,
+                                                      CONSTRAINT unique_transaction_ticket_type_tenant UNIQUE (transaction_id, ticket_type_id, tenant_id)
 );
 --
--- TOC entry 232 (class 1259 OID 82832)
--- Name: event_type_details; Type: TABLE; Schema: public; Owner: giventa_event_management
---
-
-CREATE TABLE public.event_type_details (
-                                           id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-                                           tenant_id character varying(255),
-                                           name character varying(255) NOT NULL,
-                                           description text,
-                                           color character varying(7) DEFAULT '#3B82F6'::character varying,
-                                           icon character varying(100),
-                                           is_active boolean DEFAULT true,
-                                           display_order integer DEFAULT 0,
-                                           created_at timestamp without time zone DEFAULT now() NOT NULL,
-                                           updated_at timestamp without time zone DEFAULT now() NOT NULL,
-                                           CONSTRAINT check_color_format CHECK (((color)::text ~* '^#[0-9A-Fa-f]{6}$'::text)),
-    CONSTRAINT event_type_details_pkey PRIMARY KEY (id)
-);
-
-
--- ALTER TABLE public.event_type_details OWNER TO giventa_event_management;
-
---
--- TOC entry 3981 (class 0 OID 0)
--- Dependencies: 232
--- Name: TABLE event_type_details; Type: COMMENT; Schema: public; Owner: giventa_event_management
---
-
-COMMENT ON TABLE public.event_type_details IS 'Event type classifications with visual customization';
-
-
 --
 -- TOC entry 252 (class 1259 OID 83166)
 -- Name: qr_code_usage; Type: TABLE; Schema: public; Owner: giventa_event_management
@@ -1641,11 +1996,11 @@ CREATE TABLE public.qr_code_usage (
                                       invalidated_at timestamp without time zone,
                                       invalidation_reason text,
                                       created_at timestamp without time zone DEFAULT now() NOT NULL,
-                                      CONSTRAINT check_usage_counts CHECK (((usage_count >= 0) AND (max_usage_count > 0) AND (usage_count <= max_usage_count)))
+                                      CONSTRAINT check_usage_counts CHECK (((usage_count >= 0) AND (max_usage_count > 0) AND (usage_count <= max_usage_count))),
+                                      CONSTRAINT fk_qr_code_usage__attendee_id FOREIGN KEY (attendee_id) REFERENCES public.event_attendee(id) ON DELETE CASCADE
 );
 
 
--- ALTER TABLE public.qr_code_usage OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3983 (class 0 OID 0)
@@ -1667,7 +2022,6 @@ CREATE TABLE public.rel_event_details__discount_codes (
 );
 
 
--- ALTER TABLE public.rel_event_details__discount_codes OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3985 (class 0 OID 0)
@@ -1710,7 +2064,6 @@ CREATE TABLE public.tenant_organization (
 );
 
 
--- ALTER TABLE public.tenant_organization OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3986 (class 0 OID 0)
@@ -1734,8 +2087,16 @@ CREATE TABLE public.tenant_settings (
                                         show_events_section_in_home_page boolean DEFAULT false,
                                         show_team_members_section_in_home_page boolean DEFAULT false,
                                         show_sponsors_section_in_home_page boolean DEFAULT false,
+                                        is_membership_subscription_enabled boolean DEFAULT false,
                                         require_admin_approval boolean DEFAULT false,
                                         enable_whatsapp_integration boolean DEFAULT false,
+                                        address_line_1 character varying(255),
+                                        address_line_2 character varying(255),
+                                        phone_number character varying(50),
+                                        zip_code character varying(20),
+                                        country character varying(100),
+                                        state_province character varying(100),
+                                        email character varying(255),
                                         whatsapp_api_key character varying(500),
                                         twilio_account_sid character varying(500),
                                         twilio_auth_token character varying(1048),
@@ -1752,6 +2113,9 @@ CREATE TABLE public.tenant_settings (
                                         max_guests_per_attendee integer DEFAULT 5,
                                         default_event_capacity integer DEFAULT 100,
                                         platform_fee_percentage decimal(21,2),
+                                        email_header_image_url VARCHAR(2048) NULL,
+                                        email_footer_html_url VARCHAR(2048),
+                                        logo_image_url VARCHAR(2048),
                                         created_at timestamp without time zone DEFAULT now() NOT NULL,
                                         updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                         CONSTRAINT check_default_capacity_positive CHECK (((default_event_capacity IS NULL) OR (default_event_capacity > 0))),
@@ -1764,7 +2128,6 @@ CREATE TABLE public.tenant_settings (
                                         CONSTRAINT fk_tenant_settings_organization_id FOREIGN KEY (tenant_organization_id) REFERENCES public.tenant_organization(id) ON DELETE CASCADE
 );
 
--- ALTER TABLE public.tenant_settings OWNER TO giventa_event_management;
 
 -- Index for tenant_organization_id foreign key for better query performance
 CREATE INDEX idx_tenant_settings_organization_id ON public.tenant_settings(tenant_organization_id);
@@ -1778,51 +2141,6 @@ CREATE INDEX idx_tenant_settings_organization_id ON public.tenant_settings(tenan
 COMMENT ON TABLE public.tenant_settings IS 'Tenant-specific configuration settings with enhanced options';
 
 COMMENT ON COLUMN public.tenant_settings.tenant_organization_id IS 'Foreign key reference to tenant_organization.id for standard Long->Long relationship';
-
-
-
---
--- TOC entry 227 (class 1259 OID 82765)
--- Name: discount_code_id_seq; Type: SEQUENCE; Schema: public; Owner: giventa_event_management
---
-
-CREATE SEQUENCE public.discount_code_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
--- ALTER SEQUENCE public.discount_code_id_seq OWNER TO giventa_event_management;
-
---
--- TOC entry 228 (class 1259 OID 82766)
--- Name: discount_code; Type: TABLE; Schema: public; Owner: giventa_event_management
---
-
-CREATE TABLE public.discount_code (
-                                      id bigint PRIMARY KEY DEFAULT nextval('public.discount_code_id_seq'::regclass),
-                                      code character varying(50) NOT NULL,
-                                      description character varying(255),
-                                      discount_type character varying(20) DEFAULT 'PERCENT'::character varying NOT NULL,
-                                      discount_value numeric(10,2) NOT NULL,
-                                      max_uses integer,
-                                      uses_count integer DEFAULT 0,
-                                      valid_from timestamp without time zone,
-                                      valid_to timestamp without time zone,
-                                      is_active boolean DEFAULT true,
-                                      created_at timestamp without time zone DEFAULT now(),
-                                      updated_at timestamp without time zone DEFAULT now(),
-                                      event_id bigint NOT NULL,
-                                      tenant_id character varying(255) NOT NULL,
-                                      CONSTRAINT fk_discount_code_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
-);
-
-COMMENT ON TABLE public.discount_code IS 'Discount codes for ticket purchases, now per event and tenant.';
-
-
--- ALTER TABLE public.discount_code OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3927 (class 0 OID 0)
@@ -1848,7 +2166,7 @@ CREATE TABLE public.user_payment_transaction (
                                                  tenant_amount numeric(21,2) DEFAULT 0,
                                                  status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
                                                  processing_fee numeric(21,2) DEFAULT 0,
-                                                 metadata jsonb,
+                                                 metadata text,
                                                  external_transaction_id character varying(255),
                                                  payment_method character varying(100),
                                                  failure_reason text,
@@ -1857,11 +2175,13 @@ CREATE TABLE public.user_payment_transaction (
                                                  ticket_transaction_id bigint,
                                                  created_at timestamp without time zone DEFAULT now() NOT NULL,
                                                  updated_at timestamp without time zone DEFAULT now() NOT NULL,
-                                                 CONSTRAINT check_payment_amounts CHECK (((amount >= (0)::numeric) AND (platform_fee_amount >= (0)::numeric) AND (tenant_amount >= (0)::numeric) AND (processing_fee >= (0)::numeric)))
+                                                 CONSTRAINT check_payment_amounts CHECK (((amount >= (0)::numeric) AND (platform_fee_amount >= (0)::numeric) AND (tenant_amount >= (0)::numeric) AND (processing_fee >= (0)::numeric))),
+                                                 CONSTRAINT ux_payment_transaction_stripe_intent UNIQUE (stripe_payment_intent_id),
+                                                 CONSTRAINT fk_payment_transaction__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE SET NULL,
+                                                 CONSTRAINT fk_payment_transaction__ticket_transaction_id FOREIGN KEY (ticket_transaction_id) REFERENCES public.event_ticket_transaction(id) ON DELETE SET NULL
 );
 
 
--- ALTER TABLE public.user_payment_transaction OWNER TO giventa_event_management;
 
 
 
@@ -1882,7 +2202,11 @@ CREATE TABLE public.user_subscription (
                                           cancel_at_period_end boolean DEFAULT false,
                                           user_profile_id bigint,
                                           created_at timestamp without time zone DEFAULT now() NOT NULL,
-                                          updated_at timestamp without time zone DEFAULT now() NOT NULL
+                                          updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                          CONSTRAINT ux_user_subscription__stripe_customer_id UNIQUE (stripe_customer_id),
+                                          CONSTRAINT ux_user_subscription__stripe_subscription_id UNIQUE (stripe_subscription_id),
+                                          CONSTRAINT ux_user_subscription__user_profile_id UNIQUE (user_profile_id),
+                                          CONSTRAINT fk_user_subscription__user_profile_id FOREIGN KEY (user_profile_id) REFERENCES public.user_profile(id) ON DELETE CASCADE
 );
 
 
@@ -1908,7 +2232,9 @@ CREATE TABLE public.user_task (
                                   updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                   user_id bigint,
                                   CONSTRAINT check_completion_logic CHECK (((completed = false) OR ((completed = true) AND (completion_date IS NOT NULL)))),
-                                  CONSTRAINT user_task_progress_percentage_check CHECK (((progress_percentage >= 0) AND (progress_percentage <= 100)))
+                                  CONSTRAINT user_task_progress_percentage_check CHECK (((progress_percentage >= 0) AND (progress_percentage <= 100))),
+                                  CONSTRAINT fk_user_task_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE SET NULL,
+                                  CONSTRAINT fk_user_task_user_id FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE CASCADE
 );
 
 -- Create the executive_committee_team_members table
@@ -1951,7 +2277,6 @@ COMMENT ON COLUMN public.executive_committee_team_members.is_active IS 'Whether 
 -- Name: discount_code id; Type: DEFAULT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.discount_code ALTER COLUMN id SET DEFAULT nextval('public.discount_code_id_seq'::regclass);
 
 
 --
@@ -1959,7 +2284,6 @@ ALTER TABLE ONLY public.discount_code ALTER COLUMN id SET DEFAULT nextval('publi
 -- Name: event_live_update id; Type: DEFAULT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_live_update ALTER COLUMN id SET DEFAULT nextval('public.event_live_update_id_seq'::regclass);
 
 
 --
@@ -1967,7 +2291,6 @@ ALTER TABLE ONLY public.event_live_update ALTER COLUMN id SET DEFAULT nextval('p
 -- Name: event_live_update_attachment id; Type: DEFAULT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_live_update_attachment ALTER COLUMN id SET DEFAULT nextval('public.event_live_update_attachment_id_seq'::regclass);
 
 
 --
@@ -1975,7 +2298,6 @@ ALTER TABLE ONLY public.event_live_update_attachment ALTER COLUMN id SET DEFAULT
 -- Name: event_score_card id; Type: DEFAULT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_score_card ALTER COLUMN id SET DEFAULT nextval('public.event_score_card_id_seq'::regclass);
 
 
 --
@@ -1983,7 +2305,6 @@ ALTER TABLE ONLY public.event_score_card ALTER COLUMN id SET DEFAULT nextval('pu
 -- Name: event_score_card_detail id; Type: DEFAULT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_score_card_detail ALTER COLUMN id SET DEFAULT nextval('public.event_score_card_detail_id_seq'::regclass);
 
 
 --
@@ -2046,8 +2367,6 @@ SELECT pg_catalog.setval('public.sequence_generator', 4000, true);
 -- Name: discount_code discount_code_code_key; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.discount_code
-    ADD CONSTRAINT discount_code_code_key UNIQUE (code);
 
 
 --
@@ -2055,8 +2374,6 @@ ALTER TABLE ONLY public.discount_code
 -- Name: event_calendar_entry ux_calendar_entry_provider_external; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_calendar_entry
-    ADD CONSTRAINT ux_calendar_entry_provider_external UNIQUE (calendar_provider, external_event_id);
 
 
 --
@@ -2064,8 +2381,6 @@ ALTER TABLE ONLY public.event_calendar_entry
 -- Name: event_admin ux_event_admin_user_tenant; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_admin
-    ADD CONSTRAINT ux_event_admin_user_tenant UNIQUE (user_id, tenant_id);
 
 
 --
@@ -2080,8 +2395,6 @@ ALTER TABLE ONLY public.event_admin
 -- Name: event_guest_pricing ux_event_guest_pricing_event_age_tier; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_guest_pricing
-    ADD CONSTRAINT ux_event_guest_pricing_event_age_tier UNIQUE (event_id, age_group, pricing_tier);
 
 
 --
@@ -2089,8 +2402,6 @@ ALTER TABLE ONLY public.event_guest_pricing
 -- Name: event_ticket_type ux_event_ticket_type_event_code; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_ticket_type
-    ADD CONSTRAINT ux_event_ticket_type_event_code UNIQUE (event_id, code);
 
 
 --
@@ -2098,8 +2409,6 @@ ALTER TABLE ONLY public.event_ticket_type
 -- Name: event_type_details ux_event_type_tenant_name; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_type_details
-    ADD CONSTRAINT ux_event_type_tenant_name UNIQUE (tenant_id, name);
 
 
 --
@@ -2107,8 +2416,6 @@ ALTER TABLE ONLY public.event_type_details
 -- Name: user_payment_transaction ux_payment_transaction_stripe_intent; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.user_payment_transaction
-    ADD CONSTRAINT ux_payment_transaction_stripe_intent UNIQUE (stripe_payment_intent_id);
 
 
 --
@@ -2116,8 +2423,6 @@ ALTER TABLE ONLY public.user_payment_transaction
 -- Name: event_poll_response ux_poll_response_user_option; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_poll_response
-    ADD CONSTRAINT ux_poll_response_user_option UNIQUE (poll_id, poll_option_id, user_id);
 
 
 --
@@ -2131,8 +2436,6 @@ ALTER TABLE ONLY public.event_poll_response
 -- Name: event_ticket_transaction ux_ticket_transaction_reference; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.event_ticket_transaction
-    ADD CONSTRAINT ux_ticket_transaction_reference UNIQUE (transaction_reference);
 
 
 --
@@ -2140,8 +2443,7 @@ ALTER TABLE ONLY public.event_ticket_transaction
 -- Name: user_profile ux_user_profile__user_id; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.user_profile
-    ADD CONSTRAINT ux_user_profile__user_id UNIQUE (user_id);
+-- Removed global unique on user_id in favor of (tenant_id, user_id) at table creation above
 
 
 
@@ -2152,8 +2454,6 @@ ALTER TABLE ONLY public.user_profile
 -- Name: user_subscription ux_user_subscription__stripe_customer_id; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.user_subscription
-    ADD CONSTRAINT ux_user_subscription__stripe_customer_id UNIQUE (stripe_customer_id);
 
 
 --
@@ -2161,8 +2461,6 @@ ALTER TABLE ONLY public.user_subscription
 -- Name: user_subscription ux_user_subscription__stripe_subscription_id; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.user_subscription
-    ADD CONSTRAINT ux_user_subscription__stripe_subscription_id UNIQUE (stripe_subscription_id);
 
 
 --
@@ -2170,8 +2468,6 @@ ALTER TABLE ONLY public.user_subscription
 -- Name: user_subscription ux_user_subscription__user_profile_id; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.user_subscription
-    ADD CONSTRAINT ux_user_subscription__user_profile_id UNIQUE (user_profile_id);
 
 
 --
@@ -2228,6 +2524,22 @@ CREATE INDEX idx_event_details_max_guests ON public.event_details USING btree (m
 --
 
 CREATE INDEX idx_event_details_require_guest_approval ON public.event_details USING btree (require_guest_approval) WHERE (require_guest_approval = true);
+
+
+--
+-- TOC entry 3610 (class 1259 OID 0)
+-- Name: idx_recurrence_series_id; Type: INDEX; Schema: public; Owner: giventa_event_management
+--
+
+CREATE INDEX idx_recurrence_series_id ON public.event_details USING btree (recurrence_series_id) WHERE (recurrence_series_id IS NOT NULL);
+
+
+--
+-- TOC entry 3611 (class 1259 OID 0)
+-- Name: idx_parent_event_id; Type: INDEX; Schema: public; Owner: giventa_event_management
+--
+
+CREATE INDEX idx_parent_event_id ON public.event_details USING btree (parent_event_id) WHERE (parent_event_id IS NOT NULL);
 
 
 --
@@ -2392,323 +2704,6 @@ CREATE TRIGGER update_user_profile_updated_at BEFORE UPDATE ON public.user_profi
 --
 
 CREATE TRIGGER validate_event_details_trigger BEFORE INSERT OR UPDATE ON public.event_details FOR EACH ROW EXECUTE FUNCTION public.validate_event_details();
-
-
---
--- TOC entry 3682 (class 2606 OID 77457)
--- Name: event_live_update_attachment event_live_update_attachment_live_update_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_live_update_attachment
-    ADD CONSTRAINT event_live_update_attachment_live_update_id_fkey FOREIGN KEY (live_update_id) REFERENCES public.event_live_update(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3688 (class 2606 OID 83213)
--- Name: event_admin fk_admin__created_by_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_admin
-    ADD CONSTRAINT fk_admin__created_by_id FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3689 (class 2606 OID 83208)
--- Name: event_admin fk_admin__user_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_admin
-    ADD CONSTRAINT fk_admin__user_id FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3715 (class 2606 OID 83338)
--- Name: event_admin_audit_log fk_admin_audit_log__admin_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_admin_audit_log
-    ADD CONSTRAINT fk_admin_audit_log__admin_id FOREIGN KEY (admin_id) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3693 (class 2606 OID 83233)
--- Name: bulk_operation_log fk_bulk_operation_log__performed_by; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.bulk_operation_log
-    ADD CONSTRAINT fk_bulk_operation_log__performed_by FOREIGN KEY (performed_by) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3711 (class 2606 OID 83323)
--- Name: event_calendar_entry fk_calendar_event__created_by_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_calendar_entry
-    ADD CONSTRAINT fk_calendar_event__created_by_id FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3712 (class 2606 OID 83318)
--- Name: event_calendar_entry fk_calendar_event__event_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_calendar_entry
-    ADD CONSTRAINT fk_calendar_event__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3686 (class 2606 OID 83198)
--- Name: event_details fk_event__created_by_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_details
-    ADD CONSTRAINT fk_event__created_by_id FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3687 (class 2606 OID 83203)
--- Name: event_details fk_event__event_type_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_details
-    ADD CONSTRAINT fk_event__event_type_id FOREIGN KEY (event_type_id) REFERENCES public.event_type_details(id) ON DELETE SET NULL;
-
---
--- TOC entry 3714 (class 2606 OID 83328)
--- Name: event_attendee fk_event_attendee__event_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_attendee
-    ADD CONSTRAINT fk_event_attendee__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3716 (class 2606 OID 83348)
--- Name: event_attendee_guest fk_event_attendee_guest__approved_by_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_attendee_guest
-    ADD CONSTRAINT fk_event_attendee_guest__approved_by_id FOREIGN KEY (approved_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3717 (class 2606 OID 83343)
--- Name: event_attendee_guest fk_event_attendee_guest__primary_attendee_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_attendee_guest
-    ADD CONSTRAINT fk_event_attendee_guest__primary_attendee_id FOREIGN KEY (primary_attendee_id) REFERENCES public.event_attendee(id) ON DELETE CASCADE;
-
-
-
---
--- TOC entry 3718 (class 2606 OID 83353)
--- Name: event_guest_pricing fk_event_guest_pricing__event_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_guest_pricing
-    ADD CONSTRAINT fk_event_guest_pricing__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3709 (class 2606 OID 83308)
--- Name: event_media fk_event_media__event_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_media
-    ADD CONSTRAINT fk_event_media__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3710 (class 2606 OID 83313)
--- Name: event_media fk_event_media__uploaded_by_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_media
-    ADD CONSTRAINT fk_event_media__uploaded_by_id FOREIGN KEY (uploaded_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3694 (class 2606 OID 83238)
--- Name: event_organizer fk_event_organizer__event_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_organizer
-    ADD CONSTRAINT fk_event_organizer__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3695 (class 2606 OID 83243)
--- Name: event_organizer fk_event_organizer__organizer_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_organizer
-    ADD CONSTRAINT fk_event_organizer__organizer_id FOREIGN KEY (organizer_id) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3701 (class 2606 OID 83268)
--- Name: user_payment_transaction fk_payment_transaction__event_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.user_payment_transaction
-    ADD CONSTRAINT fk_payment_transaction__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3702 (class 2606 OID 83273)
--- Name: user_payment_transaction fk_payment_transaction__ticket_transaction_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.user_payment_transaction
-    ADD CONSTRAINT fk_payment_transaction__ticket_transaction_id FOREIGN KEY (ticket_transaction_id) REFERENCES public.event_ticket_transaction(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3703 (class 2606 OID 83283)
--- Name: event_poll fk_poll__created_by_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_poll
-    ADD CONSTRAINT fk_poll__created_by_id FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3704 (class 2606 OID 83278)
--- Name: event_poll fk_poll__event_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_poll
-    ADD CONSTRAINT fk_poll__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3705 (class 2606 OID 83288)
--- Name: event_poll_option fk_poll_option__poll_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_poll_option
-    ADD CONSTRAINT fk_poll_option__poll_id FOREIGN KEY (poll_id) REFERENCES public.event_poll(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3706 (class 2606 OID 83293)
--- Name: event_poll_response fk_poll_response__poll_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_poll_response
-    ADD CONSTRAINT fk_poll_response__poll_id FOREIGN KEY (poll_id) REFERENCES public.event_poll(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3707 (class 2606 OID 83298)
--- Name: event_poll_response fk_poll_response__poll_option_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_poll_response
-    ADD CONSTRAINT fk_poll_response__poll_option_id FOREIGN KEY (poll_option_id) REFERENCES public.event_poll_option(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3708 (class 2606 OID 83303)
--- Name: event_poll_response fk_poll_response__user_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_poll_response
-    ADD CONSTRAINT fk_poll_response__user_id FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3719 (class 2606 OID 83358)
--- Name: qr_code_usage fk_qr_code_usage__attendee_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.qr_code_usage
-    ADD CONSTRAINT fk_qr_code_usage__attendee_id FOREIGN KEY (attendee_id) REFERENCES public.event_attendee(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3681 (class 2606 OID 77422)
--- Name: event_score_card_detail fk_score_card_detail__score_card_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_score_card_detail
-    ADD CONSTRAINT fk_score_card_detail__score_card_id FOREIGN KEY (score_card_id) REFERENCES public.event_score_card(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3697 (class 2606 OID 83405)
--- Name: event_ticket_transaction fk_ticket_transaction__discount_code_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_ticket_transaction
-    ADD CONSTRAINT fk_ticket_transaction__discount_code_id FOREIGN KEY (discount_code_id) REFERENCES public.discount_code(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3698 (class 2606 OID 83253)
--- Name: event_ticket_transaction fk_ticket_transaction__event_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_ticket_transaction
-    ADD CONSTRAINT fk_ticket_transaction__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3700 (class 2606 OID 83263)
--- Name: event_ticket_transaction fk_ticket_transaction__user_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_ticket_transaction
-    ADD CONSTRAINT fk_ticket_transaction__user_id FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3696 (class 2606 OID 83248)
--- Name: event_ticket_type fk_ticket_type__event_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.event_ticket_type
-    ADD CONSTRAINT fk_ticket_type__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3683 (class 2606 OID 83188)
--- Name: user_profile fk_user_profile_reviewed_by_admin; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.user_profile
-    ADD CONSTRAINT fk_user_profile_reviewed_by_admin FOREIGN KEY (reviewed_by_admin_id) REFERENCES public.user_profile(id) ON DELETE SET NULL;
-
-
-
-
---
--- TOC entry 3685 (class 2606 OID 83193)
--- Name: user_subscription fk_user_subscription__user_profile_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.user_subscription
-    ADD CONSTRAINT fk_user_subscription__user_profile_id FOREIGN KEY (user_profile_id) REFERENCES public.user_profile(id) ON DELETE CASCADE;
-
-
---
--- TOC entry 3690 (class 2606 OID 83223)
--- Name: user_task fk_user_task_event_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.user_task
-    ADD CONSTRAINT fk_user_task_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE SET NULL;
-
-
---
--- TOC entry 3691 (class 2606 OID 83218)
--- Name: user_task fk_user_task_user_id; Type: FK CONSTRAINT; Schema: public; Owner: giventa_event_management
---
-
-ALTER TABLE ONLY public.user_task
-    ADD CONSTRAINT fk_user_task_user_id FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE CASCADE;
 
 
 --
@@ -3036,7 +3031,7 @@ CREATE TABLE public.whatsapp_log (
 CREATE TABLE public.event_featured_performers (
                                                   id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
                                                   tenant_id character varying(255),
-                                                  event_id bigint NOT NULL,
+                                                  event_id bigint NULL,
     -- Basic performer information
                                                   name varchar(255) NOT NULL,
                                                   stage_name varchar(255) NULL,
@@ -3072,6 +3067,7 @@ CREATE TABLE public.event_featured_performers (
                                                   updated_at timestamp DEFAULT now() NOT NULL,
     -- Constraints
                                                   CONSTRAINT event_featured_performers_pkey PRIMARY KEY (id),
+                                                  CONSTRAINT fk_event_featured_performers_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
                                                   CONSTRAINT check_performance_duration CHECK (performance_duration_minutes IS NULL OR performance_duration_minutes > 0),
                                                   CONSTRAINT check_performance_order CHECK (performance_order >= 0),
                                                   CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
@@ -3093,69 +3089,14 @@ CREATE TABLE public.event_featured_performers (
 CREATE TABLE public.event_contacts (
                                        id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
                                        tenant_id character varying(255),
-                                       event_id bigint NOT NULL,
+                                       event_id bigint NULL,
                                        name varchar(255) NOT NULL,
                                        phone varchar(50) NOT NULL,
                                        email varchar(255) NULL,
                                        created_at timestamp DEFAULT now() NOT NULL,
                                        updated_at timestamp DEFAULT now() NOT NULL,
-                                       CONSTRAINT event_contacts_pkey PRIMARY KEY (id)
-);
-
--- Table: event_sponsors
--- Stores comprehensive sponsor/company information
-CREATE TABLE public.event_sponsors (
-                                       id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-                                       tenant_id character varying(255),
-                                       name varchar(255) NOT NULL,
-                                       type varchar(100) NOT NULL,
-    -- Company information
-                                       company_name varchar(255) NULL,
-                                       tagline varchar(500) NULL,
-                                       description text NULL,
-                                       website_url varchar(1024) NULL,
-    -- Contact information
-                                       contact_email varchar(255) NULL,
-                                       contact_phone varchar(50) NULL,
-    -- Media URLs (AWS S3 or other cloud storage)
-                                       logo_url varchar(1024) NULL,
-                                       hero_image_url varchar(1024) NULL,
-                                       banner_image_url varchar(1024) NULL,
-    -- Status and metadata
-                                       is_active boolean DEFAULT true NOT NULL,
-                                       priority_ranking int4 DEFAULT 0 NOT NULL,
-    -- Social media links
-                                       facebook_url varchar(1024) NULL,
-                                       twitter_url varchar(1024) NULL,
-                                       linkedin_url varchar(1024) NULL,
-                                       instagram_url varchar(1024) NULL,
-    -- Timestamps
-                                       created_at timestamp DEFAULT now() NOT NULL,
-                                       updated_at timestamp DEFAULT now() NOT NULL,
-    -- Constraints
-                                       CONSTRAINT event_sponsors_pkey PRIMARY KEY (id),
-                                       CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
-                                       CONSTRAINT check_url_format_website CHECK (website_url IS NULL OR website_url ~* '^https?://.*'),
-    CONSTRAINT check_url_format_logo CHECK (logo_url IS NULL OR logo_url ~* '^https?://.*'),
-    CONSTRAINT check_url_format_hero CHECK (hero_image_url IS NULL OR hero_image_url ~* '^https?://.*'),
-    CONSTRAINT check_url_format_banner CHECK (banner_image_url IS NULL OR banner_image_url ~* '^https?://.*'),
-    CONSTRAINT check_url_format_facebook CHECK (facebook_url IS NULL OR facebook_url ~* '^https?://.*'),
-    CONSTRAINT check_url_format_twitter CHECK (twitter_url IS NULL OR twitter_url ~* '^https?://.*'),
-    CONSTRAINT check_url_format_linkedin CHECK (linkedin_url IS NULL OR linkedin_url ~* '^https?://.*'),
-    CONSTRAINT check_url_format_instagram CHECK (instagram_url IS NULL OR instagram_url ~* '^https?://.*'),
-    CONSTRAINT check_email_format CHECK (contact_email IS NULL OR contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
-);
-
--- Table: event_sponsors_join
--- Join table for many-to-many relationship between events and sponsors
-CREATE TABLE public.event_sponsors_join (
-                                            id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-                                            tenant_id character varying(255),
-                                            event_id bigint NOT NULL,
-                                            sponsor_id bigint NOT NULL,
-                                            created_at timestamp DEFAULT now() NOT NULL,
-                                            CONSTRAINT event_sponsors_join_pkey PRIMARY KEY (id),
-                                            CONSTRAINT unique_event_sponsor UNIQUE (event_id, sponsor_id)
+                                       CONSTRAINT event_contacts_pkey PRIMARY KEY (id),
+                                       CONSTRAINT fk_event_contacts_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
 
 -- Table: event_emails
@@ -3163,11 +3104,12 @@ CREATE TABLE public.event_sponsors_join (
 CREATE TABLE public.event_emails (
                                      id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
                                      tenant_id character varying(255),
-                                     event_id bigint NOT NULL,
+                                     event_id bigint NULL,
                                      email varchar(255) NOT NULL,
                                      created_at timestamp DEFAULT now() NOT NULL,
                                      updated_at timestamp DEFAULT now() NOT NULL,
-                                     CONSTRAINT event_emails_pkey PRIMARY KEY (id)
+                                     CONSTRAINT event_emails_pkey PRIMARY KEY (id),
+                                     CONSTRAINT fk_event_emails_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
 
 -- Table: event_program_directors
@@ -3175,41 +3117,102 @@ CREATE TABLE public.event_emails (
 CREATE TABLE public.event_program_directors (
                                                 id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
                                                 tenant_id character varying(255),
-                                                event_id bigint NOT NULL,
+                                                event_id bigint NULL,
                                                 name varchar(255) NOT NULL,
                                                 photo_url varchar(1024) NULL,
                                                 bio text NULL,
                                                 created_at timestamp DEFAULT now() NOT NULL,
                                                 updated_at timestamp DEFAULT now() NOT NULL,
-                                                CONSTRAINT event_program_directors_pkey PRIMARY KEY (id)
+                                                CONSTRAINT event_program_directors_pkey PRIMARY KEY (id),
+                                                CONSTRAINT fk_event_program_directors_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
 
+-- Indexes for event_media sponsor references
+CREATE INDEX IF NOT EXISTS idx_event_media_sponsor_id ON public.event_media(sponsor_id) WHERE sponsor_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_event_media_event_sponsors_join_id ON public.event_media(event_sponsors_join_id) WHERE event_sponsors_join_id IS NOT NULL;
+
+-- Indexes for event_media priority ranking (for sponsor and event-sponsor media)
+CREATE INDEX IF NOT EXISTS idx_event_media_priority_ranking ON public.event_media(priority_ranking) WHERE sponsor_id IS NOT NULL OR event_sponsors_join_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_event_media_sponsor_priority ON public.event_media(sponsor_id, priority_ranking) WHERE sponsor_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_event_media_event_sponsor_join_priority ON public.event_media(event_sponsors_join_id, priority_ranking) WHERE event_sponsors_join_id IS NOT NULL;
+
+-- Index for event_sponsors_join custom_poster_url
+CREATE INDEX IF NOT EXISTS idx_event_sponsors_join_custom_poster ON public.event_sponsors_join(custom_poster_url) WHERE custom_poster_url IS NOT NULL;
+
 -- =============================================
--- FOREIGN KEY CONSTRAINTS
+-- UNIQUE CONSTRAINTS FOR MULTI-EVENT ASSOCIATION
 -- =============================================
+-- These constraints prevent duplicate associations of the same entity with the same event
+-- Using partial unique indexes to handle NULL event_id values correctly
 
--- Foreign key constraints for event_featured_performers
-ALTER TABLE ONLY public.event_featured_performers
-    ADD CONSTRAINT fk_event_featured_performers_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+-- event_contacts: Unique per tenant+event+name+phone
+CREATE UNIQUE INDEX IF NOT EXISTS unique_event_contact_tenant_event_name_phone
+    ON public.event_contacts (tenant_id, event_id, name, phone)
+    WHERE event_id IS NOT NULL;
 
--- Foreign key constraints for event_contacts
-ALTER TABLE ONLY public.event_contacts
-    ADD CONSTRAINT fk_event_contacts_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+-- event_contacts: Unique per tenant+event+email (if email provided)
+CREATE UNIQUE INDEX IF NOT EXISTS unique_event_contact_tenant_event_email
+    ON public.event_contacts (tenant_id, event_id, email)
+    WHERE event_id IS NOT NULL AND email IS NOT NULL;
 
--- Foreign key constraints for event_sponsors_join
-ALTER TABLE ONLY public.event_sponsors_join
-    ADD CONSTRAINT fk_event_sponsors_join_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+-- event_featured_performers: Unique per tenant+event+name+stage_name
+CREATE UNIQUE INDEX IF NOT EXISTS unique_event_performer_tenant_event_name_stage
+    ON public.event_featured_performers (tenant_id, event_id, name, stage_name)
+    WHERE event_id IS NOT NULL AND stage_name IS NOT NULL;
 
-ALTER TABLE ONLY public.event_sponsors_join
-    ADD CONSTRAINT fk_event_sponsors_join_sponsor_id FOREIGN KEY (sponsor_id) REFERENCES public.event_sponsors(id) ON DELETE CASCADE;
+-- event_featured_performers: Unique per tenant+event+email (if email provided)
+CREATE UNIQUE INDEX IF NOT EXISTS unique_event_performer_tenant_event_email
+    ON public.event_featured_performers (tenant_id, event_id, email)
+    WHERE event_id IS NOT NULL AND email IS NOT NULL;
 
--- Foreign key constraints for event_emails
-ALTER TABLE ONLY public.event_emails
-    ADD CONSTRAINT fk_event_emails_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+-- event_emails: Unique per tenant+event+email
+CREATE UNIQUE INDEX IF NOT EXISTS unique_event_email_tenant_event_email
+    ON public.event_emails (tenant_id, event_id, email)
+    WHERE event_id IS NOT NULL;
 
--- Foreign key constraints for event_program_directors
-ALTER TABLE ONLY public.event_program_directors
-    ADD CONSTRAINT fk_event_program_directors_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+-- event_program_directors: Unique per tenant+event+name
+CREATE UNIQUE INDEX IF NOT EXISTS unique_event_director_tenant_event_name
+    ON public.event_program_directors (tenant_id, event_id, name)
+    WHERE event_id IS NOT NULL;
+
+-- =============================================
+-- PERFORMANCE INDEXES FOR MULTI-EVENT ASSOCIATION
+-- =============================================
+-- Indexes to optimize queries filtering by event_id and finding tenant-level entities
+
+-- Performance indexes for queries filtering by event_id (tenant_id, event_id)
+CREATE INDEX IF NOT EXISTS idx_event_featured_performers_tenant_event
+    ON public.event_featured_performers (tenant_id, event_id)
+    WHERE event_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_event_contacts_tenant_event
+    ON public.event_contacts (tenant_id, event_id)
+    WHERE event_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_event_emails_tenant_event
+    ON public.event_emails (tenant_id, event_id)
+    WHERE event_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_event_program_directors_tenant_event
+    ON public.event_program_directors (tenant_id, event_id)
+    WHERE event_id IS NOT NULL;
+
+-- Indexes for finding tenant-level entities (where event_id IS NULL)
+CREATE INDEX IF NOT EXISTS idx_event_featured_performers_tenant_null_event
+    ON public.event_featured_performers (tenant_id)
+    WHERE event_id IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_event_contacts_tenant_null_event
+    ON public.event_contacts (tenant_id)
+    WHERE event_id IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_event_emails_tenant_null_event
+    ON public.event_emails (tenant_id)
+    WHERE event_id IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_event_program_directors_tenant_null_event
+    ON public.event_program_directors (tenant_id)
+    WHERE event_id IS NULL;
 
 -- =============================================
 -- POSTGRESQL CACHING FEATURES
@@ -3268,7 +3271,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_store TO PUBLIC;
 GRANT EXECUTE ON FUNCTION public.cleanup_expired_cache() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION public.cleanup_expired_sessions() TO PUBLIC;
 
--- Alternative: Grant to current user explicitly (uncomment if needed)
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON public.event_site_app_cache TO CURRENT_USER;
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_store TO CURRENT_USER;
 -- GRANT EXECUTE ON FUNCTION public.cleanup_expired_cache() TO CURRENT_USER;
@@ -3443,6 +3445,7 @@ COMMENT ON COLUMN public.event_sponsors.instagram_url IS 'Instagram profile URL'
 -- event_sponsors_join column comments
 COMMENT ON COLUMN public.event_sponsors_join.event_id IS 'Foreign key reference to event_details.id';
 COMMENT ON COLUMN public.event_sponsors_join.sponsor_id IS 'Foreign key reference to event_sponsors.id';
+COMMENT ON COLUMN public.event_sponsors_join.custom_poster_url IS 'Custom poster image URL for this specific event-sponsor combination. Stored in S3 with path: dev/events/tenantId/{tenantId}/event-id/{eventId}/sponsor/sponsor_id/{sponsorId}/{filename}';
 
 -- event_emails column comments
 COMMENT ON COLUMN public.event_emails.event_id IS 'Foreign key reference to event_details.id';
@@ -3454,3 +3457,883 @@ COMMENT ON COLUMN public.event_program_directors.name IS 'Program director name'
 COMMENT ON COLUMN public.event_program_directors.photo_url IS 'URL to program director photo';
 COMMENT ON COLUMN public.event_program_directors.bio IS 'Program director biography';
 
+
+-- ===================================================
+-- CLERK AUTHENTICATION INTEGRATION SCHEMA
+-- Task ID: 2 - Database Schema Migration for Clerk
+-- Date: October 13, 2025
+-- ===================================================
+
+-- ---------------------------------------------------
+-- 1. ADD NEW CLERK COLUMNS TO EXISTING user_profile TABLE
+-- ---------------------------------------------------
+-- Adding new columns to support Clerk authentication integration
+-- These columns store Clerk-specific data for user authentication
+
+-- Add column comments for documentation
+COMMENT ON COLUMN public.user_profile.clerk_user_id IS 'Clerk unique user identifier (e.g., user_2abc123def456)';
+COMMENT ON COLUMN public.user_profile.clerk_session_id IS 'Current active Clerk session identifier';
+COMMENT ON COLUMN public.user_profile.clerk_org_id IS 'Clerk Organization ID for role management (e.g., org_2abc123)';
+COMMENT ON COLUMN public.user_profile.clerk_org_role IS 'Clerk Organization role (e.g., org:admin, org:member)';
+COMMENT ON COLUMN public.user_profile.auth_provider IS 'Authentication provider: email, google, github, facebook, apple, etc.';
+COMMENT ON COLUMN public.user_profile.auth_provider_user_id IS 'Provider-specific user ID (e.g., google_oauth2|123456789)';
+COMMENT ON COLUMN public.user_profile.email_verified IS 'Whether the user email has been verified via Clerk';
+COMMENT ON COLUMN public.user_profile.profile_image_url_clerk IS 'Clerk profile image URL (may differ from custom profile_image_url)';
+COMMENT ON COLUMN public.user_profile.last_sign_in_at IS 'Timestamp of last successful sign-in';
+COMMENT ON COLUMN public.user_profile.clerk_metadata IS 'Additional Clerk user metadata stored as JSON (custom claims, attributes, etc.)';
+
+-- ---------------------------------------------------
+-- 2. UPDATE UNIQUE CONSTRAINTS FOR MULTI-TENANT SUPPORT
+-- ---------------------------------------------------
+-- Drop old unique constraint on user_id (single tenant constraint)
+-- Composite unique constraint on (email, tenant_id) for multi-tenant support
+-- Added directly in CREATE TABLE statement above
+-- This allows same email across different tenants
+
+-- ---------------------------------------------------
+-- 3. ADD INDEXES FOR CLERK COLUMNS ON user_profile
+-- ---------------------------------------------------
+-- Indexes to optimize Clerk-related queries
+
+-- Create indexes (with conditional comments using DO blocks)
+CREATE INDEX IF NOT EXISTS idx_user_profile_clerk_user_id
+    ON public.user_profile(clerk_user_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_profile_tenant_email
+    ON public.user_profile(tenant_id, email);
+
+CREATE INDEX IF NOT EXISTS idx_user_profile_clerk_org_id
+    ON public.user_profile(clerk_org_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_profile_auth_provider
+    ON public.user_profile(auth_provider);
+
+CREATE INDEX IF NOT EXISTS idx_user_profile_last_sign_in_at
+    ON public.user_profile(last_sign_in_at DESC);
+
+-- Add comments on indexes (safe - with exception handling)
+DO $$
+BEGIN
+BEGIN
+        COMMENT ON INDEX idx_user_profile_clerk_user_id IS 'Index for fast Clerk user ID lookups';
+EXCEPTION WHEN undefined_table THEN
+        RAISE NOTICE 'Index idx_user_profile_clerk_user_id does not exist, skipping comment';
+END;
+
+BEGIN
+        COMMENT ON INDEX idx_user_profile_tenant_email IS 'Index for tenant-scoped email queries';
+EXCEPTION WHEN undefined_table THEN
+        RAISE NOTICE 'Index idx_user_profile_tenant_email does not exist, skipping comment';
+END;
+
+BEGIN
+        COMMENT ON INDEX idx_user_profile_clerk_org_id IS 'Index for organization-based queries';
+EXCEPTION WHEN undefined_table THEN
+        RAISE NOTICE 'Index idx_user_profile_clerk_org_id does not exist, skipping comment';
+END;
+END $$;
+
+-- ---------------------------------------------------
+-- 4. CREATE NEW TABLE: clerk_user_tenant
+-- ---------------------------------------------------
+-- Junction table to support users belonging to multiple tenants
+-- A user can have different roles in different tenants
+
+CREATE TABLE IF NOT EXISTS public.clerk_user_tenant (
+                                                        id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    user_profile_id BIGINT NOT NULL,
+    tenant_id VARCHAR(255) NOT NULL,
+    role VARCHAR(100),
+    status VARCHAR(50) DEFAULT 'ACTIVE',
+    joined_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT clerk_user_tenant_pkey PRIMARY KEY (id),
+    CONSTRAINT uq_clerk_user_tenant UNIQUE (user_profile_id, tenant_id),
+    CONSTRAINT fk_clerk_user_tenant_user_profile
+    FOREIGN KEY (user_profile_id)
+    REFERENCES public.user_profile(id)
+                        ON DELETE CASCADE
+    );
+
+-- Indexes for clerk_user_tenant
+CREATE INDEX IF NOT EXISTS idx_clerk_user_tenant_user
+    ON public.clerk_user_tenant(user_profile_id);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_user_tenant_tenant
+    ON public.clerk_user_tenant(tenant_id);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_user_tenant_status
+    ON public.clerk_user_tenant(status);
+
+-- Comments
+COMMENT ON TABLE public.clerk_user_tenant IS 'Junction table for multi-tenant user relationships and tenant-specific roles';
+COMMENT ON COLUMN public.clerk_user_tenant.user_profile_id IS 'Foreign key to user_profile table';
+COMMENT ON COLUMN public.clerk_user_tenant.tenant_id IS 'Tenant identifier';
+COMMENT ON COLUMN public.clerk_user_tenant.role IS 'Tenant-specific role (may differ from global user_role)';
+COMMENT ON COLUMN public.clerk_user_tenant.status IS 'Status: ACTIVE, SUSPENDED, PENDING, INACTIVE';
+COMMENT ON COLUMN public.clerk_user_tenant.joined_at IS 'When user joined this tenant';
+
+-- ---------------------------------------------------
+-- 5. CREATE NEW TABLE: clerk_organization_role
+-- ---------------------------------------------------
+-- Maps Clerk Organization roles to application roles
+-- This table defines how Clerk org roles translate to app permissions
+
+CREATE TABLE IF NOT EXISTS public.clerk_organization_role (
+                                                              id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    clerk_org_id VARCHAR(255) NOT NULL,
+    clerk_role_name VARCHAR(100) NOT NULL,
+    application_role VARCHAR(100) NOT NULL,
+    permissions TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT clerk_organization_role_pkey PRIMARY KEY (id),
+    CONSTRAINT uq_clerk_org_role UNIQUE (clerk_org_id, clerk_role_name)
+    );
+
+-- Indexes for clerk_organization_role
+CREATE INDEX IF NOT EXISTS idx_clerk_org_role_org
+    ON public.clerk_organization_role(clerk_org_id);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_org_role_app_role
+    ON public.clerk_organization_role(application_role);
+
+-- Comments
+COMMENT ON TABLE public.clerk_organization_role IS 'Maps Clerk Organization roles to application roles and permissions';
+COMMENT ON COLUMN public.clerk_organization_role.clerk_org_id IS 'Clerk Organization ID (e.g., org_2abc123)';
+COMMENT ON COLUMN public.clerk_organization_role.clerk_role_name IS 'Clerk role name (e.g., org:admin, org:member)';
+COMMENT ON COLUMN public.clerk_organization_role.application_role IS 'Mapped application role (e.g., ROLE_ORG_ADMIN, ROLE_USER)';
+COMMENT ON COLUMN public.clerk_organization_role.permissions IS 'JSON object containing role permissions';
+
+-- Seed default role mappings
+--INSERT INTO public.clerk_organization_role (clerk_org_id, clerk_role_name, application_role, permissions)
+--VALUES
+--    ('org_default', 'org:admin', 'ROLE_ORG_ADMIN', '{"canManageUsers": true, "canManageEvents": true, "canViewReports": true, "canManageSettings": true}'::jsonb),
+--    ('org_default', 'org:member', 'ROLE_ORG_MEMBER', '{"canRegisterEvents": true, "canViewEvents": true, "canUpdateOwnProfile": true}'::jsonb),
+--    ('org_default', 'org:viewer', 'ROLE_VIEWER', '{"canViewEvents": true}'::jsonb)
+--ON CONFLICT (clerk_org_id, clerk_role_name) DO NOTHING;
+
+-- ---------------------------------------------------
+-- 6. CREATE NEW TABLE: clerk_webhook_event
+-- ---------------------------------------------------
+-- Audit trail and processing queue for all Clerk webhook events
+-- Supports idempotency and retry logic
+
+CREATE TABLE IF NOT EXISTS public.clerk_webhook_event (
+                                                          id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id VARCHAR(255) UNIQUE NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+    clerk_user_id VARCHAR(255),
+    payload TEXT NOT NULL,
+    processed BOOLEAN DEFAULT FALSE,
+    processed_at TIMESTAMP WITHOUT TIME ZONE,
+    error_message TEXT,
+    retry_count INTEGER DEFAULT 0,
+    received_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT clerk_webhook_event_pkey PRIMARY KEY (id)
+    );
+
+-- Indexes for clerk_webhook_event
+CREATE INDEX IF NOT EXISTS idx_clerk_webhook_event_type
+    ON public.clerk_webhook_event(event_type);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_webhook_event_user
+    ON public.clerk_webhook_event(clerk_user_id);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_webhook_processed
+    ON public.clerk_webhook_event(processed);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_webhook_received_at
+    ON public.clerk_webhook_event(received_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_webhook_event_id
+    ON public.clerk_webhook_event(event_id);
+
+-- Comments
+COMMENT ON TABLE public.clerk_webhook_event IS 'Audit trail and processing queue for Clerk webhooks';
+COMMENT ON COLUMN public.clerk_webhook_event.event_id IS 'Unique Clerk event ID (for idempotency)';
+COMMENT ON COLUMN public.clerk_webhook_event.event_type IS 'Event type: user.created, user.updated, user.deleted, session.created, etc.';
+COMMENT ON COLUMN public.clerk_webhook_event.clerk_user_id IS 'Clerk user ID associated with the event';
+COMMENT ON COLUMN public.clerk_webhook_event.payload IS 'Full webhook payload as JSON';
+COMMENT ON COLUMN public.clerk_webhook_event.processed IS 'Whether the webhook has been processed';
+COMMENT ON COLUMN public.clerk_webhook_event.error_message IS 'Error message if processing failed';
+COMMENT ON COLUMN public.clerk_webhook_event.retry_count IS 'Number of retry attempts';
+
+-- ---------------------------------------------------
+-- 7. CREATE NEW TABLE: clerk_session
+-- ---------------------------------------------------
+-- Tracks active user sessions from Clerk
+-- Used for session management and audit trail
+
+CREATE TABLE IF NOT EXISTS public.clerk_session (
+                                                    id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    session_id VARCHAR(255) UNIQUE NOT NULL,
+    clerk_user_id VARCHAR(255) NOT NULL,
+    user_profile_id BIGINT,
+    tenant_id VARCHAR(255),
+    client_id VARCHAR(255),
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    status VARCHAR(50) DEFAULT 'ACTIVE',
+    expires_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    last_active_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT clerk_session_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_clerk_session_user_profile
+    FOREIGN KEY (user_profile_id)
+    REFERENCES public.user_profile(id)
+                         ON DELETE CASCADE
+    );
+
+-- Indexes for clerk_session
+CREATE INDEX IF NOT EXISTS idx_clerk_session_user
+    ON public.clerk_session(clerk_user_id);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_session_profile
+    ON public.clerk_session(user_profile_id);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_session_tenant
+    ON public.clerk_session(tenant_id);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_session_status
+    ON public.clerk_session(status);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_session_expires_at
+    ON public.clerk_session(expires_at);
+
+CREATE INDEX IF NOT EXISTS idx_clerk_session_session_id
+    ON public.clerk_session(session_id);
+
+-- Comments
+COMMENT ON TABLE public.clerk_session IS 'Tracks active user sessions from Clerk for session management and audit';
+COMMENT ON COLUMN public.clerk_session.session_id IS 'Unique Clerk session ID (e.g., sess_2xyz789abc012)';
+COMMENT ON COLUMN public.clerk_session.clerk_user_id IS 'Clerk user ID associated with this session';
+COMMENT ON COLUMN public.clerk_session.user_profile_id IS 'Foreign key to user_profile table';
+COMMENT ON COLUMN public.clerk_session.tenant_id IS 'Tenant context for this session';
+COMMENT ON COLUMN public.clerk_session.client_id IS 'Device/client identifier';
+COMMENT ON COLUMN public.clerk_session.ip_address IS 'IP address of the client';
+COMMENT ON COLUMN public.clerk_session.user_agent IS 'Browser user agent string';
+COMMENT ON COLUMN public.clerk_session.status IS 'Status: ACTIVE, EXPIRED, REVOKED';
+COMMENT ON COLUMN public.clerk_session.expires_at IS 'When this session expires';
+COMMENT ON COLUMN public.clerk_session.last_active_at IS 'Last activity timestamp for this session';
+
+-- ---------------------------------------------------
+-- 8. ADD TRIGGER FOR AUTOMATIC updated_at TIMESTAMPS
+-- ---------------------------------------------------
+-- Reuse existing update_updated_at_column function for new tables
+
+CREATE TRIGGER trg_clerk_user_tenant_updated_at
+    BEFORE UPDATE ON public.clerk_user_tenant
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_clerk_organization_role_updated_at
+    BEFORE UPDATE ON public.clerk_organization_role
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ===================================================
+-- END OF CLERK AUTHENTICATION INTEGRATION SCHEMA
+-- ===================================================
+-- =====================================================
+-- NOTE: Multi-Tenant Membership System
+-- =====================================================
+-- The clerk_user_tenant table (created above around line 3557) already provides
+-- multi-tenant membership functionality. It correctly references user_profile table
+-- and supports users belonging to multiple tenants with tenant-specific roles.
+--
+-- No additional tenant_memberships table is needed.
+-- All multi-tenant logic uses the existing clerk_user_tenant table.
+-- =====================================================
+
+-- =====================================================
+-- PAYMENT ORCHESTRATION LAYER - TASK 001
+-- =====================================================
+-- Database migrations for payment orchestration service
+-- Created: Task 001 - Set up project scaffolding and database migrations
+-- =====================================================
+
+--
+-- TOC entry: payment_provider_config
+-- Name: payment_provider_config; Type: TABLE; Schema: public
+-- Purpose: Stores tenant-level payment provider credentials, feature flags, and configuration
+--
+
+CREATE TABLE public.payment_provider_config (
+                                                id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                tenant_id character varying(255) NOT NULL,
+                                                provider_name character varying(50) NOT NULL,
+                                                payment_use_case character varying(50),
+                                                is_active boolean DEFAULT true NOT NULL,
+                                                supports_acp boolean DEFAULT false NOT NULL,
+                                                supports_zeffy boolean DEFAULT false NOT NULL,
+                                                supports_zelle boolean DEFAULT false NOT NULL,
+                                                supports_revolut boolean DEFAULT false NOT NULL,
+                                                provider_api_key_encrypted text,
+                                                provider_secret_key_encrypted text,
+                                                webhook_secret_encrypted text,
+                                                payment_method_domain_id varchar,
+                                                publishable_key character varying(500),
+                                                fallback_order integer DEFAULT 0,
+                                                configuration_json text,
+                                                created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                                updated_at timestamp without time zone DEFAULT now() NOT NULL,
+
+    -- Primary key constraint
+                                                CONSTRAINT payment_provider_config_pkey PRIMARY KEY (id),
+
+    -- Check constraints
+                                                CONSTRAINT check_provider_name CHECK ((provider_name IN ('STRIPE', 'PAYPAL', 'ZEFFY', 'ZELLE_MANUAL', 'REVOLUT', 'CEFI_CHARITY', 'GIVEBUTTER'))),
+                                                CONSTRAINT check_payment_use_case CHECK ((payment_use_case IS NULL OR payment_use_case IN ('TICKET_SALE', 'DONATION', 'DONATION_CEFI', 'DONATION_ZERO_FEE', 'OFFERING', 'MEMBERSHIP_SUBSCRIPTION'))),
+
+    -- Unique constraints
+                                                CONSTRAINT unique_tenant_provider UNIQUE (tenant_id, provider_name),
+
+    -- CRITICAL: Triple validation unique constraint
+                                                CONSTRAINT unique_tenant_payment_domain_webhook UNIQUE (tenant_id, payment_method_domain_id, webhook_secret_encrypted)
+);
+
+COMMENT ON TABLE public.payment_provider_config IS 'Stores tenant-level payment provider configurations and feature flags';
+COMMENT ON COLUMN public.payment_provider_config.tenant_id IS 'Tenant identifier';
+COMMENT ON COLUMN public.payment_provider_config.provider_name IS 'Payment provider name: STRIPE, PAYPAL, ZEFFY, ZELLE_MANUAL, REVOLUT, CEFI_CHARITY, GIVEBUTTER';
+COMMENT ON COLUMN public.payment_provider_config.payment_use_case IS 'Payment use case: TICKET_SALE, DONATION, DONATION_CEFI, DONATION_ZERO_FEE, OFFERING, MEMBERSHIP_SUBSCRIPTION';
+COMMENT ON COLUMN public.payment_provider_config.supports_acp IS 'Whether provider supports Stripe Instant Checkout (ACP)';
+COMMENT ON COLUMN public.payment_provider_config.supports_zeffy IS 'Whether provider supports Zeffy integration';
+COMMENT ON COLUMN public.payment_provider_config.supports_zelle IS 'Whether provider supports Zelle manual payments';
+COMMENT ON COLUMN public.payment_provider_config.supports_revolut IS 'Whether provider supports Revolut payments';
+COMMENT ON COLUMN public.payment_provider_config.provider_api_key_encrypted IS 'Encrypted provider API key (AES-256-GCM)';
+COMMENT ON COLUMN public.payment_provider_config.provider_secret_key_encrypted IS 'Encrypted provider secret key (AES-256-GCM)';
+COMMENT ON COLUMN public.payment_provider_config.fallback_order IS 'Order for fallback when primary provider fails (lower number = higher priority)';
+
+--
+-- TOC entry: platform_settlement
+-- Name: platform_settlement; Type: TABLE; Schema: public
+-- Purpose: Stores aggregated settlement totals per tenant/provider/day
+--
+
+CREATE TABLE public.platform_settlement (
+                                            id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                            tenant_id character varying(255) NOT NULL,
+                                            provider_name character varying(50) NOT NULL,
+                                            settlement_date date NOT NULL,
+                                            gross_amount numeric(21,2) NOT NULL DEFAULT 0,
+                                            processing_fee_amount numeric(21,2) NOT NULL DEFAULT 0,
+                                            platform_fee_amount numeric(21,2) NOT NULL DEFAULT 0,
+                                            net_amount numeric(21,2) NOT NULL DEFAULT 0,
+                                            transaction_count integer DEFAULT 0 NOT NULL,
+                                            status character varying(20) DEFAULT 'PENDING' NOT NULL,
+                                            settlement_reference character varying(255),
+                                            provider_settlement_id character varying(255),
+                                            settlement_file_url character varying(2048),
+                                            notes text,
+                                            created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                            updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                            CONSTRAINT platform_settlement_pkey PRIMARY KEY (id),
+                                            CONSTRAINT check_settlement_amounts CHECK (((gross_amount >= (0)::numeric) AND (processing_fee_amount >= (0)::numeric) AND (platform_fee_amount >= (0)::numeric) AND (net_amount >= (0)::numeric) AND (transaction_count >= 0))),
+                                            CONSTRAINT check_settlement_status CHECK ((status IN ('PENDING', 'PROCESSING', 'SETTLED', 'FAILED', 'CANCELLED'))),
+                                            CONSTRAINT check_provider_name_settlement CHECK ((provider_name IN ('STRIPE', 'PAYPAL', 'ZEFFY', 'ZELLE_MANUAL', 'REVOLUT', 'CEFI_CHARITY'))),
+                                            CONSTRAINT unique_tenant_provider_date UNIQUE (tenant_id, provider_name, settlement_date)
+);
+
+COMMENT ON TABLE public.platform_settlement IS 'Aggregated settlement totals per tenant/provider/day for fee reconciliation';
+COMMENT ON COLUMN public.platform_settlement.settlement_date IS 'Date for which settlement is calculated';
+COMMENT ON COLUMN public.platform_settlement.gross_amount IS 'Total gross transaction amount';
+COMMENT ON COLUMN public.platform_settlement.processing_fee_amount IS 'Total processing fees charged by provider';
+COMMENT ON COLUMN public.platform_settlement.platform_fee_amount IS 'Total platform fees collected';
+COMMENT ON COLUMN public.platform_settlement.net_amount IS 'Net amount after all fees (gross - processing_fee - platform_fee)';
+COMMENT ON COLUMN public.platform_settlement.status IS 'Settlement status: PENDING, PROCESSING, SETTLED, FAILED, CANCELLED';
+
+--
+-- TOC entry: platform_invoice
+-- Name: platform_invoice; Type: TABLE; Schema: public
+-- Purpose: Invoices for outstanding platform fees; links to settlements
+--
+
+CREATE TABLE public.platform_invoice (
+                                         id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                         tenant_id character varying(255) NOT NULL,
+                                         invoice_number character varying(100) NOT NULL,
+                                         invoice_date date NOT NULL,
+                                         due_date date NOT NULL,
+                                         total_amount numeric(21,2) NOT NULL,
+                                         paid_amount numeric(21,2) DEFAULT 0 NOT NULL,
+                                         outstanding_amount numeric(21,2) NOT NULL,
+                                         status character varying(20) DEFAULT 'DRAFT' NOT NULL,
+                                         settlement_batch_id bigint,
+                                         payment_method character varying(50),
+                                         payment_reference character varying(255),
+                                         paid_at timestamp without time zone,
+                                         notes text,
+                                         created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                         updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                         CONSTRAINT platform_invoice_pkey PRIMARY KEY (id),
+                                         CONSTRAINT check_invoice_amounts CHECK (((total_amount >= (0)::numeric) AND (paid_amount >= (0)::numeric) AND (outstanding_amount >= (0)::numeric) AND (paid_amount <= total_amount) AND (outstanding_amount = (total_amount - paid_amount)))),
+                                         CONSTRAINT check_invoice_status CHECK ((status IN ('DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED'))),
+                                         CONSTRAINT check_due_date CHECK ((due_date >= invoice_date)),
+                                         CONSTRAINT unique_invoice_number UNIQUE (invoice_number),
+                                         CONSTRAINT fk_platform_invoice__settlement_batch_id FOREIGN KEY (settlement_batch_id) REFERENCES public.platform_settlement(id) ON DELETE SET NULL
+);
+
+COMMENT ON TABLE public.platform_invoice IS 'Invoices for outstanding platform fees linked to settlements';
+COMMENT ON COLUMN public.platform_invoice.invoice_number IS 'Unique invoice number';
+COMMENT ON COLUMN public.platform_invoice.invoice_date IS 'Date invoice was created';
+COMMENT ON COLUMN public.platform_invoice.due_date IS 'Date payment is due';
+COMMENT ON COLUMN public.platform_invoice.total_amount IS 'Total invoice amount';
+COMMENT ON COLUMN public.platform_invoice.paid_amount IS 'Amount paid towards invoice';
+COMMENT ON COLUMN public.platform_invoice.outstanding_amount IS 'Outstanding amount (total_amount - paid_amount)';
+COMMENT ON COLUMN public.platform_invoice.status IS 'Invoice status: DRAFT, SENT, PAID, OVERDUE, CANCELLED';
+
+--
+-- TOC entry: membership_plan
+-- Name: membership_plan; Type: TABLE; Schema: public
+-- Purpose: Subscription plan definitions
+--
+
+CREATE TABLE public.membership_plan (
+                                        id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                        tenant_id character varying(255) NOT NULL,
+                                        plan_name character varying(255) NOT NULL,
+                                        plan_code character varying(100) NOT NULL,
+                                        description text,
+                                        plan_type character varying(50) DEFAULT 'SUBSCRIPTION' NOT NULL,
+                                        billing_interval character varying(20) DEFAULT 'MONTHLY' NOT NULL,
+                                        price numeric(21,2) NOT NULL,
+                                        currency character varying(3) DEFAULT 'USD' NOT NULL,
+                                        trial_days integer DEFAULT 0,
+                                        is_active boolean DEFAULT true NOT NULL,
+                                        max_events_per_month integer,
+                                        max_attendees_per_event integer,
+                                        features_json text,
+                                        stripe_price_id character varying(255),
+                                        stripe_product_id character varying(255),
+                                        created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                        updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                        CONSTRAINT membership_plan_pkey PRIMARY KEY (id),
+                                        CONSTRAINT check_plan_price CHECK ((price >= (0)::numeric)),
+                                        CONSTRAINT check_billing_interval CHECK ((billing_interval IN ('MONTHLY', 'QUARTERLY', 'YEARLY', 'ONE_TIME'))),
+                                        CONSTRAINT check_plan_type CHECK ((plan_type IN ('SUBSCRIPTION', 'ONE_TIME', 'FREEMIUM'))),
+                                        CONSTRAINT unique_tenant_plan_code UNIQUE (tenant_id, plan_code)
+);
+
+COMMENT ON TABLE public.membership_plan IS 'Subscription plan definitions for membership tiers';
+COMMENT ON COLUMN public.membership_plan.plan_code IS 'Unique plan code identifier';
+COMMENT ON COLUMN public.membership_plan.plan_type IS 'Plan type: SUBSCRIPTION, ONE_TIME, FREEMIUM';
+COMMENT ON COLUMN public.membership_plan.billing_interval IS 'Billing interval: MONTHLY, QUARTERLY, YEARLY, ONE_TIME';
+COMMENT ON COLUMN public.membership_plan.price IS 'Plan price';
+COMMENT ON COLUMN public.membership_plan.trial_days IS 'Number of trial days (0 = no trial)';
+COMMENT ON COLUMN public.membership_plan.features_json IS 'JSON object containing plan features and limits';
+
+--
+-- TOC entry: membership_subscription
+-- Name: membership_subscription; Type: TABLE; Schema: public
+-- Purpose: User subscription enrollments
+--
+
+CREATE TABLE public.membership_subscription (
+                                                id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                tenant_id character varying(255) NOT NULL,
+                                                user_profile_id bigint NOT NULL,
+                                                membership_plan_id bigint NOT NULL,
+                                                subscription_status character varying(20) DEFAULT 'ACTIVE' NOT NULL,
+                                                current_period_start date NOT NULL,
+                                                current_period_end date NOT NULL,
+                                                trial_start date,
+                                                trial_end date,
+                                                cancel_at_period_end boolean DEFAULT false NOT NULL,
+                                                cancelled_at timestamp without time zone,
+                                                cancellation_reason text,
+                                                stripe_subscription_id character varying(255),
+                                                stripe_customer_id character varying(255),
+                                                last_reconciliation_at TIMESTAMP,
+                                                last_stripe_sync_at TIMESTAMP,
+                                                reconciliation_status VARCHAR(20) DEFAULT 'PENDING',
+                                                reconciliation_error TEXT,
+                                                payment_provider_config_id bigint,
+                                                created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                                updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                                CONSTRAINT membership_subscription_pkey PRIMARY KEY (id),
+                                                CONSTRAINT check_subscription_status CHECK ((subscription_status IN ('ACTIVE', 'TRIAL', 'CANCELLED', 'PAST_DUE', 'EXPIRED', 'SUSPENDED'))),
+                                                CONSTRAINT check_period_dates CHECK ((current_period_end >= current_period_start)),
+                                                CONSTRAINT check_trial_dates CHECK (((trial_start IS NULL AND trial_end IS NULL) OR (trial_start IS NOT NULL AND trial_end IS NOT NULL AND trial_end >= trial_start))),
+                                                CONSTRAINT fk_membership_subscription__user_profile_id FOREIGN KEY (user_profile_id) REFERENCES public.user_profile(id) ON DELETE CASCADE,
+                                                CONSTRAINT fk_membership_subscription__membership_plan_id FOREIGN KEY (membership_plan_id) REFERENCES public.membership_plan(id) ON DELETE RESTRICT,
+                                                CONSTRAINT fk_membership_subscription__payment_provider_config_id FOREIGN KEY (payment_provider_config_id) REFERENCES public.payment_provider_config(id) ON DELETE SET NULL
+);
+
+COMMENT ON TABLE public.membership_subscription IS 'User subscription enrollments to membership plans';
+COMMENT ON COLUMN public.membership_subscription.subscription_status IS 'Subscription status: ACTIVE, TRIAL, CANCELLED, PAST_DUE, EXPIRED, SUSPENDED';
+COMMENT ON COLUMN public.membership_subscription.current_period_start IS 'Start date of current billing period';
+COMMENT ON COLUMN public.membership_subscription.current_period_end IS 'End date of current billing period';
+COMMENT ON COLUMN public.membership_subscription.trial_start IS 'Trial period start date (if applicable)';
+COMMENT ON COLUMN public.membership_subscription.trial_end IS 'Trial period end date (if applicable)';
+COMMENT ON COLUMN public.membership_subscription.cancel_at_period_end IS 'Whether subscription will cancel at end of current period';
+
+
+        -- Create reconciliation log table (optional, for detailed audit trail)
+CREATE TABLE IF NOT EXISTS public.membership_subscription_reconciliation_log (
+                                                                          id BIGINT PRIMARY KEY,
+                                                                          subscription_id BIGINT NOT NULL,
+                                                                          tenant_id VARCHAR(255) NOT NULL,
+    reconciliation_type VARCHAR(50) NOT NULL, -- 'BATCH_RENEWAL', 'DAILY_RECONCILIATION', 'WEBHOOK'
+    status VARCHAR(20) NOT NULL, -- 'SUCCESS', 'FAILED', 'SKIPPED'
+    local_period_start DATE,
+    local_period_end DATE,
+    stripe_period_start DATE,
+    stripe_period_end DATE,
+    local_status VARCHAR(20),
+    stripe_status VARCHAR(20),
+    changes_json TEXT,
+    error_message TEXT,
+    processed_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (subscription_id) REFERENCES public.membership_subscription(id)
+    );
+
+CREATE INDEX IF NOT EXISTS idx_reconciliation_log_subscription
+    ON public.membership_subscription_reconciliation_log(subscription_id, processed_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_reconciliation_log_tenant
+    ON public.membership_subscription_reconciliation_log(tenant_id, processed_at DESC);
+
+-- Migration: Create Promotion Email Template and Sent Log Tables
+-- Date: 2025-01-XX
+-- Description: Adds database tables for storing promotion email templates and tracking sent emails
+
+-- ============================================
+-- Table: promotion_email_template
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.promotion_email_template (
+                                                               id BIGINT PRIMARY KEY DEFAULT nextval('public.sequence_generator'::regclass),
+    tenant_id VARCHAR(255) NOT NULL,
+    event_id BIGINT NOT NULL,
+    template_name VARCHAR(255) NOT NULL,
+    subject VARCHAR(500) NOT NULL,
+    from_email character varying(255) NOT NULL,
+    body_html TEXT NOT NULL,
+    footer_html TEXT,
+    header_image_url VARCHAR(2048),
+    footer_image_url VARCHAR(2048),
+    promotion_code VARCHAR(50), -- Links to discount_code.code (for display/reference)
+    discount_code_id BIGINT, -- FK to discount_code.id (for dynamic code management)
+    is_active BOOLEAN DEFAULT true,
+    created_by_id BIGINT, -- FK to user_profile.id
+    created_at TIMESTAMP DEFAULT now() NOT NULL,
+    updated_at TIMESTAMP DEFAULT now() NOT NULL,
+
+    CONSTRAINT fk_promotion_template_event
+    FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
+    CONSTRAINT fk_promotion_template_discount_code
+    FOREIGN KEY (discount_code_id) REFERENCES public.discount_code(id) ON DELETE SET NULL,
+    CONSTRAINT fk_promotion_template_created_by
+    FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL,
+
+    CONSTRAINT uk_template_name_per_event
+    UNIQUE (tenant_id, event_id, template_name)
+    );
+
+COMMENT ON TABLE public.promotion_email_template IS 'Reusable promotion email templates associated with events and discount codes';
+COMMENT ON COLUMN public.promotion_email_template.template_name IS 'User-friendly name for the template (e.g., "Early Bird Discount", "Last Chance Sale")';
+COMMENT ON COLUMN public.promotion_email_template.promotion_code IS 'Promotion code string for display/reference (links to discount_code.code)';
+COMMENT ON COLUMN public.promotion_email_template.discount_code_id IS 'Foreign key to discount_code table for dynamic code management and validation';
+
+-- Indexes for promotion_email_template
+CREATE INDEX IF NOT EXISTS idx_promotion_template_event ON public.promotion_email_template(event_id);
+CREATE INDEX IF NOT EXISTS idx_promotion_template_discount_code ON public.promotion_email_template(discount_code_id);
+CREATE INDEX IF NOT EXISTS idx_promotion_template_tenant ON public.promotion_email_template(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_promotion_template_active ON public.promotion_email_template(is_active) WHERE is_active = true;
+
+-- ============================================
+-- Table: promotion_email_sent_log
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.promotion_email_sent_log (
+                                                               id BIGINT PRIMARY KEY DEFAULT nextval('public.sequence_generator'::regclass),
+    tenant_id VARCHAR(255) NOT NULL,
+    template_id BIGINT, -- FK to promotion_email_template.id (nullable to preserve audit logs when template is deleted)
+    event_id BIGINT NOT NULL,
+    recipient_email VARCHAR(255) NOT NULL,
+    subject VARCHAR(500) NOT NULL,
+    promotion_code VARCHAR(50),
+    discount_code_id BIGINT,
+    sent_at TIMESTAMP DEFAULT now() NOT NULL,
+    is_test_email BOOLEAN DEFAULT false,
+    email_status VARCHAR(50) DEFAULT 'SENT', -- SENT, FAILED, BOUNCED
+    error_message TEXT,
+    sent_by_id BIGINT, -- FK to user_profile.id
+
+    CONSTRAINT fk_promotion_log_template
+    FOREIGN KEY (template_id) REFERENCES public.promotion_email_template(id) ON DELETE SET NULL,
+    CONSTRAINT fk_promotion_log_event
+    FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
+    CONSTRAINT fk_promotion_log_discount_code
+    FOREIGN KEY (discount_code_id) REFERENCES public.discount_code(id) ON DELETE SET NULL,
+    CONSTRAINT fk_promotion_log_sent_by
+    FOREIGN KEY (sent_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL,
+
+    CONSTRAINT chk_email_status CHECK (email_status IN ('SENT', 'FAILED', 'BOUNCED'))
+    );
+
+COMMENT ON TABLE public.promotion_email_sent_log IS 'Audit log of all sent promotion emails for compliance, analytics, and debugging';
+COMMENT ON COLUMN public.promotion_email_sent_log.template_id IS 'Foreign key to promotion_email_template. Can be NULL if template was deleted (audit logs are preserved).';
+COMMENT ON COLUMN public.promotion_email_sent_log.email_status IS 'Status of email delivery: SENT (successful), FAILED (delivery failed), BOUNCED (recipient rejected)';
+COMMENT ON COLUMN public.promotion_email_sent_log.is_test_email IS 'Indicates if this was a test email (sent to admin) or bulk email (sent to recipients)';
+
+-- Indexes for promotion_email_sent_log
+CREATE INDEX IF NOT EXISTS idx_promotion_log_event ON public.promotion_email_sent_log(event_id);
+CREATE INDEX IF NOT EXISTS idx_promotion_log_template ON public.promotion_email_sent_log(template_id);
+CREATE INDEX IF NOT EXISTS idx_promotion_log_sent_at ON public.promotion_email_sent_log(sent_at DESC);
+CREATE INDEX IF NOT EXISTS idx_promotion_log_recipient ON public.promotion_email_sent_log(recipient_email);
+CREATE INDEX IF NOT EXISTS idx_promotion_log_status ON public.promotion_email_sent_log(email_status);
+CREATE INDEX IF NOT EXISTS idx_promotion_log_tenant ON public.promotion_email_sent_log(tenant_id);
+
+
+
+-- ============================================
+-- Rollback Script (if needed)
+-- ============================================
+-- DROP TABLE IF EXISTS public.promotion_email_sent_log CASCADE;
+-- DROP TABLE IF EXISTS public.promotion_email_template CASCADE;
+-- Create batch_job_execution table (if Spring Batch doesn't create it automatically)
+-- Create batch_job_execution table (if Spring Batch doesn't create it automatically)
+
+
+
+-- Spring Batch Metadata Tables
+-- These tables are required for Spring Batch to track job executions
+-- Run this script if automatic schema initialization fails
+
+-- Create Spring Batch-specific sequences with the exact names Spring Batch expects
+-- These are separate from the main sequence_generator used by other application tables
+CREATE SEQUENCE IF NOT EXISTS public.batch_job_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE SEQUENCE IF NOT EXISTS public.batch_job_execution_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE SEQUENCE IF NOT EXISTS public.batch_step_execution_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+-- BATCH_JOB_INSTANCE
+-- Using BIGINT with explicit sequence (batch_job_seq) instead of BIGSERIAL
+-- This ensures Spring Batch can find the sequence with the expected name
+CREATE TABLE IF NOT EXISTS public.BATCH_JOB_INSTANCE (
+    JOB_INSTANCE_ID BIGINT DEFAULT nextval('public.batch_job_seq') PRIMARY KEY,
+    VERSION BIGINT,
+    JOB_NAME VARCHAR(100) NOT NULL,
+    JOB_KEY VARCHAR(32) NOT NULL,
+    CONSTRAINT JOB_INST_UN UNIQUE (JOB_NAME, JOB_KEY)
+);
+
+-- BATCH_JOB_EXECUTION
+-- Using BIGINT with explicit sequence (batch_job_execution_seq) instead of BIGSERIAL
+CREATE TABLE IF NOT EXISTS public.BATCH_JOB_EXECUTION (
+    JOB_EXECUTION_ID BIGINT DEFAULT nextval('public.batch_job_execution_seq') PRIMARY KEY,
+    VERSION BIGINT,
+    JOB_INSTANCE_ID BIGINT NOT NULL,
+    CREATE_TIME TIMESTAMP NOT NULL,
+    START_TIME TIMESTAMP,
+    END_TIME TIMESTAMP,
+    STATUS VARCHAR(10),
+    EXIT_CODE VARCHAR(2500),
+    EXIT_MESSAGE TEXT,
+    LAST_UPDATED TIMESTAMP,
+    CONSTRAINT JOB_INST_EXEC_FK FOREIGN KEY (job_instance_id)
+        REFERENCES public.BATCH_JOB_INSTANCE(job_instance_id)
+);
+
+-- BATCH_JOB_EXECUTION_PARAMS
+CREATE TABLE IF NOT EXISTS public.BATCH_JOB_EXECUTION_PARAMS (
+    JOB_EXECUTION_ID BIGINT NOT NULL,
+    PARAMETER_NAME VARCHAR(100) NOT NULL,
+    PARAMETER_TYPE VARCHAR(100) NOT NULL,
+    PARAMETER_VALUE VARCHAR(2500),
+    IDENTIFYING CHAR(1) NOT NULL,
+    CONSTRAINT JOB_EXEC_PARAMS_FK FOREIGN KEY (job_execution_id)
+        REFERENCES public.BATCH_JOB_EXECUTION(job_execution_id)
+);
+
+-- BATCH_STEP_EXECUTION
+-- Using BIGINT with explicit sequence (batch_step_execution_seq) instead of BIGSERIAL
+CREATE TABLE IF NOT EXISTS public.BATCH_STEP_EXECUTION (
+    STEP_EXECUTION_ID BIGINT DEFAULT nextval('public.batch_step_execution_seq') PRIMARY KEY,
+    VERSION BIGINT NOT NULL,
+    STEP_NAME VARCHAR(100) NOT NULL,
+    JOB_EXECUTION_ID BIGINT NOT NULL,
+    CREATE_TIME TIMESTAMP NOT NULL,
+    START_TIME TIMESTAMP,
+    END_TIME TIMESTAMP,
+    STATUS VARCHAR(10),
+    COMMIT_COUNT BIGINT,
+    READ_COUNT BIGINT,
+    FILTER_COUNT BIGINT,
+    WRITE_COUNT BIGINT,
+    READ_SKIP_COUNT BIGINT,
+    WRITE_SKIP_COUNT BIGINT,
+    PROCESS_SKIP_COUNT BIGINT,
+    ROLLBACK_COUNT BIGINT,
+    EXIT_CODE VARCHAR(2500),
+    EXIT_MESSAGE TEXT,
+    LAST_UPDATED TIMESTAMP,
+    CONSTRAINT JOB_EXEC_STEP_FK FOREIGN KEY (job_execution_id)
+        REFERENCES public.BATCH_JOB_EXECUTION(job_execution_id)
+);
+
+-- BATCH_STEP_EXECUTION_CONTEXT
+CREATE TABLE IF NOT EXISTS public.BATCH_STEP_EXECUTION_CONTEXT (
+    STEP_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY,
+    SHORT_CONTEXT VARCHAR(2500) NOT NULL,
+    SERIALIZED_CONTEXT TEXT,
+    CONSTRAINT STEP_EXEC_CTX_FK FOREIGN KEY (step_execution_id)
+        REFERENCES public.BATCH_STEP_EXECUTION(step_execution_id)
+);
+
+-- BATCH_JOB_EXECUTION_CONTEXT
+CREATE TABLE IF NOT EXISTS public.BATCH_JOB_EXECUTION_CONTEXT (
+    JOB_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY,
+    SHORT_CONTEXT VARCHAR(2500) NOT NULL,
+    SERIALIZED_CONTEXT TEXT,
+    CONSTRAINT JOB_EXEC_CTX_FK FOREIGN KEY (job_execution_id)
+        REFERENCES public.BATCH_JOB_EXECUTION(job_execution_id)
+);
+
+-- Custom application table: batch_job_execution_log
+-- This table is separate from Spring Batch's internal tables (BATCH_*)
+-- Used for custom tracking and auditing of batch job executions with additional metadata
+-- Note: This is NOT the same as BATCH_JOB_EXECUTION (Spring Batch framework table)
+-- Using BIGSERIAL for auto-increment (JPA @GeneratedValue with sequenceGenerator will work with this)
+-- This table uses the shared sequence_generator sequence (already exists in database)
+CREATE TABLE IF NOT EXISTS public.batch_job_execution_log (
+    id BIGSERIAL PRIMARY KEY,
+    job_name VARCHAR(100) NOT NULL,
+    job_type VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    tenant_id VARCHAR(255),
+    started_at TIMESTAMP NOT NULL,
+    completed_at TIMESTAMP,
+    duration_ms BIGINT,
+    processed_count BIGINT DEFAULT 0,
+    success_count BIGINT DEFAULT 0,
+    failed_count BIGINT DEFAULT 0,
+    error_message TEXT,
+    triggered_by VARCHAR(100),
+    parameters_json TEXT
+);
+
+-- Create indexes for better performance
+-- Indexes for Spring Batch tables
+CREATE INDEX IF NOT EXISTS JOB_INST_UN ON public.BATCH_JOB_INSTANCE(job_name, job_key);
+CREATE INDEX IF NOT EXISTS JOB_EXEC_INST_FK ON public.BATCH_JOB_EXECUTION(job_instance_id);
+CREATE INDEX IF NOT EXISTS JOB_EXEC_PARAMS_FK ON public.BATCH_JOB_EXECUTION_PARAMS(job_execution_id);
+CREATE INDEX IF NOT EXISTS STEP_EXEC_JOB_FK ON public.BATCH_STEP_EXECUTION(job_execution_id);
+CREATE INDEX IF NOT EXISTS STEP_EXEC_CTX_FK ON public.BATCH_STEP_EXECUTION_CONTEXT(step_execution_id);
+CREATE INDEX IF NOT EXISTS JOB_EXEC_CTX_FK ON public.BATCH_JOB_EXECUTION_CONTEXT(job_execution_id);
+
+-- Indexes for custom batch_job_execution_log table
+CREATE INDEX IF NOT EXISTS idx_batch_job_execution_log_job_name
+    ON public.batch_job_execution_log(job_name, started_at DESC);
+CREATE INDEX IF NOT EXISTS idx_batch_job_execution_log_status
+    ON public.batch_job_execution_log(status, started_at DESC);
+CREATE INDEX IF NOT EXISTS idx_batch_job_execution_log_tenant
+    ON public.batch_job_execution_log(tenant_id, started_at DESC);
+
+-- Set sequence ownership to the columns (must be done after tables are created)
+-- This ensures sequences are dropped if columns/tables are dropped
+ALTER SEQUENCE public.batch_job_seq OWNED BY public.BATCH_JOB_INSTANCE.JOB_INSTANCE_ID;
+ALTER SEQUENCE public.batch_job_execution_seq OWNED BY public.BATCH_JOB_EXECUTION.JOB_EXECUTION_ID;
+ALTER SEQUENCE public.batch_step_execution_seq OWNED BY public.BATCH_STEP_EXECUTION.STEP_EXECUTION_ID;
+
+
+-- =====================================================
+-- INDEXES FOR PERFORMANCE
+-- =====================================================
+
+-- Indexes for payment_provider_config
+CREATE INDEX IF NOT EXISTS idx_payment_provider_config_tenant_id ON public.payment_provider_config(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_payment_provider_config_provider_name ON public.payment_provider_config(provider_name);
+CREATE INDEX IF NOT EXISTS idx_payment_provider_config_active ON public.payment_provider_config(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_payment_provider_config_use_case ON public.payment_provider_config(payment_use_case);
+
+-- Indexes for platform_settlement
+CREATE INDEX IF NOT EXISTS idx_platform_settlement_tenant_id ON public.platform_settlement(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_platform_settlement_provider_name ON public.platform_settlement(provider_name);
+CREATE INDEX IF NOT EXISTS idx_platform_settlement_date ON public.platform_settlement(settlement_date);
+CREATE INDEX IF NOT EXISTS idx_platform_settlement_status ON public.platform_settlement(status);
+CREATE INDEX IF NOT EXISTS idx_platform_settlement_tenant_provider_date ON public.platform_settlement(tenant_id, provider_name, settlement_date);
+
+-- Indexes for platform_invoice
+CREATE INDEX IF NOT EXISTS idx_platform_invoice_tenant_id ON public.platform_invoice(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_platform_invoice_status ON public.platform_invoice(status);
+CREATE INDEX IF NOT EXISTS idx_platform_invoice_due_date ON public.platform_invoice(due_date);
+CREATE INDEX IF NOT EXISTS idx_platform_invoice_settlement_batch_id ON public.platform_invoice(settlement_batch_id);
+CREATE INDEX IF NOT EXISTS idx_platform_invoice_invoice_date ON public.platform_invoice(invoice_date);
+
+-- Indexes for membership_plan
+CREATE INDEX IF NOT EXISTS idx_membership_plan_tenant_id ON public.membership_plan(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_membership_plan_code ON public.membership_plan(plan_code);
+CREATE INDEX IF NOT EXISTS idx_membership_plan_active ON public.membership_plan(is_active) WHERE is_active = true;
+
+-- Indexes for membership_subscription
+CREATE INDEX IF NOT EXISTS idx_membership_subscription_tenant_id ON public.membership_subscription(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_membership_subscription_user_profile_id ON public.membership_subscription(user_profile_id);
+CREATE INDEX IF NOT EXISTS idx_membership_subscription_membership_plan_id ON public.membership_subscription(membership_plan_id);
+CREATE INDEX IF NOT EXISTS idx_membership_subscription_status ON public.membership_subscription(subscription_status);
+CREATE INDEX IF NOT EXISTS idx_membership_subscription_stripe_subscription_id ON public.membership_subscription(stripe_subscription_id);
+CREATE INDEX IF NOT EXISTS idx_membership_subscription_current_period_end ON public.membership_subscription(current_period_end);
+
+-- Create index for renewal query optimization
+CREATE INDEX IF NOT EXISTS idx_membership_subscription_renewal_check
+ON public.membership_subscription(subscription_status, current_period_end, cancel_at_period_end)
+WHERE subscription_status IN ('ACTIVE', 'TRIAL');
+
+-- Create index for Stripe subscription lookup
+CREATE INDEX IF NOT EXISTS idx_membership_subscription_stripe_id
+ON public.membership_subscription(stripe_subscription_id)
+WHERE stripe_subscription_id IS NOT NULL;
+
+-- Create index for reconciliation
+CREATE INDEX IF NOT EXISTS idx_membership_subscription_reconciliation
+ON public.membership_subscription(reconciliation_status, last_reconciliation_at);
+
+-- =====================================================
+-- TRIGGERS FOR AUTOMATIC updated_at TIMESTAMPS
+-- =====================================================
+
+CREATE TRIGGER trg_payment_provider_config_updated_at
+    BEFORE UPDATE ON public.payment_provider_config
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_platform_settlement_updated_at
+    BEFORE UPDATE ON public.platform_settlement
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_platform_invoice_updated_at
+    BEFORE UPDATE ON public.platform_invoice
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_membership_plan_updated_at
+    BEFORE UPDATE ON public.membership_plan
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_membership_subscription_updated_at
+    BEFORE UPDATE ON public.membership_subscription
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+-- =====================================================
+-- END OF PAYMENT ORCHESTRATION LAYER MIGRATION
+-- =====================================================

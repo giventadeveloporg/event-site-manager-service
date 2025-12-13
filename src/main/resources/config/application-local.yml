@@ -125,11 +125,13 @@ spring:
 
   # Cache Configuration
   cache:
+    # Primary cache: Redis (if available) or Caffeine fallback
     type: redis
     redis:
       time-to-live: 600000 # 10 minutes
       cache-null-values: false
       enable-statistics: true
+      # Note: PostgreSQL cache configuration is in postgresql-cache section (see application.yml)
       key-prefix: 'event-site-manager:local:'
       use-key-prefix: true
 

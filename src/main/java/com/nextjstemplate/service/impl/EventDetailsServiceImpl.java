@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -58,6 +60,7 @@ public class EventDetailsServiceImpl implements EventDetailsService {
     }
 
     @Override
+    @CacheEvict(value = "eventDetails", allEntries = true)
     public EventDetailsDTO save(EventDetailsDTO eventDetailsDTO) {
         log.debug("Request to save EventDetails : {}", eventDetailsDTO);
         EventDetails eventDetails = eventDetailsMapper.toEntity(eventDetailsDTO);
@@ -107,6 +110,7 @@ public class EventDetailsServiceImpl implements EventDetailsService {
     }
 
     @Override
+    @CacheEvict(value = "eventDetails", allEntries = true)
     public EventDetailsDTO update(EventDetailsDTO eventDetailsDTO) {
         log.info(
             "UPDATE REQUEST - Event ID: {}, isActive: {} -> {}, isRecurring: {}, parentEventId: {}",
@@ -468,12 +472,14 @@ public class EventDetailsServiceImpl implements EventDetailsService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "eventDetails", key = "#id", unless = "#result == null")
     public Optional<EventDetailsDTO> findOne(Long id) {
         log.debug("Request to get EventDetails : {}", id);
         return eventDetailsRepository.findOneWithEagerRelationships(id).map(eventDetailsMapper::toDto);
     }
 
     @Override
+    @CacheEvict(value = "eventDetails", allEntries = true)
     public void delete(Long id) {
         log.debug("Request to delete EventDetails : {}", id);
         eventDetailsRepository.deleteById(id);

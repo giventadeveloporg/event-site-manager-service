@@ -8,6 +8,8 @@ import com.nextjstemplate.service.mapper.EventTypeDetailsMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ public class EventTypeDetailsServiceImpl implements EventTypeDetailsService {
     }
 
     @Override
+    @CacheEvict(value = "eventTypeDetails", allEntries = true)
     public EventTypeDetailsDTO save(EventTypeDetailsDTO eventTypeDetailsDTO) {
         log.debug("Request to save EventTypeDetails : {}", eventTypeDetailsDTO);
         EventTypeDetails eventTypeDetails = eventTypeDetailsMapper.toEntity(eventTypeDetailsDTO);
@@ -43,6 +46,7 @@ public class EventTypeDetailsServiceImpl implements EventTypeDetailsService {
     }
 
     @Override
+    @CacheEvict(value = "eventTypeDetails", allEntries = true)
     public EventTypeDetailsDTO update(EventTypeDetailsDTO eventTypeDetailsDTO) {
         log.debug("Request to update EventTypeDetails : {}", eventTypeDetailsDTO);
         EventTypeDetails eventTypeDetails = eventTypeDetailsMapper.toEntity(eventTypeDetailsDTO);
@@ -74,12 +78,14 @@ public class EventTypeDetailsServiceImpl implements EventTypeDetailsService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "eventTypeDetails", key = "#id", unless = "#result == null")
     public Optional<EventTypeDetailsDTO> findOne(Long id) {
         log.debug("Request to get EventTypeDetails : {}", id);
         return eventTypeDetailsRepository.findById(id).map(eventTypeDetailsMapper::toDto);
     }
 
     @Override
+    @CacheEvict(value = "eventTypeDetails", allEntries = true)
     public void delete(Long id) {
         log.debug("Request to delete EventTypeDetails : {}", id);
         eventTypeDetailsRepository.deleteById(id);

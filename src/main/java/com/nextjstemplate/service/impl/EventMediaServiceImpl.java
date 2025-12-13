@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -115,6 +117,7 @@ public class EventMediaServiceImpl implements EventMediaService {
     }
 
     @Override
+    @CacheEvict(value = "eventMedia", allEntries = true)
     public EventMediaDTO save(EventMediaDTO eventMediaDTO) {
         log.debug("Request to save EventMedia : {}", eventMediaDTO);
 
@@ -174,6 +177,7 @@ public class EventMediaServiceImpl implements EventMediaService {
     }
 
     @Override
+    @CacheEvict(value = "eventMedia", allEntries = true)
     public EventMediaDTO update(EventMediaDTO eventMediaDTO) {
         log.debug("Request to update EventMedia : {}", eventMediaDTO);
 
@@ -324,12 +328,14 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "eventMedia", key = "#id", unless = "#result == null")
     public Optional<EventMediaDTO> findOne(Long id) {
         log.debug("Request to get EventMedia : {}", id);
         return eventMediaRepository.findById(id).map(eventMediaMapper::toDto);
     }
 
     @Override
+    @CacheEvict(value = "eventMedia", allEntries = true)
     public void delete(Long id) {
         log.debug("Request to delete EventMedia : {}", id);
         eventMediaRepository.deleteById(id);
