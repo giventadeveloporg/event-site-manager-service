@@ -37,3 +37,4 @@ public interface PromotionEmailSentLogService {
      */
     Map<String, Object> getEmailStatistics(Long eventId, String tenantId);
 }
+

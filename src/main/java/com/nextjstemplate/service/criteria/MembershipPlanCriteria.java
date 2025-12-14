@@ -374,3 +374,4 @@ public class MembershipPlanCriteria implements Serializable, Criteria {
         );
     }
 }
+

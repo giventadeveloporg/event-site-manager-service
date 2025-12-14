@@ -61,3 +61,4 @@ public interface MembershipSubscriptionMapper extends EntityMapper<MembershipSub
     @Mapping(target = "id", source = "id")
     UserProfileDTO toDtoUserProfileId(UserProfile userProfile);
 }
+

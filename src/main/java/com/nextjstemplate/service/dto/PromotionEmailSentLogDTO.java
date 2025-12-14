@@ -256,3 +256,4 @@ public class PromotionEmailSentLogDTO implements Serializable {
         );
     }
 }
+

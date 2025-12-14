@@ -169,3 +169,4 @@ public class MembershipSubscriptionQueryService extends QueryService<MembershipS
         return specification;
     }
 }
+

@@ -137,3 +137,4 @@ public class MembershipPlanQueryService extends QueryService<MembershipPlan> {
         return specification;
     }
 }
+

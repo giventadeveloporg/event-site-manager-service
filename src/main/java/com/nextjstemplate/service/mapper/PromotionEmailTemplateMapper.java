@@ -22,3 +22,4 @@ public interface PromotionEmailTemplateMapper extends EntityMapper<PromotionEmai
     @Mapping(target = "createdById", source = "createdById")
     PromotionEmailTemplate toEntity(PromotionEmailTemplateDTO dto);
 }
+

@@ -372,3 +372,4 @@ public class MembershipSubscriptionCriteria implements Serializable, Criteria {
         );
     }
 }
+

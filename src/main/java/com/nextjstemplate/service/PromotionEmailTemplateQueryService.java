@@ -129,3 +129,4 @@ public class PromotionEmailTemplateQueryService extends QueryService<PromotionEm
         return specification;
     }
 }
+

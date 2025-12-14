@@ -342,3 +342,4 @@ public class PromotionEmailSentLogCriteria implements Serializable, Criteria {
         );
     }
 }
+

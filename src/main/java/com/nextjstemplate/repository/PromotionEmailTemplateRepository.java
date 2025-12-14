@@ -41,3 +41,4 @@ public interface PromotionEmailTemplateRepository
      */
     Optional<PromotionEmailTemplate> findByTenantIdAndEventIdAndTemplateName(String tenantId, Long eventId, String templateName);
 }
+

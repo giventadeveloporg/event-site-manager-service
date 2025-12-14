@@ -51,3 +51,4 @@ public interface PromotionEmailSentLogRepository
      */
     List<PromotionEmailSentLog> findByTenantIdAndEmailStatus(String tenantId, EmailStatus emailStatus);
 }
+
