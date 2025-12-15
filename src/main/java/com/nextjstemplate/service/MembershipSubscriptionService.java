@@ -301,6 +301,23 @@ public class MembershipSubscriptionService {
         Long membershipPlanId,
         Subscription stripeSubscription
     ) {
+        // Check if subscription already exists by stripeSubscriptionId and tenantId
+        if (stripeSubscriptionId != null && !stripeSubscriptionId.isEmpty() && tenantId != null) {
+            MembershipSubscription existing = membershipSubscriptionRepository
+                .findByStripeSubscriptionIdAndTenantId(stripeSubscriptionId, tenantId)
+                .orElse(null);
+            if (existing != null) {
+                // Return existing subscription instead of creating duplicate
+                log.info(
+                    "Subscription already exists for stripe_subscription_id {} and tenant {}. Returning existing subscription {}",
+                    stripeSubscriptionId,
+                    tenantId,
+                    existing.getId()
+                );
+                return existing;
+            }
+        }
+
         MembershipSubscription subscription = new MembershipSubscription();
         subscription.setTenantId(tenantId);
         subscription.setStripeSubscriptionId(stripeSubscriptionId);
