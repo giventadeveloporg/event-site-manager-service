@@ -1,6 +1,5 @@
 package com.nextjstemplate.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nextjstemplate.domain.enumeration.TenantEmailType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -70,10 +69,8 @@ public class TenantEmailAddress implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_id", insertable = false, updatable = false)
-    @JsonIgnoreProperties(value = { "tenantSettings" }, allowSetters = true)
-    private TenantOrganization tenantOrganization;
+    // Note: tenant_id is a string identifier, not a foreign key to TenantOrganization
+    // Removed @ManyToOne relationship to avoid type mismatch errors
 
     @PrePersist
     protected void onCreate() {
