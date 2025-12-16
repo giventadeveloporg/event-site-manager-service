@@ -29,4 +29,3 @@ public interface MembershipPlanMapper extends EntityMapper<MembershipPlanDTO, Me
     @Mapping(target = "billingInterval", source = "billingInterval")
     MembershipPlanDTO toDtoPlanName(MembershipPlan membershipPlan);
 }
-

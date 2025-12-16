@@ -9,4 +9,3 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface BatchJobExecutionMapper extends EntityMapper<BatchJobExecutionDTO, BatchJobExecution> {}
-

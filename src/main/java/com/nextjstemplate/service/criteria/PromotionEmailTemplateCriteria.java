@@ -301,4 +301,3 @@ public class PromotionEmailTemplateCriteria implements Serializable, Criteria {
         );
     }
 }
-

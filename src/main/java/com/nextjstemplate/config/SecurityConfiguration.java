@@ -69,6 +69,9 @@ public class SecurityConfiguration {
                     .permitAll()
                     .requestMatchers(mvc.pattern("/api/webhooks/givebutter"))
                     .permitAll()
+                    // Cron endpoints - authentication handled in controller (cron secret or JWT)
+                    .requestMatchers(mvc.pattern("/api/cron/**"))
+                    .permitAll()
                     // All other /api/** endpoints require authentication
                     .requestMatchers(mvc.pattern("/api/**"))
                     .authenticated()

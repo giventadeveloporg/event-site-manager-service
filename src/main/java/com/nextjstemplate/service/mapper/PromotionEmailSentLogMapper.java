@@ -28,4 +28,3 @@ public interface PromotionEmailSentLogMapper extends EntityMapper<PromotionEmail
     @Mapping(target = "sentById", source = "sentById")
     PromotionEmailSentLog toEntity(PromotionEmailSentLogDTO dto);
 }
-

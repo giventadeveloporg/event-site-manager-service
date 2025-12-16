@@ -20,4 +20,3 @@ public interface MembershipSubscriptionReconciliationLogRepository
 
     List<MembershipSubscriptionReconciliationLog> findBySubscriptionIdOrderByProcessedAtDesc(Long subscriptionId);
 }
-

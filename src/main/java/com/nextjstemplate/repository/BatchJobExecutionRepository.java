@@ -17,4 +17,3 @@ public interface BatchJobExecutionRepository extends JpaRepository<BatchJobExecu
 
     List<BatchJobExecution> findByStatusOrderByStartedAtDesc(String status);
 }
-

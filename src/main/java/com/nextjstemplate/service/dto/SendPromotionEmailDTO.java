@@ -139,4 +139,3 @@ public class SendPromotionEmailDTO implements Serializable {
         );
     }
 }
-

@@ -137,4 +137,3 @@ public class PromotionEmailSentLogQueryService extends QueryService<PromotionEma
         return specification;
     }
 }
-

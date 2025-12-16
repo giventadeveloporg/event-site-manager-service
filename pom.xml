@@ -329,6 +329,13 @@
             <version>2.25.32</version>
         </dependency>
 
+        <!-- AWS Batch SDK for Java v2 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>batch</artifactId>
+            <version>2.25.32</version>
+        </dependency>
+
         <!-- JAXB Runtime for Java 17+ compatibility with AWS SDK -->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>

@@ -76,4 +76,3 @@ public interface PromotionEmailTemplateService {
      */
     boolean validateTemplateName(String templateName, Long eventId, String tenantId, Long excludeId);
 }
-
