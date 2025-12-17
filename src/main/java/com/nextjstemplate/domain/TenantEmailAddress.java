@@ -222,19 +222,6 @@ public class TenantEmailAddress implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public TenantOrganization getTenantOrganization() {
-        return this.tenantOrganization;
-    }
-
-    public void setTenantOrganization(TenantOrganization tenantOrganization) {
-        this.tenantOrganization = tenantOrganization;
-    }
-
-    public TenantEmailAddress tenantOrganization(TenantOrganization tenantOrganization) {
-        this.setTenantOrganization(tenantOrganization);
-        return this;
-    }
-
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
