@@ -427,6 +427,58 @@
         }
       }
     },
+    "/api/tenant-email-addresses/{id}": {
+      "get": {
+        "tags": ["tenant-email-address-resource"],
+        "operationId": "getTenantEmailAddress",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantEmailAddressDTO" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["tenant-email-address-resource"],
+        "operationId": "updateTenantEmailAddress",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantEmailAddressDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantEmailAddressDTO" } } }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["tenant-email-address-resource"],
+        "operationId": "deleteTenantEmailAddress",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "tags": ["tenant-email-address-resource"],
+        "operationId": "partialUpdateTenantEmailAddress",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/TenantEmailAddressDTO" } },
+            "application/merge-patch+json": { "schema": { "$ref": "#/components/schemas/TenantEmailAddressDTO" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantEmailAddressDTO" } } }
+          }
+        }
+      }
+    },
     "/api/qr-code-usages/{id}": {
       "get": {
         "tags": ["qr-code-usage-resource"],
@@ -4472,6 +4524,21 @@
             "required": false,
             "schema": { "type": "array", "items": { "type": "boolean" } }
           },
+          { "name": "isMembershipSubscriptionEnabled.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isMembershipSubscriptionEnabled.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isMembershipSubscriptionEnabled.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "isMembershipSubscriptionEnabled.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          {
+            "name": "isMembershipSubscriptionEnabled.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
           { "name": "whatsappApiKey.contains", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "whatsappApiKey.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "whatsappApiKey.equals", "in": "query", "required": false, "schema": { "type": "string" } },
@@ -4832,6 +4899,23 @@
             "required": false,
             "schema": { "type": "array", "items": { "type": "string" } }
           },
+          { "name": "emailHeaderImageUrl.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailHeaderImageUrl.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailHeaderImageUrl.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailHeaderImageUrl.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailHeaderImageUrl.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "emailHeaderImageUrl.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "emailHeaderImageUrl.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
           { "name": "logoImageUrl.contains", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "logoImageUrl.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "logoImageUrl.equals", "in": "query", "required": false, "schema": { "type": "string" } },
@@ -4977,6 +5061,26 @@
       "post": {
         "tags": ["tenant-settings-resource"],
         "operationId": "uploadTenantLogo",
+        "parameters": [{ "name": "tenantId", "in": "query", "required": false, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "required": ["file"], "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantSettingsDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/tenant-settings/upload/email-header-image": {
+      "post": {
+        "tags": ["tenant-settings-resource"],
+        "operationId": "uploadEmailHeaderImage",
         "parameters": [{ "name": "tenantId", "in": "query", "required": false, "schema": { "type": "string" } }],
         "requestBody": {
           "content": {
@@ -5341,6 +5445,170 @@
           "200": {
             "description": "OK",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantOrganizationDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/tenant-email-addresses": {
+      "get": {
+        "tags": ["tenant-email-address-resource"],
+        "operationId": "getAllTenantEmailAddresses",
+        "parameters": [
+          { "name": "id.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "tenantId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "tenantId.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "tenantId.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "emailAddress.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailAddress.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailAddress.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailAddress.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailAddress.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "emailAddress.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "emailAddress.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "emailType.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailType.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailType.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailType.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailType.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "emailType.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "emailType.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "displayName.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "displayName.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "displayName.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "displayName.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "displayName.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "displayName.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "displayName.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "isActive.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "isActive.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "isDefault.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isDefault.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isDefault.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isDefault.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "isDefault.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "description.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "description.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "description.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "createdAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "createdAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "createdAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "createdAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "updatedAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "updatedAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "updatedAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "updatedAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "updatedAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 20 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/TenantEmailAddressDTO" } } }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["tenant-email-address-resource"],
+        "operationId": "createTenantEmailAddress",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantEmailAddressDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantEmailAddressDTO" } } }
           }
         }
       }
@@ -10901,7 +11169,7 @@
     "/api/event-medias/upload/email-header-image": {
       "post": {
         "tags": ["event-media-resource"],
-        "operationId": "uploadEmailHeaderImage",
+        "operationId": "uploadEmailHeaderImage_1",
         "parameters": [
           { "name": "eventId", "in": "query", "required": true, "schema": { "type": "integer", "format": "int64" } },
           { "name": "tenantId", "in": "query", "required": false, "schema": { "type": "string" } },
@@ -15129,6 +15397,39 @@
         }
       }
     },
+    "/api/cron/subscription-renewal": {
+      "post": {
+        "tags": ["batch-job-resource"],
+        "operationId": "triggerSubscriptionRenewal",
+        "parameters": [
+          { "name": "Authorization", "in": "header", "required": false, "schema": { "type": "string" } },
+          { "name": "X-Tenant-Id", "in": "header", "required": false, "schema": { "type": "string" } }
+        ],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BatchJobRequest" } } } },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BatchJobResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/contact-form/send": {
+      "post": {
+        "tags": ["contact-form-resource"],
+        "operationId": "sendContactFormEmail",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ContactFormDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
+          }
+        }
+      }
+    },
     "/api/communication-campaigns": {
       "get": {
         "tags": ["communication-campaign-resource"],
@@ -17676,6 +17977,21 @@
             "required": false,
             "schema": { "type": "array", "items": { "type": "boolean" } }
           },
+          { "name": "isMembershipSubscriptionEnabled.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isMembershipSubscriptionEnabled.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isMembershipSubscriptionEnabled.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "isMembershipSubscriptionEnabled.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
+          {
+            "name": "isMembershipSubscriptionEnabled.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "boolean" } }
+          },
           { "name": "whatsappApiKey.contains", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "whatsappApiKey.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "whatsappApiKey.equals", "in": "query", "required": false, "schema": { "type": "string" } },
@@ -18032,6 +18348,23 @@
           },
           {
             "name": "emailFooterHtmlUrl.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "emailHeaderImageUrl.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailHeaderImageUrl.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailHeaderImageUrl.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailHeaderImageUrl.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailHeaderImageUrl.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "emailHeaderImageUrl.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "emailHeaderImageUrl.notIn",
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "string" } }
@@ -18421,6 +18754,130 @@
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "integer", "format": "int64" } } } }
+        }
+      }
+    },
+    "/api/tenant-email-addresses/count": {
+      "get": {
+        "tags": ["tenant-email-address-resource"],
+        "operationId": "countTenantEmailAddresses",
+        "parameters": [
+          { "name": "id.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "tenantId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "tenantId.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "tenantId.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "emailAddress.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailAddress.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailAddress.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailAddress.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailAddress.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "emailAddress.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "emailAddress.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "emailType.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailType.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailType.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailType.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "emailType.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "emailType.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "emailType.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "displayName.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "displayName.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "displayName.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "displayName.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "displayName.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "displayName.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "displayName.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "isActive.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isActive.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "isActive.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "isDefault.equals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isDefault.notEquals", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isDefault.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "isDefault.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "isDefault.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "boolean" } } },
+          { "name": "description.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "description.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "description.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "description.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "createdAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "createdAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "createdAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "createdAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "updatedAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "updatedAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "updatedAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "updatedAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "updatedAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
           },
           { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } }
         ],
@@ -27388,6 +27845,30 @@
         }
       }
     },
+    "/api/cache/statistics": {
+      "get": {
+        "tags": ["cache-statistics-resource"],
+        "operationId": "getCacheStatistics",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
+          }
+        }
+      }
+    },
+    "/api/cache/names": {
+      "get": {
+        "tags": ["cache-statistics-resource"],
+        "operationId": "getCacheNames",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "type": "string" } } } }
+          }
+        }
+      }
+    },
     "/api/bulk-operation-logs/count": {
       "get": {
         "tags": ["bulk-operation-log-resource"],
@@ -28489,6 +28970,7 @@
           "requireAdminApproval": { "type": "boolean" },
           "enableWhatsappIntegration": { "type": "boolean" },
           "enableEmailMarketing": { "type": "boolean" },
+          "isMembershipSubscriptionEnabled": { "type": "boolean" },
           "whatsappApiKey": { "maxLength": 500, "minLength": 0, "type": "string" },
           "emailProviderConfig": { "maxLength": 2048, "minLength": 0, "type": "string" },
           "maxEventsPerMonth": { "type": "integer", "format": "int32" },
@@ -28508,6 +28990,7 @@
           "whatsappWebhookUrl": { "maxLength": 1048, "minLength": 0, "type": "string" },
           "whatsappWebhookToken": { "maxLength": 1048, "minLength": 0, "type": "string" },
           "emailFooterHtmlUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
+          "emailHeaderImageUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
           "logoImageUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
           "addressLine1": { "maxLength": 255, "minLength": 0, "type": "string" },
           "addressLine2": { "maxLength": 255, "minLength": 0, "type": "string" },
@@ -28519,6 +29002,22 @@
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" },
           "tenantOrganization": { "$ref": "#/components/schemas/TenantOrganizationDTO" }
+        }
+      },
+      "TenantEmailAddressDTO": {
+        "required": ["createdAt", "emailAddress", "emailType", "isActive", "isDefault", "tenantId", "updatedAt"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "emailAddress": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "emailType": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "displayName": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "isActive": { "type": "boolean" },
+          "isDefault": { "type": "boolean" },
+          "description": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
       "EventAttendeeDTO": {
@@ -29433,6 +29932,10 @@
           "paymentProviderConfigId": { "type": "integer", "format": "int64" },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" },
+          "lastReconciliationAt": { "type": "string", "format": "date-time" },
+          "lastStripeSyncAt": { "type": "string", "format": "date-time" },
+          "reconciliationStatus": { "maxLength": 20, "minLength": 0, "pattern": "PENDING|SUCCESS|FAILED|SKIPPED", "type": "string" },
+          "reconciliationError": { "type": "string" },
           "membershipPlan": { "$ref": "#/components/schemas/MembershipPlanDTO" },
           "userProfile": { "$ref": "#/components/schemas/UserProfileDTO" }
         }
@@ -29446,6 +29949,37 @@
         "properties": {
           "mediaIds": { "type": "array", "items": { "type": "integer", "format": "int64" } },
           "expirationHours": { "type": "integer", "format": "int32" }
+        }
+      },
+      "BatchJobRequest": {
+        "type": "object",
+        "properties": {
+          "tenantId": { "type": "string" },
+          "stripeSubscriptionId": { "type": "string" },
+          "batchSize": { "minimum": 1, "type": "integer", "format": "int32" },
+          "maxSubscriptions": { "minimum": 1, "type": "integer", "format": "int32" }
+        }
+      },
+      "BatchJobResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string" },
+          "jobId": { "type": "string" },
+          "jobName": { "type": "string" },
+          "message": { "type": "string" },
+          "estimatedDuration": { "type": "string" },
+          "request": { "$ref": "#/components/schemas/BatchJobRequest" }
+        }
+      },
+      "ContactFormDTO": {
+        "required": ["firstName", "fromEmail", "lastName", "messageBody", "toEmail"],
+        "type": "object",
+        "properties": {
+          "firstName": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "lastName": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "messageBody": { "type": "string" },
+          "fromEmail": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "toEmail": { "maxLength": 255, "minLength": 0, "type": "string" }
         }
       },
       "WebhookResponse": {

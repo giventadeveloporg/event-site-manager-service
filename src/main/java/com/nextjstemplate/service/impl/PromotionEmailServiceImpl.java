@@ -98,6 +98,11 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
             throw new IllegalArgumentException("Template does not belong to the specified tenant");
         }
 
+        // Log if this is a newsletter email (eventId is null)
+        if (template.getEventId() == null) {
+            log.debug("Template has null eventId - this is a newsletter email. Using tenant settings fallback for header/footer.");
+        }
+
         // Use provided email - if not provided, throw error (don't lookup from userId)
         String finalRecipientEmail = recipientEmail;
         if (finalRecipientEmail == null || finalRecipientEmail.isEmpty()) {
@@ -105,7 +110,8 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
         }
 
         // Build email content using the already-fetched template to avoid redundant DB query
-        Map<String, String> emailContent = buildEmailContent(template, null, null);
+        // Use the passed tenantId parameter for fallback to tenant settings
+        Map<String, String> emailContent = buildEmailContent(template, null, null, tenantId);
         String subject = emailContent.get("subject");
         String bodyHtml = emailContent.get("bodyHtml");
         String fromEmail = template.getFromEmail();
@@ -145,46 +151,69 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
             throw new IllegalArgumentException("Template does not belong to the specified tenant");
         }
 
+        // Log if this is a newsletter email (eventId is null)
+        if (template.getEventId() == null) {
+            log.debug("Template has null eventId - this is a newsletter email. Using tenant settings fallback for header/footer.");
+        }
+
         // Build email content using the already-fetched template to avoid redundant DB query
-        Map<String, String> emailContent = buildEmailContent(template, null, null);
+        // Use the passed tenantId parameter for fallback to tenant settings
+        // Note: buildEmailContent does not depend on eventId - it only uses tenantId for fallback
+        Map<String, String> emailContent = buildEmailContent(template, null, null, tenantId);
         String subject = emailContent.get("subject");
         String bodyHtml = emailContent.get("bodyHtml");
         String fromEmail = template.getFromEmail();
 
-        // Get recipient emails if not provided
+        // Determine recipient type based on eventId
+        // If eventId is null, it's a newsletter email sent to all subscribed members
+        String recipientType;
         List<String> finalRecipientEmails = recipientEmails;
-        if (finalRecipientEmails == null || finalRecipientEmails.isEmpty()) {
-            // Get event registrants from EventAttendee
-            List<EventAttendee> attendees = eventAttendeeRepository
-                .findAll()
-                .stream()
-                .filter(attendee -> attendee.getEventId().equals(template.getEventId()))
-                .filter(attendee -> attendee.getEmail() != null && !attendee.getEmail().isEmpty())
-                .filter(attendee -> "CONFIRMED".equalsIgnoreCase(attendee.getRegistrationStatus()))
-                .collect(Collectors.toList());
 
-            finalRecipientEmails =
-                attendees
+        if (template.getEventId() == null) {
+            // Newsletter email - send to all subscribed members
+            log.info("Template has null eventId - treating as newsletter email for subscribed members");
+            recipientType = RecipientType.SUBSCRIBED_MEMBERS;
+            // Don't fetch event attendees if eventId is null
+            if (finalRecipientEmails == null || finalRecipientEmails.isEmpty()) {
+                log.debug("No explicit recipient emails provided, batch service will fetch subscribed members");
+            }
+        } else {
+            // Event-specific email - send to event attendees
+            recipientType = RecipientType.EVENT_ATTENDEES;
+            if (finalRecipientEmails == null || finalRecipientEmails.isEmpty()) {
+                // Get event registrants from EventAttendee
+                Long eventId = template.getEventId();
+                List<EventAttendee> attendees = eventAttendeeRepository
+                    .findAll()
                     .stream()
-                    .map(EventAttendee::getEmail)
-                    .filter(email -> email != null && !email.isEmpty())
-                    .distinct()
+                    .filter(attendee -> eventId.equals(attendee.getEventId()))
+                    .filter(attendee -> attendee.getEmail() != null && !attendee.getEmail().isEmpty())
+                    .filter(attendee -> "CONFIRMED".equalsIgnoreCase(attendee.getRegistrationStatus()))
                     .collect(Collectors.toList());
 
-            log.debug("Retrieved {} recipient emails from event registrants", finalRecipientEmails.size());
+                finalRecipientEmails =
+                    attendees
+                        .stream()
+                        .map(EventAttendee::getEmail)
+                        .filter(email -> email != null && !email.isEmpty())
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                log.debug("Retrieved {} recipient emails from event registrants for eventId: {}", finalRecipientEmails.size(), eventId);
+            }
         }
 
         // Refactored to use batch job service instead of looping through emails
         log.info(
-            "Triggering batch email job for template {} and tenant {} with {} recipients",
+            "Triggering batch email job for template {} and tenant {} with {} recipients (recipientType: {})",
             templateId,
             tenantId,
-            finalRecipientEmails != null ? finalRecipientEmails.size() : "null (will fetch from batch service)"
+            finalRecipientEmails != null ? finalRecipientEmails.size() : "null (will fetch from batch service)",
+            recipientType
         );
 
         // Trigger batch job service - it will handle email sending asynchronously
-        // Pass recipientEmails if provided, otherwise batch service will fetch them
-        // Set recipientType to EVENT_ATTENDEES for event registrants
+        // Pass recipientEmails if provided, otherwise batch service will fetch them based on recipientType
         BatchJobEmailResponse response = batchJobEmailService.triggerEmailBatch(
             tenantId,
             templateId,
@@ -192,7 +221,7 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
             10000,
             finalRecipientEmails,
             userId,
-            RecipientType.EVENT_ATTENDEES
+            recipientType
         );
 
         Map<String, Object> result = new HashMap<>();
@@ -234,8 +263,14 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
             throw new IllegalArgumentException("Template does not belong to the specified tenant");
         }
 
+        // Log if this is a newsletter email (eventId is null)
+        if (template.getEventId() == null) {
+            log.debug("Template has null eventId - this is a newsletter email. Using tenant settings fallback for header/footer.");
+        }
+
         // Build email content using the already-fetched template to avoid redundant DB query
-        Map<String, String> emailContent = buildEmailContent(template, null, null);
+        // Use the passed tenantId parameter for fallback to tenant settings
+        Map<String, String> emailContent = buildEmailContent(template, null, null, tenantId);
         String subject = emailContent.get("subject");
         String bodyHtml = emailContent.get("bodyHtml");
         String fromEmail = template.getFromEmail();
@@ -307,9 +342,28 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
 
     /**
      * Build email content from template object (internal method to avoid redundant DB queries).
+     * Uses template's tenantId for fallback to tenant settings.
      */
     private Map<String, String> buildEmailContent(PromotionEmailTemplate template, String subjectOverride, String bodyHtmlOverride) {
-        log.debug("Building email content for template: id={}, name={}", template.getId(), template.getTemplateName());
+        return buildEmailContent(template, subjectOverride, bodyHtmlOverride, template.getTenantId());
+    }
+
+    /**
+     * Build email content from template object with explicit tenantId for fallback.
+     * This allows batch jobs to use the tenantId from the request rather than relying on template's tenantId.
+     */
+    private Map<String, String> buildEmailContent(
+        PromotionEmailTemplate template,
+        String subjectOverride,
+        String bodyHtmlOverride,
+        String tenantIdForFallback
+    ) {
+        log.debug(
+            "Building email content for template: id={}, name={}, tenantIdForFallback={}",
+            template.getId(),
+            template.getTemplateName(),
+            tenantIdForFallback
+        );
 
         String subject = subjectOverride != null && !subjectOverride.isEmpty() ? subjectOverride : template.getSubject();
         String bodyHtml = bodyHtmlOverride != null && !bodyHtmlOverride.isEmpty() ? bodyHtmlOverride : template.getBodyHtml();
@@ -318,14 +372,22 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
         StringBuilder fullHtml = new StringBuilder();
         fullHtml.append("<!DOCTYPE html><html><head><meta charset='UTF-8'></head><body>");
 
-        // Add header image if available
-        if (template.getHeaderImageUrl() != null && !template.getHeaderImageUrl().isEmpty()) {
+        // Add header image - check template first, then fall back to tenant settings
+        String headerImageUrl = template.getHeaderImageUrl();
+        log.debug("Template header image URL: {}", headerImageUrl);
+        if (headerImageUrl == null || headerImageUrl.isEmpty()) {
+            // Fall back to tenant settings header image using the provided tenantIdForFallback
+            log.debug("Template has no header image, checking tenant settings for tenant: {}", tenantIdForFallback);
+            headerImageUrl = getTenantEmailHeaderImageUrl(tenantIdForFallback);
+            log.debug("Tenant settings header image URL: {}", headerImageUrl);
+        }
+        if (headerImageUrl != null && !headerImageUrl.isEmpty()) {
+            log.debug("Adding header image to email: {}", headerImageUrl);
             fullHtml.append("<div style='text-align: center; margin-bottom: 20px;'>");
-            fullHtml
-                .append("<img src='")
-                .append(template.getHeaderImageUrl())
-                .append("' alt='Header' style='max-width: 100%; height: auto;' />");
+            fullHtml.append("<img src='").append(headerImageUrl).append("' alt='Header' style='max-width: 100%; height: auto;' />");
             fullHtml.append("</div>");
+        } else {
+            log.debug("No header image URL found for template or tenant");
         }
 
         // Add body HTML
@@ -346,8 +408,8 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
             fullHtml.append("</div>");
         }
 
-        // Add tenant email footer HTML from tenant settings
-        String tenantFooterHtml = getTenantEmailFooterHtml(template.getTenantId());
+        // Add tenant email footer HTML from tenant settings using the provided tenantIdForFallback
+        String tenantFooterHtml = getTenantEmailFooterHtml(tenantIdForFallback);
         if (tenantFooterHtml != null && !tenantFooterHtml.isEmpty()) {
             fullHtml.append("<div>").append(tenantFooterHtml).append("</div>");
         }
@@ -359,6 +421,36 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
         result.put("bodyHtml", fullHtml.toString());
 
         return result;
+    }
+
+    /**
+     * Get tenant email header image URL from tenant settings.
+     *
+     * @param tenantId the tenant ID
+     * @return the header image URL, or empty string if not available
+     */
+    private String getTenantEmailHeaderImageUrl(String tenantId) {
+        if (tenantId == null || tenantId.isEmpty()) {
+            log.debug("Tenant ID is null or empty, skipping header image");
+            return "";
+        }
+
+        try {
+            return tenantSettingsRepository
+                .findByTenantId(tenantId)
+                .map(tenantSettings -> {
+                    String emailHeaderImageUrl = tenantSettings.getEmailHeaderImageUrl();
+                    log.debug("Found tenant settings for tenant {}: emailHeaderImageUrl={}", tenantId, emailHeaderImageUrl);
+                    return emailHeaderImageUrl != null && !emailHeaderImageUrl.isEmpty() ? emailHeaderImageUrl : "";
+                })
+                .orElseGet(() -> {
+                    log.debug("Tenant settings not found for tenant: {}", tenantId);
+                    return "";
+                });
+        } catch (Exception e) {
+            log.error("Error getting tenant email header image URL for tenant {}: {}", tenantId, e.getMessage(), e);
+            return "";
+        }
     }
 
     /**
@@ -442,7 +534,7 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
 
     @Override
     public Map<String, String> buildEmailContent(Long templateId, String subjectOverride, String bodyHtmlOverride, String tenantId) {
-        log.debug("Building email content: templateId={}", templateId);
+        log.debug("Building email content: templateId={}, tenantId={}", templateId, tenantId);
 
         PromotionEmailTemplate template = promotionEmailTemplateRepository
             .findById(templateId)
@@ -452,7 +544,9 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
             throw new IllegalArgumentException("Template does not belong to the specified tenant");
         }
 
-        return buildEmailContent(template, subjectOverride, bodyHtmlOverride);
+        // Use the passed tenantId parameter for fallback to tenant settings
+        // This ensures batch jobs use the correct tenantId from the request
+        return buildEmailContent(template, subjectOverride, bodyHtmlOverride, tenantId);
     }
 
     /**
@@ -472,6 +566,7 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
             PromotionEmailSentLog log = new PromotionEmailSentLog();
             log.setTenantId(tenantId);
             log.setTemplateId(template.getId());
+            // eventId can be null for newsletter emails - handle gracefully
             log.setEventId(template.getEventId());
             log.setRecipientEmail(recipientEmail);
             log.setSubject(subject);

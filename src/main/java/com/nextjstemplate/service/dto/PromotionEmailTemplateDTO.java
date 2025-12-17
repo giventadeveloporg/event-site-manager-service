@@ -25,6 +25,10 @@ public class PromotionEmailTemplateDTO implements Serializable {
     private String templateName;
 
     @NotNull
+    @Size(max = 160)
+    private String templateType;
+
+    @NotNull
     @Size(max = 500)
     private String subject;
 
@@ -94,6 +98,14 @@ public class PromotionEmailTemplateDTO implements Serializable {
 
     public void setTemplateName(String templateName) {
         this.templateName = templateName;
+    }
+
+    public String getTemplateType() {
+        return templateType;
+    }
+
+    public void setTemplateType(String templateType) {
+        this.templateType = templateType;
     }
 
     public String getSubject() {
@@ -250,6 +262,9 @@ public class PromotionEmailTemplateDTO implements Serializable {
             getEventId() +
             ", templateName='" +
             getTemplateName() +
+            "'" +
+            ", templateType='" +
+            getTemplateType() +
             "'" +
             ", subject='" +
             getSubject() +

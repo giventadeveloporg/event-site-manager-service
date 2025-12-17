@@ -47,6 +47,11 @@ public class PromotionEmailTemplate implements Serializable {
     private String templateName;
 
     @NotNull
+    @Size(max = 160)
+    @Column(name = "template_type", length = 160, nullable = false)
+    private String templateType;
+
+    @NotNull
     @Size(max = 500)
     @Column(name = "subject", length = 500, nullable = false)
     private String subject;
@@ -173,6 +178,19 @@ public class PromotionEmailTemplate implements Serializable {
 
     public void setTemplateName(String templateName) {
         this.templateName = templateName;
+    }
+
+    public String getTemplateType() {
+        return this.templateType;
+    }
+
+    public PromotionEmailTemplate templateType(String templateType) {
+        this.setTemplateType(templateType);
+        return this;
+    }
+
+    public void setTemplateType(String templateType) {
+        this.templateType = templateType;
     }
 
     public String getSubject() {
@@ -401,6 +419,9 @@ public class PromotionEmailTemplate implements Serializable {
             getEventId() +
             ", templateName='" +
             getTemplateName() +
+            "'" +
+            ", templateType='" +
+            getTemplateType() +
             "'" +
             ", subject='" +
             getSubject() +

@@ -27,6 +27,8 @@ public class PromotionEmailTemplateCriteria implements Serializable, Criteria {
 
     private StringFilter templateName;
 
+    private StringFilter templateType;
+
     private StringFilter subject;
 
     private StringFilter promotionCode;
@@ -50,6 +52,7 @@ public class PromotionEmailTemplateCriteria implements Serializable, Criteria {
         this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
         this.eventId = other.eventId == null ? null : other.eventId.copy();
         this.templateName = other.templateName == null ? null : other.templateName.copy();
+        this.templateType = other.templateType == null ? null : other.templateType.copy();
         this.subject = other.subject == null ? null : other.subject.copy();
         this.promotionCode = other.promotionCode == null ? null : other.promotionCode.copy();
         this.discountCodeId = other.discountCodeId == null ? null : other.discountCodeId.copy();
@@ -123,6 +126,21 @@ public class PromotionEmailTemplateCriteria implements Serializable, Criteria {
 
     public void setTemplateName(StringFilter templateName) {
         this.templateName = templateName;
+    }
+
+    public StringFilter getTemplateType() {
+        return templateType;
+    }
+
+    public StringFilter templateType() {
+        if (templateType == null) {
+            templateType = new StringFilter();
+        }
+        return templateType;
+    }
+
+    public void setTemplateType(StringFilter templateType) {
+        this.templateType = templateType;
     }
 
     public StringFilter getSubject() {
@@ -252,6 +270,7 @@ public class PromotionEmailTemplateCriteria implements Serializable, Criteria {
             Objects.equals(tenantId, that.tenantId) &&
             Objects.equals(eventId, that.eventId) &&
             Objects.equals(templateName, that.templateName) &&
+            Objects.equals(templateType, that.templateType) &&
             Objects.equals(subject, that.subject) &&
             Objects.equals(promotionCode, that.promotionCode) &&
             Objects.equals(discountCodeId, that.discountCodeId) &&
@@ -270,6 +289,7 @@ public class PromotionEmailTemplateCriteria implements Serializable, Criteria {
             tenantId,
             eventId,
             templateName,
+            templateType,
             subject,
             promotionCode,
             discountCodeId,
@@ -289,6 +309,7 @@ public class PromotionEmailTemplateCriteria implements Serializable, Criteria {
             (tenantId != null ? "tenantId=" + tenantId + ", " : "") +
             (eventId != null ? "eventId=" + eventId + ", " : "") +
             (templateName != null ? "templateName=" + templateName + ", " : "") +
+            (templateType != null ? "templateType=" + templateType + ", " : "") +
             (subject != null ? "subject=" + subject + ", " : "") +
             (promotionCode != null ? "promotionCode=" + promotionCode + ", " : "") +
             (discountCodeId != null ? "discountCodeId=" + discountCodeId + ", " : "") +
