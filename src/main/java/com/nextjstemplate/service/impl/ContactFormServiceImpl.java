@@ -97,10 +97,32 @@ public class ContactFormServiceImpl implements ContactFormService {
             headers.put("Reply-To", replyToEmail);
         }
         try {
+            // 1) Primary email to tenant / configured contact address (includes tenant header/footer)
             emailSenderService.sendEmail(fromEmail, toEmail, subject, bodyHtml, true, headers);
             result.put("success", true);
             result.put("messageId", "contact-form-" + System.currentTimeMillis());
             log.info("Contact form email sent successfully from {} to {}", fromEmail, toEmail);
+
+            // 2) Optional confirmation email back to the sender address from the frontend
+            //    Use the same tenant header/footer/footer fallback behavior as other email flows.
+            String visitorEmail = contactFormDTO.getFromEmail();
+            if (visitorEmail != null && !visitorEmail.isEmpty()) {
+                try {
+                    String confirmationSubject = "We received your message";
+                    String confirmationBodyHtml = buildConfirmationEmailBody(contactFormDTO, tenantId);
+
+                    log.debug("Sending contact form confirmation email with branding to {}", visitorEmail);
+                    emailSenderService.sendEmail(fromEmail, visitorEmail, confirmationSubject, confirmationBodyHtml, true, new HashMap<>());
+                } catch (Exception confirmationEx) {
+                    // Do not fail the main request if confirmation email fails
+                    log.warn(
+                        "Failed to send confirmation contact form email to {}: {}",
+                        visitorEmail,
+                        confirmationEx.getMessage(),
+                        confirmationEx
+                    );
+                }
+            }
         } catch (Exception e) {
             log.error("Failed to send contact form email from {} to {}: {}", fromEmail, toEmail, e.getMessage(), e);
             result.put("success", false);
@@ -271,6 +293,80 @@ public class ContactFormServiceImpl implements ContactFormService {
         String tenantFooterHtml = getTenantEmailFooterHtml(tenantId);
         if (tenantFooterHtml != null && !tenantFooterHtml.isEmpty()) {
             html.append("<div>").append(tenantFooterHtml).append("</div>");
+        }
+
+        html.append("</body></html>");
+
+        return html.toString();
+    }
+
+    /**
+     * Build confirmation email body with the same tenant header/footer behavior used by other email flows.
+     *
+     * @param contactFormDTO the contact form data
+     * @param tenantId the tenant ID
+     * @return HTML formatted confirmation email body
+     */
+    private String buildConfirmationEmailBody(ContactFormDTO contactFormDTO, String tenantId) {
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html><html><head><meta charset='UTF-8'><style>");
+        html.append("body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }");
+        html.append(".container { max-width: 600px; margin: 0 auto; padding: 20px; }");
+        html.append(".header { background-color: #f4f4f4; padding: 20px; border-radius: 5px; margin-bottom: 20px; }");
+        html.append(".content { padding: 20px; background-color: #ffffff; border: 1px solid #ddd; border-radius: 5px; }");
+        html.append(".field { margin-bottom: 15px; }");
+        html.append(".label { font-weight: bold; color: #555; }");
+        html.append(".value { margin-top: 5px; padding: 10px; background-color: #f9f9f9; border-radius: 3px; }");
+        html.append(".message { white-space: pre-wrap; }");
+        html.append("</style></head><body>");
+
+        // Add tenant header image if available (same mechanism as promotion emails)
+        String headerImageUrl = getTenantEmailHeaderImageUrl(tenantId);
+        log.debug("[Confirmation] Retrieved header image URL for tenant {}: {}", tenantId, headerImageUrl);
+        if (headerImageUrl != null && !headerImageUrl.isEmpty()) {
+            log.debug("[Confirmation] Adding header image to email: {}", headerImageUrl);
+            html.append("<div style='text-align: center; margin-bottom: 20px;'>");
+            html.append("<img src='").append(headerImageUrl).append("' alt='Header' style='max-width: 100%; height: auto;' />");
+            html.append("</div>");
+        } else {
+            log.debug("[Confirmation] No header image URL found for tenant: {}", tenantId);
+        }
+
+        html.append("<div class='container'>");
+        html.append("<div class='header'><h2>We received your message</h2></div>");
+        html.append("<div class='content'>");
+
+        html.append("<p>Thank you for contacting us. We have received your message and will get back to you soon.</p>");
+
+        html.append("<div class='field'>");
+        html.append("<div class='label'>Your Name:</div>");
+        html
+            .append("<div class='value'>")
+            .append(escapeHtml(contactFormDTO.getFirstName()))
+            .append(" ")
+            .append(escapeHtml(contactFormDTO.getLastName()))
+            .append("</div>");
+        html.append("</div>");
+
+        html.append("<div class='field'>");
+        html.append("<div class='label'>Your Email:</div>");
+        html.append("<div class='value'>").append(escapeHtml(contactFormDTO.getFromEmail())).append("</div>");
+        html.append("</div>");
+
+        html.append("<div class='field'>");
+        html.append("<div class='label'>Your Message:</div>");
+        html.append("<div class='value message'>").append(escapeHtml(contactFormDTO.getMessageBody())).append("</div>");
+        html.append("</div>");
+
+        html.append("</div></div>");
+
+        // Add tenant email footer HTML if available
+        String tenantFooterHtml = getTenantEmailFooterHtml(tenantId);
+        if (tenantFooterHtml != null && !tenantFooterHtml.isEmpty()) {
+            log.debug("[Confirmation] Adding tenant footer HTML for tenant {}", tenantId);
+            html.append("<div>").append(tenantFooterHtml).append("</div>");
+        } else {
+            log.debug("[Confirmation] No tenant footer HTML configured for tenant {}", tenantId);
         }
 
         html.append("</body></html>");

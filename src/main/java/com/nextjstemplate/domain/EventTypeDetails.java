@@ -20,7 +20,7 @@ public class EventTypeDetails implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
     @Column(name = "id")
     private Long id;
 

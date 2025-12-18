@@ -13,7 +13,7 @@ public class DateTimeWrapper implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
     private Long id;
 
     @Column(name = "instant")
