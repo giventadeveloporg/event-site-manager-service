@@ -31,6 +31,8 @@ public class TenantEmailAddressCriteria implements Serializable, Criteria {
 
     private StringFilter displayName;
 
+    private StringFilter copyToEmailAddress;
+
     private BooleanFilter isActive;
 
     private BooleanFilter isDefault;
@@ -51,6 +53,7 @@ public class TenantEmailAddressCriteria implements Serializable, Criteria {
         this.emailAddress = other.optionalEmailAddress().map(StringFilter::copy).orElse(null);
         this.emailType = other.optionalEmailType().map(StringFilter::copy).orElse(null);
         this.displayName = other.optionalDisplayName().map(StringFilter::copy).orElse(null);
+        this.copyToEmailAddress = other.optionalCopyToEmailAddress().map(StringFilter::copy).orElse(null);
         this.isActive = other.optionalIsActive().map(BooleanFilter::copy).orElse(null);
         this.isDefault = other.optionalIsDefault().map(BooleanFilter::copy).orElse(null);
         this.description = other.optionalDescription().map(StringFilter::copy).orElse(null);
@@ -157,6 +160,25 @@ public class TenantEmailAddressCriteria implements Serializable, Criteria {
 
     public void setDisplayName(StringFilter displayName) {
         this.displayName = displayName;
+    }
+
+    public StringFilter getCopyToEmailAddress() {
+        return copyToEmailAddress;
+    }
+
+    public Optional<StringFilter> optionalCopyToEmailAddress() {
+        return Optional.ofNullable(copyToEmailAddress);
+    }
+
+    public StringFilter copyToEmailAddress() {
+        if (copyToEmailAddress == null) {
+            setCopyToEmailAddress(new StringFilter());
+        }
+        return copyToEmailAddress;
+    }
+
+    public void setCopyToEmailAddress(StringFilter copyToEmailAddress) {
+        this.copyToEmailAddress = copyToEmailAddress;
     }
 
     public BooleanFilter getIsActive() {
@@ -288,6 +310,7 @@ public class TenantEmailAddressCriteria implements Serializable, Criteria {
             Objects.equals(emailAddress, that.emailAddress) &&
             Objects.equals(emailType, that.emailType) &&
             Objects.equals(displayName, that.displayName) &&
+            Objects.equals(copyToEmailAddress, that.copyToEmailAddress) &&
             Objects.equals(isActive, that.isActive) &&
             Objects.equals(isDefault, that.isDefault) &&
             Objects.equals(description, that.description) &&
@@ -305,6 +328,7 @@ public class TenantEmailAddressCriteria implements Serializable, Criteria {
             emailAddress,
             emailType,
             displayName,
+            copyToEmailAddress,
             isActive,
             isDefault,
             description,
@@ -323,6 +347,7 @@ public class TenantEmailAddressCriteria implements Serializable, Criteria {
             optionalEmailAddress().map(f -> "emailAddress=" + f + ", ").orElse("") +
             optionalEmailType().map(f -> "emailType=" + f + ", ").orElse("") +
             optionalDisplayName().map(f -> "displayName=" + f + ", ").orElse("") +
+            optionalCopyToEmailAddress().map(f -> "copyToEmailAddress=" + f + ", ").orElse("") +
             optionalIsActive().map(f -> "isActive=" + f + ", ").orElse("") +
             optionalIsDefault().map(f -> "isDefault=" + f + ", ").orElse("") +
             optionalDescription().map(f -> "description=" + f + ", ").orElse("") +

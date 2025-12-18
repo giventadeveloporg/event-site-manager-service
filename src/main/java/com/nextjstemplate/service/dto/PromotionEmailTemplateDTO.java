@@ -17,7 +17,6 @@ public class PromotionEmailTemplateDTO implements Serializable {
     @Size(max = 255)
     private String tenantId;
 
-    @NotNull
     private Long eventId;
 
     @NotNull

@@ -1,5 +1,6 @@
 package com.nextjstemplate.service.dto;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Objects;
@@ -16,6 +17,10 @@ public class PromotionEmailTemplateFormDTO implements Serializable {
     @NotNull
     @Size(max = 255)
     private String templateName;
+
+    @NotNull
+    @Size(max = 160)
+    private String templateType;
 
     @NotNull
     @Size(max = 500)
@@ -175,5 +180,13 @@ public class PromotionEmailTemplateFormDTO implements Serializable {
             "'" +
             "}"
         );
+    }
+
+    public String getTemplateType() {
+        return templateType;
+    }
+
+    public void setTemplateType(String templateType) {
+        this.templateType = templateType;
     }
 }

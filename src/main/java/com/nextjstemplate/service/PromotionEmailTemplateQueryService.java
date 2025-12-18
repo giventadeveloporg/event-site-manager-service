@@ -102,6 +102,10 @@ public class PromotionEmailTemplateQueryService extends QueryService<PromotionEm
                 specification =
                     specification.and(buildStringSpecification(criteria.getTemplateName(), PromotionEmailTemplate_.templateName));
             }
+            if (criteria.getTemplateType() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getTemplateType(), PromotionEmailTemplate_.templateType));
+            }
             if (criteria.getSubject() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getSubject(), PromotionEmailTemplate_.subject));
             }

@@ -123,6 +123,10 @@ public class TenantEmailAddressQueryService extends QueryService<TenantEmailAddr
             if (criteria.getDisplayName() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getDisplayName(), TenantEmailAddress_.displayName));
             }
+            if (criteria.getCopyToEmailAddress() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getCopyToEmailAddress(), TenantEmailAddress_.copyToEmailAddress));
+            }
             if (criteria.getIsActive() != null) {
                 specification = specification.and(buildSpecification(criteria.getIsActive(), TenantEmailAddress_.isActive));
             }

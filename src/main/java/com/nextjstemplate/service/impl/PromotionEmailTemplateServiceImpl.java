@@ -54,13 +54,21 @@ public class PromotionEmailTemplateServiceImpl implements PromotionEmailTemplate
     public PromotionEmailTemplateDTO createTemplate(PromotionEmailTemplateFormDTO formDTO, String tenantId, Long userId) {
         log.debug("Request to create PromotionEmailTemplate: {}", formDTO);
 
-        // Validate event exists and belongs to tenant
-        EventDetails event = eventRepository
-            .findById(formDTO.getEventId())
-            .orElseThrow(() -> new EntityNotFoundException("Event not found: " + formDTO.getEventId()));
+        // Normalize eventId: treat null or 0 as "no event" (e.g. newsletter template)
+        Long rawEventId = formDTO.getEventId();
+        Long eventIdForTemplate = null;
+        EventDetails event = null;
+        if (rawEventId != null && rawEventId > 0) {
+            final Long lookupEventId = rawEventId;
+            // Validate event exists and belongs to tenant
+            event =
+                eventRepository.findById(lookupEventId).orElseThrow(() -> new EntityNotFoundException("Event not found: " + lookupEventId));
 
-        if (!event.getTenantId().equals(tenantId)) {
-            throw new IllegalArgumentException("Event does not belong to the specified tenant");
+            if (!event.getTenantId().equals(tenantId)) {
+                throw new IllegalArgumentException("Event does not belong to the specified tenant");
+            }
+
+            eventIdForTemplate = lookupEventId;
         }
 
         // Validate template name uniqueness
@@ -85,7 +93,14 @@ public class PromotionEmailTemplateServiceImpl implements PromotionEmailTemplate
         // Create entity from form DTO
         PromotionEmailTemplate template = new PromotionEmailTemplate();
         template.setTenantId(tenantId);
-        template.setEventId(formDTO.getEventId());
+        template.setEventId(eventIdForTemplate);
+
+        // Derive template type if not explicitly provided elsewhere:
+        // - If there's a real event (eventIdForTemplate != null) treat as EVENT_PROMOTION
+        // - If no event (newsletter) treat as NEWS_LETTER
+        String derivedTemplateType = (eventIdForTemplate == null) ? "NEWS_LETTER" : "EVENT_PROMOTION";
+        template.setTemplateType(derivedTemplateType);
+
         template.setTemplateName(formDTO.getTemplateName());
         template.setSubject(formDTO.getSubject());
         template.setFromEmail(formDTO.getFromEmail());

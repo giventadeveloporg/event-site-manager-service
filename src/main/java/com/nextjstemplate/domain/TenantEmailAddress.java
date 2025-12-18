@@ -58,6 +58,11 @@ public class TenantEmailAddress implements Serializable {
     @Column(name = "is_default", nullable = false)
     private Boolean isDefault = false;
 
+    @NotNull
+    @Size(max = 255)
+    @Column(name = "copy_to_email_address", length = 255, nullable = false)
+    private String copyToEmailAddress;
+
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
@@ -183,6 +188,19 @@ public class TenantEmailAddress implements Serializable {
         this.isDefault = isDefault;
     }
 
+    public String getCopyToEmailAddress() {
+        return this.copyToEmailAddress;
+    }
+
+    public TenantEmailAddress copyToEmailAddress(String copyToEmailAddress) {
+        this.setCopyToEmailAddress(copyToEmailAddress);
+        return this;
+    }
+
+    public void setCopyToEmailAddress(String copyToEmailAddress) {
+        this.copyToEmailAddress = copyToEmailAddress;
+    }
+
     public String getDescription() {
         return this.description;
     }
@@ -251,6 +269,7 @@ public class TenantEmailAddress implements Serializable {
             ", displayName='" + getDisplayName() + "'" +
             ", isActive=" + getIsActive() +
             ", isDefault=" + getIsDefault() +
+            ", copyToEmailAddress='" + getCopyToEmailAddress() + "'" +
             ", description='" + getDescription() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +

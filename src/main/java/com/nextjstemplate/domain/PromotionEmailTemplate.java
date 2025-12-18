@@ -37,8 +37,7 @@ public class PromotionEmailTemplate implements Serializable {
     @Column(name = "tenant_id", length = 255, nullable = false)
     private String tenantId;
 
-    @NotNull
-    @Column(name = "event_id", nullable = false)
+    @Column(name = "event_id")
     private Long eventId;
 
     @NotNull
