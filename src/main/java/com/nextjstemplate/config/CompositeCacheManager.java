@@ -63,6 +63,9 @@ public class CompositeCacheManager implements CacheManager {
     @Value("${cache.ttl.clerkUsers:300}")
     private long clerkUsersTtl; // Short TTL for external API responses
 
+    @Value("${cache.ttl.tenantEmailAddresses:3600}")
+    private long tenantEmailAddressesTtl;
+
     @Value("${cache.maxSize:1000}")
     private int maxCacheSize;
 
@@ -81,7 +84,8 @@ public class CompositeCacheManager implements CacheManager {
             createCache("eventTicketTransactions", eventTicketTransactionsTtl),
             createCache("tenantSettings", tenantSettingsTtl),
             createCache("eventTypeDetails", eventTypeDetailsTtl),
-            createCache("clerkUsers", clerkUsersTtl)
+            createCache("clerkUsers", clerkUsersTtl),
+            createCache("tenantEmailAddresses", tenantEmailAddressesTtl)
         );
 
         // Populate cache map for quick lookup

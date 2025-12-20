@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +40,7 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
     }
 
     @Override
+    @CacheEvict(value = "tenantEmailAddresses", allEntries = true)
     public TenantEmailAddressDTO save(TenantEmailAddressDTO tenantEmailAddressDTO) {
         log.debug("Request to save TenantEmailAddress : {}", tenantEmailAddressDTO);
 
@@ -79,6 +82,7 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
     }
 
     @Override
+    @CacheEvict(value = "tenantEmailAddresses", allEntries = true)
     public TenantEmailAddressDTO update(TenantEmailAddressDTO tenantEmailAddressDTO) {
         log.debug("Request to update TenantEmailAddress : {}", tenantEmailAddressDTO);
 
@@ -111,6 +115,7 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
     }
 
     @Override
+    @CacheEvict(value = "tenantEmailAddresses", allEntries = true)
     public Optional<TenantEmailAddressDTO> partialUpdate(TenantEmailAddressDTO tenantEmailAddressDTO) {
         log.debug("Request to partially update TenantEmailAddress : {}", tenantEmailAddressDTO);
 
@@ -157,6 +162,7 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
     }
 
     @Override
+    @CacheEvict(value = "tenantEmailAddresses", allEntries = true)
     public void delete(Long id) {
         log.debug("Request to delete TenantEmailAddress : {}", id);
         tenantEmailAddressRepository.deleteById(id);
@@ -164,6 +170,7 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "tenantEmailAddresses", key = "'tenantId:' + #tenantId", unless = "#result == null || #result.isEmpty()")
     public List<TenantEmailAddressDTO> findByTenantId(String tenantId) {
         log.debug("Request to get TenantEmailAddresses by tenantId : {}", tenantId);
         return tenantEmailAddressRepository
@@ -175,6 +182,11 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(
+        value = "tenantEmailAddresses",
+        key = "'tenantId:' + #tenantId + ':isActive:' + #isActive",
+        unless = "#result == null || #result.isEmpty()"
+    )
     public List<TenantEmailAddressDTO> findByTenantIdAndIsActive(String tenantId, Boolean isActive) {
         log.debug("Request to get TenantEmailAddresses by tenantId {} and isActive : {}", tenantId, isActive);
         return tenantEmailAddressRepository
