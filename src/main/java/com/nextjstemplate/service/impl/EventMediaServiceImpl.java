@@ -7,6 +7,7 @@ import com.nextjstemplate.domain.EventProgramDirectors;
 import com.nextjstemplate.domain.EventSponsors;
 import com.nextjstemplate.domain.EventSponsorsJoin;
 import com.nextjstemplate.domain.ExecutiveCommitteeTeamMember;
+import com.nextjstemplate.domain.GalleryAlbum;
 import com.nextjstemplate.domain.PromotionEmailTemplate;
 import com.nextjstemplate.repository.EventDetailsRepository;
 import com.nextjstemplate.repository.EventFeaturedPerformersRepository;
@@ -15,6 +16,7 @@ import com.nextjstemplate.repository.EventProgramDirectorsRepository;
 import com.nextjstemplate.repository.EventSponsorsJoinRepository;
 import com.nextjstemplate.repository.EventSponsorsRepository;
 import com.nextjstemplate.repository.ExecutiveCommitteeTeamMemberRepository;
+import com.nextjstemplate.repository.GalleryAlbumRepository;
 import com.nextjstemplate.repository.PromotionEmailTemplateRepository;
 import com.nextjstemplate.service.EventDetailsService;
 import com.nextjstemplate.service.EventMediaService;
@@ -83,6 +85,8 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     private final FocusGroupService focusGroupService;
 
+    private final GalleryAlbumRepository galleryAlbumRepository;
+
     @Autowired
     public EventMediaServiceImpl(
         EventMediaRepository eventMediaRepository,
@@ -98,7 +102,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         PromotionEmailTemplateRepository promotionEmailTemplateRepository,
         PromotionEmailTemplateService promotionEmailTemplateService,
         PromotionEmailTemplateMapper promotionEmailTemplateMapper,
-        FocusGroupService focusGroupService
+        FocusGroupService focusGroupService,
+        GalleryAlbumRepository galleryAlbumRepository
     ) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
@@ -114,12 +119,16 @@ public class EventMediaServiceImpl implements EventMediaService {
         this.promotionEmailTemplateService = promotionEmailTemplateService;
         this.promotionEmailTemplateMapper = promotionEmailTemplateMapper;
         this.focusGroupService = focusGroupService;
+        this.galleryAlbumRepository = galleryAlbumRepository;
     }
 
     @Override
     @CacheEvict(value = "eventMedia", allEntries = true)
     public EventMediaDTO save(EventMediaDTO eventMediaDTO) {
         log.debug("Request to save EventMedia : {}", eventMediaDTO);
+
+        // Validate that event_id and album_id are mutually exclusive
+        validateEventAlbumMutuallyExclusive(eventMediaDTO.getEventId(), eventMediaDTO.getAlbumId());
 
         // CRITICAL: For child events, if isHomePageHeroImage is true and one already exists, update it instead of creating new
         if (
@@ -156,6 +165,19 @@ public class EventMediaServiceImpl implements EventMediaService {
         }
 
         EventMedia eventMedia = eventMediaMapper.toEntity(eventMediaDTO);
+
+        // Set album relationship if albumId is provided
+        if (eventMediaDTO.getAlbumId() != null) {
+            GalleryAlbum album = galleryAlbumRepository
+                .findById(eventMediaDTO.getAlbumId())
+                .orElseThrow(() -> new EntityNotFoundException("Album not found: " + eventMediaDTO.getAlbumId()));
+            eventMedia.setAlbum(album);
+            // Ensure eventId is null when albumId is set
+            eventMedia.setEventId(null);
+        } else {
+            eventMedia.setAlbum(null);
+        }
+
         eventMedia = eventMediaRepository.save(eventMedia);
 
         // CRITICAL: Replicate homepage hero image to child events if this is a parent event
@@ -180,6 +202,9 @@ public class EventMediaServiceImpl implements EventMediaService {
     @CacheEvict(value = "eventMedia", allEntries = true)
     public EventMediaDTO update(EventMediaDTO eventMediaDTO) {
         log.debug("Request to update EventMedia : {}", eventMediaDTO);
+
+        // Validate that event_id and album_id are mutually exclusive
+        validateEventAlbumMutuallyExclusive(eventMediaDTO.getEventId(), eventMediaDTO.getAlbumId());
 
         // Check if isHomePageHeroImage is being set to true
         boolean isHomePageHeroImageBeingSet = eventMediaDTO.getIsHomePageHeroImage() != null && eventMediaDTO.getIsHomePageHeroImage();
@@ -219,6 +244,19 @@ public class EventMediaServiceImpl implements EventMediaService {
         }
 
         EventMedia eventMedia = eventMediaMapper.toEntity(eventMediaDTO);
+
+        // Set album relationship if albumId is provided
+        if (eventMediaDTO.getAlbumId() != null) {
+            GalleryAlbum album = galleryAlbumRepository
+                .findById(eventMediaDTO.getAlbumId())
+                .orElseThrow(() -> new EntityNotFoundException("Album not found: " + eventMediaDTO.getAlbumId()));
+            eventMedia.setAlbum(album);
+            // Ensure eventId is null when albumId is set
+            eventMedia.setEventId(null);
+        } else {
+            eventMedia.setAlbum(null);
+        }
+
         eventMedia = eventMediaRepository.save(eventMedia);
 
         // CRITICAL: Replicate homepage hero image to child events if this is a parent event and isHomePageHeroImage is true
@@ -243,6 +281,9 @@ public class EventMediaServiceImpl implements EventMediaService {
     public Optional<EventMediaDTO> partialUpdate(EventMediaDTO eventMediaDTO) {
         log.debug("Request to partially update EventMedia : {}", eventMediaDTO);
 
+        // Validate that event_id and album_id are mutually exclusive
+        validateEventAlbumMutuallyExclusive(eventMediaDTO.getEventId(), eventMediaDTO.getAlbumId());
+
         // Check if isHomePageHeroImage is being set to true
         boolean isHomePageHeroImageBeingSet = eventMediaDTO.getIsHomePageHeroImage() != null && eventMediaDTO.getIsHomePageHeroImage();
 
@@ -252,6 +293,19 @@ public class EventMediaServiceImpl implements EventMediaService {
                 .findById(eventMediaDTO.getId())
                 .map(existingEventMedia -> {
                     eventMediaMapper.partialUpdate(existingEventMedia, eventMediaDTO);
+
+                    // Set album relationship if albumId is provided
+                    if (eventMediaDTO.getAlbumId() != null) {
+                        GalleryAlbum album = galleryAlbumRepository
+                            .findById(eventMediaDTO.getAlbumId())
+                            .orElseThrow(() -> new EntityNotFoundException("Album not found: " + eventMediaDTO.getAlbumId()));
+                        existingEventMedia.setAlbum(album);
+                        // Ensure eventId is null when albumId is set
+                        existingEventMedia.setEventId(null);
+                    } else if (eventMediaDTO.getEventId() != null) {
+                        // If eventId is being set and albumId is not provided, clear the album association
+                        existingEventMedia.setAlbum(null);
+                    }
 
                     return existingEventMedia;
                 })
@@ -2028,6 +2082,22 @@ public class EventMediaServiceImpl implements EventMediaService {
         } catch (Exception e) {
             log.error("Failed to replicate homepage hero image to child events for parent event {}", parentEvent.getId(), e);
             // Don't throw - parent media upload should still succeed even if replication fails
+        }
+    }
+
+    /**
+     * Validates that event_id and album_id are mutually exclusive.
+     * Media can belong to either an event OR an album, not both.
+     *
+     * @param eventId the event ID (can be null)
+     * @param albumId the album ID (can be null)
+     * @throws IllegalArgumentException if both eventId and albumId are non-null
+     */
+    private void validateEventAlbumMutuallyExclusive(Long eventId, Long albumId) {
+        if (eventId != null && albumId != null) {
+            throw new IllegalArgumentException(
+                "Media cannot belong to both an event and an album. Event ID: " + eventId + ", Album ID: " + albumId
+            );
         }
     }
 }

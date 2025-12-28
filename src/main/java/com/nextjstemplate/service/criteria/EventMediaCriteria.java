@@ -92,6 +92,8 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     private IntegerFilter priorityRanking;
 
+    private LongFilter albumId;
+
     private Boolean distinct;
 
     public EventMediaCriteria() {}
@@ -134,6 +136,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.performerId = other.performerId == null ? null : other.performerId.copy();
         this.directorId = other.directorId == null ? null : other.directorId.copy();
         this.priorityRanking = other.priorityRanking == null ? null : other.priorityRanking.copy();
+        this.albumId = other.albumId == null ? null : other.albumId.copy();
         this.distinct = other.distinct;
     }
 
@@ -653,6 +656,21 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.priorityRanking = priorityRanking;
     }
 
+    public LongFilter getAlbumId() {
+        return albumId;
+    }
+
+    public LongFilter albumId() {
+        if (albumId == null) {
+            albumId = new LongFilter();
+        }
+        return albumId;
+    }
+
+    public void setAlbumId(LongFilter albumId) {
+        this.albumId = albumId;
+    }
+
     public LongFilter getPerformerId() {
         return performerId;
     }
@@ -736,6 +754,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             Objects.equals(performerId, that.performerId) &&
             Objects.equals(directorId, that.directorId) &&
             Objects.equals(priorityRanking, that.priorityRanking) &&
+            Objects.equals(albumId, that.albumId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -778,6 +797,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             performerId,
             directorId,
             priorityRanking,
+            albumId,
             distinct
         );
     }
@@ -822,6 +842,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             (performerId != null ? "performerId=" + performerId + ", " : "") +
             (directorId != null ? "directorId=" + directorId + ", " : "") +
             (priorityRanking != null ? "priorityRanking=" + priorityRanking + ", " : "") +
+            (albumId != null ? "albumId=" + albumId + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}";
     }

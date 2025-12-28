@@ -153,6 +153,11 @@ public class EventMedia implements Serializable {
     @Column(name = "priority_ranking", nullable = false)
     private Integer priorityRanking = 0;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "album_id")
+    @JsonIgnoreProperties(value = { "createdBy" }, allowSetters = true)
+    private GalleryAlbum album;
+
     /*
      * @ManyToOne(fetch = FetchType.LAZY)
      *
@@ -624,6 +629,19 @@ public class EventMedia implements Serializable {
         this.priorityRanking = priorityRanking;
     }
 
+    public GalleryAlbum getAlbum() {
+        return this.album;
+    }
+
+    public void setAlbum(GalleryAlbum galleryAlbum) {
+        this.album = galleryAlbum;
+    }
+
+    public EventMedia album(GalleryAlbum galleryAlbum) {
+        this.setAlbum(galleryAlbum);
+        return this;
+    }
+
     /*
      * public EventDetails getEvent() {
      * return this.event;
@@ -712,6 +730,7 @@ public class EventMedia implements Serializable {
             ", performerId=" + getPerformerId() +
             ", directorId=" + getDirectorId() +
             ", priorityRanking=" + getPriorityRanking() +
+            ", album=" + (getAlbum() != null ? getAlbum().getId() : null) +
             "}";
     }
 }

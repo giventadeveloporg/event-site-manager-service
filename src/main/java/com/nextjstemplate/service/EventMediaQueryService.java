@@ -2,6 +2,7 @@ package com.nextjstemplate.service;
 
 import com.nextjstemplate.domain.*; // for static metamodels
 import com.nextjstemplate.domain.EventMedia;
+import com.nextjstemplate.domain.GalleryAlbum_;
 import com.nextjstemplate.repository.EventMediaRepository;
 import com.nextjstemplate.service.criteria.EventMediaCriteria;
 import com.nextjstemplate.service.dto.EventMediaDTO;
@@ -261,6 +262,12 @@ public class EventMediaQueryService extends QueryService<EventMedia> {
             }
             if (criteria.getDirectorId() != null) {
                 specification = specification.and(buildSpecification(criteria.getDirectorId(), EventMedia_.directorId));
+            }
+            if (criteria.getAlbumId() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getAlbumId(), root -> root.join(EventMedia_.album, JoinType.LEFT).get(GalleryAlbum_.id))
+                    );
             }
         }
         return specification;

@@ -107,6 +107,8 @@ public class EventMediaDTO implements Serializable {
     @Min(value = 0)
     private Integer priorityRanking = 0;
 
+    private Long albumId;
+
     /* private EventDetailsDTO event;
 
     private UserProfileDTO uploadedBy;*/
@@ -391,6 +393,14 @@ public class EventMediaDTO implements Serializable {
         this.priorityRanking = priorityRanking;
     }
 
+    public Long getAlbumId() {
+        return albumId;
+    }
+
+    public void setAlbumId(Long albumId) {
+        this.albumId = albumId;
+    }
+
     /*public EventDetailsDTO getEvent() {
         return event;
     }
@@ -465,6 +475,7 @@ public class EventMediaDTO implements Serializable {
             ", performerId=" + getPerformerId() +
             ", directorId=" + getDirectorId() +
             ", priorityRanking=" + getPriorityRanking() +
+            ", albumId=" + getAlbumId() +
            /* ", event=" + getEvent() +
             ", uploadedBy=" + getUploadedBy() +*/
             "}";
