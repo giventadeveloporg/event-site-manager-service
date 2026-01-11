@@ -285,6 +285,22 @@ public class UserProfile implements Serializable {
         this.email = email;
     }
 
+    /**
+     * Normalizes email by trimming whitespace and converting empty strings to null.
+     * This ensures compliance with the database check_email_format constraint
+     * which requires email to be NULL or match a regex pattern.
+     *
+     * @param email the email string to normalize
+     * @return the normalized email (trimmed, or null if empty/blank)
+     */
+    public static String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        String normalized = email.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
     public String getPhone() {
         return this.phone;
     }

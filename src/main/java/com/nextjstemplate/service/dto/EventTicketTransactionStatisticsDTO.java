@@ -2,6 +2,7 @@ package com.nextjstemplate.service.dto;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Map;
 
 public class EventTicketTransactionStatisticsDTO implements Serializable {
@@ -12,6 +13,10 @@ public class EventTicketTransactionStatisticsDTO implements Serializable {
     private BigDecimal netAmount;
     private Map<String, Integer> ticketsByStatus;
     private Map<String, BigDecimal> amountByStatus;
+
+    // Task 11: Date range support
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     public Long getEventId() {
         return eventId;
@@ -59,5 +64,22 @@ public class EventTicketTransactionStatisticsDTO implements Serializable {
 
     public void setAmountByStatus(Map<String, BigDecimal> amountByStatus) {
         this.amountByStatus = amountByStatus;
+    }
+
+    // Task 11: Date range getters and setters
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 }

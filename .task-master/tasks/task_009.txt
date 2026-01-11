@@ -1,14 +1,19 @@
 # Task ID: 9
-# Title: Create PromotionEmailSentLogDTO
+# Title: Create check-in analytics aggregation endpoint (optional)
 # Status: pending
-# Dependencies: 3 ⏱️
+# Dependencies: 1 ⏱️, 2 ⏱️, 3 ⏱️
 # Priority: medium
-# Description: Create DTO for sent log entries
+# Description: Implement the optional GET /api/event-ticket-transactions/check-in-analytics/{eventId} endpoint for pre-aggregated check-in analytics.
 # Details:
-Implement DTO with:
-- All relevant fields from PromotionEmailSentLog entity
-- Appropriate nested DTOs
-- Ensure it matches OpenAPI schema definition
+- Create new endpoint for check-in analytics aggregation
+- Support startDate and endDate query parameters
+- Calculate totalTickets, checkedInCount, notCheckedInCount, noShowCount
+- Calculate checkInPercentage
+- Aggregate checkInsByHour data
+- Aggregate checkInsByTicketType data
+- Determine peakCheckInTime and averageCheckInTime
+- Filter by date range if provided
+- Include dateRange in response
 
 # Test Strategy:
-Verify DTO serialization/deserialization works correctly with JSON.
+Send requests to the new endpoint with different date ranges and verify the response contains correctly aggregated check-in analytics data.

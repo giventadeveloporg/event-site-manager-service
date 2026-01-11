@@ -1,14 +1,16 @@
 # Task ID: 12
-# Title: Implement PromotionEmailSentLogService
+# Title: Add database indexes for performance optimization
 # Status: pending
-# Dependencies: 3 ⏱️, 5 ⏱️, 9 ⏱️
-# Priority: medium
-# Description: Create service for querying email logs with filtering capabilities
+# Dependencies: None
+# Priority: low
+# Description: Add recommended database indexes to improve query performance for check-in and sales analytics.
 # Details:
-Implement service with methods:
-- listLogs(criteria, tenantId) - List logs with filtering
-- getLog(id, tenantId) - Get log entry by ID
-- getEmailStatistics(eventId, tenantId) - Get email statistics (optional)
+- Create index on (event_id, check_in_status) for check-in status filtering
+- Create index on (event_id, check_in_time) for check-in time filtering
+- Create composite index on (event_id, check_in_status, check_in_time) for check-in queries
+- Create index on (event_id, purchase_date) for sales analytics
+- Test query performance before and after adding indexes
+- Document performance improvements
 
 # Test Strategy:
-Test query methods with various filter combinations. Verify tenant isolation works correctly.
+Measure query execution time before and after adding indexes to verify performance improvements.

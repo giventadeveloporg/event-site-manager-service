@@ -1,15 +1,15 @@
 # Task ID: 1
-# Title: Create Database Migration Script
+# Title: Verify existing API filter support for check-in status
 # Status: pending
 # Dependencies: None
 # Priority: high
-# Description: Create SQL migration script to add promotion_email_template and promotion_email_sent_log tables
+# Description: Test if the GET /api/event-ticket-transactions endpoint supports filtering by checkInStatus.equals parameter.
 # Details:
-Create migration script that follows existing project conventions to add two new tables:
-- promotion_email_template - Stores email templates with appropriate columns
-- promotion_email_sent_log - Tracks sent emails
-- Define foreign keys, indexes, and add table comments for documentation
-- Follow reference in documentation/promotion_email_redesign/migrations/001_create_promotion_tables.sql
+- Test the endpoint with checkInStatus.equals=CHECKED_IN query parameter
+- Verify that results only include transactions with check_in_status='CHECKED_IN'
+- Document the results and response format
+- Test with various values (NOT_CHECKED_IN, CHECKED_IN, etc.)
+- Share findings with the frontend team
 
 # Test Strategy:
-Verify that the migration script runs without errors and creates the tables with correct structure, constraints, and indexes.
+Send requests to the endpoint with different checkInStatus.equals values and verify the response contains only matching records by comparing with direct database queries.

@@ -381,7 +381,7 @@ public class OAuthController {
                 // Update basic info if changed (email, name might have been updated in Clerk)
                 if (email != null && !email.equals(userProfile.getEmail())) {
                     log.info("Updating email for user {} from {} to {}", userProfile.getId(), userProfile.getEmail(), email);
-                    userProfile.setEmail(email);
+                    userProfile.setEmail(UserProfile.normalizeEmail(email));
                 }
                 if (firstName != null && !firstName.equals(userProfile.getFirstName())) {
                     userProfile.setFirstName(firstName);
@@ -404,7 +404,7 @@ public class OAuthController {
 
                 UserProfile newUser = new UserProfile();
                 newUser.setClerkUserId(clerkUserId);
-                newUser.setEmail(email);
+                newUser.setEmail(UserProfile.normalizeEmail(email));
                 newUser.setFirstName(firstName);
                 newUser.setLastName(lastName);
                 // CRITICAL: Use clerkUserId as userId so frontend lookups work

@@ -1,16 +1,16 @@
 # Task ID: 5
-# Title: Create PromotionEmailSentLogRepository
+# Title: Verify check-in update endpoint functionality
 # Status: pending
-# Dependencies: 3 ⏱️
-# Priority: medium
-# Description: Create Spring Data JPA repository interface for PromotionEmailSentLog with custom query methods
+# Dependencies: None
+# Priority: high
+# Description: Test if the PATCH /api/event-ticket-transactions/{id} endpoint correctly updates check-in related fields.
 # Details:
-Implement repository interface with:
-- Standard CRUD operations
-- findByTenantIdAndEventId - Find logs by event
-- findByTenantIdAndTemplateId - Find logs by template
-- findByTenantIdAndSentAtBetween - Find logs by date range
-- findByTenantIdAndEmailStatus - Find logs by status
+- Test updating checkInStatus to 'CHECKED_IN'
+- Test updating checkInTime to current timestamp
+- Test updating numberOfGuestsCheckedIn
+- Verify all fields update correctly
+- Document the response format
+- Share findings with the frontend team
 
 # Test Strategy:
-Test repository methods with integration tests to verify queries return expected results.
+Send PATCH requests with different check-in related field updates and verify the database is updated correctly with the new values.

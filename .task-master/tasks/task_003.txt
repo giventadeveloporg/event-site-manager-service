@@ -1,15 +1,16 @@
 # Task ID: 3
-# Title: Create PromotionEmailSentLog Entity
+# Title: Verify combined filter support with pagination and sorting
 # Status: pending
-# Dependencies: 1 ⏱️
+# Dependencies: 1 ⏱️, 2 ⏱️
 # Priority: high
-# Description: Create JPA entity class for promotion_email_sent_log table with all required fields and relationships
+# Description: Test if the GET /api/event-ticket-transactions endpoint supports combining multiple filters with pagination and sorting.
 # Details:
-Implement JPA entity class with:
-- All table columns mapped to entity fields
-- Define relationships to PromotionEmailTemplate, EventDetails, DiscountCode, UserProfile
-- Add validation annotations
-- Create enum for emailStatus (SENT, FAILED, BOUNCED)
+- Test the endpoint with combined filters: eventId.equals, checkInStatus.equals, checkInTime range
+- Test with pagination parameters (page, size)
+- Test with sorting parameter (sort=checkInTime,desc)
+- Verify that all filters work together correctly
+- Document the results and response format
+- Share findings with the frontend team
 
 # Test Strategy:
-Test entity mapping with basic persistence tests. Verify that all fields are correctly mapped and relationships are properly defined.
+Send requests with combined filters, pagination, and sorting, then verify the response contains correctly filtered, paginated, and sorted data by comparing with direct database queries.

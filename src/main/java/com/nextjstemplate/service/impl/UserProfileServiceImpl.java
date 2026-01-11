@@ -55,6 +55,27 @@ public class UserProfileServiceImpl implements UserProfileService {
     public UserProfileDTO save(UserProfileDTO userProfileDTO) {
         log.debug("Request to save UserProfile : {}", userProfileDTO);
         UserProfile userProfile = userProfileMapper.toEntity(userProfileDTO);
+
+        // Check if this is a new user (no ID) and if a user with the same tenantId and userId already exists
+        // This prevents duplicate key constraint violations on the unique constraint ux_user_profile__tenant_user
+        if (userProfile.getId() == null && userProfile.getTenantId() != null && userProfile.getUserId() != null) {
+            Optional<UserProfile> existingUserProfile = userProfileRepository.findByUserIdAndTenantId(
+                userProfile.getUserId(),
+                userProfile.getTenantId()
+            );
+            if (existingUserProfile.isPresent()) {
+                log.debug(
+                    "Found existing UserProfile with tenantId={} and userId={}, updating instead of inserting",
+                    userProfile.getTenantId(),
+                    userProfile.getUserId()
+                );
+                UserProfile existing = existingUserProfile.orElseThrow();
+                // Merge data from DTO into existing entity
+                userProfileMapper.partialUpdate(existing, userProfileDTO);
+                userProfile = existing;
+            }
+        }
+
         if (userProfile.getUserRole() == null) {
             userProfile.setUserRole(UserRoleType.MEMBER.name()); // Set a default role
         }
@@ -63,7 +84,10 @@ public class UserProfileServiceImpl implements UserProfileService {
             userProfile.setUserStatus(UserStatusType.PENDING_APPROVAL.name()); // Set a default status
         }
 
-        // Set email subscription to true for new users with email
+        // Normalize email (trim and convert empty strings to NULL to satisfy database constraint)
+        normalizeEmail(userProfile);
+
+        // Set email subscription to true for new users with email (only if this is a truly new user)
         if (userProfile.getId() == null && userProfile.getEmail() != null && !userProfile.getEmail().trim().isEmpty()) {
             userProfile.setIsEmailSubscribed(true);
             log.debug("Set isEmailSubscribed to true for new user with email: {}", userProfile.getEmail());
@@ -82,6 +106,9 @@ public class UserProfileServiceImpl implements UserProfileService {
         log.debug("Request to update UserProfile : {}", userProfileDTO);
         UserProfile userProfile = userProfileMapper.toEntity(userProfileDTO);
 
+        // Normalize email (trim and convert empty strings to NULL to satisfy database constraint)
+        normalizeEmail(userProfile);
+
         // Generate JWT token for email subscription
         generateEmailSubscriptionTokenIfNeeded(userProfile);
 
@@ -97,6 +124,9 @@ public class UserProfileServiceImpl implements UserProfileService {
             .findById(userProfileDTO.getId())
             .map(existingUserProfile -> {
                 userProfileMapper.partialUpdate(existingUserProfile, userProfileDTO);
+
+                // Normalize email (trim and convert empty strings to NULL to satisfy database constraint)
+                normalizeEmail(existingUserProfile);
 
                 // Generate JWT token for email subscription
                 generateEmailSubscriptionTokenIfNeeded(existingUserProfile);
@@ -261,6 +291,9 @@ public class UserProfileServiceImpl implements UserProfileService {
             .stream()
             .map(userProfileMapper::toEntity)
             .peek(userProfile -> {
+                // Normalize email (trim and convert empty strings to NULL to satisfy database constraint)
+                normalizeEmail(userProfile);
+
                 if (userProfile.getUserRole() == null) {
                     userProfile.setUserRole(UserRoleType.MEMBER.name()); // Set a default role
                 }
@@ -281,6 +314,19 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         // Map saved entities back to DTOs
         return saved.stream().map(userProfileMapper::toDto).collect(Collectors.toList());
+    }
+
+    /**
+     * Helper method to normalize email field.
+     * Trims whitespace and converts empty/blank strings to NULL to satisfy database constraint.
+     * The check_email_format constraint requires email to be NULL or match a regex pattern.
+     *
+     * @param userProfile the user profile entity
+     */
+    private void normalizeEmail(UserProfile userProfile) {
+        if (userProfile != null) {
+            userProfile.setEmail(UserProfile.normalizeEmail(userProfile.getEmail()));
+        }
     }
 
     /**

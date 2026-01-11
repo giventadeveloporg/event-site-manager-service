@@ -1,23 +1,20 @@
 # Task ID: 10
-# Title: Implement PromotionEmailTemplateService
+# Title: Create sales analytics aggregation endpoint (optional)
 # Status: pending
-# Dependencies: 2 ⏱️, 4 ⏱️, 6 ⏱️, 7 ⏱️
-# Priority: high
-# Description: Create service layer for template operations with CRUD methods and business logic
+# Dependencies: 4 ⏱️
+# Priority: medium
+# Description: Implement the optional GET /api/event-ticket-transactions/sales-analytics/{eventId} endpoint for pre-aggregated sales analytics.
 # Details:
-Implement service with methods:
-- createTemplate(formDTO, tenantId, userId) - Create new template
-- updateTemplate(id, formDTO, tenantId) - Update existing template
-- getTemplate(id, tenantId) - Get template by ID
-- listTemplates(criteria, tenantId) - List templates with filtering
-- deleteTemplate(id, tenantId) - Soft delete (set isActive=false)
-- validateTemplateName(name, eventId, tenantId, excludeId) - Check uniqueness
-
-Enforce business rules:
-- Template name must be unique per event per tenant
-- Event must exist and belong to tenant
-- Discount code (if provided) must exist and belong to event
-- Auto-set createdById and updatedAt timestamps
+- Create new endpoint for sales analytics aggregation
+- Support startDate and endDate query parameters
+- Calculate totalSales, totalRevenue, netRevenue
+- Calculate totalDiscounts, totalRefunds, averageTicketPrice
+- Aggregate salesByDate data
+- Aggregate salesByTicketType data
+- Aggregate salesByPaymentMethod data
+- Filter by date range if provided
+- Include dateRange in response
+- Exclude REFUNDED and CANCELLED transactions from calculations
 
 # Test Strategy:
-Write unit tests covering all methods and business rules. Test validation logic and error handling.
+Send requests to the new endpoint with different date ranges and verify the response contains correctly aggregated sales analytics data.

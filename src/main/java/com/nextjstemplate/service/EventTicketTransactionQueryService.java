@@ -154,6 +154,9 @@ public class EventTicketTransactionQueryService extends QueryService<EventTicket
                 specification =
                     specification.and(buildRangeSpecification(criteria.getPlatformFeeAmount(), EventTicketTransaction_.platformFeeAmount));
             }
+            if (criteria.getServiceFee() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getServiceFee(), EventTicketTransaction_.serviceFee));
+            }
             if (criteria.getDiscountCodeId() != null) {
                 specification =
                     specification.and(buildRangeSpecification(criteria.getDiscountCodeId(), EventTicketTransaction_.discountCodeId));
@@ -256,6 +259,23 @@ public class EventTicketTransactionQueryService extends QueryService<EventTicket
             }
             if (criteria.getUpdatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getUpdatedAt(), EventTicketTransaction_.updatedAt));
+            }
+            if (criteria.getCheckInStatus() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getCheckInStatus(), EventTicketTransaction_.checkInStatus));
+            }
+            if (criteria.getNumberOfGuestsCheckedIn() != null) {
+                specification =
+                    specification.and(
+                        buildRangeSpecification(criteria.getNumberOfGuestsCheckedIn(), EventTicketTransaction_.numberOfGuestsCheckedIn)
+                    );
+            }
+            if (criteria.getCheckInTime() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getCheckInTime(), EventTicketTransaction_.checkInTime));
+            }
+            if (criteria.getCheckOutTime() != null) {
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getCheckOutTime(), EventTicketTransaction_.checkOutTime));
             }
         }
         return specification;

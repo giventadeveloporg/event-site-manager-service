@@ -1,21 +1,15 @@
 # Task ID: 11
-# Title: Implement PromotionEmailService
+# Title: Add date range support to statistics endpoint (optional)
 # Status: pending
-# Dependencies: 3 ⏱️, 5 ⏱️, 8 ⏱️, 10 ⏱️
-# Priority: high
-# Description: Create service for sending test and bulk emails, with logging functionality
+# Dependencies: 4 ⏱️
+# Priority: medium
+# Description: Enhance the existing GET /api/event-ticket-transactions/statistics/{eventId} endpoint to support date range filtering.
 # Details:
-Implement service with methods:
-- sendTestEmail(templateId, recipientEmail, tenantId, userId) - Send test email
-- sendBulkEmail(templateId, recipientEmails, tenantId, userId) - Send bulk emails
-- buildEmailContent(template, overrides) - Build final email content
-- logEmailSent(logEntry) - Log sent email
-
-Integration points:
-- Use existing email service infrastructure
-- Retrieve event registrants from EventAttendee/EventTicketTransaction tables
-- Handle email sending failures gracefully
-- Log all email attempts (success and failure)
+- Modify the existing statistics endpoint to accept startDate and endDate parameters
+- Filter statistics by purchase_date within the given date range
+- Include dateRange object in the response
+- Ensure backward compatibility with existing clients
+- Test with various date ranges
 
 # Test Strategy:
-Test email building logic, integration with email service, and error handling. Mock external dependencies.
+Send requests with different date ranges and verify the response contains statistics filtered by the specified date range.

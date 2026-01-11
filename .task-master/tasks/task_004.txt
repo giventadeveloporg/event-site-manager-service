@@ -1,15 +1,15 @@
 # Task ID: 4
-# Title: Create PromotionEmailTemplateRepository
+# Title: Verify statistics endpoint date range support
 # Status: pending
-# Dependencies: 2 ⏱️
+# Dependencies: None
 # Priority: high
-# Description: Create Spring Data JPA repository interface for PromotionEmailTemplate with custom query methods
+# Description: Test if the GET /api/event-ticket-transactions/statistics/{eventId} endpoint supports date range filtering.
 # Details:
-Implement repository interface with:
-- Standard CRUD operations (inherited from JpaRepository)
-- findByTenantIdAndEventId - Find templates by tenant and event
-- findByTenantIdAndIsActive - Find active templates
-- findByTenantIdAndEventIdAndTemplateName - Check uniqueness
+- Test the statistics endpoint with startDate and endDate query parameters
+- Check if the endpoint accepts ISO 8601 date format (YYYY-MM-DD)
+- Verify if the response includes data filtered by the date range
+- Document the current response format and date range support status
+- Share findings with the frontend team
 
 # Test Strategy:
-Test repository methods with integration tests to verify queries return expected results.
+Send requests to the statistics endpoint with different date range parameters and verify if the response data is correctly filtered by the specified date range.

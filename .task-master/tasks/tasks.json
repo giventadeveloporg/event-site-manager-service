@@ -2,261 +2,171 @@
   "meta": {
     "projectName": "Task Master",
     "version": "1.5.0",
-    "source": ".task-master/BACKEND_PRD.html",
+    "source": ".task-master/backend_implementation_prd.html",
     "description": "Tasks generated from PRD",
-    "totalTasksGenerated": 25,
-    "tasksIncluded": 25
+    "totalTasksGenerated": 16,
+    "tasksIncluded": 16
   },
   "tasks": [
     {
       "id": 1,
-      "title": "Create Database Migration Script",
-      "description": "Create SQL migration script to add promotion_email_template and promotion_email_sent_log tables",
+      "title": "Verify existing API filter support for check-in status",
+      "description": "Test if the GET /api/event-ticket-transactions endpoint supports filtering by checkInStatus.equals parameter.",
       "status": "pending",
       "dependencies": [],
       "priority": "high",
-      "details": "Create migration script that follows existing project conventions to add two new tables:\n- promotion_email_template - Stores email templates with appropriate columns\n- promotion_email_sent_log - Tracks sent emails\n- Define foreign keys, indexes, and add table comments for documentation\n- Follow reference in documentation/promotion_email_redesign/migrations/001_create_promotion_tables.sql",
-      "testStrategy": "Verify that the migration script runs without errors and creates the tables with correct structure, constraints, and indexes."
+      "details": "- Test the endpoint with checkInStatus.equals=CHECKED_IN query parameter\n- Verify that results only include transactions with check_in_status='CHECKED_IN'\n- Document the results and response format\n- Test with various values (NOT_CHECKED_IN, CHECKED_IN, etc.)\n- Share findings with the frontend team",
+      "testStrategy": "Send requests to the endpoint with different checkInStatus.equals values and verify the response contains only matching records by comparing with direct database queries."
     },
     {
       "id": 2,
-      "title": "Create PromotionEmailTemplate Entity",
-      "description": "Create JPA entity class for promotion_email_template table with all required fields and relationships",
-      "status": "pending",
-      "dependencies": [1],
-      "priority": "high",
-      "details": "Implement JPA entity class with:\n- All table columns mapped to entity fields (id, tenantId, eventId, templateName, subject, bodyHtml, etc.)\n- Define relationships to EventDetails, DiscountCode, UserProfile\n- Add validation annotations (NotNull, Size, etc.)\n- Implement equals/hashCode methods\n- Add audit fields handling (createdAt, updatedAt)",
-      "testStrategy": "Test entity mapping with basic persistence tests. Verify that all fields are correctly mapped and relationships are properly defined."
-    },
-    {
-      "id": 3,
-      "title": "Create PromotionEmailSentLog Entity",
-      "description": "Create JPA entity class for promotion_email_sent_log table with all required fields and relationships",
-      "status": "pending",
-      "dependencies": [1],
-      "priority": "high",
-      "details": "Implement JPA entity class with:\n- All table columns mapped to entity fields\n- Define relationships to PromotionEmailTemplate, EventDetails, DiscountCode, UserProfile\n- Add validation annotations\n- Create enum for emailStatus (SENT, FAILED, BOUNCED)",
-      "testStrategy": "Test entity mapping with basic persistence tests. Verify that all fields are correctly mapped and relationships are properly defined."
-    },
-    {
-      "id": 4,
-      "title": "Create PromotionEmailTemplateRepository",
-      "description": "Create Spring Data JPA repository interface for PromotionEmailTemplate with custom query methods",
-      "status": "pending",
-      "dependencies": [2],
-      "priority": "high",
-      "details": "Implement repository interface with:\n- Standard CRUD operations (inherited from JpaRepository)\n- findByTenantIdAndEventId - Find templates by tenant and event\n- findByTenantIdAndIsActive - Find active templates\n- findByTenantIdAndEventIdAndTemplateName - Check uniqueness",
-      "testStrategy": "Test repository methods with integration tests to verify queries return expected results."
-    },
-    {
-      "id": 5,
-      "title": "Create PromotionEmailSentLogRepository",
-      "description": "Create Spring Data JPA repository interface for PromotionEmailSentLog with custom query methods",
-      "status": "pending",
-      "dependencies": [3],
-      "priority": "medium",
-      "details": "Implement repository interface with:\n- Standard CRUD operations\n- findByTenantIdAndEventId - Find logs by event\n- findByTenantIdAndTemplateId - Find logs by template\n- findByTenantIdAndSentAtBetween - Find logs by date range\n- findByTenantIdAndEmailStatus - Find logs by status",
-      "testStrategy": "Test repository methods with integration tests to verify queries return expected results."
-    },
-    {
-      "id": 6,
-      "title": "Create PromotionEmailTemplateDTO",
-      "description": "Create DTO class for promotion email templates matching OpenAPI schema",
-      "status": "pending",
-      "dependencies": [2],
-      "priority": "high",
-      "details": "Implement DTO class with:\n- All fields from entity\n- Nested DTOs (EventDetailsDTO, DiscountCodeDTO, UserProfileDTO)\n- Ensure it matches OpenAPI schema definition",
-      "testStrategy": "Verify DTO serialization/deserialization works correctly with JSON."
-    },
-    {
-      "id": 7,
-      "title": "Create PromotionEmailTemplateFormDTO",
-      "description": "Create form DTO for template create/update operations",
-      "status": "pending",
-      "dependencies": [2],
-      "priority": "high",
-      "details": "Implement form DTO with fields:\n- eventId, templateName, subject, bodyHtml, headerImageUrl, footerImageUrl, discountCodeId, isActive\n- Add validation annotations\n- Include appropriate constructors and conversion methods",
-      "testStrategy": "Test validation rules and conversion to/from entity."
-    },
-    {
-      "id": 8,
-      "title": "Create SendPromotionEmailDTO",
-      "description": "Create DTO for email sending requests",
+      "title": "Verify existing API filter support for check-in time range",
+      "description": "Test if the GET /api/event-ticket-transactions endpoint supports filtering by checkInTime date range parameters.",
       "status": "pending",
       "dependencies": [],
       "priority": "high",
-      "details": "Implement DTO with fields:\n- templateId, recipientEmail (optional), isTestEmail, subjectOverride (optional), bodyHtmlOverride (optional)\n- Add validation annotations\n- Include appropriate constructors",
-      "testStrategy": "Test validation rules and verify it can be properly serialized/deserialized."
+      "details": "- Test the endpoint with checkInTime.greaterThanOrEqual parameter using ISO 8601 format\n- Test the endpoint with checkInTime.lessThanOrEqual parameter using ISO 8601 format\n- Test both parameters together to verify date range filtering\n- Document the results and response format\n- Share findings with the frontend team",
+      "testStrategy": "Send requests to the endpoint with various date range parameters and verify the response contains only records within the specified date range by comparing with direct database queries."
+    },
+    {
+      "id": 3,
+      "title": "Verify combined filter support with pagination and sorting",
+      "description": "Test if the GET /api/event-ticket-transactions endpoint supports combining multiple filters with pagination and sorting.",
+      "status": "pending",
+      "dependencies": [1, 2],
+      "priority": "high",
+      "details": "- Test the endpoint with combined filters: eventId.equals, checkInStatus.equals, checkInTime range\n- Test with pagination parameters (page, size)\n- Test with sorting parameter (sort=checkInTime,desc)\n- Verify that all filters work together correctly\n- Document the results and response format\n- Share findings with the frontend team",
+      "testStrategy": "Send requests with combined filters, pagination, and sorting, then verify the response contains correctly filtered, paginated, and sorted data by comparing with direct database queries."
+    },
+    {
+      "id": 4,
+      "title": "Verify statistics endpoint date range support",
+      "description": "Test if the GET /api/event-ticket-transactions/statistics/{eventId} endpoint supports date range filtering.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "- Test the statistics endpoint with startDate and endDate query parameters\n- Check if the endpoint accepts ISO 8601 date format (YYYY-MM-DD)\n- Verify if the response includes data filtered by the date range\n- Document the current response format and date range support status\n- Share findings with the frontend team",
+      "testStrategy": "Send requests to the statistics endpoint with different date range parameters and verify if the response data is correctly filtered by the specified date range."
+    },
+    {
+      "id": 5,
+      "title": "Verify check-in update endpoint functionality",
+      "description": "Test if the PATCH /api/event-ticket-transactions/{id} endpoint correctly updates check-in related fields.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "- Test updating checkInStatus to 'CHECKED_IN'\n- Test updating checkInTime to current timestamp\n- Test updating numberOfGuestsCheckedIn\n- Verify all fields update correctly\n- Document the response format\n- Share findings with the frontend team",
+      "testStrategy": "Send PATCH requests with different check-in related field updates and verify the database is updated correctly with the new values."
+    },
+    {
+      "id": 6,
+      "title": "Implement duplicate check-in validation",
+      "description": "Add validation to prevent duplicate check-ins for the same transaction.",
+      "status": "pending",
+      "dependencies": [5],
+      "priority": "high",
+      "details": "- Add validation logic to the PATCH endpoint\n- Check if transaction is already checked in (checkInStatus='CHECKED_IN')\n- Return 409 Conflict error if already checked in\n- Include appropriate error message in the response\n- Test the validation with already checked-in transactions",
+      "testStrategy": "Attempt to check in an already checked-in transaction and verify that a 409 Conflict response is returned with an appropriate error message."
+    },
+    {
+      "id": 7,
+      "title": "Implement transaction status validation for check-in",
+      "description": "Add validation to prevent check-in of REFUNDED or CANCELLED transactions.",
+      "status": "pending",
+      "dependencies": [5],
+      "priority": "high",
+      "details": "- Add validation logic to the PATCH endpoint\n- Check transaction status before allowing check-in\n- Prevent check-in if status is 'REFUNDED' or 'CANCELLED'\n- Return 422 Unprocessable Entity error for invalid status\n- Include appropriate error message in the response\n- Test the validation with refunded and cancelled transactions",
+      "testStrategy": "Attempt to check in transactions with different statuses and verify that REFUNDED and CANCELLED transactions cannot be checked in."
+    },
+    {
+      "id": 8,
+      "title": "Implement tenant validation for all endpoints",
+      "description": "Ensure all endpoints properly filter by tenantId for multi-tenant security.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "- Review all endpoints used by the QR scanner and reporting features\n- Verify that tenantId.equals filter is applied correctly\n- Ensure users can only access data for their own tenant\n- Return 403 Forbidden for cross-tenant access attempts\n- Test with different tenant IDs",
+      "testStrategy": "Send requests with different tenant IDs and verify that users can only access data for their own tenant and receive 403 Forbidden for cross-tenant access attempts."
     },
     {
       "id": 9,
-      "title": "Create PromotionEmailSentLogDTO",
-      "description": "Create DTO for sent log entries",
+      "title": "Create check-in analytics aggregation endpoint (optional)",
+      "description": "Implement the optional GET /api/event-ticket-transactions/check-in-analytics/{eventId} endpoint for pre-aggregated check-in analytics.",
       "status": "pending",
-      "dependencies": [3],
+      "dependencies": [1, 2, 3],
       "priority": "medium",
-      "details": "Implement DTO with:\n- All relevant fields from PromotionEmailSentLog entity\n- Appropriate nested DTOs\n- Ensure it matches OpenAPI schema definition",
-      "testStrategy": "Verify DTO serialization/deserialization works correctly with JSON."
+      "details": "- Create new endpoint for check-in analytics aggregation\n- Support startDate and endDate query parameters\n- Calculate totalTickets, checkedInCount, notCheckedInCount, noShowCount\n- Calculate checkInPercentage\n- Aggregate checkInsByHour data\n- Aggregate checkInsByTicketType data\n- Determine peakCheckInTime and averageCheckInTime\n- Filter by date range if provided\n- Include dateRange in response",
+      "testStrategy": "Send requests to the new endpoint with different date ranges and verify the response contains correctly aggregated check-in analytics data."
     },
     {
       "id": 10,
-      "title": "Implement PromotionEmailTemplateService",
-      "description": "Create service layer for template operations with CRUD methods and business logic",
+      "title": "Create sales analytics aggregation endpoint (optional)",
+      "description": "Implement the optional GET /api/event-ticket-transactions/sales-analytics/{eventId} endpoint for pre-aggregated sales analytics.",
       "status": "pending",
-      "dependencies": [2, 4, 6, 7],
-      "priority": "high",
-      "details": "Implement service with methods:\n- createTemplate(formDTO, tenantId, userId) - Create new template\n- updateTemplate(id, formDTO, tenantId) - Update existing template\n- getTemplate(id, tenantId) - Get template by ID\n- listTemplates(criteria, tenantId) - List templates with filtering\n- deleteTemplate(id, tenantId) - Soft delete (set isActive=false)\n- validateTemplateName(name, eventId, tenantId, excludeId) - Check uniqueness\n\nEnforce business rules:\n- Template name must be unique per event per tenant\n- Event must exist and belong to tenant\n- Discount code (if provided) must exist and belong to event\n- Auto-set createdById and updatedAt timestamps",
-      "testStrategy": "Write unit tests covering all methods and business rules. Test validation logic and error handling."
+      "dependencies": [4],
+      "priority": "medium",
+      "details": "- Create new endpoint for sales analytics aggregation\n- Support startDate and endDate query parameters\n- Calculate totalSales, totalRevenue, netRevenue\n- Calculate totalDiscounts, totalRefunds, averageTicketPrice\n- Aggregate salesByDate data\n- Aggregate salesByTicketType data\n- Aggregate salesByPaymentMethod data\n- Filter by date range if provided\n- Include dateRange in response\n- Exclude REFUNDED and CANCELLED transactions from calculations",
+      "testStrategy": "Send requests to the new endpoint with different date ranges and verify the response contains correctly aggregated sales analytics data."
     },
     {
       "id": 11,
-      "title": "Implement PromotionEmailService",
-      "description": "Create service for sending test and bulk emails, with logging functionality",
+      "title": "Add date range support to statistics endpoint (optional)",
+      "description": "Enhance the existing GET /api/event-ticket-transactions/statistics/{eventId} endpoint to support date range filtering.",
       "status": "pending",
-      "dependencies": [3, 5, 8, 10],
-      "priority": "high",
-      "details": "Implement service with methods:\n- sendTestEmail(templateId, recipientEmail, tenantId, userId) - Send test email\n- sendBulkEmail(templateId, recipientEmails, tenantId, userId) - Send bulk emails\n- buildEmailContent(template, overrides) - Build final email content\n- logEmailSent(logEntry) - Log sent email\n\nIntegration points:\n- Use existing email service infrastructure\n- Retrieve event registrants from EventAttendee/EventTicketTransaction tables\n- Handle email sending failures gracefully\n- Log all email attempts (success and failure)",
-      "testStrategy": "Test email building logic, integration with email service, and error handling. Mock external dependencies."
+      "dependencies": [4],
+      "priority": "medium",
+      "details": "- Modify the existing statistics endpoint to accept startDate and endDate parameters\n- Filter statistics by purchase_date within the given date range\n- Include dateRange object in the response\n- Ensure backward compatibility with existing clients\n- Test with various date ranges",
+      "testStrategy": "Send requests with different date ranges and verify the response contains statistics filtered by the specified date range."
     },
     {
       "id": 12,
-      "title": "Implement PromotionEmailSentLogService",
-      "description": "Create service for querying email logs with filtering capabilities",
+      "title": "Add database indexes for performance optimization",
+      "description": "Add recommended database indexes to improve query performance for check-in and sales analytics.",
       "status": "pending",
-      "dependencies": [3, 5, 9],
-      "priority": "medium",
-      "details": "Implement service with methods:\n- listLogs(criteria, tenantId) - List logs with filtering\n- getLog(id, tenantId) - Get log entry by ID\n- getEmailStatistics(eventId, tenantId) - Get email statistics (optional)",
-      "testStrategy": "Test query methods with various filter combinations. Verify tenant isolation works correctly."
+      "dependencies": [],
+      "priority": "low",
+      "details": "- Create index on (event_id, check_in_status) for check-in status filtering\n- Create index on (event_id, check_in_time) for check-in time filtering\n- Create composite index on (event_id, check_in_status, check_in_time) for check-in queries\n- Create index on (event_id, purchase_date) for sales analytics\n- Test query performance before and after adding indexes\n- Document performance improvements",
+      "testStrategy": "Measure query execution time before and after adding indexes to verify performance improvements."
     },
     {
       "id": 13,
-      "title": "Implement Template CRUD Endpoints",
-      "description": "Create REST controller endpoints for template operations",
+      "title": "Implement caching for analytics endpoints (optional)",
+      "description": "Add caching support for analytics endpoints to improve performance for frequently accessed data.",
       "status": "pending",
-      "dependencies": [10],
-      "priority": "high",
-      "details": "Implement endpoints:\n- GET /api/promotion-email-templates - List templates with filtering\n- GET /api/promotion-email-templates/{id} - Get template by ID\n- POST /api/promotion-email-templates - Create new template\n- PATCH /api/promotion-email-templates/{id} - Update template\n- DELETE /api/promotion-email-templates/{id} - Delete template (soft delete)\n\nSupport query parameters for filtering and pagination\nEnsure proper validation of tenant ID from security context",
-      "testStrategy": "Write integration tests for all endpoints. Test filtering, pagination, error responses, and security constraints."
+      "dependencies": [9, 10, 11],
+      "priority": "low",
+      "details": "- Add caching to check-in analytics endpoint\n- Add caching to sales analytics endpoint\n- Add caching to statistics endpoint\n- Set appropriate cache expiration time\n- Implement cache invalidation when data changes\n- Test caching performance\n- Document caching implementation",
+      "testStrategy": "Measure response time for initial and subsequent requests to verify that caching improves performance."
     },
     {
       "id": 14,
-      "title": "Implement Email Sending Endpoints",
-      "description": "Create REST controller endpoints for sending test and bulk emails",
+      "title": "Create comprehensive API documentation",
+      "description": "Document all endpoints, request parameters, and response formats for the QR scanner and reporting features.",
       "status": "pending",
-      "dependencies": [11],
-      "priority": "high",
-      "details": "Implement endpoints:\n- POST /api/promotion-email-templates/{id}/send-test - Send test email\n- POST /api/promotion-email-templates/{id}/send-bulk - Send bulk email\n\nRequirements:\n- Test email: Send to single recipient\n- Bulk email: Send to all event registrants if recipientEmails not provided\n- Log all email attempts\n- Return detailed success/failure counts",
-      "testStrategy": "Test both endpoints with various scenarios including success and failure cases. Verify logging functionality."
+      "dependencies": [1, 2, 3, 4, 5, 9, 10, 11],
+      "priority": "medium",
+      "details": "- Document all endpoints used by the QR scanner feature\n- Document all endpoints used by the reporting features\n- Include request parameters and their formats\n- Include response formats and field descriptions\n- Document error responses and status codes\n- Add example requests and responses\n- Update Swagger API docs",
+      "testStrategy": "Review the documentation with the frontend team to ensure it accurately describes all endpoints and provides sufficient information for integration."
     },
     {
       "id": 15,
-      "title": "Implement Log Query Endpoints",
-      "description": "Create REST controller endpoints for querying email logs",
+      "title": "Create integration tests for all endpoints",
+      "description": "Implement comprehensive integration tests for all endpoints used by the QR scanner and reporting features.",
       "status": "pending",
-      "dependencies": [12],
+      "dependencies": [6, 7, 8, 9, 10, 11],
       "priority": "medium",
-      "details": "Implement endpoints:\n- GET /api/promotion-email-sent-logs - List sent email logs with filtering\n- GET /api/promotion-email-sent-logs/{id} - Get log entry by ID\n\nSupport query parameters for filtering by event, template, date range, status, etc.\nImplement pagination",
-      "testStrategy": "Test endpoints with various filter combinations. Verify pagination works correctly."
+      "details": "- Create tests for QR verification flow\n- Create tests for check-in flow with validations\n- Create tests for check-in history with filters\n- Create tests for sales analytics\n- Test multi-tenant security\n- Test error handling\n- Test edge cases\n- Automate tests for CI/CD pipeline",
+      "testStrategy": "Create automated integration tests that cover all endpoints, validations, and error cases, and run them as part of the CI/CD pipeline."
     },
     {
       "id": 16,
-      "title": "Integrate with Event System",
-      "description": "Ensure proper integration with existing EventDetails entity and service",
+      "title": "Document verification results for frontend team",
+      "description": "Create comprehensive documentation of all verification results for the frontend team to use during implementation.",
       "status": "pending",
-      "dependencies": [10, 11],
+      "dependencies": [1, 2, 3, 4, 5],
       "priority": "high",
-      "details": "Implement integration:\n- Validate event exists and belongs to tenant\n- Retrieve event registrants for bulk email\n- Use existing event service/repository\n- Handle error cases gracefully",
-      "testStrategy": "Test validation logic and integration with event system. Mock event service for unit tests."
-    },
-    {
-      "id": 17,
-      "title": "Integrate with Discount Code System",
-      "description": "Link templates to discount codes and retrieve discount code details",
-      "status": "pending",
-      "dependencies": [10, 11],
-      "priority": "high",
-      "details": "Implement integration:\n- Validate discount code exists and belongs to event\n- Retrieve discount code details for email content\n- Use existing DiscountCode entity/repository\n- Handle cases where discount code is not provided",
-      "testStrategy": "Test validation logic and integration with discount code system. Mock discount code service for unit tests."
-    },
-    {
-      "id": 18,
-      "title": "Integrate with Email Service",
-      "description": "Use existing email sending infrastructure for promotion emails",
-      "status": "pending",
-      "dependencies": [11],
-      "priority": "high",
-      "details": "Implement integration:\n- Reuse existing email service/configuration\n- Support HTML email content\n- Handle email sending errors\n- Implement proper error handling and retries if needed",
-      "testStrategy": "Test integration with email service. Mock email service for unit tests."
-    },
-    {
-      "id": 19,
-      "title": "Integrate with User Profile System",
-      "description": "Track who created templates and sent emails by linking to UserProfile",
-      "status": "pending",
-      "dependencies": [10, 11],
-      "priority": "medium",
-      "details": "Implement integration:\n- Link createdById to UserProfile\n- Link sentById to UserProfile\n- Retrieve user details for audit trail\n- Handle cases where user no longer exists",
-      "testStrategy": "Test integration with user profile system. Mock user service for unit tests."
-    },
-    {
-      "id": 20,
-      "title": "Update Swagger/OpenAPI Documentation",
-      "description": "Add API documentation for all new endpoints",
-      "status": "pending",
-      "dependencies": [13, 14, 15],
-      "priority": "medium",
-      "details": "Update documentation:\n- Document all endpoints with proper annotations\n- Define request/response schemas\n- Add example requests/responses\n- Document query parameters\n- Add error response documentation\n- Ensure documentation matches implementation",
-      "testStrategy": "Verify that Swagger UI correctly displays all endpoints and that the generated documentation is accurate."
-    },
-    {
-      "id": 21,
-      "title": "Write Unit Tests for Services",
-      "description": "Implement comprehensive unit tests for all service layer components",
-      "status": "pending",
-      "dependencies": [10, 11, 12],
-      "priority": "medium",
-      "details": "Write tests for:\n- Template creation/update/delete logic\n- Email sending logic\n- Validation rules\n- Error handling\n- Edge cases\n\nUse mocking for external dependencies",
-      "testStrategy": "Aim for high code coverage. Test happy paths and error scenarios."
-    },
-    {
-      "id": 22,
-      "title": "Write Integration Tests for REST Endpoints",
-      "description": "Implement integration tests for all REST API endpoints",
-      "status": "pending",
-      "dependencies": [13, 14, 15],
-      "priority": "medium",
-      "details": "Write tests for:\n- All CRUD operations\n- Email sending endpoints\n- Filtering and pagination\n- Error scenarios\n- Security constraints\n\nUse test database and mock external services where appropriate",
-      "testStrategy": "Test API contract compliance, status codes, response formats, and error handling."
-    },
-    {
-      "id": 23,
-      "title": "Implement Error Handling",
-      "description": "Ensure robust error handling across the application",
-      "status": "pending",
-      "dependencies": [10, 11, 12, 13, 14, 15],
-      "priority": "medium",
-      "details": "Implement error handling:\n- Return appropriate HTTP status codes\n- Provide clear error messages in response body\n- Log errors for debugging\n- Handle validation errors gracefully\n- Handle database constraint violations\n- Handle email sending failures",
-      "testStrategy": "Test error scenarios and verify appropriate status codes and error messages are returned."
-    },
-    {
-      "id": 24,
-      "title": "Implement Security Measures",
-      "description": "Ensure all endpoints are properly secured with tenant isolation",
-      "status": "pending",
-      "dependencies": [13, 14, 15],
-      "priority": "high",
-      "details": "Implement security measures:\n- Validate tenant ID from security context for all endpoints\n- Ensure users can only access templates for their tenant\n- Validate user permissions (admin only)\n- Sanitize HTML content in email body\n- Validate email addresses\n- Implement rate limiting for email sending endpoints",
-      "testStrategy": "Test tenant isolation, permission checks, and input sanitization."
-    },
-    {
-      "id": 25,
-      "title": "Optimize Performance",
-      "description": "Implement performance optimizations for database queries and email sending",
-      "status": "pending",
-      "dependencies": [10, 11, 12, 13, 14, 15],
-      "priority": "low",
-      "details": "Implement optimizations:\n- Ensure database indexes are used effectively\n- Implement pagination for list endpoints\n- Consider async processing for bulk emails\n- Optimize email sending batch size\n- Add caching where appropriate",
-      "testStrategy": "Perform load testing to verify performance under load. Check query execution plans."
+      "details": "- Document filter support verification results\n- Document statistics endpoint date range support\n- Document check-in update endpoint functionality\n- Include example requests and responses\n- Include any limitations or workarounds\n- Share documentation with frontend team\n- Address any questions from frontend team",
+      "testStrategy": "Review the documentation with the frontend team to ensure it provides all necessary information for their implementation."
     }
   ]
 }

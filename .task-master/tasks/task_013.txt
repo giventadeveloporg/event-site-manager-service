@@ -1,19 +1,17 @@
 # Task ID: 13
-# Title: Implement Template CRUD Endpoints
+# Title: Implement caching for analytics endpoints (optional)
 # Status: pending
-# Dependencies: 10 ⏱️
-# Priority: high
-# Description: Create REST controller endpoints for template operations
+# Dependencies: 9 ⏱️, 10 ⏱️, 11 ⏱️
+# Priority: low
+# Description: Add caching support for analytics endpoints to improve performance for frequently accessed data.
 # Details:
-Implement endpoints:
-- GET /api/promotion-email-templates - List templates with filtering
-- GET /api/promotion-email-templates/{id} - Get template by ID
-- POST /api/promotion-email-templates - Create new template
-- PATCH /api/promotion-email-templates/{id} - Update template
-- DELETE /api/promotion-email-templates/{id} - Delete template (soft delete)
-
-Support query parameters for filtering and pagination
-Ensure proper validation of tenant ID from security context
+- Add caching to check-in analytics endpoint
+- Add caching to sales analytics endpoint
+- Add caching to statistics endpoint
+- Set appropriate cache expiration time
+- Implement cache invalidation when data changes
+- Test caching performance
+- Document caching implementation
 
 # Test Strategy:
-Write integration tests for all endpoints. Test filtering, pagination, error responses, and security constraints.
+Measure response time for initial and subsequent requests to verify that caching improves performance.

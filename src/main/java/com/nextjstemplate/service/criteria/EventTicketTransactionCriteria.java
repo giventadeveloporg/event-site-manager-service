@@ -337,6 +337,21 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
         this.platformFeeAmount = platformFeeAmount;
     }
 
+    public BigDecimalFilter getServiceFee() {
+        return serviceFee;
+    }
+
+    public BigDecimalFilter serviceFee() {
+        if (serviceFee == null) {
+            serviceFee = new BigDecimalFilter();
+        }
+        return serviceFee;
+    }
+
+    public void setServiceFee(BigDecimalFilter serviceFee) {
+        this.serviceFee = serviceFee;
+    }
+
     public LongFilter getDiscountCodeId() {
         return discountCodeId;
     }
@@ -920,7 +935,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             (checkOutTime != null ? "checkOutTime=" + checkOutTime + ", " : "") +
             (eventId != null ? "eventId=" + eventId + ", " : "") +
             (userId != null ? "userId=" + userId + ", " : "") +
-            
+
             "}";
     }
 }

@@ -1,7 +1,10 @@
 package com.nextjstemplate.service;
 
+import com.nextjstemplate.service.dto.CheckInAnalyticsDTO;
 import com.nextjstemplate.service.dto.EventTicketTransactionDTO;
 import com.nextjstemplate.service.dto.EventTicketTransactionStatisticsDTO;
+import com.nextjstemplate.service.dto.SalesAnalyticsDTO;
+import java.time.LocalDate;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -67,6 +70,17 @@ public interface EventTicketTransactionService {
     EventTicketTransactionStatisticsDTO getEventStatistics(Long eventId);
 
     /**
+     * Get statistics for an event by eventId with optional date range filtering.
+     * Task 11: Add date range support to statistics endpoint.
+     *
+     * @param eventId the id of the event.
+     * @param startDate optional start date for filtering (ISO 8601 format: YYYY-MM-DD).
+     * @param endDate optional end date for filtering (ISO 8601 format: YYYY-MM-DD).
+     * @return the statistics DTO with date range information if provided.
+     */
+    EventTicketTransactionStatisticsDTO getEventStatistics(Long eventId, LocalDate startDate, LocalDate endDate);
+
+    /**
      * Find a transaction by Stripe payment intent ID.
      * Used for idempotent transaction creation to prevent duplicates.
      *
@@ -85,4 +99,26 @@ public interface EventTicketTransactionService {
      * @return the entity if found for the specific tenant.
      */
     Optional<EventTicketTransactionDTO> findByStripePaymentIntentIdAndTenantId(String stripePaymentIntentId, String tenantId);
+
+    /**
+     * Task 9: Get check-in analytics for an event with optional date range filtering.
+     * Returns pre-aggregated check-in statistics for better performance.
+     *
+     * @param eventId the id of the event.
+     * @param startDate optional start date for filtering (ISO 8601 format: YYYY-MM-DD).
+     * @param endDate optional end date for filtering (ISO 8601 format: YYYY-MM-DD).
+     * @return the check-in analytics DTO with aggregated data.
+     */
+    CheckInAnalyticsDTO getCheckInAnalytics(Long eventId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Task 10: Get sales analytics for an event with optional date range filtering.
+     * Returns pre-aggregated sales statistics for better performance.
+     *
+     * @param eventId the id of the event.
+     * @param startDate optional start date for filtering (ISO 8601 format: YYYY-MM-DD).
+     * @param endDate optional end date for filtering (ISO 8601 format: YYYY-MM-DD).
+     * @return the sales analytics DTO with aggregated data.
+     */
+    SalesAnalyticsDTO getSalesAnalytics(Long eventId, LocalDate startDate, LocalDate endDate);
 }

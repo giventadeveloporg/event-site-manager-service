@@ -33,8 +33,35 @@ public class PaymentCredentialEncryptionService {
             if (encryptionKeyBase64 == null || encryptionKeyBase64.isEmpty()) {
                 throw new IllegalStateException("Payment encryption key not configured. Set application.payment.encryption.key");
             }
-            byte[] keyBytes = Base64.getDecoder().decode(encryptionKeyBase64);
+
+            // Decode encryption key (base64)
+            // Remove any whitespace or escape characters that might be in the environment variable
+            // This matches the implementation in event-site-manager-batch-jobs for consistency
+            // Handle escaped equals signs and remove any invalid backslash characters
+            String cleanKey = encryptionKeyBase64
+                .trim() // Remove leading/trailing whitespace
+                .replace("\\=", "=") // Replace escaped equals signs
+                .replace("\\", "") // Remove any remaining backslash characters (invalid in Base64, ASCII 5c)
+                .replaceAll("\\s", ""); // Remove any remaining whitespace
+
+            byte[] keyBytes;
+            try {
+                keyBytes = Base64.getDecoder().decode(cleanKey);
+            } catch (IllegalArgumentException e) {
+                log.error("Failed to decode encryption key (base64): {}", e.getMessage());
+                throw new IllegalStateException("Invalid encryption key format (not valid base64): " + e.getMessage(), e);
+            }
+
+            if (keyBytes.length != 32) { // AES-256 requires 32 bytes (256 bits)
+                throw new IllegalStateException(
+                    "Encryption key must be 32 bytes (256 bits) after base64 decoding. Got " + keyBytes.length + " bytes"
+                );
+            }
+
             return new SecretKeySpec(keyBytes, "AES");
+        } catch (IllegalStateException e) {
+            // Re-throw IllegalStateException as-is (these are our validation errors)
+            throw e;
         } catch (Exception e) {
             log.error("Failed to initialize encryption key", e);
             throw new IllegalStateException("Failed to initialize payment encryption key", e);

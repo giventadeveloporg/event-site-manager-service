@@ -1,14 +1,15 @@
 # Task ID: 8
-# Title: Create SendPromotionEmailDTO
+# Title: Implement tenant validation for all endpoints
 # Status: pending
 # Dependencies: None
 # Priority: high
-# Description: Create DTO for email sending requests
+# Description: Ensure all endpoints properly filter by tenantId for multi-tenant security.
 # Details:
-Implement DTO with fields:
-- templateId, recipientEmail (optional), isTestEmail, subjectOverride (optional), bodyHtmlOverride (optional)
-- Add validation annotations
-- Include appropriate constructors
+- Review all endpoints used by the QR scanner and reporting features
+- Verify that tenantId.equals filter is applied correctly
+- Ensure users can only access data for their own tenant
+- Return 403 Forbidden for cross-tenant access attempts
+- Test with different tenant IDs
 
 # Test Strategy:
-Test validation rules and verify it can be properly serialized/deserialized.
+Send requests with different tenant IDs and verify that users can only access data for their own tenant and receive 403 Forbidden for cross-tenant access attempts.

@@ -1,16 +1,15 @@
 # Task ID: 2
-# Title: Create PromotionEmailTemplate Entity
+# Title: Verify existing API filter support for check-in time range
 # Status: pending
-# Dependencies: 1 ⏱️
+# Dependencies: None
 # Priority: high
-# Description: Create JPA entity class for promotion_email_template table with all required fields and relationships
+# Description: Test if the GET /api/event-ticket-transactions endpoint supports filtering by checkInTime date range parameters.
 # Details:
-Implement JPA entity class with:
-- All table columns mapped to entity fields (id, tenantId, eventId, templateName, subject, bodyHtml, etc.)
-- Define relationships to EventDetails, DiscountCode, UserProfile
-- Add validation annotations (NotNull, Size, etc.)
-- Implement equals/hashCode methods
-- Add audit fields handling (createdAt, updatedAt)
+- Test the endpoint with checkInTime.greaterThanOrEqual parameter using ISO 8601 format
+- Test the endpoint with checkInTime.lessThanOrEqual parameter using ISO 8601 format
+- Test both parameters together to verify date range filtering
+- Document the results and response format
+- Share findings with the frontend team
 
 # Test Strategy:
-Test entity mapping with basic persistence tests. Verify that all fields are correctly mapped and relationships are properly defined.
+Send requests to the endpoint with various date range parameters and verify the response contains only records within the specified date range by comparing with direct database queries.

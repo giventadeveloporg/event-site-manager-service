@@ -1,19 +1,17 @@
 # Task ID: 14
-# Title: Implement Email Sending Endpoints
+# Title: Create comprehensive API documentation
 # Status: pending
-# Dependencies: 11 ⏱️
-# Priority: high
-# Description: Create REST controller endpoints for sending test and bulk emails
+# Dependencies: 1 ⏱️, 2 ⏱️, 3 ⏱️, 4 ⏱️, 5 ⏱️, 9 ⏱️, 10 ⏱️, 11 ⏱️
+# Priority: medium
+# Description: Document all endpoints, request parameters, and response formats for the QR scanner and reporting features.
 # Details:
-Implement endpoints:
-- POST /api/promotion-email-templates/{id}/send-test - Send test email
-- POST /api/promotion-email-templates/{id}/send-bulk - Send bulk email
-
-Requirements:
-- Test email: Send to single recipient
-- Bulk email: Send to all event registrants if recipientEmails not provided
-- Log all email attempts
-- Return detailed success/failure counts
+- Document all endpoints used by the QR scanner feature
+- Document all endpoints used by the reporting features
+- Include request parameters and their formats
+- Include response formats and field descriptions
+- Document error responses and status codes
+- Add example requests and responses
+- Update Swagger API docs
 
 # Test Strategy:
-Test both endpoints with various scenarios including success and failure cases. Verify logging functionality.
+Review the documentation with the frontend team to ensure it accurately describes all endpoints and provides sufficient information for integration.
