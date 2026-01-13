@@ -145,6 +145,9 @@ public class EventTicketTransaction implements Serializable {
     @Column(name = "stripe_fee_amount", precision = 21, scale = 2)
     private BigDecimal stripeFeeAmount;
 
+    @Column(name = "net_payout_amount", precision = 21, scale = 2)
+    private BigDecimal netPayoutAmount;
+
     @Size(max = 2048)
     @Column(name = "qr_code_image_url", length = 2048)
     private String qrCodeImageUrl;
@@ -616,6 +619,19 @@ public class EventTicketTransaction implements Serializable {
         this.stripeFeeAmount = stripeFeeAmount;
     }
 
+    public BigDecimal getNetPayoutAmount() {
+        return netPayoutAmount;
+    }
+
+    public EventTicketTransaction netPayoutAmount(BigDecimal netPayoutAmount) {
+        this.setNetPayoutAmount(netPayoutAmount);
+        return this;
+    }
+
+    public void setNetPayoutAmount(BigDecimal netPayoutAmount) {
+        this.netPayoutAmount = netPayoutAmount;
+    }
+
     public String getQrCodeImageUrl() {
         return this.qrCodeImageUrl;
     }
@@ -815,6 +831,7 @@ public class EventTicketTransaction implements Serializable {
             ", stripeAmountDiscount=" + getStripeAmountDiscount() +
             ", stripeAmountTax=" + getStripeAmountTax() +
             ", stripeFeeAmount=" + getStripeFeeAmount() +
+            ", netPayoutAmount=" + getNetPayoutAmount() +
             ", qrCodeImageUrl='" + getQrCodeImageUrl() + "'" +
             ", eventId=" + getEventId() +
             ", userId=" + getUserId() +

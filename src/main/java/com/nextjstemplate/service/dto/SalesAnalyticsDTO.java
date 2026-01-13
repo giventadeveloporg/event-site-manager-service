@@ -15,6 +15,7 @@ public class SalesAnalyticsDTO implements Serializable {
     private int totalSales;
     private BigDecimal totalRevenue;
     private BigDecimal netRevenue;
+    private BigDecimal netRevenueBeforeTax;
     private BigDecimal totalDiscounts;
     private BigDecimal totalRefunds;
     private BigDecimal averageTicketPrice;
@@ -56,6 +57,14 @@ public class SalesAnalyticsDTO implements Serializable {
 
     public void setNetRevenue(BigDecimal netRevenue) {
         this.netRevenue = netRevenue;
+    }
+
+    public BigDecimal getNetRevenueBeforeTax() {
+        return netRevenueBeforeTax;
+    }
+
+    public void setNetRevenueBeforeTax(BigDecimal netRevenueBeforeTax) {
+        this.netRevenueBeforeTax = netRevenueBeforeTax;
     }
 
     public BigDecimal getTotalDiscounts() {

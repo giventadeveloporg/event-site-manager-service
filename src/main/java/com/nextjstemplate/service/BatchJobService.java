@@ -6,9 +6,12 @@ import com.nextjstemplate.service.dto.BatchJobRequest;
 import com.nextjstemplate.service.dto.BatchJobResponse;
 import com.nextjstemplate.service.dto.BatchJobServiceRequest;
 import com.nextjstemplate.service.dto.BatchJobServiceResponse;
+import com.nextjstemplate.service.dto.StripeFeesTaxUpdateRequest;
+import com.nextjstemplate.service.dto.StripeFeesTaxUpdateResponse;
 import com.nextjstemplate.web.rest.errors.BatchJobException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +30,7 @@ public class BatchJobService {
     private static final Logger log = LoggerFactory.getLogger(BatchJobService.class);
 
     private static final String SUBSCRIPTION_RENEWAL_ENDPOINT = "/api/batch-jobs/subscription-renewal";
+    private static final String STRIPE_FEES_TAX_UPDATE_ENDPOINT = "/api/batch-jobs/stripe-fees-tax-update";
     private static final int DEFAULT_BATCH_SIZE = 100;
     private static final int DEFAULT_MAX_SUBSCRIPTIONS = 10000;
     private static final String DEFAULT_ESTIMATED_DURATION = "15-30 minutes";
@@ -132,5 +136,100 @@ public class BatchJobService {
             log.error("Unexpected error triggering subscription renewal batch job", e);
             throw new BatchJobException("Failed to trigger batch job: " + e.getMessage(), "batchjobsubmissionfailed");
         }
+    }
+
+    /**
+     * Trigger Stripe fees and tax update batch job.
+     *
+     * @param request the Stripe fees tax update request
+     * @return the batch job response
+     * @throws BatchJobException if job submission fails
+     */
+    public StripeFeesTaxUpdateResponse triggerStripeFeesTaxUpdate(StripeFeesTaxUpdateRequest request) {
+        if (!batchJobProperties.getEnabled()) {
+            log.warn("Batch job service is disabled. Skipping Stripe fees tax update batch trigger.");
+            throw new BatchJobException("Batch job service is disabled", "batchjobdisabled");
+        }
+
+        // Validate request
+        if (request == null) {
+            request = new StripeFeesTaxUpdateRequest();
+        }
+
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            if (request.getStartDate().isAfter(request.getEndDate())) {
+                throw new IllegalArgumentException("startDate must be before or equal to endDate");
+            }
+        }
+
+        try {
+            log.info(
+                "Triggering Stripe fees and tax update batch job - tenantId: {}, startDate: {}, endDate: {}, forceUpdate: {}",
+                request.getTenantId(),
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getForceUpdate()
+            );
+
+            // Call batch job service
+            StripeFeesTaxUpdateResponse response = webClient
+                .post()
+                .uri(STRIPE_FEES_TAX_UPDATE_ENDPOINT)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(StripeFeesTaxUpdateResponse.class)
+                .timeout(Duration.ofMillis(batchJobProperties.getTimeout()))
+                .block();
+
+            if (response == null) {
+                throw new BatchJobException("Received null response from batch job service", "nullresponse");
+            }
+
+            log.info(
+                "Stripe fees and tax update batch job triggered successfully. JobId: {}, Status: {}, EstimatedRecords: {}",
+                response.getJobId(),
+                response.getStatus(),
+                response.getEstimatedRecords()
+            );
+
+            return response;
+        } catch (WebClientResponseException.BadRequest e) {
+            log.warn("Bad request to batch job service: {}", e.getResponseBodyAsString(), e);
+            throw new IllegalArgumentException("Invalid request: " + e.getResponseBodyAsString(), e);
+        } catch (WebClientResponseException e) {
+            log.error("HTTP error triggering Stripe fees tax update batch job: {} - {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new BatchJobException("HTTP " + e.getStatusCode() + ": " + e.getMessage(), "batchjobhttperror");
+        } catch (org.springframework.web.reactive.function.client.WebClientRequestException e) {
+            log.error("Connection error to batch job service: {}", e.getMessage(), e);
+            throw new BatchJobException("Batch job service is not available", "batchjobunavailable");
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (BatchJobException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error triggering Stripe fees tax update batch job", e);
+            throw new BatchJobException("Failed to trigger batch job: " + e.getMessage(), "batchjobsubmissionfailed");
+        }
+    }
+
+    /**
+     * Trigger Stripe fees and tax update for a specific tenant.
+     *
+     * @param tenantId Tenant ID
+     * @return Response with job ID and status
+     */
+    public StripeFeesTaxUpdateResponse triggerStripeFeesTaxUpdate(String tenantId) {
+        StripeFeesTaxUpdateRequest request = new StripeFeesTaxUpdateRequest();
+        request.setTenantId(tenantId);
+        return triggerStripeFeesTaxUpdate(request);
+    }
+
+    /**
+     * Trigger Stripe fees and tax update for all tenants.
+     *
+     * @return Response with job ID and status
+     */
+    public StripeFeesTaxUpdateResponse triggerStripeFeesTaxUpdate() {
+        return triggerStripeFeesTaxUpdate(new StripeFeesTaxUpdateRequest());
     }
 }

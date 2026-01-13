@@ -85,6 +85,8 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
 
     private BigDecimalFilter stripeFeeAmount;
 
+    private BigDecimalFilter netPayoutAmount;
+
     private StringFilter qrCodeImageUrl;
     private LongFilter eventId;
 
@@ -138,6 +140,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
         this.stripeAmountDiscount = other.stripeAmountDiscount == null ? null : other.stripeAmountDiscount.copy();
         this.stripeAmountTax = other.stripeAmountTax == null ? null : other.stripeAmountTax.copy();
         this.stripeFeeAmount = other.stripeFeeAmount == null ? null : other.stripeFeeAmount.copy();
+        this.netPayoutAmount = other.netPayoutAmount == null ? null : other.netPayoutAmount.copy();
         this.qrCodeImageUrl = other.qrCodeImageUrl == null ? null : other.qrCodeImageUrl.copy();
         this.eventId = other.eventId == null ? null : other.eventId.copy();
         this.userId = other.userId == null ? null : other.userId.copy();
@@ -637,6 +640,21 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
         this.stripeFeeAmount = stripeFeeAmount;
     }
 
+    public BigDecimalFilter getNetPayoutAmount() {
+        return netPayoutAmount;
+    }
+
+    public BigDecimalFilter netPayoutAmount() {
+        if (netPayoutAmount == null) {
+            netPayoutAmount = new BigDecimalFilter();
+        }
+        return netPayoutAmount;
+    }
+
+    public void setNetPayoutAmount(BigDecimalFilter netPayoutAmount) {
+        this.netPayoutAmount = netPayoutAmount;
+    }
+
     public StringFilter getQrCodeImageUrl() {
         return qrCodeImageUrl;
     }
@@ -823,6 +841,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             Objects.equals(stripeAmountDiscount, that.stripeAmountDiscount) &&
             Objects.equals(stripeAmountTax, that.stripeAmountTax) &&
             Objects.equals(stripeFeeAmount, that.stripeFeeAmount) &&
+            Objects.equals(netPayoutAmount, that.netPayoutAmount) &&
             Objects.equals(qrCodeImageUrl, that.qrCodeImageUrl) &&
             Objects.equals(eventId, that.eventId) &&
             Objects.equals(userId, that.userId) &&
@@ -874,6 +893,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             stripeAmountDiscount,
             stripeAmountTax,
             stripeFeeAmount,
+            netPayoutAmount,
             qrCodeImageUrl,
             eventId,
             userId,
@@ -923,6 +943,7 @@ public class EventTicketTransactionCriteria implements Serializable, Criteria {
             (stripeAmountDiscount != null ? "stripeAmountDiscount=" + stripeAmountDiscount + ", " : "") +
             (stripeAmountTax != null ? "stripeAmountTax=" + stripeAmountTax + ", " : "") +
             (stripeFeeAmount != null ? "stripeFeeAmount=" + stripeFeeAmount + ", " : "") +
+            (netPayoutAmount != null ? "netPayoutAmount=" + netPayoutAmount + ", " : "") +
 			(qrCodeImageUrl != null ? "qrCodeImageUrl=" + qrCodeImageUrl + ", " : "") +
             (eventId != null ? "eventId=" + eventId + ", " : "") +
             (userId != null ? "userId=" + userId + ", " : "") +

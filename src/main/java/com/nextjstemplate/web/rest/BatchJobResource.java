@@ -3,7 +3,10 @@ package com.nextjstemplate.web.rest;
 import com.nextjstemplate.service.BatchJobService;
 import com.nextjstemplate.service.dto.BatchJobRequest;
 import com.nextjstemplate.service.dto.BatchJobResponse;
+import com.nextjstemplate.service.dto.StripeFeesTaxUpdateRequest;
+import com.nextjstemplate.service.dto.StripeFeesTaxUpdateResponse;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
+import com.nextjstemplate.web.rest.errors.BatchJobException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,6 +141,92 @@ public class BatchJobResource {
         }
         if (request.getMaxSubscriptions() != null && request.getMaxSubscriptions() < 1) {
             throw new BadRequestAlertException("Max subscriptions must be at least 1", ENTITY_NAME, "invalidmaxsubscriptions");
+        }
+    }
+
+    /**
+     * {@code POST  /stripe-fees-tax-update} : Trigger Stripe fees and tax update batch job.
+     *
+     * @param request the Stripe fees tax update request (optional)
+     * @param authHeader the Authorization header
+     * @param tenantIdHeader the X-Tenant-Id header (optional)
+     * @return the {@link ResponseEntity} with status {@code 202 (Accepted)} and the batch job response
+     */
+    @PostMapping("/stripe-fees-tax-update")
+    public ResponseEntity<StripeFeesTaxUpdateResponse> triggerStripeFeesTaxUpdate(
+        @RequestBody(required = false) StripeFeesTaxUpdateRequest request,
+        @RequestHeader(value = "Authorization", required = false) String authHeader,
+        @RequestHeader(value = "X-Tenant-Id", required = false) String tenantIdHeader
+    ) {
+        log.debug("REST request to trigger Stripe fees and tax update batch job: {}", request);
+
+        try {
+            // 1. Authenticate request (JWT or cron secret)
+            authenticateRequest(authHeader);
+
+            // 2. Build request from body or headers
+            StripeFeesTaxUpdateRequest jobRequest = buildStripeFeesTaxUpdateRequest(request, tenantIdHeader);
+
+            // 3. Validate request
+            validateStripeFeesTaxUpdateRequest(jobRequest);
+
+            // 4. Submit job
+            StripeFeesTaxUpdateResponse response = batchJobService.triggerStripeFeesTaxUpdate(jobRequest);
+
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid request: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidrequest");
+        } catch (BatchJobException e) {
+            log.error("Batch job exception: {}", e.getMessage(), e);
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, e.getErrorKey());
+        } catch (Exception e) {
+            log.error("Failed to trigger Stripe fees and tax update batch job: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Build the Stripe fees tax update request from body or headers.
+     *
+     * @param request the request body (may be null)
+     * @param tenantIdHeader the X-Tenant-Id header (may be null)
+     * @return the Stripe fees tax update request
+     */
+    private StripeFeesTaxUpdateRequest buildStripeFeesTaxUpdateRequest(StripeFeesTaxUpdateRequest request, String tenantIdHeader) {
+        StripeFeesTaxUpdateRequest jobRequest = new StripeFeesTaxUpdateRequest();
+
+        if (request != null) {
+            // Use values from request body
+            jobRequest.setTenantId(request.getTenantId());
+            jobRequest.setStartDate(request.getStartDate());
+            jobRequest.setEndDate(request.getEndDate());
+            jobRequest.setForceUpdate(request.getForceUpdate());
+        }
+
+        // Override tenant ID from header if provided
+        if (StringUtils.hasText(tenantIdHeader)) {
+            jobRequest.setTenantId(tenantIdHeader);
+        }
+
+        // Set default for forceUpdate if not provided
+        if (jobRequest.getForceUpdate() == null) {
+            jobRequest.setForceUpdate(false);
+        }
+
+        return jobRequest;
+    }
+
+    /**
+     * Validate the Stripe fees tax update request.
+     *
+     * @param request the Stripe fees tax update request
+     */
+    private void validateStripeFeesTaxUpdateRequest(StripeFeesTaxUpdateRequest request) {
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            if (request.getStartDate().isAfter(request.getEndDate())) {
+                throw new BadRequestAlertException("startDate must be before or equal to endDate", ENTITY_NAME, "invaliddaterange");
+            }
         }
     }
 }

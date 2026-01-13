@@ -244,6 +244,10 @@ public class EventTicketTransactionQueryService extends QueryService<EventTicket
                 specification =
                     specification.and(buildRangeSpecification(criteria.getStripeFeeAmount(), EventTicketTransaction_.stripeFeeAmount));
             }
+            if (criteria.getNetPayoutAmount() != null) {
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getNetPayoutAmount(), EventTicketTransaction_.netPayoutAmount));
+            }
             if (criteria.getQrCodeImageUrl() != null) {
                 specification =
                     specification.and(buildStringSpecification(criteria.getQrCodeImageUrl(), EventTicketTransaction_.qrCodeImageUrl));

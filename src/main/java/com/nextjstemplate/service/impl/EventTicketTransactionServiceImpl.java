@@ -593,6 +593,18 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
 
         BigDecimal netRevenue = totalRevenue.subtract(totalRefunds);
 
+        // Calculate Net Revenue Before Tax
+        // Formula: net_revenue_before_tax = final_amount - stripe_fee_amount
+        BigDecimal netRevenueBeforeTax = transactions
+            .stream()
+            .map(t -> {
+                BigDecimal finalAmount = t.getFinalAmount() != null ? t.getFinalAmount() : BigDecimal.ZERO;
+                BigDecimal stripeFee = t.getStripeFeeAmount() != null ? t.getStripeFeeAmount() : BigDecimal.ZERO;
+                // Net revenue before tax = final_amount - stripe_fee_amount
+                return finalAmount.subtract(stripeFee);
+            })
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         BigDecimal averageTicketPrice = totalSales > 0
             ? totalRevenue.divide(BigDecimal.valueOf(totalSales), 2, RoundingMode.HALF_UP)
             : BigDecimal.ZERO;
@@ -647,6 +659,7 @@ public class EventTicketTransactionServiceImpl implements EventTicketTransaction
         analytics.setTotalSales(totalSales);
         analytics.setTotalRevenue(totalRevenue);
         analytics.setNetRevenue(netRevenue);
+        analytics.setNetRevenueBeforeTax(netRevenueBeforeTax);
         analytics.setTotalDiscounts(totalDiscounts);
         analytics.setTotalRefunds(totalRefunds);
         analytics.setAverageTicketPrice(averageTicketPrice);

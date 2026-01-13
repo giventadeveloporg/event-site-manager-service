@@ -9,8 +9,6 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 /**
  * A PaymentProviderConfig.
@@ -84,8 +82,7 @@ public class PaymentProviderConfig implements Serializable {
     @Column(name = "fallback_order")
     private Integer fallbackOrder = 0;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "configuration_json", columnDefinition = "jsonb")
+    @Column(name = "configuration_json", columnDefinition = "text")
     private String configurationJson;
 
     @NotNull

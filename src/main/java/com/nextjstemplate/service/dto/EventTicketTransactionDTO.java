@@ -104,6 +104,8 @@ public class EventTicketTransactionDTO implements Serializable {
 
     private BigDecimal stripeFeeAmount;
 
+    private BigDecimal netPayoutAmount;
+
     @Size(max = 2048)
     private String qrCodeImageUrl;
 
@@ -398,6 +400,14 @@ public class EventTicketTransactionDTO implements Serializable {
         this.stripeFeeAmount = stripeFeeAmount;
     }
 
+    public BigDecimal getNetPayoutAmount() {
+        return netPayoutAmount;
+    }
+
+    public void setNetPayoutAmount(BigDecimal netPayoutAmount) {
+        this.netPayoutAmount = netPayoutAmount;
+    }
+
     public String getQrCodeImageUrl() {
         return qrCodeImageUrl;
     }
@@ -528,6 +538,7 @@ public class EventTicketTransactionDTO implements Serializable {
             ", stripeAmountDiscount=" + getStripeAmountDiscount() +
             ", stripeAmountTax=" + getStripeAmountTax() +
             ", stripeFeeAmount=" + getStripeFeeAmount() +
+            ", netPayoutAmount=" + getNetPayoutAmount() +
             ", qrCodeImageUrl='" + getQrCodeImageUrl() + "'" +
             ", eventId=" + getEventId() +
             ", userId=" + getUserId() +
