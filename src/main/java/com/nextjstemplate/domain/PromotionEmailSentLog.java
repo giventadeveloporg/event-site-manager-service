@@ -36,8 +36,7 @@ public class PromotionEmailSentLog implements Serializable {
     @Column(name = "template_id", nullable = true)
     private Long templateId;
 
-    @NotNull
-    @Column(name = "event_id", nullable = false)
+    @Column(name = "event_id", nullable = true)
     private Long eventId;
 
     @NotNull

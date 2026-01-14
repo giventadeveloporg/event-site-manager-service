@@ -120,19 +120,20 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
 
         Map<String, Object> result = new HashMap<>();
         try {
+            // Send email directly (test emails are sent synchronously, not via batch jobs)
             emailSenderService.sendEmail(fromEmail, finalRecipientEmail, subject, bodyHtml, true, new HashMap<>());
             result.put("success", true);
             result.put("messageId", "test-" + System.currentTimeMillis());
             log.info("Test email sent successfully to {} for template {}", finalRecipientEmail, templateId);
 
-            // Log email sent
+            // Log email sent to database (non-blocking - failure to log doesn't affect email sending)
             logEmailSent(template, finalRecipientEmail, subject, tenantId, userId, true, EmailStatus.SENT, null);
         } catch (Exception e) {
             log.error("Failed to send test email to {} for template {}: {}", finalRecipientEmail, templateId, e.getMessage(), e);
             result.put("success", false);
             result.put("error", e.getMessage());
 
-            // Log email failure
+            // Log email failure to database (non-blocking - failure to log doesn't affect error reporting)
             logEmailSent(template, finalRecipientEmail, subject, tenantId, userId, true, EmailStatus.FAILED, e.getMessage());
         }
 
@@ -551,6 +552,8 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
 
     /**
      * Log email sent to database.
+     * This method is non-blocking - any exceptions during logging are caught and logged as warnings
+     * to ensure that email sending success/failure is not affected by database logging issues.
      */
     private void logEmailSent(
         PromotionEmailTemplate template,
@@ -563,25 +566,33 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
         String errorMessage
     ) {
         try {
-            PromotionEmailSentLog log = new PromotionEmailSentLog();
-            log.setTenantId(tenantId);
-            log.setTemplateId(template.getId());
+            PromotionEmailSentLog sentLog = new PromotionEmailSentLog();
+            sentLog.setTenantId(tenantId);
+            sentLog.setTemplateId(template.getId());
             // eventId can be null for newsletter emails - handle gracefully
-            log.setEventId(template.getEventId());
-            log.setRecipientEmail(recipientEmail);
-            log.setSubject(subject);
-            log.setPromotionCode(template.getPromotionCode());
-            log.setDiscountCodeId(template.getDiscountCodeId());
-            log.setSentAt(ZonedDateTime.now());
-            log.setIsTestEmail(isTestEmail != null ? isTestEmail : false);
-            log.setEmailStatus(emailStatus);
-            log.setErrorMessage(errorMessage);
-            log.setSentById(userId);
+            sentLog.setEventId(template.getEventId());
+            sentLog.setRecipientEmail(recipientEmail);
+            sentLog.setSubject(subject);
+            sentLog.setPromotionCode(template.getPromotionCode());
+            sentLog.setDiscountCodeId(template.getDiscountCodeId());
+            sentLog.setSentAt(ZonedDateTime.now());
+            sentLog.setIsTestEmail(isTestEmail != null ? isTestEmail : false);
+            sentLog.setEmailStatus(emailStatus);
+            sentLog.setErrorMessage(errorMessage);
+            sentLog.setSentById(userId);
 
-            promotionEmailSentLogRepository.save(log);
+            promotionEmailSentLogRepository.save(sentLog);
+            log.debug("Successfully logged email sent to database: recipient={}, status={}", recipientEmail, emailStatus);
         } catch (Exception e) {
-            log.error("Failed to log email sent: {}", e.getMessage(), e);
-            // Don't throw - logging failure shouldn't break email sending
+            // Use warn level instead of error - email was already sent/failed, this is just a logging issue
+            log.warn(
+                "Failed to log email sent to database (email was already {}): recipient={}, error={}",
+                emailStatus == EmailStatus.SENT ? "sent successfully" : "failed to send",
+                recipientEmail,
+                e.getMessage(),
+                e
+            );
+            // Don't throw - logging failure shouldn't break email sending or affect the response
         }
     }
 }

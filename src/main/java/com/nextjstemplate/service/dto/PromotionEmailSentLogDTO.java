@@ -21,7 +21,6 @@ public class PromotionEmailSentLogDTO implements Serializable {
     @NotNull
     private Long templateId;
 
-    @NotNull
     private Long eventId;
 
     @NotNull
