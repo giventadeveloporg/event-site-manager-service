@@ -15,9 +15,12 @@ import com.nextjstemplate.repository.UserProfileRepository;
 import com.nextjstemplate.service.BatchJobEmailService;
 import com.nextjstemplate.service.EmailSenderService;
 import com.nextjstemplate.service.PromotionEmailService;
+import com.nextjstemplate.service.PromotionTestEmailBatchJobService;
 import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.UserProfileService;
 import com.nextjstemplate.service.dto.BatchJobEmailResponse;
+import com.nextjstemplate.service.dto.PromotionTestEmailJobRequest;
+import com.nextjstemplate.service.dto.PromotionTestEmailJobResponse;
 import com.nextjstemplate.service.dto.RecipientType;
 import com.nextjstemplate.service.dto.UserProfileDTO;
 import java.time.ZonedDateTime;
@@ -48,6 +51,8 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
 
     private final BatchJobEmailService batchJobEmailService;
 
+    private final PromotionTestEmailBatchJobService promotionTestEmailBatchJobService;
+
     private final EventAttendeeRepository eventAttendeeRepository;
 
     private final TenantSettingsRepository tenantSettingsRepository;
@@ -69,6 +74,7 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
         EmailSenderService emailSenderService,
         UserProfileService userProfileService,
         BatchJobEmailService batchJobEmailService,
+        PromotionTestEmailBatchJobService promotionTestEmailBatchJobService,
         EventAttendeeRepository eventAttendeeRepository,
         TenantSettingsRepository tenantSettingsRepository,
         S3Service s3Service,
@@ -79,6 +85,7 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
         this.emailSenderService = emailSenderService;
         this.userProfileService = userProfileService;
         this.batchJobEmailService = batchJobEmailService;
+        this.promotionTestEmailBatchJobService = promotionTestEmailBatchJobService;
         this.eventAttendeeRepository = eventAttendeeRepository;
         this.tenantSettingsRepository = tenantSettingsRepository;
         this.s3Service = s3Service;
@@ -89,52 +96,30 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
     public Map<String, Object> sendTestEmail(Long templateId, String recipientEmail, String tenantId, Long userId) {
         log.debug("Request to send test email: templateId={}, recipientEmail={}, tenantId={}", templateId, recipientEmail, tenantId);
 
-        // Fetch template fresh from database to avoid stale data issues
-        PromotionEmailTemplate template = promotionEmailTemplateRepository
-            .findById(templateId)
-            .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Template not found: " + templateId));
-
-        if (!template.getTenantId().equals(tenantId)) {
-            throw new IllegalArgumentException("Template does not belong to the specified tenant");
-        }
-
-        // Log if this is a newsletter email (eventId is null)
-        if (template.getEventId() == null) {
-            log.debug("Template has null eventId - this is a newsletter email. Using tenant settings fallback for header/footer.");
-        }
-
         // Use provided email - if not provided, throw error (don't lookup from userId)
         String finalRecipientEmail = recipientEmail;
         if (finalRecipientEmail == null || finalRecipientEmail.isEmpty()) {
             throw new IllegalArgumentException("Recipient email is required for test emails");
         }
 
-        // Build email content using the already-fetched template to avoid redundant DB query
-        // Use the passed tenantId parameter for fallback to tenant settings
-        Map<String, String> emailContent = buildEmailContent(template, null, null, tenantId);
-        String subject = emailContent.get("subject");
-        String bodyHtml = emailContent.get("bodyHtml");
-        String fromEmail = template.getFromEmail();
-
-        log.debug("Sending test email from {} to {} with subject: {}", fromEmail, finalRecipientEmail, subject);
-
         Map<String, Object> result = new HashMap<>();
-        try {
-            // Send email directly (test emails are sent synchronously, not via batch jobs)
-            emailSenderService.sendEmail(fromEmail, finalRecipientEmail, subject, bodyHtml, true, new HashMap<>());
+        PromotionTestEmailJobRequest request = new PromotionTestEmailJobRequest(
+            tenantId,
+            templateId,
+            finalRecipientEmail,
+            System.currentTimeMillis(),
+            userId
+        );
+
+        PromotionTestEmailJobResponse response = promotionTestEmailBatchJobService.triggerPromotionTestEmailJob(request);
+
+        if (response != null && Boolean.TRUE.equals(response.getSuccess())) {
             result.put("success", true);
-            result.put("messageId", "test-" + System.currentTimeMillis());
-            log.info("Test email sent successfully to {} for template {}", finalRecipientEmail, templateId);
-
-            // Log email sent to database (non-blocking - failure to log doesn't affect email sending)
-            logEmailSent(template, finalRecipientEmail, subject, tenantId, userId, true, EmailStatus.SENT, null);
-        } catch (Exception e) {
-            log.error("Failed to send test email to {} for template {}: {}", finalRecipientEmail, templateId, e.getMessage(), e);
+            result.put("jobExecutionId", response.getJobExecutionId());
+            result.put("message", response.getMessage());
+        } else {
             result.put("success", false);
-            result.put("error", e.getMessage());
-
-            // Log email failure to database (non-blocking - failure to log doesn't affect error reporting)
-            logEmailSent(template, finalRecipientEmail, subject, tenantId, userId, true, EmailStatus.FAILED, e.getMessage());
+            result.put("error", response != null ? response.getMessage() : "Null response from batch job service");
         }
 
         return result;

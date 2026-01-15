@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -263,7 +264,10 @@ public class PromotionEmailTemplateResource {
         String recipientEmail = request != null ? request.get("recipientEmail") : null;
 
         Map<String, Object> result = promotionEmailService.sendTestEmail(id, recipientEmail, tenantId, userId);
-        return ResponseEntity.ok(result);
+        if (Boolean.TRUE.equals(result.get("success"))) {
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(result);
+        }
+        return ResponseEntity.badRequest().body(result);
     }
 
     /**
