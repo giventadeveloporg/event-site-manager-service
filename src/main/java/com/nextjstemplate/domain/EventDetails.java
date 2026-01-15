@@ -3,6 +3,7 @@ package com.nextjstemplate.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nextjstemplate.domain.enumeration.PaymentFlowMode;
 import com.nextjstemplate.domain.enumeration.RecurrenceEndType;
 import com.nextjstemplate.domain.enumeration.RecurrencePattern;
 import jakarta.persistence.*;
@@ -195,6 +196,13 @@ public class EventDetails implements Serializable {
 
     @Column(name = "recurrence_series_id")
     private Long recurrenceSeriesId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_flow_mode", length = 30)
+    private PaymentFlowMode paymentFlowMode = PaymentFlowMode.STRIPE_ONLY;
+
+    @Column(name = "manual_payment_enabled")
+    private Boolean manualPaymentEnabled = false;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentEvent")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -814,6 +822,32 @@ public class EventDetails implements Serializable {
 
     public EventDetails recurrenceSeriesId(Long recurrenceSeriesId) {
         this.setRecurrenceSeriesId(recurrenceSeriesId);
+        return this;
+    }
+
+    public PaymentFlowMode getPaymentFlowMode() {
+        return this.paymentFlowMode;
+    }
+
+    public void setPaymentFlowMode(PaymentFlowMode paymentFlowMode) {
+        this.paymentFlowMode = paymentFlowMode;
+    }
+
+    public EventDetails paymentFlowMode(PaymentFlowMode paymentFlowMode) {
+        this.setPaymentFlowMode(paymentFlowMode);
+        return this;
+    }
+
+    public Boolean getManualPaymentEnabled() {
+        return this.manualPaymentEnabled;
+    }
+
+    public void setManualPaymentEnabled(Boolean manualPaymentEnabled) {
+        this.manualPaymentEnabled = manualPaymentEnabled;
+    }
+
+    public EventDetails manualPaymentEnabled(Boolean manualPaymentEnabled) {
+        this.setManualPaymentEnabled(manualPaymentEnabled);
         return this;
     }
 

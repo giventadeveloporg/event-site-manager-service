@@ -6,6 +6,8 @@ import com.nextjstemplate.service.dto.BatchJobRequest;
 import com.nextjstemplate.service.dto.BatchJobResponse;
 import com.nextjstemplate.service.dto.BatchJobServiceRequest;
 import com.nextjstemplate.service.dto.BatchJobServiceResponse;
+import com.nextjstemplate.service.dto.ManualPaymentSummaryJobRequest;
+import com.nextjstemplate.service.dto.ManualPaymentSummaryJobResponse;
 import com.nextjstemplate.service.dto.StripeFeesTaxUpdateRequest;
 import com.nextjstemplate.service.dto.StripeFeesTaxUpdateResponse;
 import com.nextjstemplate.web.rest.errors.BatchJobException;
@@ -31,6 +33,7 @@ public class BatchJobService {
 
     private static final String SUBSCRIPTION_RENEWAL_ENDPOINT = "/api/batch-jobs/subscription-renewal";
     private static final String STRIPE_FEES_TAX_UPDATE_ENDPOINT = "/api/batch-jobs/stripe-fees-tax-update";
+    private static final String MANUAL_PAYMENT_SUMMARY_ENDPOINT = "/api/batch-jobs/manual-payment-summary";
     private static final int DEFAULT_BATCH_SIZE = 100;
     private static final int DEFAULT_MAX_SUBSCRIPTIONS = 10000;
     private static final String DEFAULT_ESTIMATED_DURATION = "15-30 minutes";
@@ -136,6 +139,52 @@ public class BatchJobService {
             log.error("Unexpected error triggering subscription renewal batch job", e);
             throw new BatchJobException("Failed to trigger batch job: " + e.getMessage(), "batchjobsubmissionfailed");
         }
+    }
+
+    /**
+     * Trigger manual payment summary aggregation job in batch jobs microservice.
+     */
+    public ManualPaymentSummaryJobResponse triggerManualPaymentSummary(ManualPaymentSummaryJobRequest request) {
+        if (!batchJobProperties.getEnabled()) {
+            log.warn("Batch job service is disabled. Skipping manual payment summary trigger.");
+            ManualPaymentSummaryJobResponse response = new ManualPaymentSummaryJobResponse();
+            response.setSuccess(false);
+            response.setMessage("Batch job service is disabled");
+            return response;
+        }
+
+        try {
+            log.info(
+                "Triggering manual payment summary job - tenantId: {}, eventId: {}, snapshotDate: {}",
+                request != null ? request.getTenantId() : null,
+                request != null ? request.getEventId() : null,
+                request != null ? request.getSnapshotDate() : null
+            );
+
+            ManualPaymentSummaryJobResponse response = webClient
+                .post()
+                .uri(MANUAL_PAYMENT_SUMMARY_ENDPOINT)
+                .bodyValue(request != null ? request : new ManualPaymentSummaryJobRequest())
+                .retrieve()
+                .bodyToMono(ManualPaymentSummaryJobResponse.class)
+                .timeout(Duration.ofMillis(batchJobProperties.getTimeout()))
+                .block();
+
+            return response != null ? response : createManualPaymentSummaryError("Received null response from batch job service");
+        } catch (WebClientResponseException e) {
+            log.error("HTTP error triggering manual payment summary job: {} - {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            return createManualPaymentSummaryError("HTTP " + e.getStatusCode() + ": " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error triggering manual payment summary job", e);
+            return createManualPaymentSummaryError("Failed to trigger batch job: " + e.getMessage());
+        }
+    }
+
+    private ManualPaymentSummaryJobResponse createManualPaymentSummaryError(String message) {
+        ManualPaymentSummaryJobResponse response = new ManualPaymentSummaryJobResponse();
+        response.setSuccess(false);
+        response.setMessage(message);
+        return response;
     }
 
     /**

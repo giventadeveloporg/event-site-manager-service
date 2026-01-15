@@ -3,6 +3,8 @@ package com.nextjstemplate.web.rest;
 import com.nextjstemplate.service.BatchJobService;
 import com.nextjstemplate.service.dto.BatchJobRequest;
 import com.nextjstemplate.service.dto.BatchJobResponse;
+import com.nextjstemplate.service.dto.ManualPaymentSummaryJobRequest;
+import com.nextjstemplate.service.dto.ManualPaymentSummaryJobResponse;
 import com.nextjstemplate.service.dto.StripeFeesTaxUpdateRequest;
 import com.nextjstemplate.service.dto.StripeFeesTaxUpdateResponse;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
@@ -227,6 +229,45 @@ public class BatchJobResource {
             if (request.getStartDate().isAfter(request.getEndDate())) {
                 throw new BadRequestAlertException("startDate must be before or equal to endDate", ENTITY_NAME, "invaliddaterange");
             }
+        }
+    }
+
+    /**
+     * {@code POST  /manual-payment-summary} : Trigger Manual Payment Summary aggregation job.
+     *
+     * This proxies to batch-jobs: {@code POST /api/batch-jobs/manual-payment-summary}
+     * Optional filters: tenantId, eventId, snapshotDate (yyyy-MM-dd).
+     */
+    @PostMapping("/manual-payment-summary")
+    public ResponseEntity<ManualPaymentSummaryJobResponse> triggerManualPaymentSummary(
+        @RequestBody(required = false) ManualPaymentSummaryJobRequest request,
+        @RequestHeader(value = "Authorization", required = false) String authHeader,
+        @RequestHeader(value = "X-Tenant-Id", required = false) String tenantIdHeader
+    ) {
+        log.debug("REST request to trigger manual payment summary batch job: {}", request);
+
+        try {
+            authenticateRequest(authHeader);
+
+            ManualPaymentSummaryJobRequest jobRequest = new ManualPaymentSummaryJobRequest();
+            if (request != null) {
+                jobRequest.setTenantId(request.getTenantId());
+                jobRequest.setEventId(request.getEventId());
+                jobRequest.setSnapshotDate(request.getSnapshotDate());
+            }
+            if (StringUtils.hasText(tenantIdHeader)) {
+                jobRequest.setTenantId(tenantIdHeader);
+            }
+
+            ManualPaymentSummaryJobResponse response = batchJobService.triggerManualPaymentSummary(jobRequest);
+
+            if (response != null && Boolean.TRUE.equals(response.getSuccess())) {
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+            }
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            log.error("Failed to trigger manual payment summary batch job: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

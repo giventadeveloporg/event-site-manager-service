@@ -1,5 +1,6 @@
 package com.nextjstemplate.service.dto;
 
+import com.nextjstemplate.domain.enumeration.PaymentFlowMode;
 import com.nextjstemplate.domain.enumeration.RecurrenceEndType;
 import com.nextjstemplate.domain.enumeration.RecurrencePattern;
 import jakarta.validation.constraints.*;
@@ -129,6 +130,10 @@ public class EventDetailsDTO implements Serializable {
     private Long parentEventId;
 
     private Long recurrenceSeriesId;
+
+    private PaymentFlowMode paymentFlowMode;
+
+    private Boolean manualPaymentEnabled;
 
     private UserProfileDTO createdBy;
 
@@ -486,6 +491,22 @@ public class EventDetailsDTO implements Serializable {
 
     public void setRecurrenceSeriesId(Long recurrenceSeriesId) {
         this.recurrenceSeriesId = recurrenceSeriesId;
+    }
+
+    public PaymentFlowMode getPaymentFlowMode() {
+        return paymentFlowMode;
+    }
+
+    public void setPaymentFlowMode(PaymentFlowMode paymentFlowMode) {
+        this.paymentFlowMode = paymentFlowMode;
+    }
+
+    public Boolean getManualPaymentEnabled() {
+        return manualPaymentEnabled;
+    }
+
+    public void setManualPaymentEnabled(Boolean manualPaymentEnabled) {
+        this.manualPaymentEnabled = manualPaymentEnabled;
     }
 
     public UserProfileDTO getCreatedBy() {

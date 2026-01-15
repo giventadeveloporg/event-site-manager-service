@@ -84,6 +84,7 @@ public class EventDetailsServiceImpl implements EventDetailsService {
             buildAndSetRecurrenceMetadata(eventDetails);
         }
 
+        // Save operation - duplicate key violations are handled automatically by SequenceSynchronizationAspect
         eventDetails = eventDetailsRepository.save(eventDetails);
 
         // CRITICAL FIX: Set recurrenceSeriesId to parent event ID (for parent events)
@@ -91,6 +92,7 @@ public class EventDetailsServiceImpl implements EventDetailsService {
         if (Boolean.TRUE.equals(eventDetails.getIsRecurring()) && eventDetails.getParentEvent() == null) {
             if (eventDetails.getRecurrenceSeriesId() == null) {
                 eventDetails.setRecurrenceSeriesId(eventDetails.getId());
+                // Save operation - duplicate key violations are handled automatically by SequenceSynchronizationAspect
                 eventDetails = eventDetailsRepository.save(eventDetails);
             }
             // Create or update recurrence series record

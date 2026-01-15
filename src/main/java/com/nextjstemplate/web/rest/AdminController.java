@@ -2,6 +2,7 @@ package com.nextjstemplate.web.rest;
 
 import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.AdminService;
+import com.nextjstemplate.service.SequenceSynchronizationService;
 import com.nextjstemplate.service.criteria.UserProfileCriteria;
 import com.nextjstemplate.service.dto.AdminUserResponse;
 import com.nextjstemplate.service.dto.UpdateRoleRequest;
@@ -41,8 +42,11 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    public AdminController(AdminService adminService) {
+    private final SequenceSynchronizationService sequenceSynchronizationService;
+
+    public AdminController(AdminService adminService, SequenceSynchronizationService sequenceSynchronizationService) {
         this.adminService = adminService;
+        this.sequenceSynchronizationService = sequenceSynchronizationService;
     }
 
     /**
@@ -192,6 +196,56 @@ public class AdminController {
             }
             log.error("Error updating user status", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * POST /api/admin/sync-sequence : Synchronize sequence_generator with maximum IDs (admin only)
+     *
+     * This endpoint manually synchronizes the sequence_generator sequence to prevent
+     * duplicate key constraint violations when the sequence gets out of sync with
+     * manually inserted data.
+     *
+     * @return the ResponseEntity with status 200 (OK) and the new sequence value
+     */
+    @PostMapping("/sync-sequence")
+    @Operation(
+        summary = "Synchronize sequence generator",
+        description = "Manually synchronize sequence_generator with maximum IDs across all tables (admin only)"
+    )
+    @ApiResponses(
+        value = {
+            @ApiResponse(responseCode = "200", description = "Sequence synchronized successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - admin privileges required"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "500", description = "Internal server error"),
+        }
+    )
+    public ResponseEntity<java.util.Map<String, Object>> synchronizeSequence() {
+        log.info("Admin request to synchronize sequence_generator");
+
+        try {
+            // Get admin's Clerk user ID from security context (validates authentication)
+            extractClerkUserIdFromContext();
+
+            // Synchronize the sequence
+            Long newSequenceValue = sequenceSynchronizationService.synchronizeSequence();
+
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("success", true);
+            response.put("message", "Sequence synchronized successfully");
+            response.put("newSequenceValue", newSequenceValue);
+
+            return ResponseEntity.ok(response);
+        } catch (AccessDeniedException e) {
+            log.warn("Access denied: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (Exception e) {
+            log.error("Error synchronizing sequence", e);
+            java.util.Map<String, Object> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Failed to synchronize sequence: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 

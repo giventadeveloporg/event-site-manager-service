@@ -2467,12 +2467,12 @@
           "required": true
         },
         "responses": {
-          "403": {
-            "description": "Access denied - admin privileges required",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
-          },
           "200": {
             "description": "Role updated successfully",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
+          },
+          "403": {
+            "description": "Access denied - admin privileges required",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
           },
           "404": {
@@ -6441,6 +6441,252 @@
         }
       }
     },
+    "/api/manual-payments": {
+      "get": {
+        "tags": ["manual-payment-request-resource"],
+        "operationId": "getAllManualPayments",
+        "parameters": [
+          { "name": "id.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "tenantId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "tenantId.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "tenantId.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "eventId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "eventId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "eventId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "ticketTransactionId.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "ticketTransactionId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          {
+            "name": "ticketTransactionId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "ticketTransactionId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "ticketTransactionId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "ticketTransactionId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "ticketTransactionId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "ticketTransactionId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "ticketTransactionId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "requesterEmail.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "requesterEmail.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "requesterEmail.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "requesterEmail.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "requesterEmail.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "requesterEmail.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          {
+            "name": "requesterEmail.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "amountDue.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "amountDue.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "amountDue.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "paymentMethodType.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "paymentMethodType.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "object" } }
+          },
+          {
+            "name": "paymentMethodType.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "object" } }
+          },
+          { "name": "status.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "status.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "status.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "createdAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "createdAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "createdAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "createdAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "updatedAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "updatedAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "updatedAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "updatedAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "updatedAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 20 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ManualPaymentRequestDTO" } } }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["manual-payment-request-resource"],
+        "operationId": "createManualPayment",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ManualPaymentRequestDTO" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ManualPaymentRequestDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/manual-payments/{id}/proof": {
+      "post": {
+        "tags": ["manual-payment-request-resource"],
+        "operationId": "uploadProofOfPayment",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "required": ["file"], "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ManualPaymentRequestDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/manual-payments/{id}/mark-received": {
+      "post": {
+        "tags": ["manual-payment-request-resource"],
+        "operationId": "markReceived",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "receivedBy", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ManualPaymentRequestDTO" } } }
+          }
+        }
+      }
+    },
     "/api/gallery-albums": {
       "get": {
         "tags": ["gallery-album-resource"],
@@ -8278,6 +8524,20 @@
           { "name": "stripeFeeAmount.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "number" } } },
           {
             "name": "stripeFeeAmount.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "number" } }
+          },
+          { "name": "netPayoutAmount.greaterThan", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.lessThan", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.equals", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.notEquals", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "netPayoutAmount.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "number" } } },
+          {
+            "name": "netPayoutAmount.notIn",
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "number" } }
@@ -15710,6 +15970,42 @@
         }
       }
     },
+    "/api/cron/stripe-fees-tax-update": {
+      "post": {
+        "tags": ["batch-job-resource"],
+        "operationId": "triggerStripeFeesTaxUpdate",
+        "parameters": [
+          { "name": "Authorization", "in": "header", "required": false, "schema": { "type": "string" } },
+          { "name": "X-Tenant-Id", "in": "header", "required": false, "schema": { "type": "string" } }
+        ],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StripeFeesTaxUpdateRequest" } } } },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StripeFeesTaxUpdateResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/cron/manual-payment-summary": {
+      "post": {
+        "tags": ["batch-job-resource"],
+        "operationId": "triggerManualPaymentSummary",
+        "parameters": [
+          { "name": "Authorization", "in": "header", "required": false, "schema": { "type": "string" } },
+          { "name": "X-Tenant-Id", "in": "header", "required": false, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ManualPaymentSummaryJobRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ManualPaymentSummaryJobResponse" } } }
+          }
+        }
+      }
+    },
     "/api/contact-form-email/send": {
       "post": {
         "tags": ["contact-form-resource"],
@@ -15956,16 +16252,16 @@
         "parameters": [{ "name": "X-Clerk-Signature", "in": "header", "required": false, "schema": { "type": "string" } }],
         "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } }, "required": true },
         "responses": {
-          "200": {
-            "description": "Webhook processed successfully",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
-          },
           "401": {
             "description": "Invalid signature",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
           },
           "400": {
             "description": "Invalid payload",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
+          },
+          "200": {
+            "description": "Webhook processed successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookResponse" } } }
           }
         }
@@ -16248,12 +16544,12 @@
             "description": "Invalid request or user already exists",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
           },
-          "201": {
-            "description": "User registered successfully",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
-          },
           "500": {
             "description": "Internal server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
+          },
+          "201": {
+            "description": "User registered successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
           }
         }
@@ -16392,6 +16688,43 @@
           "200": {
             "description": "OK",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MembershipSubscriptionDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/manual-payments/{id}": {
+      "get": {
+        "tags": ["manual-payment-request-resource"],
+        "operationId": "getManualPayment",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ManualPaymentRequestDTO" } } }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["manual-payment-request-resource"],
+        "operationId": "deleteManualPayment",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "tags": ["manual-payment-request-resource"],
+        "operationId": "partialUpdateManualPayment",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ManualPaymentRequestDTO" } },
+            "application/merge-patch+json": { "schema": { "$ref": "#/components/schemas/ManualPaymentRequestDTO" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ManualPaymentRequestDTO" } } }
           }
         }
       }
@@ -20147,6 +20480,402 @@
         }
       }
     },
+    "/api/manual-payments/count": {
+      "get": {
+        "tags": ["manual-payment-request-resource"],
+        "operationId": "countManualPayments",
+        "parameters": [
+          { "name": "id.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "tenantId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "tenantId.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "tenantId.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "eventId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "eventId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "eventId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "ticketTransactionId.greaterThan",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "ticketTransactionId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          {
+            "name": "ticketTransactionId.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "ticketTransactionId.lessThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          { "name": "ticketTransactionId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "ticketTransactionId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "ticketTransactionId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "ticketTransactionId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "ticketTransactionId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "requesterEmail.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "requesterEmail.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "requesterEmail.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "requesterEmail.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "requesterEmail.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "requesterEmail.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          {
+            "name": "requesterEmail.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "amountDue.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "amountDue.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "amountDue.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "paymentMethodType.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "paymentMethodType.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "object" } }
+          },
+          {
+            "name": "paymentMethodType.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "object" } }
+          },
+          { "name": "status.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "status.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "status.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "createdAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "createdAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "createdAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "createdAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "createdAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "createdAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "updatedAt.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "updatedAt.greaterThanOrEqual",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          { "name": "updatedAt.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date-time" } },
+          { "name": "updatedAt.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "updatedAt.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          {
+            "name": "updatedAt.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "integer", "format": "int64" } } } }
+        }
+      }
+    },
+    "/api/manual-payment-summary": {
+      "get": {
+        "tags": ["manual-payment-summary-report-resource"],
+        "operationId": "getManualPaymentSummary",
+        "parameters": [
+          { "name": "id.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "tenantId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "tenantId.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "tenantId.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "eventId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "eventId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "eventId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "paymentMethodType.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "paymentMethodType.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "object" } }
+          },
+          {
+            "name": "paymentMethodType.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "object" } }
+          },
+          { "name": "status.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "status.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "status.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "snapshotDate.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "snapshotDate.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date" } }
+          },
+          {
+            "name": "snapshotDate.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": { "minimum": 0, "type": "integer", "default": 0 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": { "minimum": 1, "type": "integer", "default": 20 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ManualPaymentSummaryReportDTO" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/manual-payment-summary/count": {
+      "get": {
+        "tags": ["manual-payment-summary-report-resource"],
+        "operationId": "countManualPaymentSummary",
+        "parameters": [
+          { "name": "id.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "id.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "id.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "id.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "tenantId.contains", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.doesNotContain", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.equals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.notEquals", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "tenantId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "tenantId.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "tenantId.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "eventId.greaterThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThan", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.equals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.notEquals", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "eventId.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "eventId.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          {
+            "name": "eventId.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "integer", "format": "int64" } }
+          },
+          { "name": "paymentMethodType.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "paymentMethodType.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "object" } }
+          },
+          {
+            "name": "paymentMethodType.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "object" } }
+          },
+          { "name": "status.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "status.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "status.notIn", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "object" } } },
+          { "name": "snapshotDate.greaterThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.lessThan", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.equals", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.notEquals", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "snapshotDate.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          {
+            "name": "snapshotDate.in",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date" } }
+          },
+          {
+            "name": "snapshotDate.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "string", "format": "date" } }
+          },
+          { "name": "distinct", "in": "query", "required": false, "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "integer", "format": "int64" } } } }
+        }
+      }
+    },
+    "/api/manual-payment-methods": {
+      "get": {
+        "tags": ["manual-payment-method-resource"],
+        "operationId": "getManualPaymentMethods",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ManualPaymentMethodDTO" } } }
+            }
+          }
+        }
+      }
+    },
     "/api/gallery-albums/count": {
       "get": {
         "tags": ["gallery-album-resource"],
@@ -21852,6 +22581,20 @@
           { "name": "stripeFeeAmount.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "number" } } },
           {
             "name": "stripeFeeAmount.notIn",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "array", "items": { "type": "number" } }
+          },
+          { "name": "netPayoutAmount.greaterThan", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.lessThan", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.greaterThanOrEqual", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.lessThanOrEqual", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.equals", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.notEquals", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "netPayoutAmount.specified", "in": "query", "required": false, "schema": { "type": "boolean" } },
+          { "name": "netPayoutAmount.in", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "number" } } },
+          {
+            "name": "netPayoutAmount.notIn",
             "in": "query",
             "required": false,
             "schema": { "type": "array", "items": { "type": "number" } }
@@ -29324,6 +30067,8 @@
           "recurrenceMonthlyDay": { "type": "integer", "format": "int32" },
           "parentEventId": { "type": "integer", "format": "int64" },
           "recurrenceSeriesId": { "type": "integer", "format": "int64" },
+          "paymentFlowMode": { "type": "string", "enum": ["STRIPE_ONLY", "MANUAL_ONLY", "HYBRID"] },
+          "manualPaymentEnabled": { "type": "boolean" },
           "createdBy": { "$ref": "#/components/schemas/UserProfileDTO" },
           "eventType": { "$ref": "#/components/schemas/EventTypeDetailsDTO" },
           "discountCodes": { "uniqueItems": true, "type": "array", "items": { "$ref": "#/components/schemas/DiscountCodeDTO" } }
@@ -29449,6 +30194,7 @@
           "stripeAmountDiscount": { "type": "number" },
           "stripeAmountTax": { "type": "number" },
           "stripeFeeAmount": { "type": "number" },
+          "netPayoutAmount": { "type": "number" },
           "qrCodeImageUrl": { "maxLength": 2048, "minLength": 0, "type": "string" },
           "eventId": { "type": "integer", "format": "int64" },
           "userId": { "type": "integer", "format": "int64" },
@@ -30420,7 +31166,23 @@
         "type": "object",
         "properties": {
           "transactionId": { "type": "string" },
-          "provider": { "type": "string", "enum": ["STRIPE", "PAYPAL", "ZEFFY", "ZELLE_MANUAL", "REVOLUT", "CEFI_CHARITY", "GIVEBUTTER"] },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "STRIPE",
+              "PAYPAL",
+              "ZEFFY",
+              "ZELLE_MANUAL",
+              "VENMO_MANUAL",
+              "CASH_APP_MANUAL",
+              "CASH",
+              "CHECK",
+              "OTHER_MANUAL",
+              "REVOLUT",
+              "CEFI_CHARITY",
+              "GIVEBUTTER"
+            ]
+          },
           "status": { "type": "string" },
           "clientSecret": { "type": "string" },
           "sessionUrl": { "type": "string" },
@@ -30517,6 +31279,36 @@
           "userProfile": { "$ref": "#/components/schemas/UserProfileDTO" }
         }
       },
+      "ManualPaymentRequestDTO": {
+        "required": ["amountDue", "paymentMethodType", "status", "tenantId"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "eventId": { "type": "integer", "format": "int64" },
+          "ticketTransactionId": { "type": "integer", "format": "int64" },
+          "requesterEmail": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "requesterFirstName": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "requesterLastName": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "requesterPhone": { "maxLength": 100, "minLength": 0, "type": "string" },
+          "amountDue": { "type": "number" },
+          "paymentMethodType": {
+            "type": "string",
+            "enum": ["ZELLE_MANUAL", "VENMO_MANUAL", "CASH_APP_MANUAL", "CASH", "CHECK", "OTHER_MANUAL"]
+          },
+          "paymentHandle": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "paymentInstructions": { "type": "string" },
+          "status": { "type": "string", "enum": ["REQUESTED", "RECEIVED", "VOIDED", "REFUNDED"] },
+          "proofOfPaymentFileKey": { "maxLength": 512, "minLength": 0, "type": "string" },
+          "proofOfPaymentFileUrl": { "maxLength": 1024, "minLength": 0, "type": "string" },
+          "proofOfPaymentUploadedAt": { "type": "string", "format": "date-time" },
+          "receivedAt": { "type": "string", "format": "date-time" },
+          "receivedBy": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "voidReason": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
       "AidaDTO": {
         "type": "object",
         "properties": { "id": { "type": "integer", "format": "int64" }, "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" } }
@@ -30546,6 +31338,48 @@
           "message": { "type": "string" },
           "estimatedDuration": { "type": "string" },
           "request": { "$ref": "#/components/schemas/BatchJobRequest" }
+        }
+      },
+      "StripeFeesTaxUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "tenantId": { "type": "string" },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" },
+          "forceUpdate": { "type": "boolean" }
+        }
+      },
+      "StripeFeesTaxUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "jobId": { "type": "string" },
+          "status": { "type": "string" },
+          "tenantId": { "type": "string" },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" },
+          "forceUpdate": { "type": "boolean" },
+          "estimatedRecords": { "type": "integer", "format": "int64" },
+          "estimatedCompletionTime": { "type": "string", "format": "date-time" },
+          "message": { "type": "string" }
+        }
+      },
+      "ManualPaymentSummaryJobRequest": {
+        "type": "object",
+        "properties": {
+          "tenantId": { "type": "string" },
+          "eventId": { "type": "integer", "format": "int64" },
+          "snapshotDate": { "type": "string", "format": "date" }
+        }
+      },
+      "ManualPaymentSummaryJobResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" },
+          "jobExecutionId": { "type": "integer", "format": "int64" },
+          "tenantId": { "type": "string" },
+          "eventId": { "type": "integer", "format": "int64" },
+          "snapshotDate": { "type": "string", "format": "date" }
         }
       },
       "ContactFormDTO": {
@@ -30820,7 +31654,7 @@
         }
       },
       "PromotionEmailSentLogDTO": {
-        "required": ["emailStatus", "eventId", "recipientEmail", "sentAt", "subject", "templateId", "tenantId"],
+        "required": ["emailStatus", "recipientEmail", "sentAt", "subject", "templateId", "tenantId"],
         "type": "object",
         "properties": {
           "id": { "type": "integer", "format": "int64" },
@@ -30840,6 +31674,48 @@
           "event": { "$ref": "#/components/schemas/EventDetailsDTO" },
           "discountCode": { "$ref": "#/components/schemas/DiscountCodeDTO" },
           "sentBy": { "$ref": "#/components/schemas/UserProfileDTO" }
+        }
+      },
+      "ManualPaymentSummaryReportDTO": {
+        "required": ["createdAt", "eventId", "paymentMethodType", "snapshotDate", "status", "tenantId", "totalAmount", "transactionCount"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "eventId": { "type": "integer", "format": "int64" },
+          "paymentMethodType": {
+            "type": "string",
+            "enum": ["ZELLE_MANUAL", "VENMO_MANUAL", "CASH_APP_MANUAL", "CASH", "CHECK", "OTHER_MANUAL"]
+          },
+          "status": { "type": "string", "enum": ["REQUESTED", "RECEIVED", "VOIDED", "REFUNDED"] },
+          "totalAmount": { "type": "number" },
+          "transactionCount": { "type": "integer", "format": "int32" },
+          "snapshotDate": { "type": "string", "format": "date" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ManualPaymentMethodDTO": {
+        "type": "object",
+        "properties": {
+          "providerName": {
+            "type": "string",
+            "enum": [
+              "STRIPE",
+              "PAYPAL",
+              "ZEFFY",
+              "ZELLE_MANUAL",
+              "VENMO_MANUAL",
+              "CASH_APP_MANUAL",
+              "CASH",
+              "CHECK",
+              "OTHER_MANUAL",
+              "REVOLUT",
+              "CEFI_CHARITY",
+              "GIVEBUTTER"
+            ]
+          },
+          "isActive": { "type": "boolean" },
+          "configurationJson": { "type": "string" }
         }
       },
       "EventTicketTransactionStatisticsDTO": {
@@ -30862,6 +31738,7 @@
           "totalSales": { "type": "integer", "format": "int32" },
           "totalRevenue": { "type": "number" },
           "netRevenue": { "type": "number" },
+          "netRevenueBeforeTax": { "type": "number" },
           "totalDiscounts": { "type": "number" },
           "totalRefunds": { "type": "number" },
           "averageTicketPrice": { "type": "number" },
