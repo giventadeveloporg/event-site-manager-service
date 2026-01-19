@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -127,6 +128,17 @@ public class EventTicketTransactionDTO implements Serializable {
     private ZonedDateTime checkInTime;
 
     private ZonedDateTime checkOutTime;
+
+    // Nested transaction items (for response only, not persisted)
+    private List<EventTicketTransactionItemDTO> transactionItems;
+
+    public List<EventTicketTransactionItemDTO> getTransactionItems() {
+        return transactionItems;
+    }
+
+    public void setTransactionItems(List<EventTicketTransactionItemDTO> transactionItems) {
+        this.transactionItems = transactionItems;
+    }
 
     public Long getId() {
         return id;

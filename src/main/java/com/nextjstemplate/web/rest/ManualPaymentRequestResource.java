@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -149,8 +151,41 @@ public class ManualPaymentRequestResource {
     @GetMapping("/{id}")
     public ResponseEntity<ManualPaymentRequestDTO> getManualPayment(@PathVariable Long id) {
         log.debug("REST request to get ManualPaymentRequest : {}", id);
-        Optional<ManualPaymentRequestDTO> dto = manualPaymentRequestService.findOne(id);
+        String tenantId = requireTenantId();
+        Optional<ManualPaymentRequestDTO> dto = manualPaymentRequestService.findOneWithDetails(id);
+        dto.ifPresent(dtoValue -> {
+            if (dtoValue.getTenantId() != null && !dtoValue.getTenantId().equals(tenantId)) {
+                throw new BadRequestAlertException(
+                    "Manual payment request does not belong to the specified tenant",
+                    ENTITY_NAME,
+                    "tenantMismatch"
+                );
+            }
+        });
         return ResponseUtil.wrapOrNotFound(dto);
+    }
+
+    @PostMapping("/{id}/send-confirmation-email")
+    public ResponseEntity<Map<String, Object>> sendConfirmationEmail(@PathVariable Long id) {
+        log.debug("REST request to send confirmation email for ManualPaymentRequest : {}", id);
+        String tenantId = requireTenantId();
+        ManualPaymentRequestDTO dto = manualPaymentRequestService
+            .findOne(id)
+            .orElseThrow(() -> new BadRequestAlertException("Manual payment request not found", ENTITY_NAME, "idnotfound"));
+        if (dto.getTenantId() != null && !dto.getTenantId().equals(tenantId)) {
+            throw new BadRequestAlertException(
+                "Manual payment request does not belong to the specified tenant",
+                ENTITY_NAME,
+                "tenantMismatch"
+            );
+        }
+
+        manualPaymentRequestService.triggerConfirmationEmail(id);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Confirmation email queued");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")

@@ -2436,12 +2436,12 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "Status updated successfully",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
-          },
           "403": {
             "description": "Access denied - admin privileges required",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
+          },
+          "200": {
+            "description": "Status updated successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
           },
           "404": {
@@ -2467,12 +2467,12 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "Role updated successfully",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
-          },
           "403": {
             "description": "Access denied - admin privileges required",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
+          },
+          "200": {
+            "description": "Role updated successfully",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminUserResponse" } } }
           },
           "404": {
@@ -6647,6 +6647,19 @@
           "200": {
             "description": "OK",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ManualPaymentRequestDTO" } } }
+          }
+        }
+      }
+    },
+    "/api/manual-payments/{id}/send-confirmation-email": {
+      "post": {
+        "tags": ["manual-payment-request-resource"],
+        "operationId": "sendConfirmationEmail",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
           }
         }
       }
@@ -16544,12 +16557,12 @@
             "description": "Invalid request or user already exists",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
           },
-          "500": {
-            "description": "Internal server error",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
-          },
           "201": {
             "description": "User registered successfully",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
+          },
+          "500": {
+            "description": "Internal server error",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
           }
         }
@@ -16651,6 +16664,32 @@
           "400": {
             "description": "Invalid request",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RefreshTokenResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/admin/sync-sequence": {
+      "post": {
+        "tags": ["Admin User Management"],
+        "summary": "Synchronize sequence generator",
+        "description": "Manually synchronize sequence_generator with maximum IDs across all tables (admin only)",
+        "operationId": "synchronizeSequence",
+        "responses": {
+          "200": {
+            "description": "Sequence synchronized successfully",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
+          },
+          "403": {
+            "description": "Access denied - admin privileges required",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": { "type": "object" } } } }
           }
         }
       }
@@ -30203,7 +30242,53 @@
           "checkInStatus": { "maxLength": 50, "minLength": 0, "type": "string" },
           "numberOfGuestsCheckedIn": { "type": "integer", "format": "int32" },
           "checkInTime": { "type": "string", "format": "date-time" },
-          "checkOutTime": { "type": "string", "format": "date-time" }
+          "checkOutTime": { "type": "string", "format": "date-time" },
+          "transactionItems": { "type": "array", "items": { "$ref": "#/components/schemas/EventTicketTransactionItemDTO" } }
+        }
+      },
+      "EventTicketTransactionItemDTO": {
+        "required": ["createdAt", "pricePerUnit", "quantity", "ticketTypeId", "totalAmount", "transactionId", "updatedAt"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "paymentMethodDomainId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "transactionId": { "type": "integer", "format": "int64" },
+          "ticketTypeId": { "type": "integer", "format": "int64" },
+          "quantity": { "minimum": 1, "type": "integer", "format": "int32" },
+          "pricePerUnit": { "type": "number" },
+          "totalAmount": { "type": "number" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "transaction": { "$ref": "#/components/schemas/EventTicketTransactionDTO" },
+          "ticketType": { "$ref": "#/components/schemas/EventTicketTypeDTO" }
+        }
+      },
+      "EventTicketTypeDTO": {
+        "required": ["code", "createdAt", "name", "price", "updatedAt"],
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "name": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "description": { "type": "string" },
+          "isServiceFeeIncluded": { "type": "boolean" },
+          "serviceFee": { "type": "number" },
+          "price": { "type": "number" },
+          "code": { "maxLength": 255, "minLength": 0, "type": "string" },
+          "availableQuantity": { "type": "integer", "format": "int32" },
+          "soldQuantity": { "type": "integer", "format": "int32" },
+          "remainingQuantity": { "type": "integer", "format": "int32" },
+          "isActive": { "type": "boolean" },
+          "saleStartDate": { "type": "string", "format": "date-time" },
+          "saleEndDate": { "type": "string", "format": "date-time" },
+          "minQuantityPerOrder": { "type": "integer", "format": "int32" },
+          "maxQuantityPerOrder": { "type": "integer", "format": "int32" },
+          "requiresApproval": { "type": "boolean" },
+          "sortOrder": { "type": "integer", "format": "int32" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "event": { "$ref": "#/components/schemas/EventDetailsDTO" }
         }
       },
       "UserPaymentTransactionDTO": {
@@ -30362,51 +30447,6 @@
           "registrationSource": { "maxLength": 100, "minLength": 0, "type": "string" },
           "waitListPosition": { "minimum": 1, "type": "integer", "format": "int32" },
           "priorityScore": { "type": "integer", "format": "int32" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "event": { "$ref": "#/components/schemas/EventDetailsDTO" }
-        }
-      },
-      "EventTicketTransactionItemDTO": {
-        "required": ["createdAt", "pricePerUnit", "quantity", "ticketTypeId", "totalAmount", "transactionId", "updatedAt"],
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer", "format": "int64" },
-          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
-          "paymentMethodDomainId": { "maxLength": 255, "minLength": 0, "type": "string" },
-          "transactionId": { "type": "integer", "format": "int64" },
-          "ticketTypeId": { "type": "integer", "format": "int64" },
-          "quantity": { "minimum": 1, "type": "integer", "format": "int32" },
-          "pricePerUnit": { "type": "number" },
-          "totalAmount": { "type": "number" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "transaction": { "$ref": "#/components/schemas/EventTicketTransactionDTO" },
-          "ticketType": { "$ref": "#/components/schemas/EventTicketTypeDTO" }
-        }
-      },
-      "EventTicketTypeDTO": {
-        "required": ["code", "createdAt", "name", "price", "updatedAt"],
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer", "format": "int64" },
-          "tenantId": { "maxLength": 255, "minLength": 0, "type": "string" },
-          "name": { "maxLength": 255, "minLength": 0, "type": "string" },
-          "description": { "type": "string" },
-          "isServiceFeeIncluded": { "type": "boolean" },
-          "serviceFee": { "type": "number" },
-          "price": { "type": "number" },
-          "code": { "maxLength": 255, "minLength": 0, "type": "string" },
-          "availableQuantity": { "type": "integer", "format": "int32" },
-          "soldQuantity": { "type": "integer", "format": "int32" },
-          "remainingQuantity": { "type": "integer", "format": "int32" },
-          "isActive": { "type": "boolean" },
-          "saleStartDate": { "type": "string", "format": "date-time" },
-          "saleEndDate": { "type": "string", "format": "date-time" },
-          "minQuantityPerOrder": { "type": "integer", "format": "int32" },
-          "maxQuantityPerOrder": { "type": "integer", "format": "int32" },
-          "requiresApproval": { "type": "boolean" },
-          "sortOrder": { "type": "integer", "format": "int32" },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" },
           "event": { "$ref": "#/components/schemas/EventDetailsDTO" }
@@ -31279,6 +31319,14 @@
           "userProfile": { "$ref": "#/components/schemas/UserProfileDTO" }
         }
       },
+      "CartItemDTO": {
+        "required": ["quantity", "ticketTypeId"],
+        "type": "object",
+        "properties": {
+          "ticketTypeId": { "type": "integer", "format": "int64" },
+          "quantity": { "minimum": 1, "type": "integer", "format": "int32" }
+        }
+      },
       "ManualPaymentRequestDTO": {
         "required": ["amountDue", "paymentMethodType", "status", "tenantId"],
         "type": "object",
@@ -31306,7 +31354,10 @@
           "receivedBy": { "maxLength": 255, "minLength": 0, "type": "string" },
           "voidReason": { "type": "string" },
           "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "cart": { "type": "array", "items": { "$ref": "#/components/schemas/CartItemDTO" } },
+          "ticketTransaction": { "$ref": "#/components/schemas/EventTicketTransactionDTO" },
+          "event": { "$ref": "#/components/schemas/EventDetailsDTO" }
         }
       },
       "AidaDTO": {

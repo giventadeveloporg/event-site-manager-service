@@ -63,7 +63,7 @@ public class ManualPaymentRequest implements Serializable {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method_type", length = 50, nullable = false)
+    @Column(name = "payment_method_type", length = 80, nullable = false)
     private ManualPaymentMethodType paymentMethodType;
 
     @Size(max = 255)

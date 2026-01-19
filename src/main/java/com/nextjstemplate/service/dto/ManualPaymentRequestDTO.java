@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -69,6 +70,51 @@ public class ManualPaymentRequestDTO implements Serializable {
     private ZonedDateTime createdAt;
 
     private ZonedDateTime updatedAt;
+
+    // Cart items for ticket creation (not persisted, only used in request)
+    // Can be provided directly or reconstructed from selectedTickets
+    private List<CartItemDTO> cart;
+
+    // Alternative: Selected tickets in format: [{ ticketTypeId: number, quantity: number }]
+    // This is a JSON string that can be parsed to reconstruct cart if cart is not provided
+    // Frontend can send this if cart field is not available
+    private String selectedTickets;
+
+    // Nested data for response (not persisted)
+    private EventTicketTransactionDTO ticketTransaction;
+    private EventDetailsDTO event;
+
+    public List<CartItemDTO> getCart() {
+        return cart;
+    }
+
+    public void setCart(List<CartItemDTO> cart) {
+        this.cart = cart;
+    }
+
+    public String getSelectedTickets() {
+        return selectedTickets;
+    }
+
+    public void setSelectedTickets(String selectedTickets) {
+        this.selectedTickets = selectedTickets;
+    }
+
+    public EventTicketTransactionDTO getTicketTransaction() {
+        return ticketTransaction;
+    }
+
+    public void setTicketTransaction(EventTicketTransactionDTO ticketTransaction) {
+        this.ticketTransaction = ticketTransaction;
+    }
+
+    public EventDetailsDTO getEvent() {
+        return event;
+    }
+
+    public void setEvent(EventDetailsDTO event) {
+        this.event = event;
+    }
 
     public Long getId() {
         return id;

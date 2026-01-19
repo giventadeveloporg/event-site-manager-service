@@ -24,4 +24,14 @@ public interface ManualPaymentRequestService {
     ManualPaymentRequestDTO uploadProofOfPayment(Long id, String tenantId, MultipartFile file);
 
     ManualPaymentRequestDTO updateStatus(Long id, String tenantId, ManualPaymentStatus newStatus, String receivedBy, String voidReason);
+
+    /**
+     * Find manual payment request with nested ticket transaction, items, and event details.
+     */
+    Optional<ManualPaymentRequestDTO> findOneWithDetails(Long id);
+
+    /**
+     * Trigger confirmation email batch job for manual payment request.
+     */
+    void triggerConfirmationEmail(Long paymentRequestId);
 }

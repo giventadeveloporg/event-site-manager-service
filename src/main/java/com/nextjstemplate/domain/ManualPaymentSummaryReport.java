@@ -12,6 +12,8 @@ import java.time.ZonedDateTime;
 import java.util.Objects;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * A ManualPaymentSummaryReport.
@@ -42,7 +44,7 @@ public class ManualPaymentSummaryReport implements Serializable {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method_type", length = 50, nullable = false)
+    @Column(name = "payment_method_type", length = 80, nullable = false)
     private ManualPaymentMethodType paymentMethodType;
 
     @NotNull

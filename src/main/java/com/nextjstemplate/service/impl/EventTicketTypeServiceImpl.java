@@ -38,6 +38,17 @@ public class EventTicketTypeServiceImpl implements EventTicketTypeService {
     public EventTicketTypeDTO save(EventTicketTypeDTO eventTicketTypeDTO) {
         log.debug("Request to save EventTicketType : {}", eventTicketTypeDTO);
         EventTicketType eventTicketType = eventTicketTypeMapper.toEntity(eventTicketTypeDTO);
+
+        // Ensure ID is null for new entities to force sequence generation
+        // This prevents duplicate key errors when entity has ID set from DTO
+        if (eventTicketType.getId() != null) {
+            log.warn(
+                "EventTicketType entity has ID {} set during create operation. Clearing ID to force sequence generation.",
+                eventTicketType.getId()
+            );
+            eventTicketType.setId(null);
+        }
+
         eventTicketType = eventTicketTypeRepository.save(eventTicketType);
         return eventTicketTypeMapper.toDto(eventTicketType);
     }
