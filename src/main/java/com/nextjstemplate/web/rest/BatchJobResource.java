@@ -7,6 +7,8 @@ import com.nextjstemplate.service.dto.ManualPaymentSummaryJobRequest;
 import com.nextjstemplate.service.dto.ManualPaymentSummaryJobResponse;
 import com.nextjstemplate.service.dto.StripeFeesTaxUpdateRequest;
 import com.nextjstemplate.service.dto.StripeFeesTaxUpdateResponse;
+import com.nextjstemplate.service.dto.StripeTicketBatchRefundRequest;
+import com.nextjstemplate.service.dto.StripeTicketBatchRefundResponse;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import com.nextjstemplate.web.rest.errors.BatchJobException;
 import jakarta.validation.Valid;
@@ -268,6 +270,112 @@ public class BatchJobResource {
         } catch (Exception e) {
             log.error("Failed to trigger manual payment summary batch job: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * {@code POST  /stripe-ticket-batch-refund} : Trigger Stripe ticket batch refund job.
+     *
+     * This proxies to batch-jobs: {@code POST /api/batch-jobs/stripe-ticket-batch-refund}
+     * Processes eligible tickets for an event and creates Stripe refunds.
+     *
+     * @param request the Stripe ticket batch refund request
+     * @param authHeader the Authorization header
+     * @param tenantIdHeader the X-Tenant-Id header (optional)
+     * @return the {@link ResponseEntity} with status {@code 202 (Accepted)} and the batch job response
+     */
+    @PostMapping("/stripe-ticket-batch-refund")
+    public ResponseEntity<StripeTicketBatchRefundResponse> triggerStripeTicketBatchRefund(
+        @Valid @RequestBody StripeTicketBatchRefundRequest request,
+        @RequestHeader(value = "Authorization", required = false) String authHeader,
+        @RequestHeader(value = "X-Tenant-Id", required = false) String tenantIdHeader
+    ) {
+        log.debug("REST request to trigger Stripe ticket batch refund job: {}", request);
+
+        try {
+            // 1. Authenticate request (JWT or cron secret)
+            authenticateRequest(authHeader);
+
+            // 2. Build request from body or headers
+            StripeTicketBatchRefundRequest jobRequest = buildStripeTicketBatchRefundRequest(request, tenantIdHeader);
+
+            // 3. Validate request
+            validateStripeTicketBatchRefundRequest(jobRequest);
+
+            // 4. Generate job ID if not provided
+            if (jobRequest.getJobId() == null || jobRequest.getJobId().isEmpty()) {
+                String jobId =
+                    "stripe-batch-refund-" +
+                    java.time.ZonedDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) +
+                    "-" +
+                    jobRequest.getEventId();
+                jobRequest.setJobId(jobId);
+            }
+
+            // 5. Submit job
+            StripeTicketBatchRefundResponse response = batchJobService.triggerStripeTicketBatchRefund(jobRequest);
+
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid request: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidrequest");
+        } catch (BatchJobException e) {
+            log.error("Batch job exception: {}", e.getMessage(), e);
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, e.getErrorKey());
+        } catch (Exception e) {
+            log.error("Failed to trigger Stripe ticket batch refund job: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Build the Stripe ticket batch refund request from body or headers.
+     *
+     * @param request the request body (may be null)
+     * @param tenantIdHeader the X-Tenant-Id header (may be null)
+     * @return the Stripe ticket batch refund request
+     */
+    private StripeTicketBatchRefundRequest buildStripeTicketBatchRefundRequest(
+        StripeTicketBatchRefundRequest request,
+        String tenantIdHeader
+    ) {
+        StripeTicketBatchRefundRequest jobRequest = new StripeTicketBatchRefundRequest();
+
+        if (request != null) {
+            // Use values from request body
+            jobRequest.setEventId(request.getEventId());
+            jobRequest.setTenantId(request.getTenantId());
+            jobRequest.setJobId(request.getJobId());
+            jobRequest.setStartDate(request.getStartDate());
+            jobRequest.setEndDate(request.getEndDate());
+        }
+
+        // Override tenant ID from header if provided
+        if (StringUtils.hasText(tenantIdHeader)) {
+            jobRequest.setTenantId(tenantIdHeader);
+        }
+
+        return jobRequest;
+    }
+
+    /**
+     * Validate the Stripe ticket batch refund request.
+     *
+     * @param request the Stripe ticket batch refund request
+     */
+    private void validateStripeTicketBatchRefundRequest(StripeTicketBatchRefundRequest request) {
+        if (request.getEventId() == null) {
+            throw new BadRequestAlertException("eventId is required", ENTITY_NAME, "eventidrequired");
+        }
+
+        if (request.getTenantId() == null || request.getTenantId().isEmpty()) {
+            throw new BadRequestAlertException("tenantId is required", ENTITY_NAME, "tenantidrequired");
+        }
+
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            if (request.getStartDate().isAfter(request.getEndDate())) {
+                throw new BadRequestAlertException("startDate must be before or equal to endDate", ENTITY_NAME, "invaliddaterange");
+            }
         }
     }
 }

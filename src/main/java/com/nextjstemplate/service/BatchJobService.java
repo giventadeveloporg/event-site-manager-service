@@ -10,6 +10,8 @@ import com.nextjstemplate.service.dto.ManualPaymentSummaryJobRequest;
 import com.nextjstemplate.service.dto.ManualPaymentSummaryJobResponse;
 import com.nextjstemplate.service.dto.StripeFeesTaxUpdateRequest;
 import com.nextjstemplate.service.dto.StripeFeesTaxUpdateResponse;
+import com.nextjstemplate.service.dto.StripeTicketBatchRefundRequest;
+import com.nextjstemplate.service.dto.StripeTicketBatchRefundResponse;
 import com.nextjstemplate.web.rest.errors.BatchJobException;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -34,6 +36,7 @@ public class BatchJobService {
     private static final String SUBSCRIPTION_RENEWAL_ENDPOINT = "/api/batch-jobs/subscription-renewal";
     private static final String STRIPE_FEES_TAX_UPDATE_ENDPOINT = "/api/batch-jobs/stripe-fees-tax-update";
     private static final String MANUAL_PAYMENT_SUMMARY_ENDPOINT = "/api/batch-jobs/manual-payment-summary";
+    private static final String STRIPE_TICKET_BATCH_REFUND_ENDPOINT = "/api/batch-jobs/stripe-ticket-batch-refund";
     private static final int DEFAULT_BATCH_SIZE = 100;
     private static final int DEFAULT_MAX_SUBSCRIPTIONS = 10000;
     private static final String DEFAULT_ESTIMATED_DURATION = "15-30 minutes";
@@ -280,5 +283,92 @@ public class BatchJobService {
      */
     public StripeFeesTaxUpdateResponse triggerStripeFeesTaxUpdate() {
         return triggerStripeFeesTaxUpdate(new StripeFeesTaxUpdateRequest());
+    }
+
+    /**
+     * Trigger Stripe ticket batch refund job.
+     *
+     * @param request the Stripe ticket batch refund request
+     * @return the batch job response
+     * @throws BatchJobException if job submission fails
+     */
+    public StripeTicketBatchRefundResponse triggerStripeTicketBatchRefund(StripeTicketBatchRefundRequest request) {
+        if (!batchJobProperties.getEnabled()) {
+            log.warn("Batch job service is disabled. Skipping Stripe ticket batch refund trigger.");
+            throw new BatchJobException("Batch job service is disabled", "batchjobdisabled");
+        }
+
+        // Validate request
+        if (request == null) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
+
+        if (request.getEventId() == null) {
+            throw new IllegalArgumentException("eventId is required");
+        }
+
+        if (request.getTenantId() == null || request.getTenantId().isEmpty()) {
+            throw new IllegalArgumentException("tenantId is required");
+        }
+
+        if (request.getJobId() == null || request.getJobId().isEmpty()) {
+            throw new IllegalArgumentException("jobId is required");
+        }
+
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            if (request.getStartDate().isAfter(request.getEndDate())) {
+                throw new IllegalArgumentException("startDate must be before or equal to endDate");
+            }
+        }
+
+        try {
+            log.info(
+                "Triggering Stripe ticket batch refund job - jobId: {}, eventId: {}, tenantId: {}, startDate: {}, endDate: {}",
+                request.getJobId(),
+                request.getEventId(),
+                request.getTenantId(),
+                request.getStartDate(),
+                request.getEndDate()
+            );
+
+            // Call batch job service
+            StripeTicketBatchRefundResponse response = webClient
+                .post()
+                .uri(STRIPE_TICKET_BATCH_REFUND_ENDPOINT)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(StripeTicketBatchRefundResponse.class)
+                .timeout(Duration.ofMillis(batchJobProperties.getTimeout()))
+                .block();
+
+            if (response == null) {
+                throw new BatchJobException("Received null response from batch job service", "nullresponse");
+            }
+
+            log.info(
+                "Stripe ticket batch refund job triggered successfully. JobId: {}, Status: {}, TotalEligibleTickets: {}",
+                response.getJobId(),
+                response.getStatus(),
+                response.getTotalEligibleTickets()
+            );
+
+            return response;
+        } catch (WebClientResponseException.BadRequest e) {
+            log.warn("Bad request to batch job service: {}", e.getResponseBodyAsString(), e);
+            throw new IllegalArgumentException("Invalid request: " + e.getResponseBodyAsString(), e);
+        } catch (WebClientResponseException e) {
+            log.error("HTTP error triggering Stripe ticket batch refund job: {} - {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new BatchJobException("HTTP " + e.getStatusCode() + ": " + e.getMessage(), "batchjobhttperror");
+        } catch (org.springframework.web.reactive.function.client.WebClientRequestException e) {
+            log.error("Connection error to batch job service: {}", e.getMessage(), e);
+            throw new BatchJobException("Batch job service is not available", "batchjobunavailable");
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (BatchJobException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error triggering Stripe ticket batch refund job", e);
+            throw new BatchJobException("Failed to trigger batch job: " + e.getMessage(), "batchjobsubmissionfailed");
+        }
     }
 }
