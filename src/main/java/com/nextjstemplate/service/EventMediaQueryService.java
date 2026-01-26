@@ -222,6 +222,15 @@ public class EventMediaQueryService extends QueryService<EventMedia> {
             if (criteria.getIsHomePageHeroImage() != null) {
                 specification = specification.and(buildSpecification(criteria.getIsHomePageHeroImage(), EventMedia_.isHomePageHeroImage));
             }
+            if (criteria.getHomePageHeroDisplayDurationSeconds() != null) {
+                specification =
+                    specification.and(
+                        buildRangeSpecification(
+                            criteria.getHomePageHeroDisplayDurationSeconds(),
+                            EventMedia_.homePageHeroDisplayDurationSeconds
+                        )
+                    );
+            }
             if (criteria.getIsFeaturedEventImage() != null) {
                 specification = specification.and(buildSpecification(criteria.getIsFeaturedEventImage(), EventMedia_.isFeaturedEventImage));
             }

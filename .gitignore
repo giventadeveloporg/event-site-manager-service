@@ -186,4 +186,12 @@ dev.js
 # Sensitive configuration files - DO NOT COMMIT
 scripts/stripe-config.properties
 scripts/stripe-config-insert.sql
+documentation/INSERT_STRIPE_PAYMENT_DETAILS_TO_DB/*.properties
+documentation/INSERT_STRIPE_PAYMENT_DETAILS_TO_DB/*-config*.sql
+documentation/INSERT_STRIPE_PAYMENT_DETAILS_TO_DB/*-config*.properties
+**/stripe-config*.properties
+**/givebutter-config*.properties
+**/*-config-prod.properties
+**/*-config-dev.properties
+**/*-config-*.properties
 /.run/NextjsTemplateBootApp.run.xml

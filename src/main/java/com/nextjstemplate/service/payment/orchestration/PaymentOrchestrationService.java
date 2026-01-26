@@ -106,8 +106,89 @@ public class PaymentOrchestrationService {
             );
         }
 
-        // Prioritize Givebutter for OFFERING and DONATION_ZERO_FEE use cases
-        if (request.getPaymentUseCase() == PaymentUseCase.OFFERING || request.getPaymentUseCase() == PaymentUseCase.DONATION_ZERO_FEE) {
+        // CRITICAL: Check explicit request parameters (HIGHEST PRIORITY)
+        // Frontend sends paymentProvider: "GIVEBUTTER" OR paymentType: "DONATION_ZERO_FEE" to explicitly request GiveButter
+        // This must be checked BEFORE event metadata to ensure frontend's explicit request is honored
+        // This ensures donation-based checkout flows are routed correctly without disrupting Stripe flows
+        // IMPORTANT: Even when items array is present (ticketed fundraisers), route to GiveButter if explicitly requested
+        Map<String, Object> requestMetadata = request.getMetadata();
+        boolean shouldRouteToGiveButter = false;
+        String requestedProvider = null;
+
+        // Check request metadata for explicit paymentProvider (frontend may send this)
+        if (requestMetadata != null) {
+            Object providerObj = requestMetadata.get("paymentProvider");
+            if (providerObj != null) {
+                requestedProvider = providerObj.toString().toUpperCase();
+                log.debug("Request explicitly specifies paymentProvider: {}", requestedProvider);
+                if ("GIVEBUTTER".equals(requestedProvider)) {
+                    shouldRouteToGiveButter = true;
+                }
+            }
+        }
+
+        // Check paymentUseCase: DONATION_ZERO_FEE also indicates GiveButter routing (as per document)
+        // This is equivalent to paymentType: "DONATION_ZERO_FEE" in frontend request
+        if (request.getPaymentUseCase() == PaymentUseCase.DONATION_ZERO_FEE) {
+            shouldRouteToGiveButter = true;
+            log.debug("Request paymentUseCase is DONATION_ZERO_FEE - indicates GiveButter routing");
+        }
+
+        // Also check returnUrl pattern - donation-based checkouts use /donation/success
+        // This is a separate control path indicator (doesn't interfere with Stripe flows)
+        if (request.getReturnUrl() != null && request.getReturnUrl().contains("/donation/success")) {
+            shouldRouteToGiveButter = true;
+            log.debug("Request returnUrl indicates donation-based checkout flow: {}", request.getReturnUrl());
+        }
+
+        // If request explicitly requests GiveButter (via any of the above indicators),
+        // prioritize GiveButter immediately (donation-based checkout flow - separate from Stripe)
+        // This applies even when items array is present (ticketed fundraisers)
+        // CRITICAL: Query GiveButter config directly from database (not filtered by paymentUseCase)
+        // because GiveButter config may have payment_use_case = DONATION_ZERO_FEE while request has TICKET_SALE
+        if (shouldRouteToGiveButter) {
+            // Query GiveButter config directly from database (bypasses paymentUseCase filter)
+            // This ensures we find GiveButter config even if payment_use_case doesn't match request
+            Optional<Map<String, Object>> givebutterConfigOpt = configService.getProviderConfig(
+                request.getTenantId(),
+                PaymentProvider.GIVEBUTTER
+            );
+
+            final String finalRequestedProvider = requestedProvider; // Final copy for lambda
+            final PaymentUseCase finalPaymentUseCase = request.getPaymentUseCase(); // Final copy for lambda
+            final String finalReturnUrl = request.getReturnUrl(); // Final copy for lambda
+            givebutterConfigOpt.ifPresentOrElse(
+                config -> {
+                    // Verify the config is active
+                    Object isActive = config.get("isActive");
+                    if (Boolean.TRUE.equals(isActive)) {
+                        // Route to GiveButter immediately (separate control path from Stripe)
+                        // Remove all other providers to ensure only GiveButter is used
+                        providerConfigs.clear();
+                        providerConfigs.add(config);
+                        log.info(
+                            "Request explicitly requests GiveButter (paymentProvider={}, paymentUseCase={}, returnUrl={}) - routing to GiveButter immediately (donation-based checkout flow, separate from Stripe)",
+                            finalRequestedProvider,
+                            finalPaymentUseCase,
+                            finalReturnUrl
+                        );
+                    } else {
+                        log.warn(
+                            "Request specifies GiveButter but provider config is not active for tenant {} - falling back to other providers",
+                            request.getTenantId()
+                        );
+                    }
+                },
+                () ->
+                    log.warn(
+                        "Request specifies GiveButter but provider not configured for tenant {} - falling back to other providers",
+                        request.getTenantId()
+                    )
+            );
+        }
+
+        // Prioritize Givebutter for OFFERING use case (if not already prioritized above)
+        if (!shouldRouteToGiveButter && request.getPaymentUseCase() == PaymentUseCase.OFFERING) {
             // Check if Givebutter is configured
             Optional<Map<String, Object>> givebutterConfig = providerConfigs
                 .stream()
@@ -124,7 +205,10 @@ public class PaymentOrchestrationService {
 
         // For TICKET_SALE and DONATION use cases, check if event has zero-fee provider configured
         // Also add event metadata to request metadata for adapter access
-        if (request.getEventId() != null) {
+        // NOTE: This only applies if request doesn't explicitly request GiveButter (separate control path)
+        // This ensures normal Stripe checkout flows are not disrupted
+        // IMPORTANT: This check is SECONDARY - explicit request parameters take priority
+        if (request.getEventId() != null && !shouldRouteToGiveButter) {
             Optional<EventDetails> eventOptional = eventDetailsRepository.findById(request.getEventId());
             log.debug("Event found: {}, eventId: {}", eventOptional.isPresent(), request.getEventId());
 
@@ -132,101 +216,137 @@ public class PaymentOrchestrationService {
                 Map<String, Object> eventMetadata = event.getMetadataAsMap();
                 log.debug("Event metadata: {}", eventMetadata != null && !eventMetadata.isEmpty() ? "present" : "null or empty");
 
+                // Add event metadata to request metadata for adapter access
+                if (request.getMetadata() == null) {
+                    request.setMetadata(new HashMap<>());
+                }
                 if (eventMetadata != null && !eventMetadata.isEmpty()) {
-                    // Add event metadata to request metadata for adapter access
-                    if (request.getMetadata() == null) {
-                        request.setMetadata(new HashMap<>());
-                    }
                     request.getMetadata().put("eventMetadata", eventMetadata);
+                }
 
-                    // Check if event is configured as fundraiser/charity event with Givebutter
-                    Boolean isFundraiserEvent = (Boolean) eventMetadata.get("isFundraiserEvent");
-                    Boolean isCharityEvent = (Boolean) eventMetadata.get("isCharityEvent");
+                // CRITICAL: Check donationMetadata field first (separate column), then fallback to metadata.donationConfig
+                // This ensures donation-based checkout flows route to GiveButter when configured
+                Map<String, Object> donationMetadataMap = parseDonationMetadata(event);
+                Boolean isFundraiserEvent = null;
+                Boolean isCharityEvent = null;
+                String zeroFeeProvider = null;
+
+                if (donationMetadataMap != null && !donationMetadataMap.isEmpty()) {
+                    // Use donationMetadata field (priority 1)
+                    isFundraiserEvent = (Boolean) donationMetadataMap.get("isFundraiserEvent");
+                    isCharityEvent = (Boolean) donationMetadataMap.get("isCharityEvent");
+                    zeroFeeProvider = (String) donationMetadataMap.get("zeroFeeProvider");
                     log.debug(
-                        "Event {} metadata check: isFundraiserEvent={}, isCharityEvent={}",
+                        "Event {} donationMetadata check: isFundraiserEvent={}, isCharityEvent={}, zeroFeeProvider={}",
                         request.getEventId(),
                         isFundraiserEvent,
-                        isCharityEvent
+                        isCharityEvent,
+                        zeroFeeProvider
                     );
-
+                } else if (eventMetadata != null && !eventMetadata.isEmpty()) {
+                    // Fallback to metadata.donationConfig (priority 2 - backward compatibility)
+                    isFundraiserEvent = (Boolean) eventMetadata.get("isFundraiserEvent");
+                    isCharityEvent = (Boolean) eventMetadata.get("isCharityEvent");
                     @SuppressWarnings("unchecked")
                     Map<String, Object> donationConfig = (Map<String, Object>) eventMetadata.get("donationConfig");
-                    log.debug("Event {} donationConfig: {}", request.getEventId(), donationConfig != null ? "present" : "null");
-
-                    // For TICKET_SALE: Check if fundraiser event - use Stripe instead of Givebutter
-                    // Givebutter API does not support programmatic donation creation
-                    if (request.getPaymentUseCase() == PaymentUseCase.TICKET_SALE) {
-                        log.debug("Processing TICKET_SALE routing for event {}", request.getEventId());
-                        log.debug(
-                            "Conditions check: isFundraiserEvent={}, isCharityEvent={}, donationConfig={}",
-                            Boolean.TRUE.equals(isFundraiserEvent),
-                            Boolean.TRUE.equals(isCharityEvent),
-                            donationConfig != null
-                        );
-
-                        if ((Boolean.TRUE.equals(isFundraiserEvent) || Boolean.TRUE.equals(isCharityEvent)) && donationConfig != null) {
-                            // Skip Givebutter - API does not support programmatic donation creation
-                            // Use Stripe for fundraiser/charity events (can qualify for nonprofit discount)
-                            log.info(
-                                "Event {} is fundraiser/charity event - routing to Stripe (Givebutter API not available for donations)",
-                                request.getEventId()
-                            );
-
-                            // Remove Givebutter from provider list if present
-                            providerConfigs.removeIf(config -> PaymentProvider.GIVEBUTTER.equals(config.get("providerName")));
-
-                            // Prioritize Stripe for fundraiser/charity events
-                            Optional<Map<String, Object>> stripeConfig = providerConfigs
-                                .stream()
-                                .filter(config -> PaymentProvider.STRIPE.equals(config.get("providerName")))
-                                .findFirst();
-
-                            stripeConfig.ifPresentOrElse(
-                                config -> {
-                                    // Move Stripe to front of list
-                                    providerConfigs.remove(config);
-                                    providerConfigs.add(0, config);
-                                    log.debug(
-                                        "Prioritized Stripe for fundraiser/charity event {} (nonprofit discount eligible)",
-                                        request.getEventId()
-                                    );
-                                },
-                                () ->
-                                    log.warn(
-                                        "Stripe not configured for tenant {} - fundraiser event {} may fail",
-                                        request.getTenantId(),
-                                        request.getEventId()
-                                    )
-                            );
-                        }
+                    if (donationConfig != null) {
+                        zeroFeeProvider = (String) donationConfig.get("zeroFeeProvider");
                     }
+                    log.debug(
+                        "Event {} metadata.donationConfig check: isFundraiserEvent={}, isCharityEvent={}, zeroFeeProvider={}",
+                        request.getEventId(),
+                        isFundraiserEvent,
+                        isCharityEvent,
+                        zeroFeeProvider
+                    );
+                }
 
-                    // For DONATION use case: Always use Stripe (skip Givebutter - API not available)
-                    // Stripe can qualify for nonprofit discount (2.2% vs 2.9%)
+                // For TICKET_SALE: Check if fundraiser event with GiveButter configured
+                // Route to GiveButter for donation-based checkout flows (separate control path from Stripe)
+                if (request.getPaymentUseCase() == PaymentUseCase.TICKET_SALE) {
+                    log.debug("Processing TICKET_SALE routing for event {}", request.getEventId());
+
+                    // Check if event is configured as fundraiser/charity with GiveButter as zero-fee provider
                     if (
-                        request.getPaymentUseCase() == PaymentUseCase.DONATION ||
-                        request.getPaymentUseCase() == PaymentUseCase.DONATION_ZERO_FEE
+                        (Boolean.TRUE.equals(isFundraiserEvent) || Boolean.TRUE.equals(isCharityEvent)) &&
+                        "GIVEBUTTER".equals(zeroFeeProvider)
                     ) {
-                        // Skip Givebutter - API does not support programmatic donation creation
-                        providerConfigs.removeIf(config -> PaymentProvider.GIVEBUTTER.equals(config.get("providerName")));
+                        // Check if GiveButter is configured for tenant
+                        Optional<Map<String, Object>> givebutterConfig = providerConfigs
+                            .stream()
+                            .filter(config -> PaymentProvider.GIVEBUTTER.equals(config.get("providerName")))
+                            .findFirst();
 
-                        // Prioritize Stripe for donations
+                        givebutterConfig.ifPresentOrElse(
+                            config -> {
+                                // Route ticketed fundraiser event to GiveButter (donation-based checkout flow)
+                                // This is a SEPARATE control path from normal Stripe checkout
+                                providerConfigs.remove(config);
+                                providerConfigs.add(0, config);
+                                log.info(
+                                    "Event {} is fundraiser/charity event with GiveButter configured - routing to GiveButter (donation-based checkout flow)",
+                                    request.getEventId()
+                                );
+                            },
+                            () ->
+                                log.warn(
+                                    "Event {} is configured for GiveButter but provider not available for tenant {} - falling back to other providers",
+                                    request.getEventId(),
+                                    request.getTenantId()
+                                )
+                        );
+                    } else {
+                        // Normal ticket sale - continue with existing Stripe flow (no changes)
+                        log.debug(
+                            "Event {} is not configured for GiveButter donation flow - using standard provider selection (Stripe)",
+                            request.getEventId()
+                        );
+                    }
+                }
+
+                // For DONATION use case: Check if zero-fee provider (GiveButter) is configured
+                if (
+                    request.getPaymentUseCase() == PaymentUseCase.DONATION ||
+                    request.getPaymentUseCase() == PaymentUseCase.DONATION_ZERO_FEE
+                ) {
+                    // Check if GiveButter is configured as zero-fee provider
+                    if ("GIVEBUTTER".equals(zeroFeeProvider)) {
+                        Optional<Map<String, Object>> givebutterConfig = providerConfigs
+                            .stream()
+                            .filter(config -> PaymentProvider.GIVEBUTTER.equals(config.get("providerName")))
+                            .findFirst();
+
+                        givebutterConfig.ifPresentOrElse(
+                            config -> {
+                                // Prioritize GiveButter for donations when configured
+                                providerConfigs.remove(config);
+                                providerConfigs.add(0, config);
+                                log.info(
+                                    "Routing donation (use case: {}) to GiveButter (zero-fee provider configured)",
+                                    request.getPaymentUseCase()
+                                );
+                            },
+                            () ->
+                                log.warn(
+                                    "GiveButter configured in event metadata but not available for tenant {} - falling back to other providers",
+                                    request.getTenantId()
+                                )
+                        );
+                    } else {
+                        // No zero-fee provider configured, prioritize Stripe (nonprofit discount eligible)
                         Optional<Map<String, Object>> stripeConfig = providerConfigs
                             .stream()
                             .filter(config -> PaymentProvider.STRIPE.equals(config.get("providerName")))
                             .findFirst();
 
-                        stripeConfig.ifPresentOrElse(
-                            config -> {
-                                providerConfigs.remove(config);
-                                providerConfigs.add(0, config);
-                                log.info(
-                                    "Routing donation (use case: {}) to Stripe (Givebutter API not available, nonprofit discount eligible)",
-                                    request.getPaymentUseCase()
-                                );
-                            },
-                            () -> log.warn("Stripe not configured for tenant {} - donation may fail", request.getTenantId())
-                        );
+                        stripeConfig.ifPresent(config -> {
+                            providerConfigs.remove(config);
+                            providerConfigs.add(0, config);
+                            log.info(
+                                "Routing donation (use case: {}) to Stripe (no zero-fee provider configured, nonprofit discount eligible)",
+                                request.getPaymentUseCase()
+                            );
+                        });
                     }
                 }
             });
@@ -249,19 +369,10 @@ public class PaymentOrchestrationService {
                 continue;
             }
 
-            // Skip Givebutter for programmatic donation creation
-            // Givebutter API is read-only and does NOT support creating donations via API
-            // It only supports retrieving existing donation data
-            if (
-                provider == PaymentProvider.GIVEBUTTER &&
-                (request.getPaymentUseCase() == PaymentUseCase.DONATION || request.getPaymentUseCase() == PaymentUseCase.DONATION_ZERO_FEE)
-            ) {
-                log.debug(
-                    "Skipping Givebutter - API does not support programmatic donation creation. Use case: {}",
-                    request.getPaymentUseCase()
-                );
-                continue;
-            }
+            // Note: GiveButter adapter supports donation creation via API
+            // The frontend handles webhook-like behavior through polling (no backend webhook listeners)
+            // For TICKET_SALE with fundraiser events configured for GiveButter, route to GiveButter
+            // This is a separate control path from normal Stripe checkout flows
 
             try {
                 log.debug("Attempting payment initialization with provider: {}", provider);
@@ -978,6 +1089,47 @@ public class PaymentOrchestrationService {
                 log.warn("Failed to serialize provider metadata", e);
             }
         }
+    }
+
+    /**
+     * Parse donationMetadata JSON string from EventDetails.
+     * Priority: 1) donationMetadata field, 2) metadata.donationConfig (backward compatibility)
+     *
+     * @param event EventDetails entity
+     * @return Map containing parsed donation metadata, or null if not found
+     */
+    private Map<String, Object> parseDonationMetadata(EventDetails event) {
+        // Priority 1: Check donationMetadata field (separate column)
+        if (event.getDonationMetadata() != null && !event.getDonationMetadata().trim().isEmpty()) {
+            try {
+                Map<String, Object> donationMetadata = objectMapper.readValue(event.getDonationMetadata(), Map.class);
+                if (donationMetadata != null && !donationMetadata.isEmpty()) {
+                    log.debug("Parsed donationMetadata from donation_metadata column for event {}", event.getId());
+                    return donationMetadata;
+                }
+            } catch (Exception e) {
+                log.warn("Failed to parse donationMetadata JSON for event {}: {}", event.getId(), e.getMessage());
+            }
+        }
+
+        // Priority 2: Fallback to metadata.donationConfig (backward compatibility)
+        Map<String, Object> eventMetadata = event.getMetadataAsMap();
+        if (eventMetadata != null && !eventMetadata.isEmpty()) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> donationConfig = (Map<String, Object>) eventMetadata.get("donationConfig");
+            if (donationConfig != null && !donationConfig.isEmpty()) {
+                log.debug("Using donationConfig from metadata column for event {} (backward compatibility)", event.getId());
+                // Build donationMetadata map from donationConfig
+                Map<String, Object> donationMetadata = new HashMap<>();
+                donationMetadata.put("isFundraiserEvent", eventMetadata.get("isFundraiserEvent"));
+                donationMetadata.put("isCharityEvent", eventMetadata.get("isCharityEvent"));
+                donationMetadata.put("zeroFeeProvider", donationConfig.get("zeroFeeProvider"));
+                donationMetadata.put("givebutterCampaignId", donationConfig.get("givebutterCampaignId"));
+                return donationMetadata;
+            }
+        }
+
+        return null;
     }
 
     /**

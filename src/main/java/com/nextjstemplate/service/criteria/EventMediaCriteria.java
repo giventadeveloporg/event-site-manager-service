@@ -66,6 +66,8 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     private BooleanFilter isHomePageHeroImage;
 
+    private IntegerFilter homePageHeroDisplayDurationSeconds;
+
     private BooleanFilter isFeaturedEventImage;
 
     private BooleanFilter isLiveEventImage;
@@ -122,6 +124,8 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.isHeroImage = other.isHeroImage == null ? null : other.isHeroImage.copy();
         this.isActiveHeroImage = other.isActiveHeroImage == null ? null : other.isActiveHeroImage.copy();
         this.isHomePageHeroImage = other.optionalIsHomePageHeroImage().map(BooleanFilter::copy).orElse(null);
+        this.homePageHeroDisplayDurationSeconds =
+            other.homePageHeroDisplayDurationSeconds == null ? null : other.homePageHeroDisplayDurationSeconds.copy();
         this.isFeaturedEventImage = other.optionalIsFeaturedEventImage().map(BooleanFilter::copy).orElse(null);
         this.isLiveEventImage = other.optionalIsLiveEventImage().map(BooleanFilter::copy).orElse(null);
         this.isEmailHeaderImage = other.optionalIsEmailHeaderImage().map(BooleanFilter::copy).orElse(null);
@@ -479,6 +483,21 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.isHomePageHeroImage = isHomePageHeroImage;
     }
 
+    public IntegerFilter getHomePageHeroDisplayDurationSeconds() {
+        return homePageHeroDisplayDurationSeconds;
+    }
+
+    public IntegerFilter homePageHeroDisplayDurationSeconds() {
+        if (homePageHeroDisplayDurationSeconds == null) {
+            homePageHeroDisplayDurationSeconds = new IntegerFilter();
+        }
+        return homePageHeroDisplayDurationSeconds;
+    }
+
+    public void setHomePageHeroDisplayDurationSeconds(IntegerFilter homePageHeroDisplayDurationSeconds) {
+        this.homePageHeroDisplayDurationSeconds = homePageHeroDisplayDurationSeconds;
+    }
+
     public BooleanFilter getIsFeaturedEventImage() {
         return isFeaturedEventImage;
     }
@@ -741,6 +760,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             Objects.equals(isHeroImage, that.isHeroImage) &&
             Objects.equals(isActiveHeroImage, that.isActiveHeroImage) &&
             Objects.equals(isHomePageHeroImage, that.isHomePageHeroImage) &&
+            Objects.equals(homePageHeroDisplayDurationSeconds, that.homePageHeroDisplayDurationSeconds) &&
             Objects.equals(isFeaturedEventImage, that.isFeaturedEventImage) &&
             Objects.equals(isLiveEventImage, that.isLiveEventImage) &&
             Objects.equals(isEmailHeaderImage, that.isEmailHeaderImage) &&
@@ -828,6 +848,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             (isHeroImage != null ? "isHeroImage=" + isHeroImage + ", " : "") +
             (isActiveHeroImage != null ? "isActiveHeroImage=" + isActiveHeroImage + ", " : "") +
             optionalIsHomePageHeroImage().map(f -> "isHomePageHeroImage=" + f + ", ").orElse("") +
+            (homePageHeroDisplayDurationSeconds != null ? "homePageHeroDisplayDurationSeconds=" + homePageHeroDisplayDurationSeconds + ", " : "") +
             optionalIsFeaturedEventImage().map(f -> "isFeaturedEventImage=" + f + ", ").orElse("") +
             optionalIsLiveEventImage().map(f -> "isLiveEventImage=" + f + ", ").orElse("") +
             optionalIsEmailHeaderImage().map(f -> "isEmailHeaderImage=" + f + ", ").orElse("") +

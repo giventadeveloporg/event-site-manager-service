@@ -103,6 +103,9 @@ public class EventMedia implements Serializable {
     @Column(name = "is_home_page_hero_image", nullable = false)
     private Boolean isHomePageHeroImage;
 
+    @Column(name = "home_page_hero_display_duration_seconds")
+    private Integer homePageHeroDisplayDurationSeconds;
+
     @NotNull
     @Column(name = "is_featured_event_image", nullable = false)
     private Boolean isFeaturedEventImage;
@@ -460,6 +463,19 @@ public class EventMedia implements Serializable {
         this.isHomePageHeroImage = isHomePageHeroImage;
     }
 
+    public Integer getHomePageHeroDisplayDurationSeconds() {
+        return this.homePageHeroDisplayDurationSeconds;
+    }
+
+    public EventMedia homePageHeroDisplayDurationSeconds(Integer homePageHeroDisplayDurationSeconds) {
+        this.setHomePageHeroDisplayDurationSeconds(homePageHeroDisplayDurationSeconds);
+        return this;
+    }
+
+    public void setHomePageHeroDisplayDurationSeconds(Integer homePageHeroDisplayDurationSeconds) {
+        this.homePageHeroDisplayDurationSeconds = homePageHeroDisplayDurationSeconds;
+    }
+
     public Boolean getIsFeaturedEventImage() {
         return this.isFeaturedEventImage;
     }
@@ -717,6 +733,7 @@ public class EventMedia implements Serializable {
             ", isHeroImage='" + getIsHeroImage() + "'" +
             ", isActiveHeroImage='" + getIsActiveHeroImage() + "'" +
             ", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
+            ", homePageHeroDisplayDurationSeconds=" + getHomePageHeroDisplayDurationSeconds() +
             ", isFeaturedEventImage='" + getIsFeaturedEventImage() + "'" +
             ", isLiveEventImage='" + getIsLiveEventImage() + "'" +
             ", isEmailHeaderImage='" + getIsEmailHeaderImage() + "'" +

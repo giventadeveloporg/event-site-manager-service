@@ -71,6 +71,10 @@ public class EventMediaDTO implements Serializable {
     @NotNull
     private Boolean isHomePageHeroImage;
 
+    @Min(value = 1)
+    @Max(value = 600)
+    private Integer homePageHeroDisplayDurationSeconds;
+
     @NotNull
     private Boolean isFeaturedEventImage;
 
@@ -289,6 +293,14 @@ public class EventMediaDTO implements Serializable {
         this.isHomePageHeroImage = isHomePageHeroImage;
     }
 
+    public Integer getHomePageHeroDisplayDurationSeconds() {
+        return homePageHeroDisplayDurationSeconds;
+    }
+
+    public void setHomePageHeroDisplayDurationSeconds(Integer homePageHeroDisplayDurationSeconds) {
+        this.homePageHeroDisplayDurationSeconds = homePageHeroDisplayDurationSeconds;
+    }
+
     public Boolean getIsFeaturedEventImage() {
         return isFeaturedEventImage;
     }
@@ -464,6 +476,7 @@ public class EventMediaDTO implements Serializable {
             ", isHeroImage='" + getIsHeroImage() + "'" +
             ", isActiveHeroImage='" + getIsActiveHeroImage() + "'" +
             ", isHomePageHeroImage='" + getIsHomePageHeroImage() + "'" +
+            ", homePageHeroDisplayDurationSeconds=" + getHomePageHeroDisplayDurationSeconds() +
             ", isFeaturedEventImage='" + getIsFeaturedEventImage() + "'" +
             ", isLiveEventImage='" + getIsLiveEventImage() + "'" +
             ", isEmailHeaderImage='" + getIsEmailHeaderImage() + "'" +

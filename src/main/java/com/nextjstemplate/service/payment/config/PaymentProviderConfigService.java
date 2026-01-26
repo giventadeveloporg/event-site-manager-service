@@ -117,6 +117,19 @@ public class PaymentProviderConfigService {
         // Add configuration JSON if present
         if (config.getConfigurationJson() != null) {
             configMap.put("configurationJson", config.getConfigurationJson());
+            // Parse JSON and extract common fields (like campaignId for GiveButter)
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                Map<String, Object> configJsonMap = mapper.readValue(config.getConfigurationJson(), Map.class);
+                // Extract campaignId if present (for GiveButter)
+                if (configJsonMap.containsKey("campaignId")) {
+                    configMap.put("campaignId", configJsonMap.get("campaignId"));
+                }
+                // Add other common fields as needed
+            } catch (Exception e) {
+                log.debug("Failed to parse configuration JSON for provider {}: {}", config.getProviderName(), e.getMessage());
+                // Continue without parsing - adapter will handle raw JSON string
+            }
         }
 
         return configMap;
