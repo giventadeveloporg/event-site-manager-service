@@ -81,6 +81,18 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private StringFilter logoImageUrl;
 
+    private StringFilter facebookUrl;
+
+    private StringFilter instagramUrl;
+
+    private StringFilter twitterUrl;
+
+    private StringFilter linkedinUrl;
+
+    private StringFilter youtubeUrl;
+
+    private StringFilter tiktokUrl;
+
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -120,6 +132,12 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.emailFooterHtmlUrl = other.optionalEmailFooterHtmlUrl().map(StringFilter::copy).orElse(null);
         this.emailHeaderImageUrl = other.optionalEmailHeaderImageUrl().map(StringFilter::copy).orElse(null);
         this.logoImageUrl = other.optionalLogoImageUrl().map(StringFilter::copy).orElse(null);
+        this.facebookUrl = other.optionalFacebookUrl().map(StringFilter::copy).orElse(null);
+        this.instagramUrl = other.optionalInstagramUrl().map(StringFilter::copy).orElse(null);
+        this.twitterUrl = other.optionalTwitterUrl().map(StringFilter::copy).orElse(null);
+        this.linkedinUrl = other.optionalLinkedinUrl().map(StringFilter::copy).orElse(null);
+        this.youtubeUrl = other.optionalYoutubeUrl().map(StringFilter::copy).orElse(null);
+        this.tiktokUrl = other.optionalTiktokUrl().map(StringFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.tenantOrganizationId = other.optionalTenantOrganizationId().map(LongFilter::copy).orElse(null);
@@ -663,6 +681,120 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.logoImageUrl = logoImageUrl;
     }
 
+    public StringFilter getFacebookUrl() {
+        return facebookUrl;
+    }
+
+    public Optional<StringFilter> optionalFacebookUrl() {
+        return Optional.ofNullable(facebookUrl);
+    }
+
+    public StringFilter facebookUrl() {
+        if (facebookUrl == null) {
+            setFacebookUrl(new StringFilter());
+        }
+        return facebookUrl;
+    }
+
+    public void setFacebookUrl(StringFilter facebookUrl) {
+        this.facebookUrl = facebookUrl;
+    }
+
+    public StringFilter getInstagramUrl() {
+        return instagramUrl;
+    }
+
+    public Optional<StringFilter> optionalInstagramUrl() {
+        return Optional.ofNullable(instagramUrl);
+    }
+
+    public StringFilter instagramUrl() {
+        if (instagramUrl == null) {
+            setInstagramUrl(new StringFilter());
+        }
+        return instagramUrl;
+    }
+
+    public void setInstagramUrl(StringFilter instagramUrl) {
+        this.instagramUrl = instagramUrl;
+    }
+
+    public StringFilter getTwitterUrl() {
+        return twitterUrl;
+    }
+
+    public Optional<StringFilter> optionalTwitterUrl() {
+        return Optional.ofNullable(twitterUrl);
+    }
+
+    public StringFilter twitterUrl() {
+        if (twitterUrl == null) {
+            setTwitterUrl(new StringFilter());
+        }
+        return twitterUrl;
+    }
+
+    public void setTwitterUrl(StringFilter twitterUrl) {
+        this.twitterUrl = twitterUrl;
+    }
+
+    public void setLinkedinUrl(StringFilter linkedinUrl) {
+        this.linkedinUrl = linkedinUrl;
+    }
+
+    public StringFilter getLinkedinUrl() {
+        return linkedinUrl;
+    }
+
+    public Optional<StringFilter> optionalLinkedinUrl() {
+        return Optional.ofNullable(linkedinUrl);
+    }
+
+    public StringFilter linkedinUrl() {
+        if (linkedinUrl == null) {
+            setLinkedinUrl(new StringFilter());
+        }
+        return linkedinUrl;
+    }
+
+    public StringFilter getYoutubeUrl() {
+        return youtubeUrl;
+    }
+
+    public Optional<StringFilter> optionalYoutubeUrl() {
+        return Optional.ofNullable(youtubeUrl);
+    }
+
+    public StringFilter youtubeUrl() {
+        if (youtubeUrl == null) {
+            setYoutubeUrl(new StringFilter());
+        }
+        return youtubeUrl;
+    }
+
+    public void setYoutubeUrl(StringFilter youtubeUrl) {
+        this.youtubeUrl = youtubeUrl;
+    }
+
+    public StringFilter getTiktokUrl() {
+        return tiktokUrl;
+    }
+
+    public Optional<StringFilter> optionalTiktokUrl() {
+        return Optional.ofNullable(tiktokUrl);
+    }
+
+    public StringFilter tiktokUrl() {
+        if (tiktokUrl == null) {
+            setTiktokUrl(new StringFilter());
+        }
+        return tiktokUrl;
+    }
+
+    public void setTiktokUrl(StringFilter tiktokUrl) {
+        this.tiktokUrl = tiktokUrl;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -777,6 +909,12 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(emailFooterHtmlUrl, that.emailFooterHtmlUrl) &&
             Objects.equals(emailHeaderImageUrl, that.emailHeaderImageUrl) &&
             Objects.equals(logoImageUrl, that.logoImageUrl) &&
+            Objects.equals(facebookUrl, that.facebookUrl) &&
+            Objects.equals(instagramUrl, that.instagramUrl) &&
+            Objects.equals(twitterUrl, that.twitterUrl) &&
+            Objects.equals(linkedinUrl, that.linkedinUrl) &&
+            Objects.equals(youtubeUrl, that.youtubeUrl) &&
+            Objects.equals(tiktokUrl, that.tiktokUrl) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
@@ -815,6 +953,12 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             emailFooterHtmlUrl,
             emailHeaderImageUrl,
             logoImageUrl,
+            facebookUrl,
+            instagramUrl,
+            twitterUrl,
+            linkedinUrl,
+            youtubeUrl,
+            tiktokUrl,
             createdAt,
             updatedAt,
             tenantOrganizationId,
@@ -857,6 +1001,12 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalEmailFooterHtmlUrl().map(f -> "emailFooterHtmlUrl=" + f + ", ").orElse("") +
                 optionalEmailHeaderImageUrl().map(f -> "emailHeaderImageUrl=" + f + ", ").orElse("") +
                 optionalLogoImageUrl().map(f -> "logoImageUrl=" + f + ", ").orElse("") +
+                optionalFacebookUrl().map(f -> "facebookUrl=" + f + ", ").orElse("") +
+                optionalInstagramUrl().map(f -> "instagramUrl=" + f + ", ").orElse("") +
+                optionalTwitterUrl().map(f -> "twitterUrl=" + f + ", ").orElse("") +
+                optionalLinkedinUrl().map(f -> "linkedinUrl=" + f + ", ").orElse("") +
+                optionalYoutubeUrl().map(f -> "youtubeUrl=" + f + ", ").orElse("") +
+                optionalTiktokUrl().map(f -> "tiktokUrl=" + f + ", ").orElse("") +
                 optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
                 optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
                 optionalTenantOrganizationId().map(f -> "tenantOrganizationId=" + f + ", ").orElse("") +

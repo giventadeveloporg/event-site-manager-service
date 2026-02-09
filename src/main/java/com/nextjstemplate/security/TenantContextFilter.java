@@ -56,10 +56,10 @@ public class TenantContextFilter extends OncePerRequestFilter {
                     return;
                 }
             } else {
-                // For public endpoints without tenant, use default tenant
-                String defaultTenant = tenantService.getDefaultTenant();
-                TenantContext.setCurrentTenant(defaultTenant);
-                log.debug("Using default tenant: {}", defaultTenant);
+                // No tenant in request: leave TenantContext null so list/pagination endpoints
+                // can treat it as wildcard (global search across all tenants) for admin dashboard.
+                // Endpoints that require tenant will call requireTenantId() and return 400.
+                log.debug("No tenant in request; leaving context null for optional wildcard behavior");
             }
 
             // Continue the filter chain

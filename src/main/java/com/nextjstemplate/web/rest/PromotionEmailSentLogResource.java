@@ -61,12 +61,12 @@ public class PromotionEmailSentLogResource {
     ) {
         log.debug("REST request to get PromotionEmailSentLogs by criteria: {}", criteria);
 
-        String tenantId = getTenantId();
-        // Add tenant filter to criteria if not already set
+        // Wildcard: when no tenant in context, do not add tenant filter (global search for admin dashboard)
+        String tenantId = com.nextjstemplate.security.TenantContext.getCurrentTenant();
         if (criteria == null) {
             criteria = new PromotionEmailSentLogCriteria();
         }
-        if (criteria.getTenantId() == null) {
+        if (tenantId != null && !tenantId.isEmpty() && criteria.getTenantId() == null) {
             criteria.setTenantId(new tech.jhipster.service.filter.StringFilter());
             criteria.getTenantId().setEquals(tenantId);
         }
@@ -86,12 +86,12 @@ public class PromotionEmailSentLogResource {
     public ResponseEntity<Long> countPromotionEmailSentLogs(PromotionEmailSentLogCriteria criteria) {
         log.debug("REST request to count PromotionEmailSentLogs by criteria: {}", criteria);
 
-        String tenantId = getTenantId();
-        // Add tenant filter to criteria if not already set
+        // Wildcard: when no tenant in context, do not add tenant filter (global count for admin dashboard)
+        String tenantId = com.nextjstemplate.security.TenantContext.getCurrentTenant();
         if (criteria == null) {
             criteria = new PromotionEmailSentLogCriteria();
         }
-        if (criteria.getTenantId() == null) {
+        if (tenantId != null && !tenantId.isEmpty() && criteria.getTenantId() == null) {
             criteria.setTenantId(new tech.jhipster.service.filter.StringFilter());
             criteria.getTenantId().setEquals(tenantId);
         }

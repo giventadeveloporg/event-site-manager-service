@@ -168,12 +168,12 @@ public class GalleryAlbumResource {
     ) {
         log.debug("REST request to get GalleryAlbums by criteria: {}", criteria);
 
-        String tenantId = getTenantId();
-        // Add tenant filter to criteria if not already set
+        // Wildcard: when no tenant in context, do not add tenant filter (global search for admin dashboard)
+        String tenantId = com.nextjstemplate.security.TenantContext.getCurrentTenant();
         if (criteria == null) {
             criteria = new GalleryAlbumCriteria();
         }
-        if (criteria.getTenantId() == null) {
+        if (tenantId != null && !tenantId.isEmpty() && criteria.getTenantId() == null) {
             criteria.setTenantId(new tech.jhipster.service.filter.StringFilter());
             criteria.getTenantId().setEquals(tenantId);
         }
@@ -193,12 +193,12 @@ public class GalleryAlbumResource {
     public ResponseEntity<Long> countGalleryAlbums(GalleryAlbumCriteria criteria) {
         log.debug("REST request to count GalleryAlbums by criteria: {}", criteria);
 
-        String tenantId = getTenantId();
-        // Add tenant filter to criteria if not already set
+        // Wildcard: when no tenant in context, do not add tenant filter (global count for admin dashboard)
+        String tenantId = com.nextjstemplate.security.TenantContext.getCurrentTenant();
         if (criteria == null) {
             criteria = new GalleryAlbumCriteria();
         }
-        if (criteria.getTenantId() == null) {
+        if (tenantId != null && !tenantId.isEmpty() && criteria.getTenantId() == null) {
             criteria.setTenantId(new tech.jhipster.service.filter.StringFilter());
             criteria.getTenantId().setEquals(tenantId);
         }

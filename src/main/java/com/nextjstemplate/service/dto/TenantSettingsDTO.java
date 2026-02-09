@@ -103,6 +103,24 @@ public class TenantSettingsDTO implements Serializable {
     @Size(max = 255)
     private String email;
 
+    @Size(max = 1024)
+    private String facebookUrl;
+
+    @Size(max = 1024)
+    private String instagramUrl;
+
+    @Size(max = 1024)
+    private String twitterUrl;
+
+    @Size(max = 1024)
+    private String linkedinUrl;
+
+    @Size(max = 1024)
+    private String youtubeUrl;
+
+    @Size(max = 1024)
+    private String tiktokUrl;
+
     @NotNull
     private ZonedDateTime createdAt;
 
@@ -391,6 +409,54 @@ public class TenantSettingsDTO implements Serializable {
         this.email = email;
     }
 
+    public String getFacebookUrl() {
+        return facebookUrl;
+    }
+
+    public void setFacebookUrl(String facebookUrl) {
+        this.facebookUrl = facebookUrl;
+    }
+
+    public String getInstagramUrl() {
+        return instagramUrl;
+    }
+
+    public void setInstagramUrl(String instagramUrl) {
+        this.instagramUrl = instagramUrl;
+    }
+
+    public String getTwitterUrl() {
+        return twitterUrl;
+    }
+
+    public void setTwitterUrl(String twitterUrl) {
+        this.twitterUrl = twitterUrl;
+    }
+
+    public String getLinkedinUrl() {
+        return linkedinUrl;
+    }
+
+    public void setLinkedinUrl(String linkedinUrl) {
+        this.linkedinUrl = linkedinUrl;
+    }
+
+    public String getYoutubeUrl() {
+        return youtubeUrl;
+    }
+
+    public void setYoutubeUrl(String youtubeUrl) {
+        this.youtubeUrl = youtubeUrl;
+    }
+
+    public String getTiktokUrl() {
+        return tiktokUrl;
+    }
+
+    public void setTiktokUrl(String tiktokUrl) {
+        this.tiktokUrl = tiktokUrl;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
@@ -475,6 +541,12 @@ public class TenantSettingsDTO implements Serializable {
                 ", country='" + getCountry() + "'" +
                 ", stateProvince='" + getStateProvince() + "'" +
                 ", email='" + getEmail() + "'" +
+                ", facebookUrl='" + getFacebookUrl() + "'" +
+                ", instagramUrl='" + getInstagramUrl() + "'" +
+                ", twitterUrl='" + getTwitterUrl() + "'" +
+                ", linkedinUrl='" + getLinkedinUrl() + "'" +
+                ", youtubeUrl='" + getYoutubeUrl() + "'" +
+                ", tiktokUrl='" + getTiktokUrl() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 ", tenantOrganization=" + getTenantOrganization() +

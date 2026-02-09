@@ -1,7 +1,9 @@
 package com.nextjstemplate.web.rest;
 
 import com.nextjstemplate.repository.MembershipPlanRepository;
+import com.nextjstemplate.service.MembershipPlanQueryService;
 import com.nextjstemplate.service.MembershipPlanService;
+import com.nextjstemplate.service.criteria.MembershipPlanCriteria;
 import com.nextjstemplate.service.dto.MembershipPlanDTO;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -20,6 +22,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.jhipster.service.filter.BooleanFilter;
+import tech.jhipster.service.filter.StringFilter;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -40,10 +44,16 @@ public class MembershipPlanResource {
 
     private final MembershipPlanService membershipPlanService;
     private final MembershipPlanRepository membershipPlanRepository;
+    private final MembershipPlanQueryService membershipPlanQueryService;
 
-    public MembershipPlanResource(MembershipPlanService membershipPlanService, MembershipPlanRepository membershipPlanRepository) {
+    public MembershipPlanResource(
+        MembershipPlanService membershipPlanService,
+        MembershipPlanRepository membershipPlanRepository,
+        MembershipPlanQueryService membershipPlanQueryService
+    ) {
         this.membershipPlanService = membershipPlanService;
         this.membershipPlanRepository = membershipPlanRepository;
+        this.membershipPlanQueryService = membershipPlanQueryService;
     }
 
     /**
@@ -163,25 +173,18 @@ public class MembershipPlanResource {
     ) {
         log.debug("REST request to get a page of MembershipPlans, tenantId={}, isActive={}", tenantId, isActive);
 
-        Page<MembershipPlanDTO> page;
-        if (tenantId != null && isActive != null && isActive) {
-            // Get active plans for tenant
-            List<MembershipPlanDTO> plans = membershipPlanService.findActiveByTenantId(tenantId);
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("X-Total-Count", String.valueOf(plans.size()));
-            return ResponseEntity.ok().headers(headers).body(plans);
-        } else if (tenantId != null) {
-            // Get all plans for tenant
-            List<MembershipPlanDTO> plans = membershipPlanService.findByTenantId(tenantId);
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("X-Total-Count", String.valueOf(plans.size()));
-            return ResponseEntity.ok().headers(headers).body(plans);
-        } else {
-            // Get all plans with pagination
-            page = membershipPlanService.findAll(pageable);
-            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        MembershipPlanCriteria criteria = new MembershipPlanCriteria();
+        if (tenantId != null && !tenantId.isEmpty()) {
+            criteria.setTenantId(new StringFilter());
+            criteria.getTenantId().setEquals(tenantId);
         }
+        if (isActive != null) {
+            criteria.setIsActive(new BooleanFilter());
+            criteria.getIsActive().setEquals(isActive);
+        }
+        Page<MembershipPlanDTO> page = membershipPlanQueryService.findByCriteria(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**

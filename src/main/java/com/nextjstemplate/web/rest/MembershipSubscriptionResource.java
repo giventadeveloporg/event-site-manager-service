@@ -1,7 +1,9 @@
 package com.nextjstemplate.web.rest;
 
 import com.nextjstemplate.repository.MembershipSubscriptionRepository;
+import com.nextjstemplate.service.MembershipSubscriptionQueryService;
 import com.nextjstemplate.service.MembershipSubscriptionService;
+import com.nextjstemplate.service.criteria.MembershipSubscriptionCriteria;
 import com.nextjstemplate.service.dto.MembershipSubscriptionDTO;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -21,6 +23,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.jhipster.service.filter.StringFilter;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -41,13 +44,16 @@ public class MembershipSubscriptionResource {
 
     private final MembershipSubscriptionService membershipSubscriptionService;
     private final MembershipSubscriptionRepository membershipSubscriptionRepository;
+    private final MembershipSubscriptionQueryService membershipSubscriptionQueryService;
 
     public MembershipSubscriptionResource(
         MembershipSubscriptionService membershipSubscriptionService,
-        MembershipSubscriptionRepository membershipSubscriptionRepository
+        MembershipSubscriptionRepository membershipSubscriptionRepository,
+        MembershipSubscriptionQueryService membershipSubscriptionQueryService
     ) {
         this.membershipSubscriptionService = membershipSubscriptionService;
         this.membershipSubscriptionRepository = membershipSubscriptionRepository;
+        this.membershipSubscriptionQueryService = membershipSubscriptionQueryService;
     }
 
     /**
@@ -134,17 +140,16 @@ public class MembershipSubscriptionResource {
     ) {
         log.debug("REST request to get a page of MembershipSubscriptions, tenantId={}, status={}", tenantId, subscriptionStatus);
 
-        if (tenantId != null && subscriptionStatus != null) {
-            List<MembershipSubscriptionDTO> subscriptions = membershipSubscriptionService.findByTenantIdAndStatus(
-                tenantId,
-                subscriptionStatus
-            );
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("X-Total-Count", String.valueOf(subscriptions.size()));
-            return ResponseEntity.ok().headers(headers).body(subscriptions);
+        MembershipSubscriptionCriteria criteria = new MembershipSubscriptionCriteria();
+        if (tenantId != null && !tenantId.isEmpty()) {
+            criteria.setTenantId(new StringFilter());
+            criteria.getTenantId().setEquals(tenantId);
         }
-
-        Page<MembershipSubscriptionDTO> page = membershipSubscriptionService.findAll(pageable);
+        if (subscriptionStatus != null && !subscriptionStatus.isEmpty()) {
+            criteria.setSubscriptionStatus(new StringFilter());
+            criteria.getSubscriptionStatus().setEquals(subscriptionStatus);
+        }
+        Page<MembershipSubscriptionDTO> page = membershipSubscriptionQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

@@ -119,12 +119,12 @@ public class ManualPaymentRequestResource {
     ) {
         log.debug("REST request to get ManualPaymentRequests by criteria: {}", criteria);
 
-        // Enforce tenant isolation
-        String tenantId = requireTenantId();
+        // Wildcard: when no tenant in context, do not add tenant filter (global search for admin dashboard)
+        String tenantId = TenantContext.getCurrentTenant();
         if (criteria == null) {
             criteria = new ManualPaymentRequestCriteria();
         }
-        if (criteria.getTenantId() == null) {
+        if (tenantId != null && !tenantId.isEmpty() && criteria.getTenantId() == null) {
             criteria.setTenantId(new tech.jhipster.service.filter.StringFilter());
             criteria.getTenantId().setEquals(tenantId);
         }
@@ -137,11 +137,12 @@ public class ManualPaymentRequestResource {
     @GetMapping("/count")
     public ResponseEntity<Long> countManualPayments(ManualPaymentRequestCriteria criteria) {
         log.debug("REST request to count ManualPaymentRequests by criteria: {}", criteria);
-        String tenantId = requireTenantId();
+        // Wildcard: when no tenant in context, do not add tenant filter (global count for admin dashboard)
+        String tenantId = TenantContext.getCurrentTenant();
         if (criteria == null) {
             criteria = new ManualPaymentRequestCriteria();
         }
-        if (criteria.getTenantId() == null) {
+        if (tenantId != null && !tenantId.isEmpty() && criteria.getTenantId() == null) {
             criteria.setTenantId(new tech.jhipster.service.filter.StringFilter());
             criteria.getTenantId().setEquals(tenantId);
         }

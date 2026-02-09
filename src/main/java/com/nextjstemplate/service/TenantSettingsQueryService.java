@@ -199,6 +199,24 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
             if (criteria.getLogoImageUrl() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getLogoImageUrl(), TenantSettings_.logoImageUrl));
             }
+            if (criteria.getFacebookUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getFacebookUrl(), TenantSettings_.facebookUrl));
+            }
+            if (criteria.getInstagramUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getInstagramUrl(), TenantSettings_.instagramUrl));
+            }
+            if (criteria.getTwitterUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getTwitterUrl(), TenantSettings_.twitterUrl));
+            }
+            if (criteria.getLinkedinUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getLinkedinUrl(), TenantSettings_.linkedinUrl));
+            }
+            if (criteria.getYoutubeUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getYoutubeUrl(), TenantSettings_.youtubeUrl));
+            }
+            if (criteria.getTiktokUrl() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getTiktokUrl(), TenantSettings_.tiktokUrl));
+            }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt));
             }

@@ -149,6 +149,30 @@ public class TenantSettings implements Serializable {
     @Column(name = "email", length = 255)
     private String email;
 
+    @Size(max = 1024)
+    @Column(name = "facebook_url", length = 1024)
+    private String facebookUrl;
+
+    @Size(max = 1024)
+    @Column(name = "instagram_url", length = 1024)
+    private String instagramUrl;
+
+    @Size(max = 1024)
+    @Column(name = "twitter_url", length = 1024)
+    private String twitterUrl;
+
+    @Size(max = 1024)
+    @Column(name = "linkedin_url", length = 1024)
+    private String linkedinUrl;
+
+    @Size(max = 1024)
+    @Column(name = "youtube_url", length = 1024)
+    private String youtubeUrl;
+
+    @Size(max = 1024)
+    @Column(name = "tiktok_url", length = 1024)
+    private String tiktokUrl;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -658,6 +682,84 @@ public class TenantSettings implements Serializable {
         this.email = email;
     }
 
+    public String getFacebookUrl() {
+        return this.facebookUrl;
+    }
+
+    public TenantSettings facebookUrl(String facebookUrl) {
+        this.setFacebookUrl(facebookUrl);
+        return this;
+    }
+
+    public void setFacebookUrl(String facebookUrl) {
+        this.facebookUrl = facebookUrl;
+    }
+
+    public String getInstagramUrl() {
+        return this.instagramUrl;
+    }
+
+    public TenantSettings instagramUrl(String instagramUrl) {
+        this.setInstagramUrl(instagramUrl);
+        return this;
+    }
+
+    public void setInstagramUrl(String instagramUrl) {
+        this.instagramUrl = instagramUrl;
+    }
+
+    public String getTwitterUrl() {
+        return this.twitterUrl;
+    }
+
+    public TenantSettings twitterUrl(String twitterUrl) {
+        this.setTwitterUrl(twitterUrl);
+        return this;
+    }
+
+    public void setTwitterUrl(String twitterUrl) {
+        this.twitterUrl = twitterUrl;
+    }
+
+    public String getLinkedinUrl() {
+        return this.linkedinUrl;
+    }
+
+    public TenantSettings linkedinUrl(String linkedinUrl) {
+        this.setLinkedinUrl(linkedinUrl);
+        return this;
+    }
+
+    public void setLinkedinUrl(String linkedinUrl) {
+        this.linkedinUrl = linkedinUrl;
+    }
+
+    public String getYoutubeUrl() {
+        return this.youtubeUrl;
+    }
+
+    public TenantSettings youtubeUrl(String youtubeUrl) {
+        this.setYoutubeUrl(youtubeUrl);
+        return this;
+    }
+
+    public void setYoutubeUrl(String youtubeUrl) {
+        this.youtubeUrl = youtubeUrl;
+    }
+
+    public String getTiktokUrl() {
+        return this.tiktokUrl;
+    }
+
+    public TenantSettings tiktokUrl(String tiktokUrl) {
+        this.setTiktokUrl(tiktokUrl);
+        return this;
+    }
+
+    public void setTiktokUrl(String tiktokUrl) {
+        this.tiktokUrl = tiktokUrl;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
     // setters here
 
@@ -718,6 +820,12 @@ public class TenantSettings implements Serializable {
                 ", country='" + getCountry() + "'" +
                 ", stateProvince='" + getStateProvince() + "'" +
                 ", email='" + getEmail() + "'" +
+                ", facebookUrl='" + getFacebookUrl() + "'" +
+                ", instagramUrl='" + getInstagramUrl() + "'" +
+                ", twitterUrl='" + getTwitterUrl() + "'" +
+                ", linkedinUrl='" + getLinkedinUrl() + "'" +
+                ", youtubeUrl='" + getYoutubeUrl() + "'" +
+                ", tiktokUrl='" + getTiktokUrl() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";
