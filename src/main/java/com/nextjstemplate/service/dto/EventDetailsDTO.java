@@ -106,6 +106,9 @@ public class EventDetailsDTO implements Serializable {
     @Size(max = 2048)
     private String emailHeaderImageUrl;
 
+    @Size(max = 1024)
+    private String eventcubeEmbedUrl;
+
     @NotNull
     @Size(max = 255)
     private String fromEmail;
@@ -405,6 +408,14 @@ public class EventDetailsDTO implements Serializable {
         this.emailHeaderImageUrl = emailHeaderImageUrl;
     }
 
+    public String getEventcubeEmbedUrl() {
+        return eventcubeEmbedUrl;
+    }
+
+    public void setEventcubeEmbedUrl(String eventcubeEmbedUrl) {
+        this.eventcubeEmbedUrl = eventcubeEmbedUrl;
+    }
+
     public String getFromEmail() {
         return fromEmail;
     }
@@ -587,6 +598,7 @@ public class EventDetailsDTO implements Serializable {
             ", liveEventPriorityRanking=" + getLiveEventPriorityRanking() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
+            ", eventcubeEmbedUrl='" + getEventcubeEmbedUrl() + "'" +
             ", createdBy=" + getCreatedBy() +
             ", eventType=" + getEventType() +
             ", discountCodes=" + getDiscountCodes() +

@@ -78,6 +78,8 @@ public class EventDetailsCriteria implements Serializable, Criteria {
 
     private ZonedDateTimeFilter updatedAt;
 
+    private StringFilter eventcubeEmbedUrl;
+
     private LongFilter createdById;
 
     private LongFilter eventTypeId;
@@ -118,6 +120,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.liveEventPriorityRanking = other.optionalLiveEventPriorityRanking().map(IntegerFilter::copy).orElse(null);
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
+        this.eventcubeEmbedUrl = other.eventcubeEmbedUrl == null ? null : other.eventcubeEmbedUrl.copy();
         this.createdById = other.createdById == null ? null : other.createdById.copy();
         this.eventTypeId = other.eventTypeId == null ? null : other.eventTypeId.copy();
         this.discountCodesId = other.discountCodesId == null ? null : other.discountCodesId.copy();
@@ -576,6 +579,21 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.updatedAt = updatedAt;
     }
 
+    public StringFilter getEventcubeEmbedUrl() {
+        return eventcubeEmbedUrl;
+    }
+
+    public StringFilter eventcubeEmbedUrl() {
+        if (eventcubeEmbedUrl == null) {
+            eventcubeEmbedUrl = new StringFilter();
+        }
+        return eventcubeEmbedUrl;
+    }
+
+    public void setEventcubeEmbedUrl(StringFilter eventcubeEmbedUrl) {
+        this.eventcubeEmbedUrl = eventcubeEmbedUrl;
+    }
+
     public LongFilter getCreatedById() {
         return createdById;
     }
@@ -668,6 +686,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             Objects.equals(liveEventPriorityRanking, that.liveEventPriorityRanking) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
+            Objects.equals(eventcubeEmbedUrl, that.eventcubeEmbedUrl) &&
             Objects.equals(createdById, that.createdById) &&
             Objects.equals(eventTypeId, that.eventTypeId) &&
             Objects.equals(discountCodesId, that.discountCodesId) &&
@@ -707,6 +726,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             liveEventPriorityRanking,
             createdAt,
             updatedAt,
+            eventcubeEmbedUrl,
             createdById,
             eventTypeId,
             discountCodesId,
@@ -747,6 +767,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             optionalLiveEventPriorityRanking().map(f -> "liveEventPriorityRanking=" + f + ", ").orElse("") +
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
+            (eventcubeEmbedUrl != null ? "eventcubeEmbedUrl=" + eventcubeEmbedUrl + ", " : "") +
             (createdById != null ? "createdById=" + createdById + ", " : "") +
             (eventTypeId != null ? "eventTypeId=" + eventTypeId + ", " : "") +
             (discountCodesId != null ? "discountCodesId=" + discountCodesId + ", " : "") +

@@ -157,6 +157,10 @@ public class EventDetails implements Serializable {
     @Column(name = "email_header_image_url", length = 2048)
     private String emailHeaderImageUrl;
 
+    @Size(max = 1024)
+    @Column(name = "eventcube_embed_url", length = 1024)
+    private String eventcubeEmbedUrl;
+
     @NotNull
     @Size(max = 255)
     @Column(name = "from_email", length = 255, nullable = false)
@@ -682,6 +686,19 @@ public class EventDetails implements Serializable {
         return this;
     }
 
+    public String getEventcubeEmbedUrl() {
+        return this.eventcubeEmbedUrl;
+    }
+
+    public EventDetails eventcubeEmbedUrl(String eventcubeEmbedUrl) {
+        this.setEventcubeEmbedUrl(eventcubeEmbedUrl);
+        return this;
+    }
+
+    public void setEventcubeEmbedUrl(String eventcubeEmbedUrl) {
+        this.eventcubeEmbedUrl = eventcubeEmbedUrl;
+    }
+
     public String getFromEmail() {
         return this.fromEmail;
     }
@@ -1177,6 +1194,7 @@ public class EventDetails implements Serializable {
                 ", liveEventPriorityRanking=" + getLiveEventPriorityRanking() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
+                ", eventcubeEmbedUrl='" + getEventcubeEmbedUrl() + "'" +
                 "}";
     }
 }

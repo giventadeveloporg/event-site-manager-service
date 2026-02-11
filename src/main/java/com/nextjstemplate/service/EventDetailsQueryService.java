@@ -165,17 +165,25 @@ public class EventDetailsQueryService extends QueryService<EventDetails> {
             }
             if (criteria.getFeaturedEventPriorityRanking() != null) {
                 specification =
-                    specification.and(buildRangeSpecification(criteria.getFeaturedEventPriorityRanking(), EventDetails_.featuredEventPriorityRanking));
+                    specification.and(
+                        buildRangeSpecification(criteria.getFeaturedEventPriorityRanking(), EventDetails_.featuredEventPriorityRanking)
+                    );
             }
             if (criteria.getLiveEventPriorityRanking() != null) {
                 specification =
-                    specification.and(buildRangeSpecification(criteria.getLiveEventPriorityRanking(), EventDetails_.liveEventPriorityRanking));
+                    specification.and(
+                        buildRangeSpecification(criteria.getLiveEventPriorityRanking(), EventDetails_.liveEventPriorityRanking)
+                    );
             }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), EventDetails_.createdAt));
             }
             if (criteria.getUpdatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getUpdatedAt(), EventDetails_.updatedAt));
+            }
+            if (criteria.getEventcubeEmbedUrl() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getEventcubeEmbedUrl(), EventDetails_.eventcubeEmbedUrl));
             }
             if (criteria.getCreatedById() != null) {
                 specification =
