@@ -35,6 +35,17 @@ public class EventAttendeeServiceImpl implements EventAttendeeService {
     public EventAttendeeDTO save(EventAttendeeDTO eventAttendeeDTO) {
         log.debug("Request to save EventAttendee : {}", eventAttendeeDTO);
         EventAttendee eventAttendee = eventAttendeeMapper.toEntity(eventAttendeeDTO);
+
+        // Ensure ID is null for new entities to force sequence generation
+        // This prevents duplicate key errors when entity has ID set from DTO (see .cursor/rules/duplicate-key-prevention.mdc)
+        if (eventAttendee.getId() != null) {
+            log.warn(
+                "EventAttendee has ID {} set during create operation. Clearing ID to force sequence generation.",
+                eventAttendee.getId()
+            );
+            eventAttendee.setId(null);
+        }
+
         eventAttendee = eventAttendeeRepository.save(eventAttendee);
         return eventAttendeeMapper.toDto(eventAttendee);
     }

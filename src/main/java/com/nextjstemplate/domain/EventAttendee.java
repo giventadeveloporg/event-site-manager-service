@@ -103,8 +103,8 @@ public class EventAttendee implements Serializable {
     @Column(name = "number_of_guests_checked_in")
     private Integer numberOfGuestsCheckedIn;
 
-    @Size(max = 1000)
-    @Column(name = "notes", length = 1000)
+    @Size(max = 1500)
+    @Column(name = "notes", length = 1500)
     private String notes;
 
     @Size(max = 1000)

@@ -70,7 +70,7 @@ public class EventAttendeeDTO implements Serializable {
 
     private Integer numberOfGuestsCheckedIn;
 
-    @Size(max = 1000)
+    @Size(max = 1500)
     private String notes;
 
     @Size(max = 1000)

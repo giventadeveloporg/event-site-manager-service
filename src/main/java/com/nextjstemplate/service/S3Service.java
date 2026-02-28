@@ -247,4 +247,11 @@ public interface S3Service {
      * @return S3 path string
      */
     String generateFocusGroupCoverImagePath(String tenantId, Long focusGroupId, String originalFilename);
+
+    /**
+     * Generate S3 path for event attendee registration attachments.
+     * Path format:
+     * {profile}/events/tenantId/{tenantId}/event-id/{eventId}/attendees/attendee-id/{attendeeId}/attachments/{base}_{timestamp}_{uuid}.{ext}
+     */
+    String generateEventAttendeeAttachmentPath(String tenantId, Long eventId, Long attendeeId, String originalFilename);
 }

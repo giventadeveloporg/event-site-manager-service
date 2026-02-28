@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260227090000-2" author="cursor">
+        <addForeignKeyConstraint
+            baseTableName="event_attendee_attachment"
+            baseColumnNames="attendee_id"
+            constraintName="fk_event_attendee_attachment__attendee_id"
+            referencedTableName="event_attendee"
+            referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+            baseTableName="event_attendee_attachment"
+            baseColumnNames="event_id"
+            constraintName="fk_event_attendee_attachment__event_id"
+            referencedTableName="event_details"
+            referencedColumnNames="id"/>
+    </changeSet>
+</databaseChangeLog>

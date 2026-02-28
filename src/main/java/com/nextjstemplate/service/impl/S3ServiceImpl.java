@@ -625,4 +625,28 @@ public class S3ServiceImpl implements S3Service {
             extension
         );
     }
+
+    @Override
+    public String generateEventAttendeeAttachmentPath(String tenantId, Long eventId, Long attendeeId, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        String profilePrefix = getActiveProfilePrefix();
+        String baseName = sanitizeFilename(getBaseFileName(originalFilename));
+        if (baseName == null || baseName.isEmpty()) {
+            baseName = "registration_attachment";
+        }
+
+        return String.format(
+            "%s/events/tenantId/%s/event-id/%d/attendees/attendee-id/%d/attachments/%s_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            eventId,
+            attendeeId,
+            baseName,
+            timestamp,
+            uuid,
+            extension
+        );
+    }
 }

@@ -102,6 +102,8 @@ public Object handleDuplicateKeyViolation(ProceedingJoinPoint joinPoint)
    - `EventTicketTypeServiceImpl.save()`
    - `EventDetailsServiceImpl.save()`
    - `ManualPaymentRequestServiceImpl.save()`
+   - `EventAttendeeServiceImpl.save()`
+   - `EventAttendeeAttachmentServiceImpl.save()`
    - Any service that creates new entities
 
 ### ❌ Do NOT Apply For:
@@ -148,6 +150,54 @@ ManualPaymentRequest paymentRequest = new ManualPaymentRequest();
 // ... set fields ...
 // ID is null by default, sequence will generate it
 paymentRequest = manualPaymentRequestRepository.save(paymentRequest);
+```
+
+### Example 3: EventAttendeeServiceImpl.save()
+
+**Location:** `src/main/java/com/nextjstemplate/service/impl/EventAttendeeServiceImpl.java`
+
+```java
+@Override
+public EventAttendeeDTO save(EventAttendeeDTO eventAttendeeDTO) {
+    log.debug("Request to save EventAttendee : {}", eventAttendeeDTO);
+    EventAttendee eventAttendee = eventAttendeeMapper.toEntity(eventAttendeeDTO);
+
+    // Ensure ID is null for new entities to force sequence generation
+    if (eventAttendee.getId() != null) {
+        log.warn(
+            "EventAttendee has ID {} set during create operation. Clearing ID to force sequence generation.",
+            eventAttendee.getId()
+        );
+        eventAttendee.setId(null);
+    }
+
+    eventAttendee = eventAttendeeRepository.save(eventAttendee);
+    return eventAttendeeMapper.toDto(eventAttendee);
+}
+```
+
+### Example 4: EventAttendeeAttachmentServiceImpl.save()
+
+**Location:** `src/main/java/com/nextjstemplate/service/impl/EventAttendeeAttachmentServiceImpl.java`
+
+```java
+@Override
+public EventAttendeeAttachmentDTO save(EventAttendeeAttachmentDTO dto) {
+    log.debug("Request to save EventAttendeeAttachment : {}", dto);
+    EventAttendeeAttachment entity = mapper.toEntity(dto);
+
+    // Ensure ID is null for new entities to force sequence generation
+    if (entity.getId() != null) {
+        log.warn(
+            "EventAttendeeAttachment has ID {} set during create operation. Clearing ID to force sequence generation.",
+            entity.getId()
+        );
+        entity.setId(null);
+    }
+
+    entity = repository.save(entity);
+    return mapper.toDto(entity);
+}
 ```
 
 ## Why This Pattern Works
