@@ -174,6 +174,10 @@ public class TenantSettings implements Serializable {
     private String tiktokUrl;
 
     @NotNull
+    @Column(name = "homepage_cache_version", nullable = false)
+    private Long homepageCacheVersion = 0L;
+
+    @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
 
@@ -760,6 +764,19 @@ public class TenantSettings implements Serializable {
         this.tiktokUrl = tiktokUrl;
     }
 
+    public Long getHomepageCacheVersion() {
+        return this.homepageCacheVersion;
+    }
+
+    public TenantSettings homepageCacheVersion(Long homepageCacheVersion) {
+        this.setHomepageCacheVersion(homepageCacheVersion);
+        return this;
+    }
+
+    public void setHomepageCacheVersion(Long homepageCacheVersion) {
+        this.homepageCacheVersion = homepageCacheVersion;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
     // setters here
 
@@ -826,6 +843,7 @@ public class TenantSettings implements Serializable {
                 ", linkedinUrl='" + getLinkedinUrl() + "'" +
                 ", youtubeUrl='" + getYoutubeUrl() + "'" +
                 ", tiktokUrl='" + getTiktokUrl() + "'" +
+                ", homepageCacheVersion=" + getHomepageCacheVersion() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";

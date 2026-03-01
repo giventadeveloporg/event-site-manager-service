@@ -121,6 +121,8 @@ public class TenantSettingsDTO implements Serializable {
     @Size(max = 1024)
     private String tiktokUrl;
 
+    private Long homepageCacheVersion;
+
     @NotNull
     private ZonedDateTime createdAt;
 
@@ -457,6 +459,14 @@ public class TenantSettingsDTO implements Serializable {
         this.tiktokUrl = tiktokUrl;
     }
 
+    public Long getHomepageCacheVersion() {
+        return homepageCacheVersion;
+    }
+
+    public void setHomepageCacheVersion(Long homepageCacheVersion) {
+        this.homepageCacheVersion = homepageCacheVersion;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
@@ -547,6 +557,7 @@ public class TenantSettingsDTO implements Serializable {
                 ", linkedinUrl='" + getLinkedinUrl() + "'" +
                 ", youtubeUrl='" + getYoutubeUrl() + "'" +
                 ", tiktokUrl='" + getTiktokUrl() + "'" +
+                ", homepageCacheVersion=" + getHomepageCacheVersion() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 ", tenantOrganization=" + getTenantOrganization() +

@@ -217,6 +217,10 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
             if (criteria.getTiktokUrl() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getTiktokUrl(), TenantSettings_.tiktokUrl));
             }
+            if (criteria.getHomepageCacheVersion() != null) {
+                specification =
+                    specification.and(buildRangeSpecification(criteria.getHomepageCacheVersion(), TenantSettings_.homepageCacheVersion));
+            }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt));
             }

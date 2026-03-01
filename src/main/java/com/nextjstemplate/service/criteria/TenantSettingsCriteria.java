@@ -93,6 +93,8 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private StringFilter tiktokUrl;
 
+    private LongFilter homepageCacheVersion;
+
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -138,6 +140,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.linkedinUrl = other.optionalLinkedinUrl().map(StringFilter::copy).orElse(null);
         this.youtubeUrl = other.optionalYoutubeUrl().map(StringFilter::copy).orElse(null);
         this.tiktokUrl = other.optionalTiktokUrl().map(StringFilter::copy).orElse(null);
+        this.homepageCacheVersion = other.optionalHomepageCacheVersion().map(LongFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.tenantOrganizationId = other.optionalTenantOrganizationId().map(LongFilter::copy).orElse(null);
@@ -795,6 +798,25 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.tiktokUrl = tiktokUrl;
     }
 
+    public LongFilter getHomepageCacheVersion() {
+        return homepageCacheVersion;
+    }
+
+    public Optional<LongFilter> optionalHomepageCacheVersion() {
+        return Optional.ofNullable(homepageCacheVersion);
+    }
+
+    public LongFilter homepageCacheVersion() {
+        if (homepageCacheVersion == null) {
+            setHomepageCacheVersion(new LongFilter());
+        }
+        return homepageCacheVersion;
+    }
+
+    public void setHomepageCacheVersion(LongFilter homepageCacheVersion) {
+        this.homepageCacheVersion = homepageCacheVersion;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -915,6 +937,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(linkedinUrl, that.linkedinUrl) &&
             Objects.equals(youtubeUrl, that.youtubeUrl) &&
             Objects.equals(tiktokUrl, that.tiktokUrl) &&
+            Objects.equals(homepageCacheVersion, that.homepageCacheVersion) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
@@ -959,6 +982,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             linkedinUrl,
             youtubeUrl,
             tiktokUrl,
+            homepageCacheVersion,
             createdAt,
             updatedAt,
             tenantOrganizationId,
@@ -1007,6 +1031,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalLinkedinUrl().map(f -> "linkedinUrl=" + f + ", ").orElse("") +
                 optionalYoutubeUrl().map(f -> "youtubeUrl=" + f + ", ").orElse("") +
                 optionalTiktokUrl().map(f -> "tiktokUrl=" + f + ", ").orElse("") +
+                optionalHomepageCacheVersion().map(f -> "homepageCacheVersion=" + f + ", ").orElse("") +
                 optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
                 optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
                 optionalTenantOrganizationId().map(f -> "tenantOrganizationId=" + f + ", ").orElse("") +
