@@ -4,7 +4,9 @@ import com.nextjstemplate.domain.EventAttendee;
 import com.nextjstemplate.repository.EventAttendeeRepository;
 import com.nextjstemplate.service.EventAttendeeService;
 import com.nextjstemplate.service.dto.EventAttendeeDTO;
+import com.nextjstemplate.service.dto.EventAttendeeSaveResult;
 import com.nextjstemplate.service.mapper.EventAttendeeMapper;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +50,34 @@ public class EventAttendeeServiceImpl implements EventAttendeeService {
 
         eventAttendee = eventAttendeeRepository.save(eventAttendee);
         return eventAttendeeMapper.toDto(eventAttendee);
+    }
+
+    @Override
+    public EventAttendeeSaveResult createOrUpdateRegistration(EventAttendeeDTO eventAttendeeDTO) {
+        log.debug("Request to create or update registration EventAttendee : {}", eventAttendeeDTO);
+        if (eventAttendeeDTO.getId() != null) {
+            throw new IllegalArgumentException("createOrUpdateRegistration expects id=null");
+        }
+        Long eventId = eventAttendeeDTO.getEventId();
+        String email = eventAttendeeDTO.getEmail();
+        String tenantId = eventAttendeeDTO.getTenantId();
+        if (eventId != null && email != null && !email.isBlank() && tenantId != null && !tenantId.isBlank()) {
+            Optional<EventAttendee> existing = eventAttendeeRepository.findOneByEventIdAndEmailIgnoreCaseAndTenantId(
+                eventId,
+                email.trim(),
+                tenantId
+            );
+            if (existing.isPresent()) {
+                EventAttendee entity = existing.orElseThrow();
+                eventAttendeeMapper.partialUpdate(entity, eventAttendeeDTO);
+                entity.setUpdatedAt(ZonedDateTime.now());
+                entity = eventAttendeeRepository.save(entity);
+                log.debug("Updated existing EventAttendee for event {} email {}", eventId, email);
+                return new EventAttendeeSaveResult(eventAttendeeMapper.toDto(entity), false);
+            }
+        }
+        EventAttendeeDTO saved = save(eventAttendeeDTO);
+        return new EventAttendeeSaveResult(saved, true);
     }
 
     @Override

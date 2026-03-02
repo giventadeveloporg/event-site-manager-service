@@ -1,6 +1,7 @@
 package com.nextjstemplate.service;
 
 import com.nextjstemplate.service.dto.EventAttendeeDTO;
+import com.nextjstemplate.service.dto.EventAttendeeSaveResult;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,17 @@ public interface EventAttendeeService {
      * @return the persisted entity.
      */
     EventAttendeeDTO save(EventAttendeeDTO eventAttendeeDTO);
+
+    /**
+     * Create or update an event attendee for the registration flow.
+     * If an attendee already exists for the same event + email + tenant, updates that record
+     * and returns {@code created = false}; otherwise creates a new attendee and returns {@code created = true}.
+     * Email matching is case-insensitive.
+     *
+     * @param eventAttendeeDTO the registration data (id must be null for create; eventId, email, tenantId required for lookup).
+     * @return the persisted DTO and whether it was created (true) or updated (false).
+     */
+    EventAttendeeSaveResult createOrUpdateRegistration(EventAttendeeDTO eventAttendeeDTO);
 
     /**
      * Updates a eventAttendee.

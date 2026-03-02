@@ -5,6 +5,7 @@ import com.nextjstemplate.service.EventAttendeeQueryService;
 import com.nextjstemplate.service.EventAttendeeService;
 import com.nextjstemplate.service.criteria.EventAttendeeCriteria;
 import com.nextjstemplate.service.dto.EventAttendeeDTO;
+import com.nextjstemplate.service.dto.EventAttendeeSaveResult;
 import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -61,11 +62,14 @@ public class EventAttendeeResource {
     }
 
     /**
-     * {@code POST  /event-attendees} : Create a new eventAttendee.
+     * {@code POST  /event-attendees} : Create or update an event attendee (registration flow).
+     * If an attendee with the same event + email + tenant already exists, that record is updated
+     * and the response is 200 OK. Otherwise a new attendee is created and the response is 201 Created.
+     * Used by the event registration flow (e.g. /events/{eventId}/register).
      *
-     * @param eventAttendeeDTO the eventAttendeeDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new eventAttendeeDTO, or with status {@code 400 (Bad Request)} if the eventAttendee has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     * @param eventAttendeeDTO the eventAttendeeDTO to create or update (id must be null).
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and body the new eventAttendeeDTO,
+     *         or status {@code 200 (OK)} and body the updated eventAttendeeDTO.
      */
     @PostMapping("")
     public ResponseEntity<EventAttendeeDTO> createEventAttendee(@Valid @RequestBody EventAttendeeDTO eventAttendeeDTO)
@@ -74,11 +78,18 @@ public class EventAttendeeResource {
         if (eventAttendeeDTO.getId() != null) {
             throw new BadRequestAlertException("A new eventAttendee cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        EventAttendeeDTO result = eventAttendeeService.save(eventAttendeeDTO);
+        EventAttendeeSaveResult result = eventAttendeeService.createOrUpdateRegistration(eventAttendeeDTO);
+        EventAttendeeDTO dto = result.dto();
+        if (result.created()) {
+            return ResponseEntity
+                .created(new URI("/api/event-attendees/" + dto.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, dto.getId().toString()))
+                .body(dto);
+        }
         return ResponseEntity
-            .created(new URI("/api/event-attendees/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, dto.getId().toString()))
+            .body(dto);
     }
 
     /**
