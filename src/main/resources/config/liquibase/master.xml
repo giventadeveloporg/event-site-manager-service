@@ -102,6 +102,8 @@
     <include file="config/liquibase/changelog/20250211000000_add_eventcube_embed_url_event_details.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260227090010_increase_event_attendee_notes_length.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260227100000_add_homepage_cache_version_tenant_settings.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260227110000_add_tenant_id_executive_committee_team_members.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260227120000_add_admin_notes_event_attendee.xml" relativeToChangelogFile="false"/>
     <!-- <include file="config/liquibase/changelog/20241211_refactor_tenant_relationship.xml" relativeToChangelogFile="false"/> -->
 
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->

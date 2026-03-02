@@ -77,6 +77,9 @@ public class ExecutiveCommitteeTeamMemberQueryService extends QueryService<Execu
                 Specification.allOf(
                     Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                     criteria.getId() != null ? buildRangeSpecification(criteria.getId(), ExecutiveCommitteeTeamMember_.id) : null,
+                    criteria.getTenantId() != null
+                        ? buildStringSpecification(criteria.getTenantId(), ExecutiveCommitteeTeamMember_.tenantId)
+                        : null,
                     criteria.getFirstName() != null
                         ? buildStringSpecification(criteria.getFirstName(), ExecutiveCommitteeTeamMember_.firstName)
                         : null,

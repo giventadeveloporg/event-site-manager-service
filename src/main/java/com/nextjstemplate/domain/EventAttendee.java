@@ -141,6 +141,9 @@ public class EventAttendee implements Serializable {
     @Column(name = "feedback", length = 1000)
     private String feedback;
 
+    @Column(name = "admin_notes", columnDefinition = "text")
+    private String adminNotes;
+
     @Size(max = 100)
     @Column(name = "registration_source", length = 100)
     private String registrationSource;
@@ -583,6 +586,19 @@ public class EventAttendee implements Serializable {
         this.feedback = feedback;
     }
 
+    public String getAdminNotes() {
+        return this.adminNotes;
+    }
+
+    public EventAttendee adminNotes(String adminNotes) {
+        this.setAdminNotes(adminNotes);
+        return this;
+    }
+
+    public void setAdminNotes(String adminNotes) {
+        this.adminNotes = adminNotes;
+    }
+
     public String getRegistrationSource() {
         return this.registrationSource;
     }
@@ -729,6 +745,7 @@ public class EventAttendee implements Serializable {
             ", checkOutTime='" + getCheckOutTime() + "'" +
             ", attendanceRating=" + getAttendanceRating() +
             ", feedback='" + getFeedback() + "'" +
+            ", adminNotes='" + getAdminNotes() + "'" +
             ", registrationSource='" + getRegistrationSource() + "'" +
             ", waitListPosition=" + getWaitListPosition() +
             ", priorityScore=" + getPriorityScore() +

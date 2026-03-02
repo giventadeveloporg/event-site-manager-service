@@ -25,6 +25,11 @@ public class ExecutiveCommitteeTeamMember implements Serializable {
     private Long id;
 
     @NotNull
+    @Size(max = 255)
+    @Column(name = "tenant_id", length = 255, nullable = false)
+    private String tenantId;
+
+    @NotNull
     @Column(name = "first_name", nullable = false)
     private String firstName;
 
@@ -93,6 +98,19 @@ public class ExecutiveCommitteeTeamMember implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getTenantId() {
+        return this.tenantId;
+    }
+
+    public ExecutiveCommitteeTeamMember tenantId(String tenantId) {
+        this.setTenantId(tenantId);
+        return this;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
     }
 
     public String getFirstName() {
@@ -339,7 +357,8 @@ public class ExecutiveCommitteeTeamMember implements Serializable {
     @Override
     public String toString() {
         return "ExecutiveCommitteeTeamMember{" +
-            "id=" + getId() +
+            ", id=" + getId() +
+            ", tenantId='" + getTenantId() + "'" +
             ", firstName='" + getFirstName() + "'" +
             ", lastName='" + getLastName() + "'" +
             ", title='" + getTitle() + "'" +

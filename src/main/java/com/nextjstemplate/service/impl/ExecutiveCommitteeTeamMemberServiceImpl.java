@@ -38,6 +38,16 @@ public class ExecutiveCommitteeTeamMemberServiceImpl implements ExecutiveCommitt
         ExecutiveCommitteeTeamMember executiveCommitteeTeamMember = executiveCommitteeTeamMemberMapper.toEntity(
             executiveCommitteeTeamMemberDTO
         );
+
+        // Ensure ID is null for new entities to force sequence generation (see .cursor/rules/duplicate-key-prevention.mdc)
+        if (executiveCommitteeTeamMember.getId() != null) {
+            LOG.warn(
+                "ExecutiveCommitteeTeamMember has ID {} set during create operation. Clearing ID to force sequence generation.",
+                executiveCommitteeTeamMember.getId()
+            );
+            executiveCommitteeTeamMember.setId(null);
+        }
+
         executiveCommitteeTeamMember = executiveCommitteeTeamMemberRepository.save(executiveCommitteeTeamMember);
         return executiveCommitteeTeamMemberMapper.toDto(executiveCommitteeTeamMember);
     }

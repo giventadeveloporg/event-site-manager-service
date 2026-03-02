@@ -98,6 +98,8 @@ public class EventAttendeeDTO implements Serializable {
     @Size(max = 1000)
     private String feedback;
 
+    private String adminNotes;
+
     @Size(max = 100)
     private String registrationSource;
 
@@ -372,6 +374,14 @@ public class EventAttendeeDTO implements Serializable {
         this.feedback = feedback;
     }
 
+    public String getAdminNotes() {
+        return adminNotes;
+    }
+
+    public void setAdminNotes(String adminNotes) {
+        this.adminNotes = adminNotes;
+    }
+
     public String getRegistrationSource() {
         return registrationSource;
     }
@@ -477,6 +487,7 @@ public class EventAttendeeDTO implements Serializable {
             ", checkOutTime='" + getCheckOutTime() + "'" +
             ", attendanceRating=" + getAttendanceRating() +
             ", feedback='" + getFeedback() + "'" +
+            ", adminNotes='" + getAdminNotes() + "'" +
             ", registrationSource='" + getRegistrationSource() + "'" +
             ", waitListPosition=" + getWaitListPosition() +
             ", priorityScore=" + getPriorityScore() +

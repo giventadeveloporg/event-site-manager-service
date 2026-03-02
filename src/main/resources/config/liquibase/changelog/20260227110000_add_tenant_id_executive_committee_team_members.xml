@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Add tenant_id to executive_committee_team_members for tenant-scoping.
+        Step 1: Add column as nullable (table may already have rows).
+    -->
+    <changeSet id="20260227110000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="executive_committee_team_members" columnName="tenant_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="executive_committee_team_members">
+            <column name="tenant_id" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!--
+        Step 2: Backfill tenant_id from default tenant for existing rows.
+    -->
+    <changeSet id="20260227110000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="executive_committee_team_members" columnName="tenant_id"/>
+        </preConditions>
+        <sql>UPDATE executive_committee_team_members SET tenant_id = COALESCE(
+            (SELECT tenant_id FROM tenant_settings ORDER BY id LIMIT 1),
+            'tenant_demo_001'
+        ) WHERE tenant_id IS NULL</sql>
+    </changeSet>
+
+    <!--
+        Step 3: Alter tenant_id to NOT NULL.
+    -->
+    <changeSet id="20260227110000-3" author="system">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="executive_committee_team_members" columnName="tenant_id"/>
+        </preConditions>
+        <addNotNullConstraint tableName="executive_committee_team_members" columnName="tenant_id" columnDataType="varchar(255)"/>
+    </changeSet>
+
+</databaseChangeLog>

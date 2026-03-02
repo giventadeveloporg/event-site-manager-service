@@ -71,6 +71,13 @@ public class ExecutiveCommitteeTeamMemberResource {
         if (executiveCommitteeTeamMemberDTO.getId() != null) {
             throw new BadRequestAlertException("A new executiveCommitteeTeamMember cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        if (executiveCommitteeTeamMemberDTO.getTenantId() == null || executiveCommitteeTeamMemberDTO.getTenantId().isBlank()) {
+            throw new BadRequestAlertException(
+                "tenantId is required when creating an executive committee team member",
+                ENTITY_NAME,
+                "tenantidrequired"
+            );
+        }
         executiveCommitteeTeamMemberDTO = executiveCommitteeTeamMemberService.save(executiveCommitteeTeamMemberDTO);
         return ResponseEntity
             .created(new URI("/api/executive-committee-team-members/" + executiveCommitteeTeamMemberDTO.getId()))

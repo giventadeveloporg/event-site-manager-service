@@ -28,6 +28,10 @@ import tech.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing {@link com.nextjstemplate.domain.EventAttendee}.
+ * <p>
+ * {@code adminNotes} is included in the DTO for admin use only (list, by-id, PATCH/PUT).
+ * Ensure public registration/attendee-facing endpoints do not expose or accept adminNotes;
+ * restrict GET/PATCH/PUT to admin or internal callers so only they see and update adminNotes.
  */
 @RestController
 @RequestMapping("/api/event-attendees")

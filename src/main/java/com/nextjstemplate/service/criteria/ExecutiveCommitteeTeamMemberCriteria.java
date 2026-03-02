@@ -24,6 +24,8 @@ public class ExecutiveCommitteeTeamMemberCriteria implements Serializable, Crite
 
     private LongFilter id;
 
+    private StringFilter tenantId;
+
     private StringFilter firstName;
 
     private StringFilter lastName;
@@ -64,6 +66,7 @@ public class ExecutiveCommitteeTeamMemberCriteria implements Serializable, Crite
 
     public ExecutiveCommitteeTeamMemberCriteria(ExecutiveCommitteeTeamMemberCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
+        this.tenantId = other.optionalTenantId().map(StringFilter::copy).orElse(null);
         this.firstName = other.optionalFirstName().map(StringFilter::copy).orElse(null);
         this.lastName = other.optionalLastName().map(StringFilter::copy).orElse(null);
         this.title = other.optionalTitle().map(StringFilter::copy).orElse(null);
@@ -106,6 +109,25 @@ public class ExecutiveCommitteeTeamMemberCriteria implements Serializable, Crite
 
     public void setId(LongFilter id) {
         this.id = id;
+    }
+
+    public StringFilter getTenantId() {
+        return tenantId;
+    }
+
+    public Optional<StringFilter> optionalTenantId() {
+        return Optional.ofNullable(tenantId);
+    }
+
+    public StringFilter tenantId() {
+        if (tenantId == null) {
+            setTenantId(new StringFilter());
+        }
+        return tenantId;
+    }
+
+    public void setTenantId(StringFilter tenantId) {
+        this.tenantId = tenantId;
     }
 
     public StringFilter getFirstName() {
@@ -461,6 +483,7 @@ public class ExecutiveCommitteeTeamMemberCriteria implements Serializable, Crite
         final ExecutiveCommitteeTeamMemberCriteria that = (ExecutiveCommitteeTeamMemberCriteria) o;
         return (
             Objects.equals(id, that.id) &&
+            Objects.equals(tenantId, that.tenantId) &&
             Objects.equals(firstName, that.firstName) &&
             Objects.equals(lastName, that.lastName) &&
             Objects.equals(title, that.title) &&
@@ -486,6 +509,7 @@ public class ExecutiveCommitteeTeamMemberCriteria implements Serializable, Crite
     public int hashCode() {
         return Objects.hash(
             id,
+            tenantId,
             firstName,
             lastName,
             title,
@@ -512,6 +536,7 @@ public class ExecutiveCommitteeTeamMemberCriteria implements Serializable, Crite
     public String toString() {
         return "ExecutiveCommitteeTeamMemberCriteria{" +
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
+            optionalTenantId().map(f -> "tenantId=" + f + ", ").orElse("") +
             optionalFirstName().map(f -> "firstName=" + f + ", ").orElse("") +
             optionalLastName().map(f -> "lastName=" + f + ", ").orElse("") +
             optionalTitle().map(f -> "title=" + f + ", ").orElse("") +

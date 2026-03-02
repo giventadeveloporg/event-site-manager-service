@@ -165,6 +165,9 @@ public class EventAttendeeQueryService extends QueryService<EventAttendee> {
             if (criteria.getNotes() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getNotes(), EventAttendee_.notes));
             }
+            if (criteria.getAdminNotes() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getAdminNotes(), EventAttendee_.adminNotes));
+            }
             if (criteria.getQrCodeData() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getQrCodeData(), EventAttendee_.qrCodeData));
             }

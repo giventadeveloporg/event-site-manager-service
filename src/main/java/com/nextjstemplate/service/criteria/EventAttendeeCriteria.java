@@ -62,6 +62,8 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
     private IntegerFilter numberOfGuestsCheckedIn;
     private StringFilter notes;
 
+    private StringFilter adminNotes;
+
     private StringFilter qrCodeData;
 
     private BooleanFilter qrCodeGenerated;
@@ -121,6 +123,7 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
         this.totalNumberOfGuests = other.totalNumberOfGuests == null ? null : other.totalNumberOfGuests.copy();
         this.numberOfGuestsCheckedIn = other.numberOfGuestsCheckedIn == null ? null : other.numberOfGuestsCheckedIn.copy();
         this.notes = other.notes == null ? null : other.notes.copy();
+        this.adminNotes = other.adminNotes == null ? null : other.adminNotes.copy();
         this.qrCodeData = other.qrCodeData == null ? null : other.qrCodeData.copy();
         this.qrCodeGenerated = other.qrCodeGenerated == null ? null : other.qrCodeGenerated.copy();
         this.qrCodeGeneratedAt = other.qrCodeGeneratedAt == null ? null : other.qrCodeGeneratedAt.copy();
@@ -488,6 +491,21 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
         this.notes = notes;
     }
 
+    public StringFilter getAdminNotes() {
+        return adminNotes;
+    }
+
+    public StringFilter adminNotes() {
+        if (adminNotes == null) {
+            adminNotes = new StringFilter();
+        }
+        return adminNotes;
+    }
+
+    public void setAdminNotes(StringFilter adminNotes) {
+        this.adminNotes = adminNotes;
+    }
+
     public StringFilter getQrCodeData() {
         return qrCodeData;
     }
@@ -739,6 +757,7 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
             Objects.equals(totalNumberOfGuests, that.totalNumberOfGuests) &&
             Objects.equals(numberOfGuestsCheckedIn, that.numberOfGuestsCheckedIn) &&
             Objects.equals(notes, that.notes) &&
+            Objects.equals(adminNotes, that.adminNotes) &&
             Objects.equals(qrCodeData, that.qrCodeData) &&
             Objects.equals(qrCodeGenerated, that.qrCodeGenerated) &&
             Objects.equals(qrCodeGeneratedAt, that.qrCodeGeneratedAt) &&
@@ -784,6 +803,7 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
             totalNumberOfGuests,
             numberOfGuestsCheckedIn,
             notes,
+            adminNotes,
             qrCodeData,
             qrCodeGenerated,
             qrCodeGeneratedAt,
@@ -825,6 +845,7 @@ public class EventAttendeeCriteria implements Serializable, Criteria {
             (checkInStatus != null ? "checkInStatus=" + checkInStatus + ", " : "") +
             (checkInTime != null ? "checkInTime=" + checkInTime + ", " : "") +
             (notes != null ? "notes=" + notes + ", " : "") +
+            (adminNotes != null ? "adminNotes=" + adminNotes + ", " : "") +
             (qrCodeData != null ? "qrCodeData=" + qrCodeData + ", " : "") +
             (qrCodeGenerated != null ? "qrCodeGenerated=" + qrCodeGenerated + ", " : "") +
             (qrCodeGeneratedAt != null ? "qrCodeGeneratedAt=" + qrCodeGeneratedAt + ", " : "") +
