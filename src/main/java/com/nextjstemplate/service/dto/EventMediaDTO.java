@@ -103,6 +103,8 @@ public class EventMediaDTO implements Serializable {
 
     private Long directorId;
 
+    private Long eventFocusGroupId;
+
     /**
      * Priority ranking for media files (sponsor or event-sponsor).
      * Lower values indicate higher priority (0 = highest priority).
@@ -397,6 +399,14 @@ public class EventMediaDTO implements Serializable {
         this.directorId = directorId;
     }
 
+    public Long getEventFocusGroupId() {
+        return eventFocusGroupId;
+    }
+
+    public void setEventFocusGroupId(Long eventFocusGroupId) {
+        this.eventFocusGroupId = eventFocusGroupId;
+    }
+
     public Integer getPriorityRanking() {
         return priorityRanking;
     }
@@ -487,6 +497,7 @@ public class EventMediaDTO implements Serializable {
             ", eventSponsorsJoinId=" + getEventSponsorsJoinId() +
             ", performerId=" + getPerformerId() +
             ", directorId=" + getDirectorId() +
+            ", eventFocusGroupId=" + getEventFocusGroupId() +
             ", priorityRanking=" + getPriorityRanking() +
             ", albumId=" + getAlbumId() +
            /* ", event=" + getEvent() +

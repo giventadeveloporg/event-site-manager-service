@@ -278,6 +278,9 @@ public class EventMediaQueryService extends QueryService<EventMedia> {
                         buildSpecification(criteria.getAlbumId(), root -> root.join(EventMedia_.album, JoinType.LEFT).get(GalleryAlbum_.id))
                     );
             }
+            if (criteria.getEventFocusGroupId() != null) {
+                specification = specification.and(buildSpecification(criteria.getEventFocusGroupId(), EventMedia_.eventFocusGroupId));
+            }
         }
         return specification;
     }

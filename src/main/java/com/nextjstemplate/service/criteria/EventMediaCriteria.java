@@ -96,6 +96,8 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     private LongFilter albumId;
 
+    private LongFilter eventFocusGroupId;
+
     private Boolean distinct;
 
     public EventMediaCriteria() {}
@@ -141,6 +143,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.directorId = other.directorId == null ? null : other.directorId.copy();
         this.priorityRanking = other.priorityRanking == null ? null : other.priorityRanking.copy();
         this.albumId = other.albumId == null ? null : other.albumId.copy();
+        this.eventFocusGroupId = other.eventFocusGroupId == null ? null : other.eventFocusGroupId.copy();
         this.distinct = other.distinct;
     }
 
@@ -690,6 +693,25 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.albumId = albumId;
     }
 
+    public LongFilter getEventFocusGroupId() {
+        return eventFocusGroupId;
+    }
+
+    public LongFilter eventFocusGroupId() {
+        if (eventFocusGroupId == null) {
+            eventFocusGroupId = new LongFilter();
+        }
+        return eventFocusGroupId;
+    }
+
+    public Optional<LongFilter> optionalEventFocusGroupId() {
+        return Optional.ofNullable(eventFocusGroupId);
+    }
+
+    public void setEventFocusGroupId(LongFilter eventFocusGroupId) {
+        this.eventFocusGroupId = eventFocusGroupId;
+    }
+
     public LongFilter getPerformerId() {
         return performerId;
     }
@@ -775,6 +797,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             Objects.equals(directorId, that.directorId) &&
             Objects.equals(priorityRanking, that.priorityRanking) &&
             Objects.equals(albumId, that.albumId) &&
+            Objects.equals(eventFocusGroupId, that.eventFocusGroupId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -818,6 +841,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             directorId,
             priorityRanking,
             albumId,
+            eventFocusGroupId,
             distinct
         );
     }
@@ -864,6 +888,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             (directorId != null ? "directorId=" + directorId + ", " : "") +
             (priorityRanking != null ? "priorityRanking=" + priorityRanking + ", " : "") +
             (albumId != null ? "albumId=" + albumId + ", " : "") +
+            (eventFocusGroupId != null ? "eventFocusGroupId=" + eventFocusGroupId + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}";
     }

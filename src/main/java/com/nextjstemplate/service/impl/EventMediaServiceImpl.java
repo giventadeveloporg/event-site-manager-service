@@ -2,6 +2,7 @@ package com.nextjstemplate.service.impl;
 
 import com.nextjstemplate.domain.EventDetails;
 import com.nextjstemplate.domain.EventFeaturedPerformers;
+import com.nextjstemplate.domain.EventFocusGroup;
 import com.nextjstemplate.domain.EventMedia;
 import com.nextjstemplate.domain.EventProgramDirectors;
 import com.nextjstemplate.domain.EventSponsors;
@@ -11,6 +12,7 @@ import com.nextjstemplate.domain.GalleryAlbum;
 import com.nextjstemplate.domain.PromotionEmailTemplate;
 import com.nextjstemplate.repository.EventDetailsRepository;
 import com.nextjstemplate.repository.EventFeaturedPerformersRepository;
+import com.nextjstemplate.repository.EventFocusGroupRepository;
 import com.nextjstemplate.repository.EventMediaRepository;
 import com.nextjstemplate.repository.EventProgramDirectorsRepository;
 import com.nextjstemplate.repository.EventSponsorsJoinRepository;
@@ -87,6 +89,8 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     private final GalleryAlbumRepository galleryAlbumRepository;
 
+    private final EventFocusGroupRepository eventFocusGroupRepository;
+
     @Autowired
     public EventMediaServiceImpl(
         EventMediaRepository eventMediaRepository,
@@ -103,7 +107,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         PromotionEmailTemplateService promotionEmailTemplateService,
         PromotionEmailTemplateMapper promotionEmailTemplateMapper,
         FocusGroupService focusGroupService,
-        GalleryAlbumRepository galleryAlbumRepository
+        GalleryAlbumRepository galleryAlbumRepository,
+        EventFocusGroupRepository eventFocusGroupRepository
     ) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
@@ -120,6 +125,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         this.promotionEmailTemplateMapper = promotionEmailTemplateMapper;
         this.focusGroupService = focusGroupService;
         this.galleryAlbumRepository = galleryAlbumRepository;
+        this.eventFocusGroupRepository = eventFocusGroupRepository;
     }
 
     @Override
@@ -129,6 +135,8 @@ public class EventMediaServiceImpl implements EventMediaService {
 
         // Validate that event_id and album_id are mutually exclusive
         validateEventAlbumMutuallyExclusive(eventMediaDTO.getEventId(), eventMediaDTO.getAlbumId());
+        // Validate that event_focus_group belongs to the same event as the media
+        validateEventFocusGroupMatchesEvent(eventMediaDTO.getEventFocusGroupId(), eventMediaDTO.getEventId());
 
         // CRITICAL: For child events, if isHomePageHeroImage is true and one already exists, update it instead of creating new
         if (
@@ -205,6 +213,8 @@ public class EventMediaServiceImpl implements EventMediaService {
 
         // Validate that event_id and album_id are mutually exclusive
         validateEventAlbumMutuallyExclusive(eventMediaDTO.getEventId(), eventMediaDTO.getAlbumId());
+        // Validate that event_focus_group belongs to the same event as the media
+        validateEventFocusGroupMatchesEvent(eventMediaDTO.getEventFocusGroupId(), eventMediaDTO.getEventId());
 
         // Check if isHomePageHeroImage is being set to true
         boolean isHomePageHeroImageBeingSet = eventMediaDTO.getIsHomePageHeroImage() != null && eventMediaDTO.getIsHomePageHeroImage();
@@ -283,6 +293,7 @@ public class EventMediaServiceImpl implements EventMediaService {
 
         // Validate that event_id and album_id are mutually exclusive
         validateEventAlbumMutuallyExclusive(eventMediaDTO.getEventId(), eventMediaDTO.getAlbumId());
+        validateEventFocusGroupMatchesEvent(eventMediaDTO.getEventFocusGroupId(), eventMediaDTO.getEventId());
 
         // Check if isHomePageHeroImage is being set to true
         boolean isHomePageHeroImageBeingSet = eventMediaDTO.getIsHomePageHeroImage() != null && eventMediaDTO.getIsHomePageHeroImage();
@@ -2082,6 +2093,31 @@ public class EventMediaServiceImpl implements EventMediaService {
         } catch (Exception e) {
             log.error("Failed to replicate homepage hero image to child events for parent event {}", parentEvent.getId(), e);
             // Don't throw - parent media upload should still succeed even if replication fails
+        }
+    }
+
+    /**
+     * Validates that when event_focus_group_id is set, the referenced focus group belongs to the same event as the media.
+     *
+     * @param eventFocusGroupId the event focus group ID (can be null; validation skipped if null)
+     * @param mediaEventId the event ID of the media (must match the focus group's event_id when eventFocusGroupId is set)
+     * @throws EntityNotFoundException if the focus group is not found
+     * @throws IllegalArgumentException if mediaEventId is null or does not match the focus group's event_id
+     */
+    private void validateEventFocusGroupMatchesEvent(Long eventFocusGroupId, Long mediaEventId) {
+        if (eventFocusGroupId == null) {
+            return;
+        }
+        EventFocusGroup focusGroup = eventFocusGroupRepository
+            .findById(eventFocusGroupId)
+            .orElseThrow(() -> new EntityNotFoundException("EventFocusGroup not found: " + eventFocusGroupId));
+        if (mediaEventId == null || !mediaEventId.equals(focusGroup.getEventId())) {
+            throw new IllegalArgumentException(
+                "event_focus_group must belong to the same event as the media. Focus group event_id: " +
+                focusGroup.getEventId() +
+                ", media event_id: " +
+                mediaEventId
+            );
         }
     }
 
