@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Fix FocusGroup description column: Convert from CLOB/LOB to TEXT
+        This fixes the "large object does not exist" error by using PostgreSQL's native TEXT type
+        instead of the large object system.
+    -->
+    <changeSet id="20251207-1-fix-focus-group-description" author="system">
+        <comment>Fix FocusGroup description column: Convert from CLOB to TEXT to avoid large object issues</comment>
+        
+        <!-- 
+            Convert the description column from CLOB/LOB to TEXT.
+            This handles the case where the column might be using PostgreSQL's large object system (OID).
+            We attempt to preserve data by reading valid large objects, and set NULL for invalid ones.
+        -->
+        <sql dbms="postgresql">
+            DO $$
+            DECLARE
+                col_type text;
+                lo_oid oid;
+                lo_content text;
+            BEGIN
+                -- Get the current column type
+                SELECT data_type INTO col_type
+                FROM information_schema.columns
+                WHERE table_name = 'focus_group' AND column_name = 'description';
+                
+                -- Only process if column is not already TEXT
+                IF col_type != 'text' THEN
+                    -- Create a temporary TEXT column
+                    ALTER TABLE focus_group ADD COLUMN description_new TEXT;
+                    
+                    -- Try to read large objects and copy to new column
+                    -- For OID type, attempt to read the large object
+                    IF col_type = 'oid' THEN
+                        FOR lo_oid IN SELECT description::oid FROM focus_group WHERE description IS NOT NULL
+                        LOOP
+                            BEGIN
+                                -- Try to read the large object
+                                SELECT convert_from(loread(lo_open(lo_oid, 262144), 10000000), 'UTF8') INTO lo_content;
+                                -- Update the row with the content
+                                UPDATE focus_group SET description_new = lo_content WHERE description::oid = lo_oid;
+                            EXCEPTION
+                                WHEN OTHERS THEN
+                                    -- If large object doesn't exist or can't be read, set to NULL
+                                    UPDATE focus_group SET description_new = NULL WHERE description::oid = lo_oid;
+                            END;
+                        END LOOP;
+                    ELSE
+                        -- For other types, try direct conversion
+                        UPDATE focus_group SET description_new = description::text;
+                    END IF;
+                    
+                    -- Drop the old column
+                    ALTER TABLE focus_group DROP COLUMN description;
+                    
+                    -- Rename the new column to the original name
+                    ALTER TABLE focus_group RENAME COLUMN description_new TO description;
+                END IF;
+            END $$;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+

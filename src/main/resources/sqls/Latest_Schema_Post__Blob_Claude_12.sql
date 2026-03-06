@@ -146,6 +146,7 @@ DROP TABLE IF EXISTS public.bulk_operation_log CASCADE;
 DROP TABLE IF EXISTS public.qr_code_usage CASCADE;
 
 DROP TABLE IF EXISTS public.event_attendee_guest CASCADE;
+DROP TABLE IF EXISTS public.event_attendee_attachment CASCADE;
 DROP TABLE IF EXISTS public.event_guest_pricing CASCADE;
 DROP TABLE IF EXISTS public.event_attendee CASCADE;
 DROP TABLE IF EXISTS public.event_admin_audit_log CASCADE;
@@ -217,7 +218,19 @@ DROP TABLE IF EXISTS public.BATCH_JOB_INSTANCE CASCADE;
 -- Custom application table (independent, no dependencies)
 DROP TABLE IF EXISTS public.batch_job_execution_log CASCADE;
 
+DROP TABLE IF EXISTS public.donation_transaction CASCADE;
+DROP TABLE IF EXISTS public.donation_statistics CASCADE;
+
 DROP TABLE IF EXISTS public.tenant_email_addresses CASCADE;
+
+-- News portal tables (drop children first, then parents)
+DROP TABLE IF EXISTS public.news_article_category CASCADE;
+DROP TABLE IF EXISTS public.news_article CASCADE;
+DROP TABLE IF EXISTS public.news_flash CASCADE;
+DROP TABLE IF EXISTS public.news_live_stream_config CASCADE;
+DROP TABLE IF EXISTS public.news_section_display_config CASCADE;
+DROP TABLE IF EXISTS public.news_sidebar_promotion CASCADE;
+DROP TABLE IF EXISTS public.news_category CASCADE;
 
 
 
@@ -776,6 +789,7 @@ CREATE TABLE public.event_details (
                                       featured_event_priority_ranking INT4 NOT NULL DEFAULT 0,
                                       live_event_priority_ranking INT4 NOT NULL DEFAULT 0,
                                       donation_metadata TEXT NULL,
+                                      eventcube_embed_url VARCHAR(1024) NULL,
                                       event_recurrence_metadata TEXT NULL,
                                       is_recurring bool DEFAULT false NULL,
                                       recurrence_pattern varchar(50) NULL,
@@ -1040,6 +1054,8 @@ CREATE TABLE public.focus_group_members (
 );
 
 COMMENT ON TABLE public.focus_group_members IS 'Membership of focus groups by user_profile with roles/status';
+COMMENT ON COLUMN public.focus_group_members.role IS 'Member role: MEMBER, LEAD, ADMIN, EXECUTIVE, ORGANISER. EXECUTIVE and ORGANISER denote executive/organising committee members.';
+COMMENT ON COLUMN public.focus_group_members.status IS 'Membership status: PENDING, ACTIVE, INACTIVE.';
 
 
 CREATE TABLE public.event_focus_groups (
@@ -1325,6 +1341,7 @@ CREATE TABLE public.event_attendee (
                                        attendance_rating integer,
                                        feedback text,
                                        notes text,
+                                       admin_notes text,
                                        qr_code_data character varying(1000),
                                        qr_code_generated boolean DEFAULT false,
                                        qr_code_generated_at timestamp without time zone,
@@ -1420,6 +1437,31 @@ CREATE TABLE public.event_attendee_guest (
                                              CONSTRAINT fk_event_attendee_guest__primary_attendee_id FOREIGN KEY (primary_attendee_id) REFERENCES public.event_attendee(id) ON DELETE CASCADE
 );
 
+CREATE TABLE public.event_attendee_attachment (
+                                                  id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                  tenant_id character varying(255),
+                                                  attendee_id bigint NOT NULL,
+                                                  event_id bigint NOT NULL,
+                                                  title character varying(255),
+                                                  description character varying(2048),
+                                                  file_url character varying(2048) NOT NULL,
+                                                  content_type character varying(255),
+                                                  file_size integer,
+                                                  original_filename character varying(255),
+                                                  storage_type character varying(255) NOT NULL,
+                                                  is_public boolean DEFAULT false NOT NULL,
+                                                  event_media_type character varying(255) DEFAULT 'ATTENDEE_ATTACHMENT'::character varying NOT NULL,
+                                                  uploaded_by_id bigint,
+                                                  created_at timestamp without time zone DEFAULT now() NOT NULL,
+                                                  updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                                  CONSTRAINT event_attendee_attachment_pkey PRIMARY KEY (id),
+                                                  CONSTRAINT fk_event_attendee_attachment__attendee_id FOREIGN KEY (attendee_id) REFERENCES public.event_attendee(id) ON DELETE CASCADE,
+                                                  CONSTRAINT fk_event_attendee_attachment__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_event_attendee_attachment_attendee_created
+    ON public.event_attendee_attachment(attendee_id, created_at);
+
 
 
 --
@@ -1498,11 +1540,13 @@ CREATE TABLE public.event_sponsors (
     -- Status and metadata
                                        is_active boolean DEFAULT true NOT NULL,
                                        priority_ranking int4 DEFAULT 0 NOT NULL,
-    -- Social media links
+    -- Social media links (Facebook, Instagram, X (Twitter), LinkedIn, YouTube, TikTok)
                                        facebook_url varchar(1024) NULL,
+                                       instagram_url varchar(1024) NULL,
                                        twitter_url varchar(1024) NULL,
                                        linkedin_url varchar(1024) NULL,
-                                       instagram_url varchar(1024) NULL,
+                                       youtube_url varchar(1024) NULL,
+                                       tiktok_url varchar(1024) NULL,
     -- Timestamps
                                        created_at timestamp DEFAULT now() NOT NULL,
                                        updated_at timestamp DEFAULT now() NOT NULL,
@@ -1514,9 +1558,11 @@ CREATE TABLE public.event_sponsors (
     CONSTRAINT check_url_format_hero CHECK (hero_image_url IS NULL OR hero_image_url ~* '^https?://.*'),
     CONSTRAINT check_url_format_banner CHECK (banner_image_url IS NULL OR banner_image_url ~* '^https?://.*'),
     CONSTRAINT check_url_format_facebook CHECK (facebook_url IS NULL OR facebook_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_instagram CHECK (instagram_url IS NULL OR instagram_url ~* '^https?://.*'),
     CONSTRAINT check_url_format_twitter CHECK (twitter_url IS NULL OR twitter_url ~* '^https?://.*'),
     CONSTRAINT check_url_format_linkedin CHECK (linkedin_url IS NULL OR linkedin_url ~* '^https?://.*'),
-    CONSTRAINT check_url_format_instagram CHECK (instagram_url IS NULL OR instagram_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_youtube CHECK (youtube_url IS NULL OR youtube_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_tiktok CHECK (tiktok_url IS NULL OR tiktok_url ~* '^https?://.*'),
     CONSTRAINT check_email_format CHECK (contact_email IS NULL OR contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
     CONSTRAINT fk_event_sponsors_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
@@ -1614,18 +1660,22 @@ CREATE TABLE public.event_media (
                                     director_id bigint NULL,
                                     priority_ranking INT4 NOT NULL DEFAULT 0,
                                     is_home_page_hero_image bool DEFAULT false NOT NULL,
+                                    home_page_hero_display_duration_seconds int4 NULL,
                                     is_featured_event_image bool DEFAULT false NOT NULL,
                                     is_live_event_image bool DEFAULT false NOT NULL,
                                     album_id int8 NULL,
+                                    event_focus_group_id bigint NULL,
                                     CONSTRAINT check_download_count_non_negative CHECK ((download_count >= 0)),
                                     CONSTRAINT check_file_size_positive CHECK (((file_size IS NULL) OR (file_size >= 0))),
                                     CONSTRAINT check_priority_ranking_non_negative CHECK (priority_ranking >= 0),
+                                    CONSTRAINT check_home_page_hero_display_duration CHECK (home_page_hero_display_duration_seconds IS NULL OR (home_page_hero_display_duration_seconds >= 1 AND home_page_hero_display_duration_seconds <= 600)),
                                     CONSTRAINT check_event_album_mutually_exclusive CHECK (((event_id IS NULL AND album_id IS NULL) OR (event_id IS NOT NULL AND album_id IS NULL) OR (event_id IS NULL AND album_id IS NOT NULL))),
                                     CONSTRAINT fk_event_media__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
                                     CONSTRAINT fk_event_media__uploaded_by_id FOREIGN KEY (uploaded_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL,
                                     CONSTRAINT fk_event_media_sponsor_id FOREIGN KEY (sponsor_id) REFERENCES public.event_sponsors(id) ON DELETE CASCADE,
                                     CONSTRAINT fk_event_media_event_sponsors_join_id FOREIGN KEY (event_sponsors_join_id) REFERENCES public.event_sponsors_join(id) ON DELETE CASCADE,
-                                    CONSTRAINT fk_event_media_album_id FOREIGN KEY (album_id) REFERENCES public.gallery_album(id) ON DELETE SET NULL
+                                    CONSTRAINT fk_event_media_album_id FOREIGN KEY (album_id) REFERENCES public.gallery_album(id) ON DELETE SET NULL,
+                                    CONSTRAINT fk_event_media__event_focus_group_id FOREIGN KEY (event_focus_group_id) REFERENCES public.event_focus_groups(id) ON DELETE SET NULL
 );
 
 
@@ -1644,6 +1694,10 @@ COMMENT ON COLUMN public.event_media.event_sponsors_join_id IS 'Reference to eve
 COMMENT ON COLUMN public.event_media.priority_ranking IS 'Priority ranking for media files (sponsor or event-sponsor). Lower values indicate higher priority (0 = highest priority). Used to determine which image to display when multiple files are available.';
 
 COMMENT ON COLUMN public.event_media.album_id IS 'Reference to gallery album. Mutually exclusive with event_id (media belongs to either an event OR an album, not both).';
+
+COMMENT ON COLUMN public.event_media.event_focus_group_id IS 'Optional link to event_focus_groups. When set, this media is associated with that event focus group (e.g. for uploads tagged by focus group).';
+
+COMMENT ON COLUMN public.event_media.home_page_hero_display_duration_seconds IS 'Duration in seconds to display this image in the homepage hero slider when is_home_page_hero_image is true. Stored as total seconds (e.g. 50, 80 for 1m20s). NULL = use app default (8 seconds). Valid range: 1–600.';
 
 
 
@@ -2019,7 +2073,7 @@ COMMENT ON COLUMN public.event_ticket_type.sold_quantity IS 'Number of tickets s
 
 
 CREATE TABLE public.event_ticket_transaction_item (
-                                                      id BIGSERIAL PRIMARY KEY,
+                                                      id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
                                                       tenant_id character varying(255),
                                                       transaction_id BIGINT NOT NULL REFERENCES public.event_ticket_transaction(id) ON DELETE CASCADE,
                                                       ticket_type_id BIGINT NOT NULL REFERENCES public.event_ticket_type(id),
@@ -2029,6 +2083,7 @@ CREATE TABLE public.event_ticket_transaction_item (
     -- Optionally: discount_amount, fee_amount, etc.
                                                       created_at TIMESTAMP DEFAULT now() NOT NULL,
                                                       updated_at TIMESTAMP DEFAULT now() NOT NULL,
+                                                      CONSTRAINT event_ticket_transaction_item_pkey PRIMARY KEY (id),
                                                       CONSTRAINT unique_transaction_ticket_type_tenant UNIQUE (transaction_id, ticket_type_id, tenant_id)
 );
 --
@@ -2164,6 +2219,7 @@ CREATE TABLE public.tenant_settings (
                                         whatsapp_webhook_url character varying(1048),
                                         whatsapp_webhook_token character varying(1048),
                                         enable_email_marketing boolean DEFAULT false,
+                                        homepage_cache_version bigint DEFAULT 0 NOT NULL,
                                         email_provider_config character varying(2048),
                                         custom_css character varying(8192),
                                         custom_js character varying(16384),
@@ -2176,6 +2232,12 @@ CREATE TABLE public.tenant_settings (
                                         email_header_image_url VARCHAR(2048) NULL,
                                         email_footer_html_url VARCHAR(2048),
                                         logo_image_url VARCHAR(2048),
+                                        facebook_url varchar(1024) NULL,
+                                        instagram_url varchar(1024) NULL,
+                                        twitter_url varchar(1024) NULL,
+                                        linkedin_url varchar(1024) NULL,
+                                        youtube_url varchar(1024) NULL,
+                                        tiktok_url varchar(1024) NULL,
                                         created_at timestamp without time zone DEFAULT now() NOT NULL,
                                         updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                         CONSTRAINT check_default_capacity_positive CHECK (((default_event_capacity IS NULL) OR (default_event_capacity > 0))),
@@ -2201,6 +2263,13 @@ CREATE INDEX idx_tenant_settings_organization_id ON public.tenant_settings(tenan
 COMMENT ON TABLE public.tenant_settings IS 'Tenant-specific configuration settings with enhanced options';
 
 COMMENT ON COLUMN public.tenant_settings.tenant_organization_id IS 'Foreign key reference to tenant_organization.id for standard Long->Long relationship';
+
+COMMENT ON COLUMN public.tenant_settings.facebook_url IS 'Organization Facebook profile or page URL for Follow our journey section';
+COMMENT ON COLUMN public.tenant_settings.instagram_url IS 'Organization Instagram profile URL for Follow our journey section';
+COMMENT ON COLUMN public.tenant_settings.twitter_url IS 'Organization X (Twitter) profile URL for Follow our journey section';
+COMMENT ON COLUMN public.tenant_settings.linkedin_url IS 'Organization LinkedIn profile or company page URL for Follow our journey section';
+COMMENT ON COLUMN public.tenant_settings.youtube_url IS 'Organization YouTube channel URL for Follow our journey section';
+COMMENT ON COLUMN public.tenant_settings.tiktok_url IS 'Organization TikTok profile URL for Follow our journey section';
 
 --
 -- TOC entry (class 1259 OID)
@@ -2294,6 +2363,7 @@ CREATE TABLE public.user_payment_transaction (
                                                  ticket_transaction_id bigint,
                                                  created_at timestamp without time zone DEFAULT now() NOT NULL,
                                                  updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                                                 CONSTRAINT user_payment_transaction_pkey PRIMARY KEY (id),
                                                  CONSTRAINT check_payment_amounts CHECK (((amount >= (0)::numeric) AND (platform_fee_amount >= (0)::numeric) AND (tenant_amount >= (0)::numeric) AND (processing_fee >= (0)::numeric))),
                                                  CONSTRAINT ux_payment_transaction_stripe_intent UNIQUE (stripe_payment_intent_id),
                                                  CONSTRAINT fk_payment_transaction__event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE SET NULL,
@@ -2358,7 +2428,8 @@ CREATE TABLE public.user_task (
 
 -- Create the executive_committee_team_members table
 CREATE TABLE public.executive_committee_team_members (
-                                                         id BIGSERIAL PRIMARY KEY,
+                                                         id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                         tenant_id character varying(255) NOT NULL,
                                                          first_name VARCHAR(255) NOT NULL,
                                                          last_name VARCHAR(255) NOT NULL,
                                                          title VARCHAR(255) NOT NULL,
@@ -2377,10 +2448,13 @@ CREATE TABLE public.executive_committee_team_members (
                                                          twitter_url VARCHAR(500),
                                                          website_url VARCHAR(500),
                                                          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                                                         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                                                         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                                                         CONSTRAINT executive_committee_team_members_pkey PRIMARY KEY (id),
+                                                         CONSTRAINT fk_executive_committee_team_members__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE
 );
 
 -- Create indexes for better performance
+CREATE INDEX idx_exec_team_members_tenant_id ON public.executive_committee_team_members(tenant_id);
 CREATE INDEX idx_exec_team_members_name ON public.executive_committee_team_members(first_name);
 CREATE INDEX idx_exec_team_members_department ON public.executive_committee_team_members(department);
 CREATE INDEX idx_exec_team_members_is_active ON public.executive_committee_team_members(is_active);
@@ -2388,6 +2462,7 @@ CREATE INDEX idx_exec_team_members_join_date ON public.executive_committee_team_
 
 -- Add comments for documentation
 COMMENT ON TABLE public.executive_committee_team_members IS 'Stores information about executive committee team members';
+COMMENT ON COLUMN public.executive_committee_team_members.tenant_id IS 'Foreign key reference to tenant_organization.tenant_id for multi-tenant isolation';
 COMMENT ON COLUMN public.executive_committee_team_members.expertise IS 'JSON array of skills and expertise areas';
 COMMENT ON COLUMN public.executive_committee_team_members.is_active IS 'Whether the team member is currently active';
 
@@ -2500,7 +2575,7 @@ SELECT pg_catalog.setval(
 -- TOC entry 4001 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: sequence_generator; Type: SEQUENCE SET; Schema: public; Owner: giventa_event_management
---
+-- (Sequence initialization moved to consolidated section below - see "SEQUENCE INITIALIZATION" section)
 
 
 
@@ -3325,6 +3400,9 @@ CREATE TABLE public.event_program_directors (
                                                 CONSTRAINT fk_event_program_directors_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
 );
 
+-- Index for event_media event_focus_group_id (optional focus group association)
+CREATE INDEX IF NOT EXISTS idx_event_media_event_focus_group_id ON public.event_media(event_focus_group_id) WHERE event_focus_group_id IS NOT NULL;
+
 -- Indexes for event_media sponsor references
 CREATE INDEX IF NOT EXISTS idx_event_media_sponsor_id ON public.event_media(sponsor_id) WHERE sponsor_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_event_media_event_sponsors_join_id ON public.event_media(event_sponsors_join_id) WHERE event_sponsors_join_id IS NOT NULL;
@@ -3640,9 +3718,11 @@ COMMENT ON COLUMN public.event_sponsors.banner_image_url IS 'URL to sponsor bann
 COMMENT ON COLUMN public.event_sponsors.is_active IS 'Whether the sponsor is currently active and should be displayed';
 COMMENT ON COLUMN public.event_sponsors.priority_ranking IS 'Display priority ranking (higher numbers = higher priority)';
 COMMENT ON COLUMN public.event_sponsors.facebook_url IS 'Facebook page URL';
-COMMENT ON COLUMN public.event_sponsors.twitter_url IS 'Twitter profile URL';
-COMMENT ON COLUMN public.event_sponsors.linkedin_url IS 'LinkedIn company page URL';
 COMMENT ON COLUMN public.event_sponsors.instagram_url IS 'Instagram profile URL';
+COMMENT ON COLUMN public.event_sponsors.twitter_url IS 'X (Twitter) profile URL';
+COMMENT ON COLUMN public.event_sponsors.linkedin_url IS 'LinkedIn company page URL';
+COMMENT ON COLUMN public.event_sponsors.youtube_url IS 'YouTube channel URL';
+COMMENT ON COLUMN public.event_sponsors.tiktok_url IS 'TikTok profile URL';
 
 -- event_sponsors_join column comments
 COMMENT ON COLUMN public.event_sponsors_join.event_id IS 'Foreign key reference to event_details.id';
@@ -4024,7 +4104,7 @@ CREATE TABLE public.manual_payment_request (
                                              requester_last_name character varying(255),
                                              requester_phone character varying(100),
                                              amount_due numeric(21,2) NOT NULL,
-                                             payment_method_type VARCHAR(80) NOT NULL,
+                                             payment_method_type VARCHAR(70) NOT NULL,
                                              payment_handle character varying(255),
                                              payment_instructions text,
                                              status character varying(30) DEFAULT 'REQUESTED' NOT NULL,
@@ -4054,8 +4134,8 @@ CREATE TABLE public.manual_payment_summary_report (
                                                     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
                                                     tenant_id character varying(255) NOT NULL,
                                                     event_id bigint NOT NULL,
-                                                    payment_method_type public.manual_payment_method_type NOT NULL,
-                                                    status character varying(30) NOT NULL,
+                                                    payment_method_type VARCHAR(70) NOT NULL,
+                                                    status VARCHAR(70) NOT NULL,
                                                     total_amount numeric(21,2) NOT NULL DEFAULT 0,
                                                     transaction_count integer NOT NULL DEFAULT 0,
                                                     snapshot_date date NOT NULL,
@@ -4365,8 +4445,13 @@ CREATE INDEX IF NOT EXISTS idx_promotion_log_tenant ON public.promotion_email_se
 -- These tables are required for Spring Batch to track job executions
 -- Run this script if automatic schema initialization fails
 
--- Create Spring Batch-specific sequences with the exact names Spring Batch expects
--- These are separate from the main sequence_generator used by other application tables
+-- Spring Batch-specific sequences are created after tables (see below) with OWNED BY integrated into CREATE statements
+-- This allows OWNED BY to be set in CREATE SEQUENCE statements (no ALTER needed)
+-- Note: Sequences must exist before tables for DEFAULT nextval() to work, so they are created initially
+-- and then recreated with OWNED BY after tables exist
+
+-- Create Spring Batch sequences initially (before tables) to support DEFAULT nextval() in table definitions
+-- These will be recreated with OWNED BY after tables exist (see below)
 CREATE SEQUENCE IF NOT EXISTS public.batch_job_seq
     START WITH 1
     INCREMENT BY 1
@@ -4511,43 +4596,39 @@ CREATE INDEX IF NOT EXISTS idx_batch_job_execution_log_status
 CREATE INDEX IF NOT EXISTS idx_batch_job_execution_log_tenant
     ON public.batch_job_execution_log(tenant_id, started_at DESC);
 
--- Ensure batch_job_execution_log sequence is always ahead of existing data
--- (safe even if the table is empty)
-SELECT pg_catalog.setval(
-               'public.batch_job_execution_log_id_seq',
-               GREATEST(COALESCE((SELECT MAX(id) FROM public.batch_job_execution_log), 1), 1),
-               true
-       );
+-- (Batch job sequence initialization moved to consolidated section below)
 
--- Ensure batch_job_seq sequence is always ahead of existing data
--- (safe even if the table is empty)
-SELECT pg_catalog.setval(
-               'public.batch_job_seq',
-               GREATEST(COALESCE((SELECT MAX(JOB_INSTANCE_ID) FROM public.BATCH_JOB_INSTANCE), 1), 1),
-               true
-       );
-
--- Ensure batch_job_execution_seq sequence is always ahead of existing data
--- (safe even if the table is empty)
-SELECT pg_catalog.setval(
-               'public.batch_job_execution_seq',
-               GREATEST(COALESCE((SELECT MAX(JOB_EXECUTION_ID) FROM public.BATCH_JOB_EXECUTION), 1), 1),
-               true
-       );
-
--- Ensure batch_step_execution_seq sequence is always ahead of existing data
--- (safe even if the table is empty)
-SELECT pg_catalog.setval(
-               'public.batch_step_execution_seq',
-               GREATEST(COALESCE((SELECT MAX(STEP_EXECUTION_ID) FROM public.BATCH_STEP_EXECUTION), 1), 1),
-               true
-       );
-
--- Set sequence ownership to the columns (must be done after tables are created)
+-- Create Spring Batch-specific sequences with OWNED BY integrated into CREATE statements
+-- These sequences are created after tables to allow OWNED BY clause (no ALTER statements needed)
+-- Note: Sequences are recreated here (after tables exist) to set OWNED BY in CREATE statement
 -- This ensures sequences are dropped if columns/tables are dropped
-ALTER SEQUENCE public.batch_job_seq OWNED BY public.BATCH_JOB_INSTANCE.JOB_INSTANCE_ID;
-ALTER SEQUENCE public.batch_job_execution_seq OWNED BY public.BATCH_JOB_EXECUTION.JOB_EXECUTION_ID;
-ALTER SEQUENCE public.batch_step_execution_seq OWNED BY public.BATCH_STEP_EXECUTION.STEP_EXECUTION_ID;
+-- The initial sequence creation (before tables) is removed since we recreate them here with OWNED BY
+DROP SEQUENCE IF EXISTS public.batch_job_seq CASCADE;
+CREATE SEQUENCE public.batch_job_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+    OWNED BY public.BATCH_JOB_INSTANCE.JOB_INSTANCE_ID;
+
+DROP SEQUENCE IF EXISTS public.batch_job_execution_seq CASCADE;
+CREATE SEQUENCE public.batch_job_execution_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+    OWNED BY public.BATCH_JOB_EXECUTION.JOB_EXECUTION_ID;
+
+DROP SEQUENCE IF EXISTS public.batch_step_execution_seq CASCADE;
+CREATE SEQUENCE public.batch_step_execution_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+    OWNED BY public.BATCH_STEP_EXECUTION.STEP_EXECUTION_ID;
 
 
 -- =====================================================
@@ -4635,12 +4716,402 @@ CREATE TRIGGER trg_membership_subscription_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION public.update_updated_at_column();
 
+-- =====================================================
+-- GIVEBUTTER DONATION TRANSACTION TABLES
+-- =====================================================
 
+-- Table: donation_transaction
+-- Purpose: Stores standalone donation transactions (non-ticketed donations) for GiveButter integration
+-- Created: 2025-01-XX
+-- Description: Supports donation-based events, Mass offerings, and fundraiser events with zero-fee processing
+
+CREATE TABLE public.donation_transaction (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    event_id bigint,
+    payment_transaction_id bigint,
+    transaction_reference character varying(255) NOT NULL,
+    givebutter_donation_id character varying(255),
+    amount numeric(10,2) NOT NULL,
+    email character varying(255) NOT NULL,
+    first_name character varying(255),
+    last_name character varying(255),
+    phone character varying(50),
+    prayer_intention text,
+    is_recurring boolean DEFAULT false NOT NULL,
+    is_anonymous boolean DEFAULT false NOT NULL,
+    status character varying(50) NOT NULL,
+    qr_code_url text,
+    qr_code_image_url text,
+    email_sent boolean DEFAULT false NOT NULL,
+    metadata text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT donation_transaction_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_donation_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE SET NULL,
+    CONSTRAINT fk_donation_payment FOREIGN KEY (payment_transaction_id) REFERENCES public.user_payment_transaction(id) ON DELETE SET NULL,
+    CONSTRAINT ux_donation_transaction_reference UNIQUE (transaction_reference)
+);
+
+-- Performance indexes for donation_transaction
+CREATE INDEX idx_donation_tenant_event ON public.donation_transaction(tenant_id, event_id);
+CREATE INDEX idx_donation_reference ON public.donation_transaction(transaction_reference);
+CREATE INDEX idx_donation_givebutter_id ON public.donation_transaction(givebutter_donation_id);
+CREATE INDEX idx_donation_status ON public.donation_transaction(status);
+CREATE INDEX idx_donation_created ON public.donation_transaction(created_at);
+CREATE INDEX idx_donation_email_sent ON public.donation_transaction(email_sent) WHERE email_sent = false;
+CREATE INDEX idx_donation_qr_code ON public.donation_transaction(qr_code_url) WHERE qr_code_url IS NULL;
+
+-- Comments for donation_transaction table
+COMMENT ON TABLE public.donation_transaction IS 'Stores standalone donation transactions (non-ticketed donations) for GiveButter integration';
+COMMENT ON COLUMN public.donation_transaction.tenant_id IS 'Multi-tenant identifier';
+COMMENT ON COLUMN public.donation_transaction.event_id IS 'Foreign key to event_details (nullable for standalone donations)';
+COMMENT ON COLUMN public.donation_transaction.payment_transaction_id IS 'Foreign key to user_payment_transaction (links to payment orchestration)';
+COMMENT ON COLUMN public.donation_transaction.transaction_reference IS 'Unique transaction reference (e.g., "GB-12345")';
+COMMENT ON COLUMN public.donation_transaction.givebutter_donation_id IS 'GiveButter donation ID from API response';
+COMMENT ON COLUMN public.donation_transaction.amount IS 'Donation amount';
+COMMENT ON COLUMN public.donation_transaction.email IS 'Donor email address';
+COMMENT ON COLUMN public.donation_transaction.first_name IS 'Donor first name';
+COMMENT ON COLUMN public.donation_transaction.last_name IS 'Donor last name';
+COMMENT ON COLUMN public.donation_transaction.phone IS 'Donor phone number (optional)';
+COMMENT ON COLUMN public.donation_transaction.prayer_intention IS 'Prayer intention for Mass offerings (optional)';
+COMMENT ON COLUMN public.donation_transaction.is_recurring IS 'Whether donation is recurring';
+COMMENT ON COLUMN public.donation_transaction.is_anonymous IS 'Whether donation is anonymous';
+COMMENT ON COLUMN public.donation_transaction.status IS 'Donation status: PENDING, COMPLETED, FAILED, CANCELLED (VARCHAR, not enum - matches existing pattern)';
+COMMENT ON COLUMN public.donation_transaction.qr_code_url IS 'QR code URL for donation confirmation';
+COMMENT ON COLUMN public.donation_transaction.qr_code_image_url IS 'QR code image URL';
+COMMENT ON COLUMN public.donation_transaction.email_sent IS 'Whether confirmation email has been sent';
+COMMENT ON COLUMN public.donation_transaction.metadata IS 'JSON string for additional donation data';
+COMMENT ON COLUMN public.donation_transaction.created_at IS 'Record creation timestamp';
+COMMENT ON COLUMN public.donation_transaction.updated_at IS 'Record last update timestamp';
+
+-- Trigger for automatic updated_at timestamp on donation_transaction
+CREATE TRIGGER trg_donation_transaction_updated_at
+    BEFORE UPDATE ON public.donation_transaction
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+-- Optional Table: donation_statistics
+-- Purpose: Pre-aggregated donation statistics for admin dashboard performance optimization
+-- Note: This table is optional. Statistics can also be calculated on-the-fly from donation_transaction table.
+
+CREATE TABLE public.donation_statistics (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    event_id bigint,
+    total_donations integer DEFAULT 0 NOT NULL,
+    total_amount numeric(10,2) DEFAULT 0 NOT NULL,
+    average_amount numeric(10,2) DEFAULT 0 NOT NULL,
+    date_range_start date,
+    date_range_end date,
+    last_updated timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT donation_statistics_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_donation_statistics_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE SET NULL,
+    CONSTRAINT ux_donation_statistics_unique UNIQUE (tenant_id, event_id, date_range_start, date_range_end)
+);
+
+-- Indexes for donation_statistics table
+CREATE INDEX idx_donation_stats_tenant_event ON public.donation_statistics(tenant_id, event_id);
+CREATE INDEX idx_donation_stats_date_range ON public.donation_statistics(date_range_start, date_range_end);
+
+-- Comments for donation_statistics table
+COMMENT ON TABLE public.donation_statistics IS 'Pre-aggregated donation statistics for admin dashboard (optional - for performance optimization)';
+COMMENT ON COLUMN public.donation_statistics.tenant_id IS 'Multi-tenant identifier';
+COMMENT ON COLUMN public.donation_statistics.event_id IS 'Foreign key to event_details';
+COMMENT ON COLUMN public.donation_statistics.total_donations IS 'Total number of donations in date range';
+COMMENT ON COLUMN public.donation_statistics.total_amount IS 'Total donation amount in date range';
+COMMENT ON COLUMN public.donation_statistics.average_amount IS 'Average donation amount in date range';
+COMMENT ON COLUMN public.donation_statistics.date_range_start IS 'Start date of statistics range';
+COMMENT ON COLUMN public.donation_statistics.date_range_end IS 'End date of statistics range';
+COMMENT ON COLUMN public.donation_statistics.last_updated IS 'Last time statistics were updated';
+
+-- Trigger for automatic updated_at timestamp on donation_statistics
+CREATE TRIGGER trg_donation_statistics_updated_at
+    BEFORE UPDATE ON public.donation_statistics
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+-- =====================================================
+-- NEWS PORTAL TABLES
+-- =====================================================
+-- Tables follow schema standards: id bigint with sequence_generator, tenant_id, created_at/updated_at.
+-- See .cursor/rules/database_schema_guidelines.mdc and documentation/news_portal/backend_prd.html.
+
+-- news_category: Categories for articles (e.g. Main News, Featured News, Press Release).
+CREATE TABLE public.news_category (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    slug character varying(255) NOT NULL,
+    description text,
+    display_order integer DEFAULT 0 NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT news_category_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_news_category_tenant_slug UNIQUE (tenant_id, slug)
+);
+
+CREATE INDEX idx_news_category_tenant_id ON public.news_category(tenant_id);
+CREATE INDEX idx_news_category_slug ON public.news_category(tenant_id, slug);
+CREATE INDEX idx_news_category_is_active ON public.news_category(tenant_id, is_active) WHERE is_active = true;
+
+COMMENT ON TABLE public.news_category IS 'News categories (e.g. Main News, Featured News, Press Release).';
+
+-- news_article: Single news item.
+CREATE TABLE public.news_article (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    title character varying(500) NOT NULL,
+    slug character varying(500) NOT NULL,
+    excerpt text,
+    body text,
+    featured_image_url character varying(1024),
+    published_at timestamp without time zone,
+    status character varying(50) NOT NULL,
+    author_id bigint,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT news_article_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_news_article_tenant_slug UNIQUE (tenant_id, slug),
+    CONSTRAINT fk_news_article_author FOREIGN KEY (author_id) REFERENCES public.user_profile(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_news_article_tenant_id ON public.news_article(tenant_id);
+CREATE INDEX idx_news_article_slug ON public.news_article(tenant_id, slug);
+CREATE INDEX idx_news_article_status ON public.news_article(tenant_id, status);
+CREATE INDEX idx_news_article_published_at ON public.news_article(published_at) WHERE published_at IS NOT NULL;
+
+COMMENT ON TABLE public.news_article IS 'News articles with title, slug, body, status (DRAFT/PUBLISHED/ARCHIVED).';
+
+-- news_section_display_config: Per-section display settings (one row per section per tenant).
+CREATE TABLE public.news_section_display_config (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    section_key character varying(100) NOT NULL,
+    section_title_override character varying(255),
+    banner_image_url character varying(1024),
+    display_order integer DEFAULT 0 NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT news_section_display_config_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_news_section_display_config_tenant_key UNIQUE (tenant_id, section_key)
+);
+
+CREATE INDEX idx_news_section_display_config_tenant_id ON public.news_section_display_config(tenant_id);
+CREATE INDEX idx_news_section_display_config_section_key ON public.news_section_display_config(tenant_id, section_key);
+
+COMMENT ON TABLE public.news_section_display_config IS 'Per-section display config (flash_news, main_news, featured_news, most_read, press_release, sidebar_promotional_block).';
+
+-- news_sidebar_promotion: Rotating banner ads / promotional items for the right sidebar (slideshow with timer).
+CREATE TABLE public.news_sidebar_promotion (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    title character varying(255),
+    image_url character varying(1024) NOT NULL,
+    link_url character varying(1024),
+    display_order integer DEFAULT 0 NOT NULL,
+    display_duration_seconds integer DEFAULT 5 NOT NULL,
+    valid_from timestamp without time zone,
+    valid_to timestamp without time zone,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT news_sidebar_promotion_pkey PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_news_sidebar_promotion_tenant_id ON public.news_sidebar_promotion(tenant_id);
+CREATE INDEX idx_news_sidebar_promotion_is_active ON public.news_sidebar_promotion(tenant_id, is_active) WHERE is_active = true;
+CREATE INDEX idx_news_sidebar_promotion_valid_dates ON public.news_sidebar_promotion(valid_from, valid_to);
+CREATE INDEX idx_news_sidebar_promotion_display_order ON public.news_sidebar_promotion(tenant_id, display_order);
+
+COMMENT ON TABLE public.news_sidebar_promotion IS 'Rotating banner ads / promotional items for the right sidebar; displayed as slideshow with configurable display_duration_seconds per slide.';
+COMMENT ON COLUMN public.news_sidebar_promotion.display_duration_seconds IS 'Seconds to show this slide in the rotating slideshow before advancing to next.';
+
+-- news_flash: Short flash items for carousel/ticker.
+CREATE TABLE public.news_flash (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    headline character varying(500) NOT NULL,
+    link_url character varying(1024),
+    news_article_id bigint,
+    display_order integer DEFAULT 0 NOT NULL,
+    valid_from timestamp without time zone,
+    valid_to timestamp without time zone,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT news_flash_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_news_flash_article FOREIGN KEY (news_article_id) REFERENCES public.news_article(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_news_flash_tenant_id ON public.news_flash(tenant_id);
+CREATE INDEX idx_news_flash_is_active ON public.news_flash(tenant_id, is_active) WHERE is_active = true;
+CREATE INDEX idx_news_flash_valid_dates ON public.news_flash(valid_from, valid_to);
+
+COMMENT ON TABLE public.news_flash IS 'Flash news items for carousel/ticker.';
+
+-- news_live_stream_config: Current live stream for the LIVE page (one active config per tenant).
+CREATE TABLE public.news_live_stream_config (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    embed_url character varying(1024),
+    title character varying(500),
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT news_live_stream_config_pkey PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_news_live_stream_config_tenant_id ON public.news_live_stream_config(tenant_id);
+CREATE INDEX idx_news_live_stream_config_is_active ON public.news_live_stream_config(tenant_id, is_active) WHERE is_active = true;
+
+COMMENT ON TABLE public.news_live_stream_config IS 'Live stream embed config for the LIVE page (e.g. YouTube Live).';
+
+-- news_article_category: Many-to-many between news_article and news_category.
+CREATE TABLE public.news_article_category (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    news_article_id bigint NOT NULL,
+    news_category_id bigint NOT NULL,
+    is_primary boolean DEFAULT false NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT news_article_category_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_news_article_category_article_category UNIQUE (news_article_id, news_category_id),
+    CONSTRAINT fk_news_article_category_article FOREIGN KEY (news_article_id) REFERENCES public.news_article(id) ON DELETE CASCADE,
+    CONSTRAINT fk_news_article_category_category FOREIGN KEY (news_category_id) REFERENCES public.news_category(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_news_article_category_article ON public.news_article_category(news_article_id);
+CREATE INDEX idx_news_article_category_category ON public.news_article_category(news_category_id);
+
+COMMENT ON TABLE public.news_article_category IS 'Many-to-many link between news_article and news_category.';
+
+-- Triggers for updated_at on tables that have updated_at
+CREATE TRIGGER trg_news_category_updated_at
+    BEFORE UPDATE ON public.news_category
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_news_article_updated_at
+    BEFORE UPDATE ON public.news_article
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_news_section_display_config_updated_at
+    BEFORE UPDATE ON public.news_section_display_config
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_news_sidebar_promotion_updated_at
+    BEFORE UPDATE ON public.news_sidebar_promotion
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_news_flash_updated_at
+    BEFORE UPDATE ON public.news_flash
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_news_live_stream_config_updated_at
+    BEFORE UPDATE ON public.news_live_stream_config
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+-- =====================================================
+-- END OF PAYMENT ORCHESTRATION LAYER MIGRATION
+-- =====================================================
+
+-- =====================================================
+-- SEQUENCE INITIALIZATION - PREVENT DUPLICATE KEY ERRORS
+-- =====================================================
+-- All sequence setval statements are consolidated here for maintainability
+-- Each sequence must be set individually (they are different sequences)
+-- =====================================================
+
+-- Table-specific sequences (for tables using BIGSERIAL or explicit sequences)
+-- =====================================================
+
+-- Ensure discount_code_id_seq sequence is always ahead of existing data
+SELECT pg_catalog.setval(
+               'public.discount_code_id_seq',
+               GREATEST(COALESCE((SELECT MAX(id) FROM public.discount_code), 1), 1),
+               true
+       );
+
+-- Ensure event_live_update_attachment_id_seq sequence is always ahead of existing data
+SELECT pg_catalog.setval(
+               'public.event_live_update_attachment_id_seq',
+               GREATEST(COALESCE((SELECT MAX(id) FROM public.event_live_update_attachment), 1), 1),
+               true
+       );
+
+-- Ensure event_live_update_id_seq sequence is always ahead of existing data
+SELECT pg_catalog.setval(
+               'public.event_live_update_id_seq',
+               GREATEST(COALESCE((SELECT MAX(id) FROM public.event_live_update), 1), 1),
+               true
+       );
+
+-- Ensure event_score_card_detail_id_seq sequence is always ahead of existing data
+SELECT pg_catalog.setval(
+               'public.event_score_card_detail_id_seq',
+               GREATEST(COALESCE((SELECT MAX(id) FROM public.event_score_card_detail), 1), 1),
+               true
+       );
+
+-- Ensure event_score_card_id_seq sequence is always ahead of existing data
+SELECT pg_catalog.setval(
+               'public.event_score_card_id_seq',
+               GREATEST(COALESCE((SELECT MAX(id) FROM public.event_score_card), 1), 1),
+               true
+       );
+
+-- Batch job sequences (Spring Batch framework sequences)
+-- =====================================================
+
+-- Ensure batch_job_execution_log sequence is always ahead of existing data
+-- (safe even if the table is empty)
+SELECT pg_catalog.setval(
+               'public.batch_job_execution_log_id_seq',
+               GREATEST(COALESCE((SELECT MAX(id) FROM public.batch_job_execution_log), 1), 1),
+               true
+       );
+
+-- Ensure batch_job_seq sequence is always ahead of existing data
+-- (safe even if the table is empty)
+SELECT pg_catalog.setval(
+               'public.batch_job_seq',
+               GREATEST(COALESCE((SELECT MAX(JOB_INSTANCE_ID) FROM public.BATCH_JOB_INSTANCE), 1), 1),
+               true
+       );
+
+-- Ensure batch_job_execution_seq sequence is always ahead of existing data
+-- (safe even if the table is empty)
+SELECT pg_catalog.setval(
+               'public.batch_job_execution_seq',
+               GREATEST(COALESCE((SELECT MAX(JOB_EXECUTION_ID) FROM public.BATCH_JOB_EXECUTION), 1), 1),
+               true
+       );
+
+-- Ensure batch_step_execution_seq sequence is always ahead of existing data
+-- (safe even if the table is empty)
+SELECT pg_catalog.setval(
+               'public.batch_step_execution_seq',
+               GREATEST(COALESCE((SELECT MAX(STEP_EXECUTION_ID) FROM public.BATCH_STEP_EXECUTION), 1), 1),
+               true
+       );
+
+-- Main shared sequence_generator (for all tables using BIGINT with sequence_generator)
+-- =====================================================
 -- Ensure sequence_generator sequence is always ahead of existing data from all tables that use it
--- This prevents duplicate key errors by ensuring the sequence is at least as high as the maximum ID in any table
+-- This prevents duplicate key errors (e.g. event_attendee_pkey: Key (id)=(4) already exists) by
+-- ensuring the sequence is at least as high as the maximum ID in any table and never lower than
+-- its current last_value (so we never decrease the sequence).
 SELECT pg_catalog.setval(
                'public.sequence_generator',
                GREATEST(
+                   COALESCE((SELECT last_value FROM public.sequence_generator), 0),
                    COALESCE((SELECT MAX(id) FROM public.user_profile), 0),
                    COALESCE((SELECT MAX(id) FROM public.bulk_operation_log), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_type_details), 0),
@@ -4654,6 +5125,7 @@ SELECT pg_catalog.setval(
                    COALESCE((SELECT MAX(id) FROM public.event_admin_audit_log), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_attendee), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_attendee_guest), 0),
+                   COALESCE((SELECT MAX(id) FROM public.event_attendee_attachment), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_calendar_entry), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_sponsors), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_sponsors_join), 0),
@@ -4664,6 +5136,7 @@ SELECT pg_catalog.setval(
                    COALESCE((SELECT MAX(id) FROM public.event_poll_option), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_poll_response), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_ticket_transaction), 0),
+                   COALESCE((SELECT MAX(id) FROM public.event_ticket_transaction_item), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_ticket_type), 0),
                    COALESCE((SELECT MAX(id) FROM public.qr_code_usage), 0),
                    COALESCE((SELECT MAX(id) FROM public.tenant_organization), 0),
@@ -4694,13 +5167,28 @@ SELECT pg_catalog.setval(
                    COALESCE((SELECT MAX(id) FROM public.clerk_organization_role), 0),
                    COALESCE((SELECT MAX(id) FROM public.clerk_webhook_event), 0),
                    COALESCE((SELECT MAX(id) FROM public.clerk_session), 0),
+                   COALESCE((SELECT MAX(id) FROM public.donation_transaction), 0),
+                   COALESCE((SELECT MAX(id) FROM public.donation_statistics), 0),
+                   COALESCE((SELECT MAX(id) FROM public.news_category), 0),
+                   COALESCE((SELECT MAX(id) FROM public.news_article), 0),
+                   COALESCE((SELECT MAX(id) FROM public.news_section_display_config), 0),
+                   COALESCE((SELECT MAX(id) FROM public.news_sidebar_promotion), 0),
+                   COALESCE((SELECT MAX(id) FROM public.news_flash), 0),
+                   COALESCE((SELECT MAX(id) FROM public.news_live_stream_config), 0),
+                   COALESCE((SELECT MAX(id) FROM public.news_article_category), 0),
                    1
                ),
                true
        );
 
+-- Verify sequence_generator is ahead of event_attendee (prevents event_attendee_pkey duplicate key)
+SELECT
+    (SELECT last_value FROM public.sequence_generator) AS sequence_last_value,
+    (SELECT MAX(id) FROM public.event_attendee) AS event_attendee_max_id,
+    CASE
+        WHEN (SELECT last_value FROM public.sequence_generator) >= (SELECT COALESCE(MAX(id), 0) FROM public.event_attendee)
+        THEN 'OK: sequence >= max(id)'
+        ELSE 'WARNING: run full sync_sequence_after_inserts.sql'
+    END AS status;
 
 
--- =====================================================
--- END OF PAYMENT ORCHESTRATION LAYER MIGRATION
--- =====================================================
