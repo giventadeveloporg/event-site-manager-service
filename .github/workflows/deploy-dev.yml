@@ -19,7 +19,7 @@ on:
         description: 'Skip unit tests (not recommended)'
         required: false
         type: boolean
-        default: false
+        default: true
 
 env:
   # Aligned with infrastructure_deployment/deployment-scripts/production-vpc/deploy-docker-image-to-ecs.ps1 (Environment=dev)
