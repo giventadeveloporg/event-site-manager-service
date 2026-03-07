@@ -32,7 +32,7 @@ env:
   ECS_CLUSTER: event-site-manager-dev-cluster
   ECS_SERVICE: event-site-manager-dev-backend-service
   ECS_TASK_DEFINITION: event-site-manager-dev-backend
-  CONTAINER_NAME: app
+  CONTAINER_NAME: spring-boot-backend
 
 jobs:
   deploy:
