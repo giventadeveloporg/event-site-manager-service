@@ -48,8 +48,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Skip tests if: repo variable SKIP_TESTS is 'true', or (manual run and "Skip unit tests" is checked)
       - name: Run tests
-        if: ${{ !github.event.inputs.skip_tests }}
+        if: ${{ vars.SKIP_TESTS != 'true' && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_tests != 'true') }}
         run: mvn test
 
       - name: Build with Maven

@@ -1,6 +1,10 @@
 # Deploy Malayalees Backend (Nextjs Template Boot) to AWS ECS Fargate — Dev
 # See documentation/DEPLOYMENT_AUTOMATION_GIT_ACTIONS/ for setup and troubleshooting.
 # CONTAINER_NAME must match the container "name" in your ECS task definition in AWS.
+#
+# Skip unit tests:
+#  - On push: set repository variable SKIP_TESTS = 'true' (Settings → Secrets and variables → Actions → Variables).
+#  - On manual run: check the "Skip unit tests (not recommended)" input when running the workflow.
 
 name: Deploy to Dev
 
@@ -19,7 +23,7 @@ on:
         description: 'Skip unit tests (not recommended)'
         required: false
         type: boolean
-        default: true
+        default: false
 
 env:
   # Aligned with infrastructure_deployment/deployment-scripts/production-vpc/deploy-docker-image-to-ecs.ps1 (Environment=dev)
@@ -47,8 +51,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Skip tests if: repo variable SKIP_TESTS is 'true', or (manual run and "Skip unit tests" is checked)
       - name: Run tests
-        if: ${{ !github.event.inputs.skip_tests }}
+        if: ${{ vars.SKIP_TESTS != 'true' && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_tests != 'true') }}
         run: mvn test
 
       - name: Build with Maven
