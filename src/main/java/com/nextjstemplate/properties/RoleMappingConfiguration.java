@@ -1,4 +1,4 @@
-package com.nextjstemplate.config;
+package com.nextjstemplate.properties;
 
 import java.util.HashMap;
 import java.util.Map;

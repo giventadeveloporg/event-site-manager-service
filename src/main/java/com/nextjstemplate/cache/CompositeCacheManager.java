@@ -1,4 +1,4 @@
-package com.nextjstemplate.config;
+package com.nextjstemplate.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.annotation.PostConstruct;

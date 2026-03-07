@@ -1,5 +1,6 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.EventTicketTransactionRepository;
 import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.EmailSenderService;
@@ -11,7 +12,6 @@ import com.nextjstemplate.service.dto.CheckInAnalyticsDTO;
 import com.nextjstemplate.service.dto.EventTicketTransactionDTO;
 import com.nextjstemplate.service.dto.EventTicketTransactionStatisticsDTO;
 import com.nextjstemplate.service.dto.SalesAnalyticsDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

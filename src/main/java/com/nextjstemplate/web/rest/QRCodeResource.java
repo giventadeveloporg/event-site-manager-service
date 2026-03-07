@@ -13,6 +13,7 @@ import com.nextjstemplate.service.BatchJobEmailService;
 import com.nextjstemplate.service.EmailSenderService;
 import com.nextjstemplate.service.QRCodeService;
 import com.nextjstemplate.service.S3Service;
+import com.nextjstemplate.service.TicketEmailSender;
 import com.nextjstemplate.service.UserProfileService;
 import com.nextjstemplate.service.dto.*;
 import com.nextjstemplate.service.dto.BatchJobEmailResponse;
@@ -45,7 +46,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
-public class QRCodeResource {
+public class QRCodeResource implements TicketEmailSender {
 
     private final EventTicketTransactionRepository transactionRepository;
     private final S3Service s3Service;
@@ -381,6 +382,7 @@ public class QRCodeResource {
 
     @PostMapping("/events/{eventId}/transactions/{transactionId}/emailHostUrlPrefix/{emailHostUrlPrefix}/send-ticket-email")
     @Async
+    @Override
     public void sendTicketEmail(
         @PathVariable Long eventId,
         @PathVariable Long transactionId,

@@ -1,7 +1,8 @@
 package com.nextjstemplate.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nextjstemplate.config.BatchJobProperties;
+import com.nextjstemplate.errors.BatchJobException;
+import com.nextjstemplate.properties.BatchJobProperties;
 import com.nextjstemplate.service.dto.BatchJobRequest;
 import com.nextjstemplate.service.dto.BatchJobResponse;
 import com.nextjstemplate.service.dto.BatchJobServiceRequest;
@@ -12,7 +13,6 @@ import com.nextjstemplate.service.dto.StripeFeesTaxUpdateRequest;
 import com.nextjstemplate.service.dto.StripeFeesTaxUpdateResponse;
 import com.nextjstemplate.service.dto.StripeTicketBatchRefundRequest;
 import com.nextjstemplate.service.dto.StripeTicketBatchRefundResponse;
-import com.nextjstemplate.web.rest.errors.BatchJobException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;

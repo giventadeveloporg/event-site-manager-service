@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.FocusGroupMemberRepository;
 import com.nextjstemplate.service.FocusGroupMemberQueryService;
 import com.nextjstemplate.service.FocusGroupMemberService;
 import com.nextjstemplate.service.criteria.FocusGroupMemberCriteria;
 import com.nextjstemplate.service.dto.FocusGroupMemberDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

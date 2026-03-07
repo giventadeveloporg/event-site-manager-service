@@ -1,7 +1,7 @@
 package com.nextjstemplate.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nextjstemplate.config.BatchJobProperties;
+import com.nextjstemplate.properties.BatchJobProperties;
 import com.nextjstemplate.service.PromotionTestEmailBatchJobService;
 import com.nextjstemplate.service.dto.PromotionTestEmailJobRequest;
 import com.nextjstemplate.service.dto.PromotionTestEmailJobResponse;

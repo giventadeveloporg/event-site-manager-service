@@ -1,7 +1,7 @@
 package com.nextjstemplate.service.impl;
 
-import com.nextjstemplate.config.RoleMappingConfiguration;
 import com.nextjstemplate.domain.UserProfile;
+import com.nextjstemplate.properties.RoleMappingConfiguration;
 import com.nextjstemplate.repository.UserProfileRepository;
 import com.nextjstemplate.service.PermissionService;
 import com.nextjstemplate.service.TenantService;
@@ -122,14 +122,10 @@ public class PermissionServiceImpl implements PermissionService {
 
         // Action-based permissions
         return switch (action.toLowerCase()) {
-            case "read", "view" -> // Anyone with resource access can read
-            true;
-            case "create", "update", "write" -> // USER and above can create/update
-            hasMinimumRole(clerkUserId, "USER", tenantId);
-            case "delete", "archive" -> // MANAGER and above can delete
-            hasMinimumRole(clerkUserId, "MANAGER", tenantId);
-            case "admin", "manage" -> // Only ADMINs can perform admin actions
-            isAdmin(clerkUserId, tenantId);
+            case "read", "view" -> true; // Anyone with resource access can read
+            case "create", "update", "write" -> hasMinimumRole(clerkUserId, "USER", tenantId); // USER and above can create/update
+            case "delete", "archive" -> hasMinimumRole(clerkUserId, "MANAGER", tenantId); // MANAGER and above can delete
+            case "admin", "manage" -> isAdmin(clerkUserId, tenantId); // Only ADMINs can perform admin actions
             default -> false; // Unknown action, deny by default
         };
     }

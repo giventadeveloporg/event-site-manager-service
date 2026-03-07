@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.EventScoreCardRepository;
 import com.nextjstemplate.service.EventScoreCardQueryService;
 import com.nextjstemplate.service.EventScoreCardService;
 import com.nextjstemplate.service.criteria.EventScoreCardCriteria;
 import com.nextjstemplate.service.dto.EventScoreCardDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.EventAdminAuditLogRepository;
 import com.nextjstemplate.service.EventAdminAuditLogQueryService;
 import com.nextjstemplate.service.EventAdminAuditLogService;
 import com.nextjstemplate.service.criteria.EventAdminAuditLogCriteria;
 import com.nextjstemplate.service.dto.EventAdminAuditLogDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

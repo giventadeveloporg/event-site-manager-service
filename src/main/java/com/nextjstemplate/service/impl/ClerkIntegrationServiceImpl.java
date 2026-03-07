@@ -2,7 +2,7 @@ package com.nextjstemplate.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nextjstemplate.config.ClerkProperties;
+import com.nextjstemplate.properties.ClerkProperties;
 import com.nextjstemplate.service.ClerkIntegrationService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

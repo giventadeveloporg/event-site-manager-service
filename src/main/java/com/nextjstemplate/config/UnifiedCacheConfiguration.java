@@ -1,5 +1,6 @@
 package com.nextjstemplate.config;
 
+import com.nextjstemplate.cache.CompositeCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.info.GitProperties;

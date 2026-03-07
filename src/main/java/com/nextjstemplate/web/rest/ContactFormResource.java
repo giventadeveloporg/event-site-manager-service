@@ -1,8 +1,8 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.service.ContactFormService;
 import com.nextjstemplate.service.dto.ContactFormDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;

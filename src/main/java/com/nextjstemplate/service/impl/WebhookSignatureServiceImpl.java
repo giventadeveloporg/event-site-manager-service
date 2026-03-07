@@ -1,6 +1,6 @@
 package com.nextjstemplate.service.impl;
 
-import com.nextjstemplate.config.ClerkProperties;
+import com.nextjstemplate.properties.ClerkProperties;
 import com.nextjstemplate.service.WebhookSignatureService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

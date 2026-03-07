@@ -1,8 +1,8 @@
 package com.nextjstemplate.service;
 
 import com.nextjstemplate.domain.PaymentProviderConfig;
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.PaymentProviderConfigRepository;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

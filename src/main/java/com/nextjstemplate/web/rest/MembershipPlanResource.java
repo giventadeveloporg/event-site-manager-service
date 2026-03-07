@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.MembershipPlanRepository;
 import com.nextjstemplate.service.MembershipPlanQueryService;
 import com.nextjstemplate.service.MembershipPlanService;
 import com.nextjstemplate.service.criteria.MembershipPlanCriteria;
 import com.nextjstemplate.service.dto.MembershipPlanDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

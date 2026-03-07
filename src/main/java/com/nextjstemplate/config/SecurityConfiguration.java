@@ -3,7 +3,7 @@ package com.nextjstemplate.config;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import com.nextjstemplate.security.ClerkJwtAuthenticationFilter;
-import com.nextjstemplate.security.TenantContextFilter;
+import com.nextjstemplate.web.filter.TenantContextFilter;
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

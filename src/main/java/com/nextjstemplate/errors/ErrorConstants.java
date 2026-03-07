@@ -1,4 +1,4 @@
-package com.nextjstemplate.web.rest.errors;
+package com.nextjstemplate.errors;
 
 import java.net.URI;
 
