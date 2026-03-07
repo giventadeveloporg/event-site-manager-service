@@ -29,7 +29,7 @@ env:
   ECS_CLUSTER: malayalees-backend-prod-cluster
   ECS_SERVICE: malayalees-backend-prod-service
   ECS_TASK_DEFINITION: malayalees-backend-prod
-  CONTAINER_NAME: app
+  CONTAINER_NAME: spring-boot-backend
 
 jobs:
   deploy:
