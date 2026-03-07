@@ -17,11 +17,12 @@ on:
         type: string
 
 env:
+  # Aligned with infrastructure_deployment/deployment-scripts/production-vpc/deploy-docker-image-to-ecs.ps1 (Environment=dev)
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: malayalees-backend-dev
-  ECS_CLUSTER: malayalees-backend-dev-cluster
-  ECS_SERVICE: malayalees-backend-dev-service
-  ECS_TASK_DEFINITION: malayalees-backend-dev
+  ECR_REPOSITORY: event-site-manager-dev
+  ECS_CLUSTER: event-site-manager-dev-cluster
+  ECS_SERVICE: event-site-manager-dev-backend-service
+  ECS_TASK_DEFINITION: event-site-manager-dev-backend
   CONTAINER_NAME: app
 
 jobs:
