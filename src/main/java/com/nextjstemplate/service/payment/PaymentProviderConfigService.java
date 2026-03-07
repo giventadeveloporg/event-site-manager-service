@@ -1,4 +1,4 @@
-package com.nextjstemplate.service.payment.config;
+package com.nextjstemplate.service.payment;
 
 import com.nextjstemplate.domain.PaymentProviderConfig;
 import com.nextjstemplate.domain.enumeration.PaymentProvider;
@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service for managing payment provider configurations.
+ * Placed in ..service.payment.. (not ..config..) so Web and other layers may access it per ArchUnit rules.
  */
 @Service
 @Transactional

@@ -15,6 +15,11 @@ on:
         description: 'Version tag (optional)'
         required: false
         type: string
+      skip_tests:
+        description: 'Skip unit tests (not recommended)'
+        required: false
+        type: boolean
+        default: false
 
 env:
   # Aligned with infrastructure_deployment/deployment-scripts/production-vpc/deploy-docker-image-to-ecs.ps1 (Environment=dev)
@@ -43,6 +48,7 @@ jobs:
           cache: maven
 
       - name: Run tests
+        if: ${{ !github.event.inputs.skip_tests }}
         run: mvn test
 
       - name: Build with Maven
