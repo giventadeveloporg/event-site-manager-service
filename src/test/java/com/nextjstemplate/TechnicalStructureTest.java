@@ -22,13 +22,15 @@ class TechnicalStructureTest {
         .layer("Security").definedBy("..security..")
         .optionalLayer("Persistence").definedBy("..repository..")
         .layer("Domain").definedBy("..domain..")
+        .optionalLayer("Aop").definedBy("..aop..")
 
         .whereLayer("Config").mayNotBeAccessedByAnyLayer()
         .whereLayer("Web").mayOnlyBeAccessedByLayers("Config")
-        .whereLayer("Service").mayOnlyBeAccessedByLayers("Web", "Config")
+        .whereLayer("Service").mayOnlyBeAccessedByLayers("Web", "Config", "Aop")
         .whereLayer("Security").mayOnlyBeAccessedByLayers("Config", "Service", "Web")
         .whereLayer("Persistence").mayOnlyBeAccessedByLayers("Service", "Security", "Web", "Config")
         .whereLayer("Domain").mayOnlyBeAccessedByLayers("Persistence", "Service", "Security", "Web", "Config")
+        .whereLayer("Aop").mayOnlyBeAccessedByLayers("Config")
 
         .ignoreDependency(belongToAnyOf(NextjsTemplateBootApp.class), alwaysTrue())
         .ignoreDependency(alwaysTrue(), belongToAnyOf(
