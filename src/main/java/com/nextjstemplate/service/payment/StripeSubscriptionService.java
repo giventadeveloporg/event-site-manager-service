@@ -2,7 +2,7 @@ package com.nextjstemplate.service.payment;
 
 import com.nextjstemplate.domain.MembershipPlan;
 import com.nextjstemplate.domain.enumeration.PaymentProvider;
-import com.nextjstemplate.service.payment.config.PaymentProviderConfigService;
+import com.nextjstemplate.service.payment.PaymentProviderConfigService;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;

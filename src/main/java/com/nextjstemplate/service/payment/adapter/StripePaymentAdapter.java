@@ -48,7 +48,7 @@ public class StripePaymentAdapter implements PaymentService {
     private final TicketGenerationService ticketGenerationService;
     private final StripeSubscriptionWebhookHandler subscriptionWebhookHandler;
     private final ObjectMapper objectMapper;
-    private final com.nextjstemplate.service.payment.config.PaymentProviderConfigService configService;
+    private final com.nextjstemplate.service.payment.PaymentProviderConfigService configService;
 
     /**
      * Feature flag to enable/disable ticket generation via webhooks.
@@ -65,7 +65,7 @@ public class StripePaymentAdapter implements PaymentService {
         ApplicationEventPublisher eventPublisher,
         TicketGenerationService ticketGenerationService,
         StripeSubscriptionWebhookHandler subscriptionWebhookHandler,
-        com.nextjstemplate.service.payment.config.PaymentProviderConfigService configService
+        com.nextjstemplate.service.payment.PaymentProviderConfigService configService
     ) {
         this.transactionRepository = transactionRepository;
         this.eventTicketTransactionRepository = eventTicketTransactionRepository;
