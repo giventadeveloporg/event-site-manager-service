@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.TenantSettingsRepository;
 import com.nextjstemplate.service.TenantSettingsQueryService;
 import com.nextjstemplate.service.TenantSettingsService;
 import com.nextjstemplate.service.criteria.TenantSettingsCriteria;
 import com.nextjstemplate.service.dto.TenantSettingsDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

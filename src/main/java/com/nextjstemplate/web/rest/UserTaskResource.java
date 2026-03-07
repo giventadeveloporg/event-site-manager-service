@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.UserTaskRepository;
 import com.nextjstemplate.service.UserTaskQueryService;
 import com.nextjstemplate.service.UserTaskService;
 import com.nextjstemplate.service.criteria.UserTaskCriteria;
 import com.nextjstemplate.service.dto.UserTaskDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

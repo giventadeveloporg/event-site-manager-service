@@ -1,10 +1,10 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.ManualPaymentSummaryReportQueryService;
 import com.nextjstemplate.service.criteria.ManualPaymentSummaryReportCriteria;
 import com.nextjstemplate.service.dto.ManualPaymentSummaryReportDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

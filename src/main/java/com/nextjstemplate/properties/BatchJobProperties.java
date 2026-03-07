@@ -1,4 +1,4 @@
-package com.nextjstemplate.config;
+package com.nextjstemplate.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

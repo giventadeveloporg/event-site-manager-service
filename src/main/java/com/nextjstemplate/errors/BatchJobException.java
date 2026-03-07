@@ -1,5 +1,6 @@
-package com.nextjstemplate.web.rest.errors;
+package com.nextjstemplate.errors;
 
+import com.nextjstemplate.errors.ErrorConstants;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.ErrorResponseException;
 import tech.jhipster.web.rest.errors.ProblemDetailWithCause;

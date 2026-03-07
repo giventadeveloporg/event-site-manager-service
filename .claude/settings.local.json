@@ -12,7 +12,8 @@
       "Bash(./mvnw:*)",
       "Bash(aws ecr get-login-password:*)",
       "Bash(docker login:*)",
-      "Bash(python -c \"import json; f=open(''task-definition-v1.0.4.json'',''r'',encoding=''utf-8-sig''); d=json.load(f); f.close(); f=open(''task-def-clean-v1.0.4.json'',''w'',encoding=''utf-8''); json.dump(d,f,indent=2); f.close(); print(''JSON cleaned successfully'')\")"
+      "Bash(mvn test -Dtest=TechnicalStructureTest -pl .)",
+      "Bash(mvn compile -pl .)"
     ],
     "deny": [],
     "ask": []

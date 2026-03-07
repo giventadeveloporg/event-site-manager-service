@@ -1,10 +1,10 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.service.PromotionEmailSentLogQueryService;
 import com.nextjstemplate.service.PromotionEmailSentLogService;
 import com.nextjstemplate.service.criteria.PromotionEmailSentLogCriteria;
 import com.nextjstemplate.service.dto.PromotionEmailSentLogDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

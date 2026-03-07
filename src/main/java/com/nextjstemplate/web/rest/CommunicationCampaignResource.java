@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.CommunicationCampaignRepository;
 import com.nextjstemplate.service.CommunicationCampaignQueryService;
 import com.nextjstemplate.service.CommunicationCampaignService;
 import com.nextjstemplate.service.criteria.CommunicationCampaignCriteria;
 import com.nextjstemplate.service.dto.CommunicationCampaignDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

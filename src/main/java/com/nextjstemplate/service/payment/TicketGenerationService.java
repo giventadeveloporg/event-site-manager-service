@@ -13,9 +13,9 @@ import com.nextjstemplate.repository.EventTicketTransactionRepository;
 import com.nextjstemplate.repository.EventTicketTypeRepository;
 import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.QRCodeService;
+import com.nextjstemplate.service.TicketEmailSender;
 import com.nextjstemplate.service.payment.adapter.StripePaymentAdapter;
 import com.nextjstemplate.service.payment.event.PaymentSuccessEvent;
-import com.nextjstemplate.web.rest.QRCodeResource;
 import com.stripe.model.PaymentIntent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -51,7 +51,7 @@ public class TicketGenerationService {
     private final EventTicketTypeRepository eventTicketTypeRepository;
     private final DiscountCodeRepository discountCodeRepository;
     private final QRCodeService qrCodeService;
-    private final QRCodeResource qrCodeResource;
+    private final TicketEmailSender ticketEmailSender;
     private final Environment environment;
     private final ObjectMapper objectMapper;
     private final StripePaymentAdapter stripePaymentAdapter;
@@ -66,7 +66,7 @@ public class TicketGenerationService {
         EventTicketTypeRepository eventTicketTypeRepository,
         DiscountCodeRepository discountCodeRepository,
         QRCodeService qrCodeService,
-        QRCodeResource qrCodeResource,
+        TicketEmailSender ticketEmailSender,
         Environment environment,
         @Lazy StripePaymentAdapter stripePaymentAdapter
     ) {
@@ -75,7 +75,7 @@ public class TicketGenerationService {
         this.eventTicketTypeRepository = eventTicketTypeRepository;
         this.discountCodeRepository = discountCodeRepository;
         this.qrCodeService = qrCodeService;
-        this.qrCodeResource = qrCodeResource;
+        this.ticketEmailSender = ticketEmailSender;
         this.environment = environment;
         this.stripePaymentAdapter = stripePaymentAdapter;
         this.objectMapper = new ObjectMapper();
@@ -748,7 +748,7 @@ public class TicketGenerationService {
             String encodedEmailHostUrlPrefix = encodeEmailHostUrlPrefix(emailHostUrlPrefix);
 
             // Call the email sending method from QRCodeResource
-            qrCodeResource.sendTicketEmail(eventId, ticketTransaction.getId(), email, encodedEmailHostUrlPrefix);
+            ticketEmailSender.sendTicketEmail(eventId, ticketTransaction.getId(), email, encodedEmailHostUrlPrefix);
 
             // CRITICAL: Update confirmation sent timestamp to indicate email was sent successfully
             // The populateTicketData() method in StripePaymentAdapter checks confirmationSentAt != null

@@ -1,6 +1,6 @@
 package com.nextjstemplate.service;
 
-import com.nextjstemplate.config.ClerkProperties;
+import com.nextjstemplate.properties.ClerkProperties;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;

@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.UserPaymentTransactionRepository;
 import com.nextjstemplate.service.UserPaymentTransactionQueryService;
 import com.nextjstemplate.service.UserPaymentTransactionService;
 import com.nextjstemplate.service.criteria.UserPaymentTransactionCriteria;
 import com.nextjstemplate.service.dto.UserPaymentTransactionDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

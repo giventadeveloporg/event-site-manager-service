@@ -2,6 +2,7 @@ package com.nextjstemplate.service.impl;
 
 import com.nextjstemplate.domain.DonationTransaction;
 import com.nextjstemplate.domain.EventDetails;
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.DonationTransactionRepository;
 import com.nextjstemplate.repository.EventDetailsRepository;
 import com.nextjstemplate.service.DonationTransactionService;
@@ -9,7 +10,6 @@ import com.nextjstemplate.service.EmailSenderService;
 import com.nextjstemplate.service.QRCodeService;
 import com.nextjstemplate.service.dto.DonationTransactionDTO;
 import com.nextjstemplate.service.mapper.DonationTransactionMapper;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;

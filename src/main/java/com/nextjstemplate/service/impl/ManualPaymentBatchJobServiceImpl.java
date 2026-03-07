@@ -1,7 +1,7 @@
 package com.nextjstemplate.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nextjstemplate.config.BatchJobProperties;
+import com.nextjstemplate.properties.BatchJobProperties;
 import com.nextjstemplate.service.ManualPaymentBatchJobService;
 import com.nextjstemplate.service.dto.ManualPaymentConfirmationEmailJobRequest;
 import com.nextjstemplate.service.dto.ManualPaymentConfirmationEmailJobResponse;

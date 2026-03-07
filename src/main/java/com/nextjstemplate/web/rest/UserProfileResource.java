@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.UserProfileRepository;
 import com.nextjstemplate.service.UserProfileQueryService;
 import com.nextjstemplate.service.UserProfileService;
 import com.nextjstemplate.service.criteria.UserProfileCriteria;
 import com.nextjstemplate.service.dto.UserProfileDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

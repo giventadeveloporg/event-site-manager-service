@@ -1,5 +1,6 @@
-package com.nextjstemplate.security;
+package com.nextjstemplate.web.filter;
 
+import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.TenantService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

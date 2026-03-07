@@ -1,6 +1,6 @@
 package com.nextjstemplate.web.rest;
 
-import com.nextjstemplate.config.CompositeCacheManager;
+import com.nextjstemplate.cache.CompositeCacheManager;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

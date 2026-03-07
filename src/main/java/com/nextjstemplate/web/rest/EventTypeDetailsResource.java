@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.EventTypeDetailsRepository;
 import com.nextjstemplate.service.EventTypeDetailsQueryService;
 import com.nextjstemplate.service.EventTypeDetailsService;
 import com.nextjstemplate.service.criteria.EventTypeDetailsCriteria;
 import com.nextjstemplate.service.dto.EventTypeDetailsDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

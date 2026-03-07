@@ -1,11 +1,11 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.WhatsAppLogRepository;
 import com.nextjstemplate.service.WhatsAppLogQueryService;
 import com.nextjstemplate.service.WhatsAppLogService;
 import com.nextjstemplate.service.criteria.WhatsAppLogCriteria;
 import com.nextjstemplate.service.dto.WhatsAppLogDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;

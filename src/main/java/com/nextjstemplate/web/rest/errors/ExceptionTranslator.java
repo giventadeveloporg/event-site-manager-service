@@ -2,6 +2,8 @@ package com.nextjstemplate.web.rest.errors;
 
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
+import com.nextjstemplate.errors.ErrorConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Arrays;

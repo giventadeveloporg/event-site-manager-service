@@ -1,5 +1,6 @@
-package com.nextjstemplate.web.rest.errors;
+package com.nextjstemplate.errors;
 
+import com.nextjstemplate.errors.ErrorConstants;
 import java.net.URI;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.ErrorResponseException;
@@ -7,7 +8,7 @@ import tech.jhipster.web.rest.errors.ProblemDetailWithCause;
 import tech.jhipster.web.rest.errors.ProblemDetailWithCause.ProblemDetailWithCauseBuilder;
 
 @SuppressWarnings("java:S110") // Inheritance tree of classes should not be too deep
-public class BadRequestAlertException extends ErrorResponseException {
+public class UnprocessableEntityException extends ErrorResponseException {
 
     private static final long serialVersionUID = 1L;
 
@@ -15,16 +16,16 @@ public class BadRequestAlertException extends ErrorResponseException {
 
     private final String errorKey;
 
-    public BadRequestAlertException(String defaultMessage, String entityName, String errorKey) {
+    public UnprocessableEntityException(String defaultMessage, String entityName, String errorKey) {
         this(ErrorConstants.DEFAULT_TYPE, defaultMessage, entityName, errorKey);
     }
 
-    public BadRequestAlertException(URI type, String defaultMessage, String entityName, String errorKey) {
+    public UnprocessableEntityException(URI type, String defaultMessage, String entityName, String errorKey) {
         super(
-            HttpStatus.BAD_REQUEST,
+            HttpStatus.UNPROCESSABLE_ENTITY,
             ProblemDetailWithCauseBuilder
                 .instance()
-                .withStatus(HttpStatus.BAD_REQUEST.value())
+                .withStatus(HttpStatus.UNPROCESSABLE_ENTITY.value())
                 .withType(type)
                 .withTitle(defaultMessage)
                 .withProperty("message", "error." + errorKey)

@@ -1,5 +1,6 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.EventMediaRepository;
 import com.nextjstemplate.service.EventFeaturedPerformersService;
 import com.nextjstemplate.service.EventMediaQueryService;
@@ -13,7 +14,6 @@ import com.nextjstemplate.service.dto.EventMediaDTO;
 import com.nextjstemplate.service.dto.EventProgramDirectorsDTO;
 import com.nextjstemplate.service.dto.EventSponsorsDTO;
 import com.nextjstemplate.service.mapper.EventMediaMapper;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

@@ -2,10 +2,10 @@ package com.nextjstemplate.web.rest;
 
 import com.nextjstemplate.domain.PaymentProviderConfig;
 import com.nextjstemplate.domain.enumeration.PaymentProvider;
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.PaymentProviderConfigRepository;
 import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.dto.ManualPaymentMethodDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;

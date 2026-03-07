@@ -1,12 +1,12 @@
 package com.nextjstemplate.web.rest;
 
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.EventTicketTransactionItemRepository;
 import com.nextjstemplate.service.EventTicketTransactionItemQueryService;
 import com.nextjstemplate.service.EventTicketTransactionItemService;
 import com.nextjstemplate.service.PaymentProviderValidationService;
 import com.nextjstemplate.service.criteria.EventTicketTransactionItemCriteria;
 import com.nextjstemplate.service.dto.EventTicketTransactionItemDTO;
-import com.nextjstemplate.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
