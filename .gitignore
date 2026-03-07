@@ -195,3 +195,4 @@ documentation/INSERT_STRIPE_PAYMENT_DETAILS_TO_DB/*-config*.properties
 **/*-config-dev.properties
 **/*-config-*.properties
 /.run/NextjsTemplateBootApp.run.xml
+/infrastructure_deployment/
