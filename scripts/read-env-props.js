@@ -20,11 +20,8 @@
  *   --path=<path>      Alias for --file
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const fs = require('fs');
+const path = require('path');
 
 // Project layout: infrastructure_deployment/deployment-scripts/production-vpc/environments/
 const ENVS_DIR = path.join(
@@ -151,10 +148,7 @@ function readEnvProps(filePathOrOptions) {
 }
 
 // Run as CLI: print JSON to stdout
-const __filename = fileURLToPath(import.meta.url);
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename);
-
-if (isMain) {
+if (require.main === module) {
   const { env, file } = parseArgs(process.argv.slice(2));
   try {
     const props = readEnvProps({ env, file });
@@ -163,15 +157,15 @@ if (isMain) {
     console.error(e.message);
     process.exit(1);
   }
+} else {
+  module.exports = {
+    readEnvProps,
+    parseProperties,
+    parseArgs,
+    pathForEnv,
+    resolvePropsPath,
+    DEFAULT_PROPS_PATH,
+    ENVS_DIR,
+    DEFAULT_ENV
+  };
 }
-
-export {
-  readEnvProps,
-  parseProperties,
-  parseArgs,
-  pathForEnv,
-  resolvePropsPath,
-  DEFAULT_PROPS_PATH,
-  ENVS_DIR,
-  DEFAULT_ENV
-};

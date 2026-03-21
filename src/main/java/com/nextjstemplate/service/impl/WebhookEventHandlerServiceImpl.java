@@ -9,7 +9,7 @@ import com.nextjstemplate.service.OrganizationSyncService;
 import com.nextjstemplate.service.WebhookEventHandlerService;
 import com.nextjstemplate.service.dto.ClerkWebhookRequest;
 import java.time.ZonedDateTime;
-import java.util.Optional;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -116,31 +116,27 @@ public class WebhookEventHandlerServiceImpl implements WebhookEventHandlerServic
             JsonNode data = webhookRequest.getData();
             String clerkUserId = data.get("id").asText();
 
-            // Find all user profiles with this Clerk ID (across tenants)
-            Optional<UserProfile> userProfileOpt = userProfileRepository.findByUserId(clerkUserId);
-
-            if (!userProfileOpt.isPresent()) {
-                log.warn("User profile not found for Clerk user: {}", clerkUserId);
+            List<UserProfile> profiles = userProfileRepository.findAllByUserId(clerkUserId);
+            if (profiles.isEmpty()) {
+                log.warn("No user profiles found for Clerk user: {}", clerkUserId);
                 return;
             }
 
-            UserProfile userProfile = userProfileOpt.orElseThrow();
-
-            // Update fields
-            if (data.has("first_name")) {
-                userProfile.setFirstName(data.get("first_name").asText());
+            for (UserProfile userProfile : profiles) {
+                if (data.has("first_name")) {
+                    userProfile.setFirstName(data.get("first_name").asText());
+                }
+                if (data.has("last_name")) {
+                    userProfile.setLastName(data.get("last_name").asText());
+                }
+                if (data.has("profile_image_url")) {
+                    userProfile.setProfileImageUrl(data.get("profile_image_url").asText());
+                }
+                userProfile.setUpdatedAt(ZonedDateTime.now());
+                userProfileRepository.save(userProfile);
             }
-            if (data.has("last_name")) {
-                userProfile.setLastName(data.get("last_name").asText());
-            }
-            if (data.has("profile_image_url")) {
-                userProfile.setProfileImageUrl(data.get("profile_image_url").asText());
-            }
 
-            userProfile.setUpdatedAt(ZonedDateTime.now());
-            userProfileRepository.save(userProfile);
-
-            log.info("Updated user profile for Clerk user: {}", clerkUserId);
+            log.info("Updated {} user profile(s) for Clerk user: {}", profiles.size(), clerkUserId);
         } catch (Exception e) {
             log.error("Error handling user.updated event", e);
             throw new RuntimeException("Failed to handle user.updated event", e);
@@ -155,20 +151,19 @@ public class WebhookEventHandlerServiceImpl implements WebhookEventHandlerServic
             JsonNode data = webhookRequest.getData();
             String clerkUserId = data.get("id").asText();
 
-            // Soft delete or mark as deleted
-            Optional<UserProfile> userProfileOpt = userProfileRepository.findByUserId(clerkUserId);
-
-            if (!userProfileOpt.isPresent()) {
-                log.warn("User profile not found for Clerk user: {}", clerkUserId);
+            List<UserProfile> profiles = userProfileRepository.findAllByUserId(clerkUserId);
+            if (profiles.isEmpty()) {
+                log.warn("No user profiles found for Clerk user: {}", clerkUserId);
                 return;
             }
 
-            UserProfile userProfile = userProfileOpt.orElseThrow();
-            userProfile.setUserStatus("DELETED");
-            userProfile.setUpdatedAt(ZonedDateTime.now());
-            userProfileRepository.save(userProfile);
+            for (UserProfile userProfile : profiles) {
+                userProfile.setUserStatus("DELETED");
+                userProfile.setUpdatedAt(ZonedDateTime.now());
+                userProfileRepository.save(userProfile);
+            }
 
-            log.info("Marked user as deleted: {}", clerkUserId);
+            log.info("Marked {} user profile(s) as deleted for Clerk user: {}", profiles.size(), clerkUserId);
         } catch (Exception e) {
             log.error("Error handling user.deleted event", e);
             throw new RuntimeException("Failed to handle user.deleted event", e);
@@ -186,10 +181,9 @@ public class WebhookEventHandlerServiceImpl implements WebhookEventHandlerServic
 
             log.info("Session created for user: {} (Session: {})", clerkUserId, sessionId);
 
-            // Update last sign-in time
-            Optional<UserProfile> userProfileOpt = userProfileRepository.findByUserId(clerkUserId);
-            if (userProfileOpt.isPresent()) {
-                UserProfile userProfile = userProfileOpt.orElseThrow();
+            // Update last sign-in time on all tenant profiles for this Clerk user
+            List<UserProfile> profiles = userProfileRepository.findAllByUserId(clerkUserId);
+            for (UserProfile userProfile : profiles) {
                 userProfile.setUpdatedAt(ZonedDateTime.now());
                 userProfileRepository.save(userProfile);
             }

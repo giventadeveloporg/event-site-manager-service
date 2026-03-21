@@ -3,6 +3,7 @@ package com.nextjstemplate.service.impl;
 import com.nextjstemplate.domain.UserProfile;
 import com.nextjstemplate.domain.enumeration.UserRoleType;
 import com.nextjstemplate.domain.enumeration.UserStatusType;
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.UserProfileRepository;
 import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.EmailSubscriptionTokenService;
@@ -187,21 +188,20 @@ public class UserProfileServiceImpl implements UserProfileService {
         // Get current tenant ID from context
         String tenantId = TenantContext.getCurrentTenant();
 
-        if (tenantId != null) {
-            // Multi-tenant mode: filter by both userId and tenantId
-            log.debug("Finding user profile with tenant filter: userId={}, tenantId={}", userId, tenantId);
-            return userProfileRepository
-                .findByUserIdAndTenantId(userId, tenantId)
-                .map(this::refreshEmailSubscriptionTokenIfNeeded)
-                .map(userProfileMapper::toDto);
-        } else {
-            // Fallback to non-tenant mode (for backward compatibility or system operations)
-            log.warn("No tenant context found, searching without tenant filter for userId: {}", userId);
-            return userProfileRepository
-                .findByUserId(userId)
-                .map(this::refreshEmailSubscriptionTokenIfNeeded)
-                .map(userProfileMapper::toDto);
+        if (tenantId == null || tenantId.isBlank()) {
+            throw new BadRequestAlertException(
+                "Tenant context is required to load a user profile by user id. " +
+                "Send X-Tenant-ID header, tenant query parameter, or tenant_id JWT claim.",
+                "userProfile",
+                "tenantrequired"
+            );
         }
+
+        log.debug("Finding user profile with tenant filter: userId={}, tenantId={}", userId, tenantId);
+        return userProfileRepository
+            .findByUserIdAndTenantId(userId, tenantId)
+            .map(this::refreshEmailSubscriptionTokenIfNeeded)
+            .map(userProfileMapper::toDto);
     }
 
     @Override

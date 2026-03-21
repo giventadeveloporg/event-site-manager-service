@@ -206,11 +206,15 @@ public class UserProfileResource {
     }
 
     /**
-     * {@code GET  /user-profiles/by-user/:userId} : get the userProfile by user ID.
+     * {@code GET  /user-profiles/by-user/:userId} : get the user profile for the <strong>current tenant</strong> and user id.
+     * <p>
+     * Tenant must be supplied (see {@link com.nextjstemplate.web.filter.TenantContextFilter}): {@code X-Tenant-ID} header,
+     * {@code ?tenant=} query parameter, or {@code tenant_id} on the JWT. Without tenant context the API returns {@code 400}.
+     * To list profiles for the same user across tenants, use {@code GET /api/user-profiles} with criteria {@code userId.equals=...}.
      *
-     * @param userId the user ID to search for
+     * @param userId the per-tenant user id (e.g. Clerk user id stored in {@code user_id})
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
-     *         the userProfileDTO, or with status {@code 404 (Not Found)}.
+     *         the userProfileDTO, {@code 400} if tenant is missing, or {@code 404 (Not Found)}.
      */
     @GetMapping("/by-user/{userId}")
     public ResponseEntity<UserProfileDTO> getUserProfileByUserId(@PathVariable String userId) {

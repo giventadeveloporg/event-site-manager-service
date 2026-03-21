@@ -21,13 +21,9 @@
  * Requires: .env with GIT_PAT_TOKEN (or set GIT_PAT_TOKEN in shell).
  */
 
-import fs from 'fs';
-import path from 'path';
-import https from 'https';
-import { fileURLToPath } from 'url';
-import { readEnvProps } from './read-env-props.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
 
 // Load .env from project root (simple parser; strips surrounding quotes from values)
 function loadEnv() {
@@ -49,6 +45,8 @@ function loadEnv() {
 }
 
 loadEnv();
+
+const { readEnvProps } = require('./read-env-props.js');
 
 const GITHUB_API = 'api.github.com';
 const DEFAULT_REPO = 'giventadeveloporg/malayalees-us-site-boot';

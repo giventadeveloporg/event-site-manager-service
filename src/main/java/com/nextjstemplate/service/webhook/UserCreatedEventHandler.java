@@ -29,8 +29,8 @@ public class UserCreatedEventHandler implements WebhookEventHandler {
             Map<String, Object> userData = event.getData();
             String clerkUserId = (String) userData.get("id");
 
-            // Check if user already exists
-            if (userProfileRepository.findByUserId(clerkUserId).isPresent()) {
+            // Check if any tenant profile already exists for this Clerk user
+            if (userProfileRepository.existsByUserId(clerkUserId)) {
                 log.info("User already exists, skipping: {}", clerkUserId);
                 return;
             }

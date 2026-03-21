@@ -81,8 +81,20 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                         log.debug("Security context set for system user: {}", clerkUserId);
                     } else {
-                        // Regular application user - load from database
-                        UserProfile userProfile = userProfileRepository.findByUserId(clerkUserId).orElse(null);
+                        // Regular application user — resolve profile per tenant (user_id is not globally unique)
+                        String tenantForProfile = tenantId;
+                        if (!StringUtils.hasText(tenantForProfile)) {
+                            tenantForProfile = TenantContext.getCurrentTenant();
+                        }
+                        UserProfile userProfile = null;
+                        if (StringUtils.hasText(tenantForProfile)) {
+                            userProfile = userProfileRepository.findByUserIdAndTenantId(clerkUserId, tenantForProfile).orElse(null);
+                        } else {
+                            log.warn(
+                                "Cannot load UserProfile for JWT user {}: no tenant_id claim and no TenantContext (X-Tenant-ID / tenant param)",
+                                clerkUserId
+                            );
+                        }
 
                         if (userProfile != null) {
                             // Create authorities from user roles

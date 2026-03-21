@@ -15,9 +15,15 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface UserProfileRepository extends JpaRepository<UserProfile, Long>, JpaSpecificationExecutor<UserProfile> {
-    Optional<UserProfile> findByUserId(String userId);
+    /**
+     * All tenant-scoped profiles for a Clerk/backend user id. Prefer this over a single-result query when
+     * {@code user_id} is not globally unique.
+     */
+    List<UserProfile> findAllByUserId(String userId);
 
-    // Multi-tenant support: Find user by user ID and tenant (should be used instead of findByUserId)
+    boolean existsByUserId(String userId);
+
+    // Multi-tenant: at most one profile per (user_id, tenant_id)
     Optional<UserProfile> findByUserIdAndTenantId(String userId, String tenantId);
 
     Optional<UserProfile> findByEmail(String email);

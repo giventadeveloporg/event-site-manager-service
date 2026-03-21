@@ -1,7 +1,9 @@
 package com.nextjstemplate.service.impl;
 
 import com.nextjstemplate.domain.UserProfile;
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.UserProfileRepository;
+import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.ClerkAuthService;
 import com.nextjstemplate.service.ClerkIntegrationService;
 import com.nextjstemplate.service.UserProfileService;
@@ -203,11 +205,24 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
 
             String clerkUserId = (String) claims.get("sub");
 
-            // Load user from database
+            String tenantFromClaims = (String) claims.get("tenant_id");
+            String resolvedTenantId = (tenantFromClaims != null && !tenantFromClaims.isBlank())
+                ? tenantFromClaims
+                : TenantContext.getCurrentTenant();
+            if (resolvedTenantId == null || resolvedTenantId.isBlank()) {
+                throw new BadRequestAlertException(
+                    "tenant_id is required to resolve the user profile. Include tenant_id in the JWT or send X-Tenant-ID / tenant query parameter.",
+                    "userProfile",
+                    "tenantrequired"
+                );
+            }
+            final String tenantId = resolvedTenantId;
+
+            // Load user from database (scoped to tenant)
             UserProfile userProfile = userProfileRepository
-                .findByUserId(clerkUserId)
+                .findByUserIdAndTenantId(clerkUserId, tenantId)
                 .orElseThrow(() -> {
-                    log.warn("User not found in database for Clerk ID: {}", clerkUserId);
+                    log.warn("User not found in database for Clerk ID: {} and tenant: {}", clerkUserId, tenantId);
                     return new RuntimeException("User not found");
                 });
 
@@ -229,6 +244,8 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
 
             log.debug("Token validated successfully for user: {}", clerkUserId);
             return Optional.of(response);
+        } catch (BadRequestAlertException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error validating token", e);
             TokenValidationResponse response = new TokenValidationResponse();
@@ -256,11 +273,20 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
             String clerkUserId = authentication.getName();
             log.debug("Found authenticated user in security context: {}", clerkUserId);
 
-            // Load user from database
+            String tenantId = TenantContext.getCurrentTenant();
+            if (tenantId == null || tenantId.isBlank()) {
+                throw new BadRequestAlertException(
+                    "Tenant context is required to resolve the current user. Send X-Tenant-ID header, tenant query parameter, or tenant_id JWT claim.",
+                    "userProfile",
+                    "tenantrequired"
+                );
+            }
+
+            // Load user from database (scoped to tenant)
             UserProfile userProfile = userProfileRepository
-                .findByUserId(clerkUserId)
+                .findByUserIdAndTenantId(clerkUserId, tenantId)
                 .orElseThrow(() -> {
-                    log.warn("User not found in database for Clerk ID: {}", clerkUserId);
+                    log.warn("User not found in database for Clerk ID: {} and tenant: {}", clerkUserId, tenantId);
                     return new RuntimeException("User not found");
                 });
 
@@ -281,6 +307,8 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
 
             log.debug("Current user fetched successfully: {}", clerkUserId);
             return Optional.of(response);
+        } catch (BadRequestAlertException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching current authenticated user", e);
             return Optional.empty();
@@ -292,10 +320,19 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
         log.debug("Fetching user by Clerk ID: {}", clerkUserId);
 
         try {
+            String tenantId = TenantContext.getCurrentTenant();
+            if (tenantId == null || tenantId.isBlank()) {
+                throw new BadRequestAlertException(
+                    "Tenant context is required to resolve user by Clerk ID. Send X-Tenant-ID header, tenant query parameter, or tenant_id JWT claim.",
+                    "userProfile",
+                    "tenantrequired"
+                );
+            }
+
             UserProfile userProfile = userProfileRepository
-                .findByUserId(clerkUserId)
+                .findByUserIdAndTenantId(clerkUserId, tenantId)
                 .orElseThrow(() -> {
-                    log.warn("User not found in database for Clerk ID: {}", clerkUserId);
+                    log.warn("User not found in database for Clerk ID: {} and tenant: {}", clerkUserId, tenantId);
                     return new RuntimeException("User not found");
                 });
 
@@ -316,6 +353,8 @@ public class ClerkAuthServiceImpl implements ClerkAuthService {
 
             log.debug("User fetched successfully: {}", clerkUserId);
             return Optional.of(response);
+        } catch (BadRequestAlertException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching user by Clerk ID", e);
             return Optional.empty();

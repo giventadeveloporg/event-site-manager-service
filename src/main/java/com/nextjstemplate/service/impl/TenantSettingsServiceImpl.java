@@ -1,5 +1,6 @@
 package com.nextjstemplate.service.impl;
 
+import com.nextjstemplate.cache.TenantSettingsCacheInvalidation;
 import com.nextjstemplate.domain.TenantSettings;
 import com.nextjstemplate.repository.TenantSettingsRepository;
 import com.nextjstemplate.service.S3Service;
@@ -11,7 +12,6 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,31 +32,35 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
 
     private final S3Service s3Service;
 
+    private final TenantSettingsCacheInvalidation tenantSettingsCacheInvalidation;
+
     public TenantSettingsServiceImpl(
         TenantSettingsRepository tenantSettingsRepository,
         TenantSettingsMapper tenantSettingsMapper,
-        S3Service s3Service
+        S3Service s3Service,
+        TenantSettingsCacheInvalidation tenantSettingsCacheInvalidation
     ) {
         this.tenantSettingsRepository = tenantSettingsRepository;
         this.tenantSettingsMapper = tenantSettingsMapper;
         this.s3Service = s3Service;
+        this.tenantSettingsCacheInvalidation = tenantSettingsCacheInvalidation;
     }
 
     @Override
-    @CacheEvict(value = "tenantSettings", allEntries = true)
     public TenantSettingsDTO save(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to save TenantSettings : {}", tenantSettingsDTO);
         TenantSettings tenantSettings = tenantSettingsMapper.toEntity(tenantSettingsDTO);
         tenantSettings = tenantSettingsRepository.save(tenantSettings);
+        tenantSettingsCacheInvalidation.evictForTenantSettingsId(tenantSettings.getId());
         return tenantSettingsMapper.toDto(tenantSettings);
     }
 
     @Override
-    @CacheEvict(value = "tenantSettings", allEntries = true)
     public TenantSettingsDTO update(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to update TenantSettings : {}", tenantSettingsDTO);
         TenantSettings tenantSettings = tenantSettingsMapper.toEntity(tenantSettingsDTO);
         tenantSettings = tenantSettingsRepository.save(tenantSettings);
+        tenantSettingsCacheInvalidation.evictForTenantSettingsId(tenantSettings.getId());
         return tenantSettingsMapper.toDto(tenantSettings);
     }
 
@@ -64,7 +68,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     public Optional<TenantSettingsDTO> partialUpdate(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to partially update TenantSettings : {}", tenantSettingsDTO);
 
-        return tenantSettingsRepository
+        Optional<TenantSettingsDTO> result = tenantSettingsRepository
             .findById(tenantSettingsDTO.getId())
             .map(existingTenantSettings -> {
                 tenantSettingsMapper.partialUpdate(existingTenantSettings, tenantSettingsDTO);
@@ -73,21 +77,28 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
             })
             .map(tenantSettingsRepository::save)
             .map(tenantSettingsMapper::toDto);
+        result.ifPresent(dto -> tenantSettingsCacheInvalidation.evictForTenantSettingsId(dto.getId()));
+        return result;
     }
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "tenantSettings", key = "#id", unless = "#result == null")
+    @Cacheable(
+        value = "tenantSettings",
+        key = "#id",
+        // Optional return: Spring may expose the inner DTO as #result in unless — do not call isEmpty() on DTO
+        unless = "#result == null || (#result instanceof T(java.util.Optional) && !#result.isPresent())"
+    )
     public Optional<TenantSettingsDTO> findOne(Long id) {
         LOG.debug("Request to get TenantSettings : {}", id);
         return tenantSettingsRepository.findById(id).map(tenantSettingsMapper::toDto);
     }
 
     @Override
-    @CacheEvict(value = "tenantSettings", allEntries = true)
     public void delete(Long id) {
         LOG.debug("Request to delete TenantSettings : {}", id);
         tenantSettingsRepository.deleteById(id);
+        tenantSettingsCacheInvalidation.evictForTenantSettingsId(id);
     }
 
     @Override
@@ -136,6 +147,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
                 tenantSettings.setEmailFooterHtmlUrl(s3Url);
                 tenantSettings.setUpdatedAt(ZonedDateTime.now());
                 TenantSettings saved = tenantSettingsRepository.save(tenantSettings);
+                tenantSettingsCacheInvalidation.evictForTenantSettingsId(saved.getId());
                 LOG.warn("Updated tenant settings {} with email footer HTML URL via direct entity update (fallback)", tenantId);
                 return tenantSettingsMapper.toDto(saved);
             } catch (Exception fallbackException) {
@@ -196,6 +208,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
                 tenantSettings.setLogoImageUrl(s3Url);
                 tenantSettings.setUpdatedAt(ZonedDateTime.now());
                 TenantSettings saved = tenantSettingsRepository.save(tenantSettings);
+                tenantSettingsCacheInvalidation.evictForTenantSettingsId(saved.getId());
                 LOG.warn("Updated tenant settings {} with logo image URL via direct entity update (fallback)", tenantId);
                 return tenantSettingsMapper.toDto(saved);
             } catch (Exception fallbackException) {
@@ -271,6 +284,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
                 tenantSettings.setEmailHeaderImageUrl(s3Url);
                 tenantSettings.setUpdatedAt(ZonedDateTime.now());
                 TenantSettings saved = tenantSettingsRepository.save(tenantSettings);
+                tenantSettingsCacheInvalidation.evictForTenantSettingsId(saved.getId());
                 LOG.warn("Updated tenant settings {} with email header image URL via direct entity update (fallback)", tenantId);
                 return tenantSettingsMapper.toDto(saved);
             } catch (Exception fallbackException) {
