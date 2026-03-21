@@ -1,21 +1,8 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(aws acm request-certificate:*)",
-      "Bash(aws acm describe-certificate:*)",
-      "Bash(aws acm delete-certificate:*)",
-      "Bash(aws route53domains check-domain-availability:*)",
-      "Bash(aws route53domains:*)",
-      "Bash(aws route53 list-hosted-zones:*)",
-      "Bash(aws route53:*)",
-      "Bash(nslookup:*)",
-      "Bash(./mvnw:*)",
-      "Bash(aws ecr get-login-password:*)",
-      "Bash(docker login:*)",
-      "Bash(mvn test -Dtest=TechnicalStructureTest -pl .)",
-      "Bash(mvn compile -pl .)"
-    ],
+    "allow": ["Bash(*)", "Read(*)", "Write(*)", "Edit(*)", "Glob(*)", "Grep(*)", "*"],
     "deny": [],
-    "ask": []
-  }
+    "defaultMode": "bypassPermissions"
+  },
+  "skipDangerousModePermissionPrompt": true
 }

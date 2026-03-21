@@ -4,6 +4,7 @@ import com.nextjstemplate.domain.UserProfile;
 import com.nextjstemplate.repository.UserProfileRepository;
 import com.nextjstemplate.service.dto.WebhookEventRequest;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,33 +32,31 @@ public class UserUpdatedEventHandler implements WebhookEventHandler {
             Map<String, Object> userData = event.getData();
             String clerkUserId = (String) userData.get("id");
 
-            // Find user profile
-            UserProfile userProfile = userProfileRepository
-                .findByUserId(clerkUserId)
-                .orElseThrow(() -> {
-                    log.warn("User not found for update: {}", clerkUserId);
-                    return new RuntimeException("User not found: " + clerkUserId);
-                });
+            List<UserProfile> profiles = userProfileRepository.findAllByUserId(clerkUserId);
+            if (profiles.isEmpty()) {
+                log.warn("No user profiles found for update: {}", clerkUserId);
+                return;
+            }
 
-            // Update fields from webhook
             String firstName = (String) userData.get("first_name");
             String lastName = (String) userData.get("last_name");
             String profileImageUrl = (String) userData.get("profile_image_url");
 
-            if (firstName != null) {
-                userProfile.setFirstName(firstName);
-            }
-            if (lastName != null) {
-                userProfile.setLastName(lastName);
-            }
-            if (profileImageUrl != null) {
-                userProfile.setProfileImageUrl(profileImageUrl);
+            for (UserProfile userProfile : profiles) {
+                if (firstName != null) {
+                    userProfile.setFirstName(firstName);
+                }
+                if (lastName != null) {
+                    userProfile.setLastName(lastName);
+                }
+                if (profileImageUrl != null) {
+                    userProfile.setProfileImageUrl(profileImageUrl);
+                }
+                userProfile.setUpdatedAt(ZonedDateTime.now());
+                userProfileRepository.save(userProfile);
             }
 
-            userProfile.setUpdatedAt(ZonedDateTime.now());
-            userProfileRepository.save(userProfile);
-
-            log.info("Successfully updated user profile from webhook: {}", clerkUserId);
+            log.info("Successfully updated {} user profile(s) from webhook for Clerk user: {}", profiles.size(), clerkUserId);
         } catch (Exception e) {
             log.error("Error handling user.updated event", e);
             throw new RuntimeException("Failed to handle user.updated event", e);

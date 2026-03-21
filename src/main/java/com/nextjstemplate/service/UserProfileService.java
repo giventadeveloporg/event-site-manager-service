@@ -65,10 +65,11 @@ public interface UserProfileService {
     void delete(Long id);
 
     /**
-     * Get the userProfile by user ID.
+     * Get the user profile for the current tenant and backend user id (e.g. Clerk id in {@code user_id}).
+     * Requires tenant context ({@code X-Tenant-ID}, {@code tenant} query param, or {@code tenant_id} JWT claim).
      *
-     * @param userId the user id to search for.
-     * @return the entity.
+     * @param userId the user id to search for (per-tenant, not globally unique across tenants).
+     * @return the entity for that tenant only.
      */
     Optional<UserProfileDTO> findByUserId(String userId);
 
