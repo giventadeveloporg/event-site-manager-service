@@ -1,13 +1,13 @@
 package com.nextjstemplate.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nextjstemplate.cache.TenantSettingsCacheInvalidation;
 import com.nextjstemplate.domain.TenantSettings;
 import com.nextjstemplate.repository.TenantSettingsRepository;
 import com.nextjstemplate.service.RateLimitService;
 import com.nextjstemplate.service.RetryService;
 import com.nextjstemplate.service.TwilioWhatsAppService;
 import com.nextjstemplate.service.WhatsAppLogService;
+import com.nextjstemplate.service.cache.TenantSettingsCacheInvalidation;
 import com.nextjstemplate.service.dto.*;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
