@@ -7,13 +7,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nextjstemplate.cache.TenantSettingsCacheInvalidation;
 import com.nextjstemplate.domain.TenantSettings;
 import com.nextjstemplate.repository.TenantSettingsRepository;
+import com.nextjstemplate.service.cache.TenantSettingsCacheInvalidation;
 import com.nextjstemplate.service.dto.*;
 import com.nextjstemplate.service.impl.TwilioWhatsAppServiceImpl;
-import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +53,7 @@ class TwilioWhatsAppServiceTest {
     private TwilioWhatsAppRequestDTO request;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         // Setup tenant settings
         tenantSettings = new TenantSettings();
         tenantSettings.setId(1L);
@@ -77,6 +77,16 @@ class TwilioWhatsAppServiceTest {
         request = new TwilioWhatsAppRequestDTO();
         request.setTo("+1234567890");
         request.setMessageBody("Test message");
+
+        // RetryService / RateLimitService are mocked: delegate to real supplier logic (otherwise mocks return null)
+        lenient()
+            .when(retryService.executeWithRetry(any(), anyString()))
+            .thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(0)).get());
+        lenient()
+            .when(retryService.executeBulkWithRetry(any(), anyString()))
+            .thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(0)).get());
+        lenient().doNothing().when(rateLimitService).checkRateLimit(anyString(), anyBoolean());
+        lenient().when(tenantSettingsRepository.findByTenantId("tenant_test_001")).thenReturn(Optional.of(tenantSettings));
     }
 
     @Test

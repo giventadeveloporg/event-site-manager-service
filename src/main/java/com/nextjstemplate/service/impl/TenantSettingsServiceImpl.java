@@ -1,10 +1,10 @@
 package com.nextjstemplate.service.impl;
 
-import com.nextjstemplate.cache.TenantSettingsCacheInvalidation;
 import com.nextjstemplate.domain.TenantSettings;
 import com.nextjstemplate.repository.TenantSettingsRepository;
 import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.TenantSettingsService;
+import com.nextjstemplate.service.cache.TenantSettingsCacheInvalidation;
 import com.nextjstemplate.service.dto.TenantSettingsDTO;
 import com.nextjstemplate.service.mapper.TenantSettingsMapper;
 import jakarta.persistence.EntityNotFoundException;

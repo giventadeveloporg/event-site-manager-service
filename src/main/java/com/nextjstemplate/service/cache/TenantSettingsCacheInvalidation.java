@@ -1,4 +1,4 @@
-package com.nextjstemplate.cache;
+package com.nextjstemplate.service.cache;
 
 import com.nextjstemplate.domain.TenantSettings;
 import jakarta.persistence.EntityManagerFactory;
@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
  * Invalidates Spring Cache and JPA second-level cache entries for {@link TenantSettings}
  * after mutations. Required because {@code findOne(id)} uses {@code @Cacheable} and the
  * entity is annotated with Hibernate {@code @Cache}; PATCH previously skipped eviction.
+ * <p>
+ * Placed under {@code com.nextjstemplate.service.cache} so ArchUnit layered architecture
+ * allows referencing {@code domain} (see {@code TechnicalStructureTest} and project docs).
  */
 @Component
 public class TenantSettingsCacheInvalidation {
