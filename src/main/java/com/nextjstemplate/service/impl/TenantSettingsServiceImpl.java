@@ -58,7 +58,12 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     @Override
     public TenantSettingsDTO update(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to update TenantSettings : {}", tenantSettingsDTO);
-        TenantSettings tenantSettings = tenantSettingsMapper.toEntity(tenantSettingsDTO);
+        // Use merge semantics like PATCH: clients often omit server-managed fields (e.g. homepageCacheVersion).
+        // Full toEntity() would map null onto @NotNull fields and fail Bean Validation on commit.
+        TenantSettings tenantSettings = tenantSettingsRepository
+            .findById(tenantSettingsDTO.getId())
+            .orElseThrow(() -> new EntityNotFoundException("TenantSettings not found with id " + tenantSettingsDTO.getId()));
+        tenantSettingsMapper.partialUpdate(tenantSettings, tenantSettingsDTO);
         tenantSettings = tenantSettingsRepository.save(tenantSettings);
         tenantSettingsCacheInvalidation.evictForTenantSettingsId(tenantSettings.getId());
         return tenantSettingsMapper.toDto(tenantSettings);
