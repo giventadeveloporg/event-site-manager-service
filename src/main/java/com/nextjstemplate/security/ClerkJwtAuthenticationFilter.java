@@ -26,6 +26,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * JWT Authentication Filter for Clerk integration.
  * Extracts and validates JWT tokens from Authorization headers.
+ * <p>
+ * Note: OAuth2 {@link org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken}
+ * is built by the resource server using {@link JwtClaimAuthoritiesMapper}; this filter supplements
+ * tenant-based {@link UserProfile} resolution when claims do not carry authorities.
  */
 @Component
 public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
@@ -50,28 +54,16 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (StringUtils.hasText(jwt)) {
                 try {
-                    // Decode and validate the JWT
                     Jwt decodedJwt = jwtDecoder.decode(jwt);
 
-                    // Extract user information from JWT claims
                     String clerkUserId = decodedJwt.getSubject();
                     String tenantId = decodedJwt.getClaimAsString("tenant_id");
 
                     log.debug("JWT validated for user: {} (tenant: {})", clerkUserId, tenantId);
 
-                    // Extract authorities from JWT claims for system users (like jwtadmin)
-                    String authClaim = decodedJwt.getClaimAsString("auth");
-                    List<GrantedAuthority> authorities = new ArrayList<>();
+                    List<GrantedAuthority> authorities = new ArrayList<>(JwtClaimAuthoritiesMapper.mapAuthorities(decodedJwt));
 
-                    if (authClaim != null && !authClaim.isEmpty()) {
-                        // System user with roles in JWT (e.g., "ROLE_ADMIN ROLE_USER")
-                        log.debug("Using roles from JWT auth claim for system user: {}", clerkUserId);
-                        String[] roles = authClaim.split(" ");
-                        for (String role : roles) {
-                            authorities.add(new SimpleGrantedAuthority(role));
-                        }
-
-                        // Create authentication token for system user
+                    if (!authorities.isEmpty()) {
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             clerkUserId,
                             null,
@@ -79,9 +71,12 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
                         );
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
-                        log.debug("Security context set for system user: {}", clerkUserId);
+                        log.info(
+                            "Security context set for system user: {} with authorities: {}",
+                            clerkUserId,
+                            authorities.stream().map(GrantedAuthority::getAuthority).toList()
+                        );
                     } else {
-                        // Regular application user — resolve profile per tenant (user_id is not globally unique)
                         String tenantForProfile = tenantId;
                         if (!StringUtils.hasText(tenantForProfile)) {
                             tenantForProfile = TenantContext.getCurrentTenant();
@@ -97,12 +92,10 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
                         }
 
                         if (userProfile != null) {
-                            // Create authorities from user roles
                             if (userProfile.getUserRole() != null) {
                                 authorities.add(new SimpleGrantedAuthority("ROLE_" + userProfile.getUserRole()));
                             }
 
-                            // Create authentication token
                             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                 clerkUserId,
                                 null,
@@ -110,9 +103,12 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
                             );
                             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                            // Set authentication in security context
                             SecurityContextHolder.getContext().setAuthentication(authentication);
-                            log.debug("Security context set for application user: {}", clerkUserId);
+                            log.debug(
+                                "Security context set for application user: {} with authorities: {}",
+                                clerkUserId,
+                                authorities.stream().map(GrantedAuthority::getAuthority).toList()
+                            );
                         } else {
                             log.warn("Application user not found in database for user ID: {}", clerkUserId);
                         }
@@ -125,16 +121,9 @@ public class ClerkJwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("Error processing JWT authentication", e);
         }
 
-        // Continue the filter chain
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * Extract JWT token from the Authorization header.
-     *
-     * @param request the HTTP request
-     * @return the JWT token or null if not present
-     */
     private String extractJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
 

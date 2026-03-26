@@ -5,6 +5,7 @@ import com.nextjstemplate.web.rest.vm.LoginVM;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -72,7 +73,12 @@ public class AuthenticateController {
     }
 
     private String createToken(Authentication authentication, boolean rememberMe) {
-        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" "));
+        List<String> authoritiesList = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+        String authorities = String.join(" ", authoritiesList);
+        List<String> rolesList = authoritiesList
+            .stream()
+            .map(a -> a.startsWith("ROLE_") ? a.substring("ROLE_".length()) : a)
+            .collect(Collectors.toList());
 
         Instant now = Instant.now();
         Instant validity = rememberMe
@@ -85,6 +91,8 @@ public class AuthenticateController {
             .expiresAt(validity)
             .subject(authentication.getName())
             .claim("auth", authorities)
+            .claim("authorities", authoritiesList)
+            .claim("roles", rolesList)
             .build();
 
         JwsHeader jwsHeader = JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256).build();

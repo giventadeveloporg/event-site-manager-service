@@ -1,7 +1,5 @@
 package com.nextjstemplate.config;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import com.nextjstemplate.security.ClerkJwtAuthenticationFilter;
 import com.nextjstemplate.web.filter.TenantContextFilter;
 import java.util.Arrays;
@@ -14,6 +12,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -37,10 +36,16 @@ public class SecurityConfiguration {
 
     private final ClerkJwtAuthenticationFilter clerkJwtAuthenticationFilter;
     private final TenantContextFilter tenantContextFilter;
+    private final JwtAuthenticationConverter jwtAuthenticationConverter;
 
-    public SecurityConfiguration(ClerkJwtAuthenticationFilter clerkJwtAuthenticationFilter, TenantContextFilter tenantContextFilter) {
+    public SecurityConfiguration(
+        ClerkJwtAuthenticationFilter clerkJwtAuthenticationFilter,
+        TenantContextFilter tenantContextFilter,
+        JwtAuthenticationConverter jwtAuthenticationConverter
+    ) {
         this.clerkJwtAuthenticationFilter = clerkJwtAuthenticationFilter;
         this.tenantContextFilter = tenantContextFilter;
+        this.jwtAuthenticationConverter = jwtAuthenticationConverter;
     }
 
     @Bean
@@ -80,7 +85,7 @@ public class SecurityConfiguration {
             )
             .addFilterBefore(tenantContextFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(clerkJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)));
         return http.build();
     }
 

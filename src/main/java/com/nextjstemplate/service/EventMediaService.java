@@ -123,7 +123,49 @@ public interface EventMediaService {
         LocalDate startDisplayingFromDate
     );
 
+    /**
+     * Upload a single tenant-level official document (non-event) with tenant-scoped S3 prefix.
+     */
+    EventMediaDTO uploadTenantOfficialDocument(
+        MultipartFile file,
+        String tenantId,
+        String categorySlug,
+        Integer officialDocumentYear,
+        String title,
+        String description,
+        String hierarchyPath,
+        String hierarchyCategoryLabel,
+        Integer displayPriority,
+        boolean isPublic,
+        Long userProfileId
+    );
+
+    /**
+     * Bulk upload tenant-level official documents (non-event).
+     * Each uploaded file creates a separate {@code event_media} row.
+     */
+    List<EventMediaDTO> uploadBulkTenantOfficialDocuments(
+        List<MultipartFile> files,
+        String tenantId,
+        String categorySlug,
+        Integer officialDocumentYear,
+        String titlePrefix,
+        String description,
+        String hierarchyPath,
+        String hierarchyCategoryLabel,
+        Integer displayPriority,
+        boolean isPublic,
+        Long userProfileId
+    );
+
     List<EventMediaDTO> getEventMediaWithUrls(Long eventId, Long userProfileId, boolean includePrivate);
+
+    Page<EventMediaDTO> findPublicOfficialDocumentsForDownloads(
+        String tenantId,
+        Long officialDocumentCategoryId,
+        Integer officialDocumentYear,
+        Pageable pageable
+    );
 
     String getViewingUrl(Long mediaId, Long userProfileId);
 

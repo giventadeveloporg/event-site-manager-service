@@ -4,6 +4,7 @@ import com.nextjstemplate.domain.EventMedia;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
@@ -100,10 +101,26 @@ public interface EventMediaRepository extends JpaRepository<EventMedia, Long>, J
     // Custom query to fetch EventMedia without LOB fields to avoid LOB stream
     // issues
     @Query(
-        value = "SELECT id, tenant_id, title, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, is_home_page_hero_image, is_featured_event_image, is_live_event_image, created_at, updated_at, event_id, uploaded_by_id, start_displaying_from_date, sponsor_id, event_sponsors_join_id, performer_id, director_id, priority_ranking FROM event_media",
+        value = "SELECT id, tenant_id, title, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, is_home_page_hero_image, is_featured_event_image, is_live_event_image, created_at, updated_at, event_id, uploaded_by_id, start_displaying_from_date, sponsor_id, event_sponsors_join_id, performer_id, director_id, priority_ranking, official_document_category_id, official_document_year, hierarchy_path, hierarchy_category_label, display_priority FROM event_media",
         nativeQuery = true
     )
     List<Object[]> findAllWithoutLobFieldsRaw();
+
+    @Query(
+        value = "SELECT e FROM EventMedia e " +
+        "WHERE e.tenantId = :tenantId " +
+        "AND e.isEventManagementOfficialDocument = true " +
+        "AND e.isPublic = true " +
+        "AND (:officialDocumentCategoryId IS NULL OR e.officialDocumentCategoryId = :officialDocumentCategoryId) " +
+        "AND (:officialDocumentYear IS NULL OR e.officialDocumentYear = :officialDocumentYear) " +
+        "ORDER BY COALESCE(e.displayPriority, e.priorityRanking, 999999) ASC, e.createdAt DESC"
+    )
+    Page<EventMedia> findPublicOfficialDocumentsForDownloads(
+        @Param("tenantId") String tenantId,
+        @Param("officialDocumentCategoryId") Long officialDocumentCategoryId,
+        @Param("officialDocumentYear") Integer officialDocumentYear,
+        Pageable pageable
+    );
 
     /**
      * Find all EventMedia records for a specific event that have isHomePageHeroImage = true.

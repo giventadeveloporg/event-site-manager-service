@@ -9,7 +9,9 @@ import com.nextjstemplate.domain.EventSponsors;
 import com.nextjstemplate.domain.EventSponsorsJoin;
 import com.nextjstemplate.domain.ExecutiveCommitteeTeamMember;
 import com.nextjstemplate.domain.GalleryAlbum;
+import com.nextjstemplate.domain.OfficialDocumentCategory;
 import com.nextjstemplate.domain.PromotionEmailTemplate;
+import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.EventDetailsRepository;
 import com.nextjstemplate.repository.EventFeaturedPerformersRepository;
 import com.nextjstemplate.repository.EventFocusGroupRepository;
@@ -19,10 +21,12 @@ import com.nextjstemplate.repository.EventSponsorsJoinRepository;
 import com.nextjstemplate.repository.EventSponsorsRepository;
 import com.nextjstemplate.repository.ExecutiveCommitteeTeamMemberRepository;
 import com.nextjstemplate.repository.GalleryAlbumRepository;
+import com.nextjstemplate.repository.OfficialDocumentCategoryRepository;
 import com.nextjstemplate.repository.PromotionEmailTemplateRepository;
 import com.nextjstemplate.service.EventDetailsService;
 import com.nextjstemplate.service.EventMediaService;
 import com.nextjstemplate.service.FocusGroupService;
+import com.nextjstemplate.service.OfficialDocumentYearBundleService;
 import com.nextjstemplate.service.PromotionEmailTemplateService;
 import com.nextjstemplate.service.S3Service;
 import com.nextjstemplate.service.dto.EventDetailsDTO;
@@ -91,6 +95,10 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     private final EventFocusGroupRepository eventFocusGroupRepository;
 
+    private final OfficialDocumentCategoryRepository officialDocumentCategoryRepository;
+
+    private final OfficialDocumentYearBundleService officialDocumentYearBundleService;
+
     @Autowired
     public EventMediaServiceImpl(
         EventMediaRepository eventMediaRepository,
@@ -108,7 +116,9 @@ public class EventMediaServiceImpl implements EventMediaService {
         PromotionEmailTemplateMapper promotionEmailTemplateMapper,
         FocusGroupService focusGroupService,
         GalleryAlbumRepository galleryAlbumRepository,
-        EventFocusGroupRepository eventFocusGroupRepository
+        EventFocusGroupRepository eventFocusGroupRepository,
+        OfficialDocumentCategoryRepository officialDocumentCategoryRepository,
+        OfficialDocumentYearBundleService officialDocumentYearBundleService
     ) {
         this.eventMediaRepository = eventMediaRepository;
         this.eventMediaMapper = eventMediaMapper;
@@ -126,6 +136,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         this.focusGroupService = focusGroupService;
         this.galleryAlbumRepository = galleryAlbumRepository;
         this.eventFocusGroupRepository = eventFocusGroupRepository;
+        this.officialDocumentCategoryRepository = officialDocumentCategoryRepository;
+        this.officialDocumentYearBundleService = officialDocumentYearBundleService;
     }
 
     @Override
@@ -1193,6 +1205,233 @@ public class EventMediaServiceImpl implements EventMediaService {
     }
 
     @Override
+    public EventMediaDTO uploadTenantOfficialDocument(
+        MultipartFile file,
+        String tenantId,
+        String categorySlug,
+        Integer officialDocumentYear,
+        String title,
+        String description,
+        String hierarchyPath,
+        String hierarchyCategoryLabel,
+        Integer displayPriority,
+        boolean isPublic,
+        Long userProfileId
+    ) {
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestAlertException("File cannot be empty", "eventMedia", "fileempty");
+        }
+        if (tenantId == null || tenantId.isBlank()) {
+            throw new BadRequestAlertException("Tenant ID is required", "eventMedia", "tenantrequired");
+        }
+        if (title == null || title.isBlank()) {
+            throw new BadRequestAlertException("Title is required", "eventMedia", "titlerequired");
+        }
+        if (categorySlug == null || categorySlug.isBlank()) {
+            throw new BadRequestAlertException("Category slug is required", "eventMedia", "categorySlugrequired");
+        }
+        if (officialDocumentYear == null) {
+            throw new BadRequestAlertException("Official document year is required", "eventMedia", "yeardownrequired");
+        }
+
+        String normalizedSlug = normalizeOfficialDocumentCategorySlug(categorySlug);
+        validateOfficialDocumentYear(officialDocumentYear);
+        String normalizedHierarchyPath = normalizeHierarchyPath(hierarchyPath);
+        validateDisplayPriority(displayPriority);
+
+        OfficialDocumentCategory category = officialDocumentCategoryRepository
+            .findByTenantIdAndSlug(tenantId, normalizedSlug)
+            .orElseThrow(() -> new BadRequestAlertException("Invalid category", "eventMedia", "invalidcategory"));
+
+        String s3Url = s3Service.uploadTenantOfficialDocumentFile(file, tenantId, normalizedSlug, officialDocumentYear, title);
+
+        EventMedia eventMedia = new EventMedia();
+        eventMedia.setTenantId(tenantId);
+        eventMedia.setTitle(title);
+        eventMedia.setDescription(description);
+        eventMedia.setEventMediaType("TENANT_OFFICIAL_DOCUMENT");
+        eventMedia.setStorageType("S3");
+        eventMedia.setFileUrl(s3Url);
+        eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(s3Url, 1));
+        eventMedia.setFileSize((int) file.getSize());
+        eventMedia.setIsPublic(isPublic);
+
+        eventMedia.setEventFlyer(false);
+        eventMedia.setIsEventManagementOfficialDocument(true);
+
+        // Non-event document defaults
+        eventMedia.setIsHomePageHeroImage(false);
+        eventMedia.setIsFeaturedEventImage(false);
+        eventMedia.setIsLiveEventImage(false);
+        eventMedia.setIsHeroImage(false);
+        eventMedia.setIsActiveHeroImage(false);
+        eventMedia.setIsFeaturedVideo(false);
+
+        eventMedia.setStartDisplayingFromDate(LocalDate.now());
+        eventMedia.setUploadedById(userProfileId);
+        eventMedia.setPriorityRanking(0);
+
+        // Official document metadata
+        eventMedia.setOfficialDocumentCategoryId(category.getId());
+        eventMedia.setOfficialDocumentYear(officialDocumentYear);
+        eventMedia.setHierarchyPath(normalizedHierarchyPath);
+        eventMedia.setHierarchyCategoryLabel(hierarchyCategoryLabel);
+        eventMedia.setDisplayPriority(displayPriority);
+
+        eventMedia.setCreatedAt(ZonedDateTime.now());
+        eventMedia.setUpdatedAt(ZonedDateTime.now());
+
+        eventMedia = eventMediaRepository.save(eventMedia);
+        officialDocumentYearBundleService.ensureBundleForUpload(tenantId, category.getId(), officialDocumentYear);
+        return eventMediaMapper.toDto(eventMedia);
+    }
+
+    @Override
+    public List<EventMediaDTO> uploadBulkTenantOfficialDocuments(
+        List<MultipartFile> files,
+        String tenantId,
+        String categorySlug,
+        Integer officialDocumentYear,
+        String titlePrefix,
+        String description,
+        String hierarchyPath,
+        String hierarchyCategoryLabel,
+        Integer displayPriority,
+        boolean isPublic,
+        Long userProfileId
+    ) {
+        if (files == null || files.isEmpty()) {
+            throw new BadRequestAlertException("Files list cannot be empty", "eventMedia", "filesempty");
+        }
+        if (tenantId == null || tenantId.isBlank()) {
+            throw new BadRequestAlertException("Tenant ID is required", "eventMedia", "tenantrequired");
+        }
+        if (titlePrefix == null || titlePrefix.isBlank()) {
+            titlePrefix = "Official Document";
+        }
+        if (categorySlug == null || categorySlug.isBlank()) {
+            throw new BadRequestAlertException("Category slug is required", "eventMedia", "categorySlugrequired");
+        }
+        if (officialDocumentYear == null) {
+            throw new BadRequestAlertException("Official document year is required", "eventMedia", "yeardownrequired");
+        }
+
+        String normalizedSlug = normalizeOfficialDocumentCategorySlug(categorySlug);
+        validateOfficialDocumentYear(officialDocumentYear);
+        String normalizedHierarchyPath = normalizeHierarchyPath(hierarchyPath);
+        validateDisplayPriority(displayPriority);
+
+        OfficialDocumentCategory category = officialDocumentCategoryRepository
+            .findByTenantIdAndSlug(tenantId, normalizedSlug)
+            .orElseThrow(() -> new BadRequestAlertException("Invalid category", "eventMedia", "invalidcategory"));
+
+        List<EventMediaDTO> result = new ArrayList<>();
+
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
+            if (file == null || file.isEmpty()) {
+                throw new BadRequestAlertException("One or more files are empty", "eventMedia", "fileempty");
+            }
+
+            String originalFilename = file.getOriginalFilename();
+            String title = titlePrefix;
+            if (originalFilename != null && !originalFilename.isBlank()) {
+                // Make title unique per file (helps UI display)
+                title = titlePrefix + " - " + originalFilename;
+            }
+
+            String s3Url = s3Service.uploadTenantOfficialDocumentFile(file, tenantId, normalizedSlug, officialDocumentYear, title);
+
+            EventMedia eventMedia = new EventMedia();
+            eventMedia.setTenantId(tenantId);
+            eventMedia.setTitle(title);
+            eventMedia.setDescription(description);
+            eventMedia.setEventMediaType("TENANT_OFFICIAL_DOCUMENT");
+            eventMedia.setStorageType("S3");
+            eventMedia.setFileUrl(s3Url);
+            eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(s3Url, 1));
+            eventMedia.setFileSize((int) file.getSize());
+            eventMedia.setIsPublic(isPublic);
+
+            eventMedia.setEventFlyer(false);
+            eventMedia.setIsEventManagementOfficialDocument(true);
+
+            // Non-event document defaults
+            eventMedia.setIsHomePageHeroImage(false);
+            eventMedia.setIsFeaturedEventImage(false);
+            eventMedia.setIsLiveEventImage(false);
+            eventMedia.setIsHeroImage(false);
+            eventMedia.setIsActiveHeroImage(false);
+            eventMedia.setIsFeaturedVideo(false);
+
+            eventMedia.setStartDisplayingFromDate(LocalDate.now());
+            eventMedia.setUploadedById(userProfileId);
+            eventMedia.setPriorityRanking(0);
+
+            // Official document metadata
+            eventMedia.setOfficialDocumentCategoryId(category.getId());
+            eventMedia.setOfficialDocumentYear(officialDocumentYear);
+            eventMedia.setHierarchyPath(normalizedHierarchyPath);
+            eventMedia.setHierarchyCategoryLabel(hierarchyCategoryLabel);
+            eventMedia.setDisplayPriority(displayPriority);
+
+            eventMedia.setCreatedAt(ZonedDateTime.now());
+            eventMedia.setUpdatedAt(ZonedDateTime.now());
+
+            eventMedia = eventMediaRepository.save(eventMedia);
+            result.add(eventMediaMapper.toDto(eventMedia));
+        }
+
+        officialDocumentYearBundleService.ensureBundleForUpload(tenantId, category.getId(), officialDocumentYear);
+        return result;
+    }
+
+    private String normalizeOfficialDocumentCategorySlug(String categorySlug) {
+        // Basic protection against path traversal and unexpected characters.
+        String normalized = categorySlug.trim().toLowerCase();
+        if (normalized.contains("..") || normalized.contains("/") || normalized.contains("\\") || normalized.isBlank()) {
+            throw new BadRequestAlertException("Invalid category slug", "eventMedia", "invalidcategory");
+        }
+
+        // Convert any non [a-z0-9-] chars to '-'
+        normalized = normalized.replaceAll("[^a-z0-9-]", "-");
+        normalized = normalized.replaceAll("-{2,}", "-");
+        normalized = normalized.replaceAll("^-+", "").replaceAll("-+$", "");
+
+        if (normalized.isBlank() || normalized.length() > 80 || !normalized.matches("^[a-z0-9-]+$")) {
+            throw new BadRequestAlertException("Invalid category slug", "eventMedia", "invalidcategory");
+        }
+
+        return normalized;
+    }
+
+    private String normalizeHierarchyPath(String hierarchyPath) {
+        if (hierarchyPath == null || hierarchyPath.isBlank()) {
+            return null;
+        }
+        String normalized = hierarchyPath.trim().replace("/", "\\");
+        if (normalized.contains("..")) {
+            throw new BadRequestAlertException("Invalid hierarchy path", "eventMedia", "invalidhierarchypath");
+        }
+        return normalized;
+    }
+
+    private void validateDisplayPriority(Integer displayPriority) {
+        if (displayPriority != null && displayPriority < 0) {
+            throw new BadRequestAlertException("Display priority must be non-negative", "eventMedia", "invaliddisplaypriority");
+        }
+    }
+
+    private void validateOfficialDocumentYear(Integer officialDocumentYear) {
+        if (officialDocumentYear == null) {
+            throw new BadRequestAlertException("Official document year is required", "eventMedia", "yeardownrequired");
+        }
+        if (officialDocumentYear < 1000 || officialDocumentYear > 9999) {
+            throw new BadRequestAlertException("Invalid official document year", "eventMedia", "invalidyear");
+        }
+    }
+
+    @Override
     public List<EventMediaDTO> getEventMediaWithUrls(Long eventId, Long userProfileId, boolean includePrivate) {
         List<EventMedia> mediaList = eventMediaRepository.findByEventId(eventId);
         List<EventMediaDTO> result = new ArrayList<>();
@@ -1208,6 +1447,19 @@ public class EventMediaServiceImpl implements EventMediaService {
             }
         }
         return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<EventMediaDTO> findPublicOfficialDocumentsForDownloads(
+        String tenantId,
+        Long officialDocumentCategoryId,
+        Integer officialDocumentYear,
+        Pageable pageable
+    ) {
+        return eventMediaRepository
+            .findPublicOfficialDocumentsForDownloads(tenantId, officialDocumentCategoryId, officialDocumentYear, pageable)
+            .map(eventMediaMapper::toDto);
     }
 
     @Override
@@ -1349,6 +1601,35 @@ public class EventMediaServiceImpl implements EventMediaService {
         }
         if (raw.length > 31 && raw[31] != null) {
             dto.setPriorityRanking((Integer) raw[31]);
+        }
+
+        // Official document metadata (added for tenant official documents)
+        if (raw.length > 32 && raw[32] != null) {
+            if (raw[32] instanceof Long) {
+                dto.setOfficialDocumentCategoryId((Long) raw[32]);
+            } else if (raw[32] instanceof Number) {
+                dto.setOfficialDocumentCategoryId(((Number) raw[32]).longValue());
+            }
+        }
+        if (raw.length > 33 && raw[33] != null) {
+            if (raw[33] instanceof Integer) {
+                dto.setOfficialDocumentYear((Integer) raw[33]);
+            } else if (raw[33] instanceof Number) {
+                dto.setOfficialDocumentYear(((Number) raw[33]).intValue());
+            }
+        }
+        if (raw.length > 34 && raw[34] != null) {
+            dto.setHierarchyPath((String) raw[34]);
+        }
+        if (raw.length > 35 && raw[35] != null) {
+            dto.setHierarchyCategoryLabel((String) raw[35]);
+        }
+        if (raw.length > 36 && raw[36] != null) {
+            if (raw[36] instanceof Integer) {
+                dto.setDisplayPriority((Integer) raw[36]);
+            } else if (raw[36] instanceof Number) {
+                dto.setDisplayPriority(((Number) raw[36]).intValue());
+            }
         }
 
         return dto;
