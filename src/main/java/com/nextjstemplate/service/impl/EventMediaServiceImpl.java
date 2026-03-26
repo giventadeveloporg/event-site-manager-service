@@ -1212,6 +1212,9 @@ public class EventMediaServiceImpl implements EventMediaService {
         Integer officialDocumentYear,
         String title,
         String description,
+        String hierarchyPath,
+        String hierarchyCategoryLabel,
+        Integer displayPriority,
         boolean isPublic,
         Long userProfileId
     ) {
@@ -1233,6 +1236,8 @@ public class EventMediaServiceImpl implements EventMediaService {
 
         String normalizedSlug = normalizeOfficialDocumentCategorySlug(categorySlug);
         validateOfficialDocumentYear(officialDocumentYear);
+        String normalizedHierarchyPath = normalizeHierarchyPath(hierarchyPath);
+        validateDisplayPriority(displayPriority);
 
         OfficialDocumentCategory category = officialDocumentCategoryRepository
             .findByTenantIdAndSlug(tenantId, normalizedSlug)
@@ -1269,6 +1274,9 @@ public class EventMediaServiceImpl implements EventMediaService {
         // Official document metadata
         eventMedia.setOfficialDocumentCategoryId(category.getId());
         eventMedia.setOfficialDocumentYear(officialDocumentYear);
+        eventMedia.setHierarchyPath(normalizedHierarchyPath);
+        eventMedia.setHierarchyCategoryLabel(hierarchyCategoryLabel);
+        eventMedia.setDisplayPriority(displayPriority);
 
         eventMedia.setCreatedAt(ZonedDateTime.now());
         eventMedia.setUpdatedAt(ZonedDateTime.now());
@@ -1286,6 +1294,9 @@ public class EventMediaServiceImpl implements EventMediaService {
         Integer officialDocumentYear,
         String titlePrefix,
         String description,
+        String hierarchyPath,
+        String hierarchyCategoryLabel,
+        Integer displayPriority,
         boolean isPublic,
         Long userProfileId
     ) {
@@ -1307,6 +1318,8 @@ public class EventMediaServiceImpl implements EventMediaService {
 
         String normalizedSlug = normalizeOfficialDocumentCategorySlug(categorySlug);
         validateOfficialDocumentYear(officialDocumentYear);
+        String normalizedHierarchyPath = normalizeHierarchyPath(hierarchyPath);
+        validateDisplayPriority(displayPriority);
 
         OfficialDocumentCategory category = officialDocumentCategoryRepository
             .findByTenantIdAndSlug(tenantId, normalizedSlug)
@@ -1358,6 +1371,9 @@ public class EventMediaServiceImpl implements EventMediaService {
             // Official document metadata
             eventMedia.setOfficialDocumentCategoryId(category.getId());
             eventMedia.setOfficialDocumentYear(officialDocumentYear);
+            eventMedia.setHierarchyPath(normalizedHierarchyPath);
+            eventMedia.setHierarchyCategoryLabel(hierarchyCategoryLabel);
+            eventMedia.setDisplayPriority(displayPriority);
 
             eventMedia.setCreatedAt(ZonedDateTime.now());
             eventMedia.setUpdatedAt(ZonedDateTime.now());
@@ -1389,6 +1405,23 @@ public class EventMediaServiceImpl implements EventMediaService {
         return normalized;
     }
 
+    private String normalizeHierarchyPath(String hierarchyPath) {
+        if (hierarchyPath == null || hierarchyPath.isBlank()) {
+            return null;
+        }
+        String normalized = hierarchyPath.trim().replace("/", "\\");
+        if (normalized.contains("..")) {
+            throw new BadRequestAlertException("Invalid hierarchy path", "eventMedia", "invalidhierarchypath");
+        }
+        return normalized;
+    }
+
+    private void validateDisplayPriority(Integer displayPriority) {
+        if (displayPriority != null && displayPriority < 0) {
+            throw new BadRequestAlertException("Display priority must be non-negative", "eventMedia", "invaliddisplaypriority");
+        }
+    }
+
     private void validateOfficialDocumentYear(Integer officialDocumentYear) {
         if (officialDocumentYear == null) {
             throw new BadRequestAlertException("Official document year is required", "eventMedia", "yeardownrequired");
@@ -1414,6 +1447,19 @@ public class EventMediaServiceImpl implements EventMediaService {
             }
         }
         return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<EventMediaDTO> findPublicOfficialDocumentsForDownloads(
+        String tenantId,
+        Long officialDocumentCategoryId,
+        Integer officialDocumentYear,
+        Pageable pageable
+    ) {
+        return eventMediaRepository
+            .findPublicOfficialDocumentsForDownloads(tenantId, officialDocumentCategoryId, officialDocumentYear, pageable)
+            .map(eventMediaMapper::toDto);
     }
 
     @Override
@@ -1570,6 +1616,19 @@ public class EventMediaServiceImpl implements EventMediaService {
                 dto.setOfficialDocumentYear((Integer) raw[33]);
             } else if (raw[33] instanceof Number) {
                 dto.setOfficialDocumentYear(((Number) raw[33]).intValue());
+            }
+        }
+        if (raw.length > 34 && raw[34] != null) {
+            dto.setHierarchyPath((String) raw[34]);
+        }
+        if (raw.length > 35 && raw[35] != null) {
+            dto.setHierarchyCategoryLabel((String) raw[35]);
+        }
+        if (raw.length > 36 && raw[36] != null) {
+            if (raw[36] instanceof Integer) {
+                dto.setDisplayPriority((Integer) raw[36]);
+            } else if (raw[36] instanceof Number) {
+                dto.setDisplayPriority(((Number) raw[36]).intValue());
             }
         }
 

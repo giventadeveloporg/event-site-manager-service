@@ -51,6 +51,13 @@ public class EventMediaDTO implements Serializable {
 
     private Integer officialDocumentYear;
 
+    private String hierarchyPath;
+
+    private String hierarchyCategoryLabel;
+
+    @Min(value = 0)
+    private Integer displayPriority;
+
     @Size(max = 2048)
     private String preSignedUrl;
 
@@ -233,6 +240,30 @@ public class EventMediaDTO implements Serializable {
 
     public void setOfficialDocumentYear(Integer officialDocumentYear) {
         this.officialDocumentYear = officialDocumentYear;
+    }
+
+    public String getHierarchyPath() {
+        return hierarchyPath;
+    }
+
+    public void setHierarchyPath(String hierarchyPath) {
+        this.hierarchyPath = hierarchyPath;
+    }
+
+    public String getHierarchyCategoryLabel() {
+        return hierarchyCategoryLabel;
+    }
+
+    public void setHierarchyCategoryLabel(String hierarchyCategoryLabel) {
+        this.hierarchyCategoryLabel = hierarchyCategoryLabel;
+    }
+
+    public Integer getDisplayPriority() {
+        return displayPriority;
+    }
+
+    public void setDisplayPriority(Integer displayPriority) {
+        this.displayPriority = displayPriority;
     }
 
     public String getPreSignedUrl() {
@@ -496,6 +527,11 @@ public class EventMediaDTO implements Serializable {
             ", isPublic='" + getIsPublic() + "'" +
             ", eventFlyer='" + getEventFlyer() + "'" +
             ", isEventManagementOfficialDocument='" + getIsEventManagementOfficialDocument() + "'" +
+            ", officialDocumentCategoryId=" + getOfficialDocumentCategoryId() +
+            ", officialDocumentYear=" + getOfficialDocumentYear() +
+            ", hierarchyPath='" + getHierarchyPath() + "'" +
+            ", hierarchyCategoryLabel='" + getHierarchyCategoryLabel() + "'" +
+            ", displayPriority=" + getDisplayPriority() +
             ", preSignedUrl='" + getPreSignedUrl() + "'" +
             ", preSignedUrlExpiresAt='" + getPreSignedUrlExpiresAt() + "'" +
             ", altText='" + getAltText() + "'" +

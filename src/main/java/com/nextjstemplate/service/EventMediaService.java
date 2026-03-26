@@ -133,6 +133,9 @@ public interface EventMediaService {
         Integer officialDocumentYear,
         String title,
         String description,
+        String hierarchyPath,
+        String hierarchyCategoryLabel,
+        Integer displayPriority,
         boolean isPublic,
         Long userProfileId
     );
@@ -148,11 +151,21 @@ public interface EventMediaService {
         Integer officialDocumentYear,
         String titlePrefix,
         String description,
+        String hierarchyPath,
+        String hierarchyCategoryLabel,
+        Integer displayPriority,
         boolean isPublic,
         Long userProfileId
     );
 
     List<EventMediaDTO> getEventMediaWithUrls(Long eventId, Long userProfileId, boolean includePrivate);
+
+    Page<EventMediaDTO> findPublicOfficialDocumentsForDownloads(
+        String tenantId,
+        Long officialDocumentCategoryId,
+        Integer officialDocumentYear,
+        Pageable pageable
+    );
 
     String getViewingUrl(Long mediaId, Long userProfileId);
 

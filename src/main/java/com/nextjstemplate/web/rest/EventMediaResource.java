@@ -287,6 +287,27 @@ public class EventMediaResource {
     }
 
     /**
+     * GET /event-medias/public-official-documents : Priority-first public official documents listing.
+     */
+    @GetMapping("/public-official-documents")
+    public ResponseEntity<List<EventMediaDTO>> getPublicOfficialDocuments(
+        @RequestParam("tenantId") String tenantId,
+        @RequestParam(value = "officialDocumentCategoryId", required = false) Long officialDocumentCategoryId,
+        @RequestParam(value = "officialDocumentYear", required = false) Integer officialDocumentYear,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        requireTenantMatch(tenantId);
+        Page<EventMediaDTO> page = eventMediaService.findPublicOfficialDocumentsForDownloads(
+            tenantId,
+            officialDocumentCategoryId,
+            officialDocumentYear,
+            pageable
+        );
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
      * {@code GET  /event-medias/:id} : get the "id" eventMedia.
      *
      * @param id the id of the eventMediaDTO to retrieve.
@@ -1178,9 +1199,20 @@ public class EventMediaResource {
         @RequestParam("officialDocumentYear") Integer officialDocumentYear,
         @RequestParam("title") @NotNull String title,
         @RequestParam(value = "description", required = false) String description,
+        @RequestParam(value = "hierarchyPath", required = false) String hierarchyPath,
+        @RequestParam(value = "hierarchyCategoryLabel", required = false) String hierarchyCategoryLabel,
+        @RequestParam(value = "displayPriority", required = false) Integer displayPriority,
         @RequestParam(value = "isPublic", required = false) Boolean isPublic,
         Authentication authentication
     ) throws URISyntaxException {
+        if (log.isDebugEnabled()) {
+            log.debug(
+                "uploadTenantOfficialDocument: authentication class={}, name={}, authorities={}",
+                authentication != null ? authentication.getClass().getName() : null,
+                authentication != null ? authentication.getName() : null,
+                authentication != null ? authentication.getAuthorities() : null
+            );
+        }
         requireAdmin(authentication);
         requireTenantMatch(tenantId);
 
@@ -1194,6 +1226,9 @@ public class EventMediaResource {
             officialDocumentYear,
             title,
             description,
+            hierarchyPath,
+            hierarchyCategoryLabel,
+            displayPriority,
             isPublicValue,
             userProfileId
         );
@@ -1222,6 +1257,9 @@ public class EventMediaResource {
         @RequestParam("officialDocumentYear") Integer officialDocumentYear,
         @RequestParam(value = "titlePrefix", required = false) String titlePrefix,
         @RequestParam(value = "description", required = false) String description,
+        @RequestParam(value = "hierarchyPath", required = false) String hierarchyPath,
+        @RequestParam(value = "hierarchyCategoryLabel", required = false) String hierarchyCategoryLabel,
+        @RequestParam(value = "displayPriority", required = false) Integer displayPriority,
         @RequestParam(value = "isPublic", required = false) Boolean isPublic,
         Authentication authentication
     ) throws URISyntaxException {
@@ -1238,6 +1276,9 @@ public class EventMediaResource {
             officialDocumentYear,
             titlePrefix,
             description,
+            hierarchyPath,
+            hierarchyCategoryLabel,
+            displayPriority,
             isPublicValue,
             userProfileId
         );
