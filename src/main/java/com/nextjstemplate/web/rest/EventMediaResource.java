@@ -2,6 +2,8 @@ package com.nextjstemplate.web.rest;
 
 import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.EventMediaRepository;
+import com.nextjstemplate.security.AuthoritiesConstants;
+import com.nextjstemplate.security.TenantContext;
 import com.nextjstemplate.service.EventFeaturedPerformersService;
 import com.nextjstemplate.service.EventMediaQueryService;
 import com.nextjstemplate.service.EventMediaService;
@@ -1166,6 +1168,87 @@ public class EventMediaResource {
     }
 
     /**
+     * POST /event-medias/upload/tenant-official-document : Upload a single tenant-level official document.
+     */
+    @PostMapping(value = "/upload/tenant-official-document", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadTenantOfficialDocument(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("tenantId") String tenantId,
+        @RequestParam("categorySlug") String categorySlug,
+        @RequestParam("officialDocumentYear") Integer officialDocumentYear,
+        @RequestParam("title") @NotNull String title,
+        @RequestParam(value = "description", required = false) String description,
+        @RequestParam(value = "isPublic", required = false) Boolean isPublic,
+        Authentication authentication
+    ) throws URISyntaxException {
+        requireAdmin(authentication);
+        requireTenantMatch(tenantId);
+
+        boolean isPublicValue = isPublic != null ? isPublic : false;
+        Long userProfileId = getCurrentUserProfileId(authentication);
+
+        EventMediaDTO result = eventMediaService.uploadTenantOfficialDocument(
+            file,
+            tenantId,
+            categorySlug,
+            officialDocumentYear,
+            title,
+            description,
+            isPublicValue,
+            userProfileId
+        );
+
+        return ResponseEntity
+            .ok()
+            .headers(
+                HeaderUtil.createEntityCreationAlert(
+                    applicationName,
+                    true,
+                    ENTITY_NAME,
+                    result.getId() != null ? result.getId().toString() : "null"
+                )
+            )
+            .body(result);
+    }
+
+    /**
+     * POST /event-medias/upload/bulk-tenant-official : Bulk upload tenant-level official documents.
+     */
+    @PostMapping(value = "/upload/bulk-tenant-official", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<List<EventMediaDTO>> uploadBulkTenantOfficial(
+        @RequestParam("files") List<MultipartFile> files,
+        @RequestParam("tenantId") String tenantId,
+        @RequestParam("categorySlug") String categorySlug,
+        @RequestParam("officialDocumentYear") Integer officialDocumentYear,
+        @RequestParam(value = "titlePrefix", required = false) String titlePrefix,
+        @RequestParam(value = "description", required = false) String description,
+        @RequestParam(value = "isPublic", required = false) Boolean isPublic,
+        Authentication authentication
+    ) throws URISyntaxException {
+        requireAdmin(authentication);
+        requireTenantMatch(tenantId);
+
+        boolean isPublicValue = isPublic != null ? isPublic : false;
+        Long userProfileId = getCurrentUserProfileId(authentication);
+
+        List<EventMediaDTO> result = eventMediaService.uploadBulkTenantOfficialDocuments(
+            files,
+            tenantId,
+            categorySlug,
+            officialDocumentYear,
+            titlePrefix,
+            description,
+            isPublicValue,
+            userProfileId
+        );
+
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createAlert(applicationName, "eventMedia.bulkUploaded", String.valueOf(result.size())))
+            .body(result);
+    }
+
+    /**
      * GET /event-medias/event/{eventId}/view : Get EventMedias for an event with
      * viewing URLs.
      */
@@ -1228,6 +1311,29 @@ public class EventMediaResource {
             .filter(java.util.Objects::nonNull)
             .collect(Collectors.toList());
         return ResponseEntity.ok(refreshedMedia);
+    }
+
+    private void requireAdmin(Authentication authentication) {
+        if (authentication == null || authentication.getAuthorities() == null) {
+            throw new BadRequestAlertException("Authentication required", ENTITY_NAME, "authrequired");
+        }
+        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(a -> AuthoritiesConstants.ADMIN.equals(a.getAuthority()));
+        if (!isAdmin) {
+            throw new BadRequestAlertException("Admin access required", ENTITY_NAME, "adminrequired");
+        }
+    }
+
+    private void requireTenantMatch(String tenantId) {
+        String currentTenant = TenantContext.getCurrentTenant();
+        if (currentTenant == null || currentTenant.isBlank()) {
+            throw new BadRequestAlertException("Tenant context is required", ENTITY_NAME, "tenantrequired");
+        }
+        if (tenantId == null || tenantId.isBlank()) {
+            throw new BadRequestAlertException("TenantId is required", ENTITY_NAME, "tenantIdRequired");
+        }
+        if (!currentTenant.equals(tenantId)) {
+            throw new BadRequestAlertException("Tenant mismatch", ENTITY_NAME, "tenantmismatch");
+        }
     }
 
     // Helper method for authentication

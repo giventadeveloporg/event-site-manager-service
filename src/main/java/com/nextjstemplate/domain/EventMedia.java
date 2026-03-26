@@ -69,6 +69,12 @@ public class EventMedia implements Serializable {
     @Column(name = "is_event_management_official_document")
     private Boolean isEventManagementOfficialDocument;
 
+    @Column(name = "official_document_category_id")
+    private Long officialDocumentCategoryId;
+
+    @Column(name = "official_document_year")
+    private Integer officialDocumentYear;
+
     @Size(max = 2048)
     @Column(name = "pre_signed_url", length = 2048)
     private String preSignedUrl;
@@ -334,6 +340,22 @@ public class EventMedia implements Serializable {
 
     public void setIsEventManagementOfficialDocument(Boolean isEventManagementOfficialDocument) {
         this.isEventManagementOfficialDocument = isEventManagementOfficialDocument;
+    }
+
+    public Long getOfficialDocumentCategoryId() {
+        return officialDocumentCategoryId;
+    }
+
+    public void setOfficialDocumentCategoryId(Long officialDocumentCategoryId) {
+        this.officialDocumentCategoryId = officialDocumentCategoryId;
+    }
+
+    public Integer getOfficialDocumentYear() {
+        return officialDocumentYear;
+    }
+
+    public void setOfficialDocumentYear(Integer officialDocumentYear) {
+        this.officialDocumentYear = officialDocumentYear;
     }
 
     public String getPreSignedUrl() {

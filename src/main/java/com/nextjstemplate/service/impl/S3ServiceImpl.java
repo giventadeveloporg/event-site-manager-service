@@ -649,4 +649,65 @@ public class S3ServiceImpl implements S3Service {
             extension
         );
     }
+
+    @Override
+    public String generateTenantOfficialDocumentPath(
+        String tenantId,
+        String categorySlug,
+        Integer officialDocumentYear,
+        String originalFilename
+    ) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        String profilePrefix = getActiveProfilePrefix();
+
+        String sanitizedFileName = getBaseFileName(originalFilename);
+        if (sanitizedFileName == null || sanitizedFileName.isEmpty()) {
+            sanitizedFileName = "official_document";
+        }
+
+        return String.format(
+            "%s/media/tenantId/%s/official_document/%s/%d/%s_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            categorySlug,
+            officialDocumentYear,
+            sanitizedFileName,
+            timestamp,
+            uuid,
+            extension
+        );
+    }
+
+    @Override
+    public String uploadTenantOfficialDocumentFile(
+        MultipartFile file,
+        String tenantId,
+        String categorySlug,
+        Integer officialDocumentYear,
+        String title
+    ) {
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String s3Path = generateTenantOfficialDocumentPath(tenantId, categorySlug, officialDocumentYear, originalFilename);
+
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType(file.getContentType());
+            metadata.setContentLength(file.getSize());
+            metadata.addUserMetadata("title", title);
+            metadata.addUserMetadata("tenant-id", tenantId);
+            metadata.addUserMetadata("official-document-category-slug", categorySlug);
+            metadata.addUserMetadata("official-document-year", String.valueOf(officialDocumentYear));
+            metadata.addUserMetadata("original-filename", originalFilename);
+
+            PutObjectRequest putRequest = new PutObjectRequest(bucketName, s3Path, file.getInputStream(), metadata);
+            amazonS3.putObject(putRequest);
+
+            return amazonS3.getUrl(bucketName, s3Path).toString();
+        } catch (Exception e) {
+            log.error("Error uploading tenant official document to S3", e);
+            throw new RuntimeException("Failed to upload tenant official document to S3", e);
+        }
+    }
 }

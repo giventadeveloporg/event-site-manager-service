@@ -47,6 +47,10 @@ public class EventMediaDTO implements Serializable {
 
     private Boolean isEventManagementOfficialDocument;
 
+    private Long officialDocumentCategoryId;
+
+    private Integer officialDocumentYear;
+
     @Size(max = 2048)
     private String preSignedUrl;
 
@@ -213,6 +217,22 @@ public class EventMediaDTO implements Serializable {
 
     public void setIsEventManagementOfficialDocument(Boolean isEventManagementOfficialDocument) {
         this.isEventManagementOfficialDocument = isEventManagementOfficialDocument;
+    }
+
+    public Long getOfficialDocumentCategoryId() {
+        return officialDocumentCategoryId;
+    }
+
+    public void setOfficialDocumentCategoryId(Long officialDocumentCategoryId) {
+        this.officialDocumentCategoryId = officialDocumentCategoryId;
+    }
+
+    public Integer getOfficialDocumentYear() {
+        return officialDocumentYear;
+    }
+
+    public void setOfficialDocumentYear(Integer officialDocumentYear) {
+        this.officialDocumentYear = officialDocumentYear;
     }
 
     public String getPreSignedUrl() {

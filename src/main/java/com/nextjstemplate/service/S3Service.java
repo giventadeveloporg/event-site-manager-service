@@ -254,4 +254,23 @@ public interface S3Service {
      * {profile}/events/tenantId/{tenantId}/event-id/{eventId}/attendees/attendee-id/{attendeeId}/attachments/{base}_{timestamp}_{uuid}.{ext}
      */
     String generateEventAttendeeAttachmentPath(String tenantId, Long eventId, Long attendeeId, String originalFilename);
+
+    /**
+     * Generate S3 path for tenant-level official documents.
+     *
+     * Path format:
+     * {profile}/media/tenantId/{tenantId}/official_document/{categorySlug}/{officialDocumentYear}/{sanitizedFileName}_{timestamp}_{uuid}{ext}
+     */
+    String generateTenantOfficialDocumentPath(String tenantId, String categorySlug, Integer officialDocumentYear, String originalFilename);
+
+    /**
+     * Upload a tenant-level official document with tenant/category/year user metadata.
+     */
+    String uploadTenantOfficialDocumentFile(
+        MultipartFile file,
+        String tenantId,
+        String categorySlug,
+        Integer officialDocumentYear,
+        String title
+    );
 }
