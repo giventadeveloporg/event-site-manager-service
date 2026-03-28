@@ -19,8 +19,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -45,15 +44,14 @@ public class BatchJobService {
     private final BatchJobProperties batchJobProperties;
     private final ObjectMapper objectMapper;
 
-    public BatchJobService(BatchJobProperties batchJobProperties, ObjectMapper objectMapper) {
+    public BatchJobService(
+        BatchJobProperties batchJobProperties,
+        ObjectMapper objectMapper,
+        @Qualifier("batchJobsWebClient") WebClient batchJobsWebClient
+    ) {
         this.batchJobProperties = batchJobProperties;
         this.objectMapper = objectMapper;
-        this.webClient =
-            WebClient
-                .builder()
-                .baseUrl(batchJobProperties.getUrl())
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
+        this.webClient = batchJobsWebClient;
 
         log.info("BatchJobService initialized with URL: {}", batchJobProperties.getUrl());
     }

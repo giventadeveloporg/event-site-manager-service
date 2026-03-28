@@ -319,6 +319,11 @@ batch-jobs:
     url: ${BATCH_JOBS_SERVICE_URL:http://localhost:8081/batch-jobs}
     timeout: ${BATCH_JOBS_SERVICE_TIMEOUT:30000}
     enabled: ${BATCH_JOBS_SERVICE_ENABLED:true}
+    # JWT for outbound calls to batch-jobs (must match JHipster secret on both apps). Same env vars as batch→backend.
+    auth:
+      username: ${BATCH_JOBS_AUTH_USER:${API_JWT_USER:}}
+      password: ${BATCH_JOBS_AUTH_PASS:${API_JWT_PASS:}}
+      base-url: ${BATCH_JOBS_AUTH_BASE_URL:http://localhost:8080}
 
 # ===================================================================
 # Cache Configuration - Unified for all profiles
