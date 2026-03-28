@@ -107,6 +107,7 @@
     <include file="config/liquibase/changelog/20260326000000_add_official_document_category_table.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260325000000_add_official_document_fields_to_event_media.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260327000000_add_official_document_year_bundle.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260328000000_add_official_document_hierarchy_fields.xml" relativeToChangelogFile="false"/>
     <!-- <include file="config/liquibase/changelog/20241211_refactor_tenant_relationship.xml" relativeToChangelogFile="false"/> -->
 
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->

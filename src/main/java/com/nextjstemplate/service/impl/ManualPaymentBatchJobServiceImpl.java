@@ -10,8 +10,7 @@ import com.nextjstemplate.service.dto.ManualPaymentTicketEmailJobResponse;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -34,15 +33,14 @@ public class ManualPaymentBatchJobServiceImpl implements ManualPaymentBatchJobSe
     private final BatchJobProperties batchJobProperties;
     private final ObjectMapper objectMapper;
 
-    public ManualPaymentBatchJobServiceImpl(BatchJobProperties batchJobProperties, ObjectMapper objectMapper) {
+    public ManualPaymentBatchJobServiceImpl(
+        BatchJobProperties batchJobProperties,
+        ObjectMapper objectMapper,
+        @Qualifier("batchJobsWebClient") WebClient batchJobsWebClient
+    ) {
         this.batchJobProperties = batchJobProperties;
         this.objectMapper = objectMapper;
-        this.webClient =
-            WebClient
-                .builder()
-                .baseUrl(batchJobProperties.getUrl())
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
+        this.webClient = batchJobsWebClient;
 
         log.info("ManualPaymentBatchJobService initialized with URL: {}", batchJobProperties.getUrl());
     }
