@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260328000000-1" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_media"/>
+        <not><columnExists tableName="event_media" columnName="hierarchy_path"/></not>
+        </preConditions>
+<addColumn tableName="event_media">
+            <column name="hierarchy_path" type="clob"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260328000000-2" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_media"/>
+        <not><columnExists tableName="event_media" columnName="hierarchy_category_label"/></not>
+        </preConditions>
+<addColumn tableName="event_media">
+            <column name="hierarchy_category_label" type="clob"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260328000000-3" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_media"/>
+        <not><columnExists tableName="event_media" columnName="display_priority"/></not>
+        </preConditions>
+<addColumn tableName="event_media">
+            <column name="display_priority" type="integer"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

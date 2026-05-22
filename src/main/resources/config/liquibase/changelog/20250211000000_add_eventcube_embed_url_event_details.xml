@@ -8,13 +8,13 @@
         Add eventcube_embed_url to event_details.
         Schema: varchar(1024) NULL. Only add if column does not exist.
     -->
-    <changeSet id="20250211000000-1" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="event_details" columnName="eventcube_embed_url"/>
-            </not>
+    <changeSet id="20250211000000-1" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_details"/>
+        <not>
+        <columnExists tableName="event_details" columnName="eventcube_embed_url"/>
+        </not>
         </preConditions>
-        <addColumn tableName="event_details">
+<addColumn tableName="event_details">
             <column name="eventcube_embed_url" type="varchar(1024)">
                 <constraints nullable="true"/>
             </column>

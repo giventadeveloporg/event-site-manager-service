@@ -35,15 +35,12 @@
     </changeSet>
 
     <changeSet id="20251127-02-add-unique-index" author="system" dbms="postgresql">
-        <comment>Add unique index on stripe_payment_intent_id to prevent future duplicates</comment>
-
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <indexExists indexName="ux_event_ticket_stripe_payment_intent"/>
-            </not>
+                <preConditions onFail="MARK_RAN">
+        <not>
+        <indexExists indexName="ux_event_ticket_stripe_payment_intent"/>
+        </not>
         </preConditions>
-
-        <sql>
+<comment>Add unique index on stripe_payment_intent_id to prevent future duplicates</comment><sql>
             CREATE UNIQUE INDEX ux_event_ticket_stripe_payment_intent
             ON event_ticket_transaction (stripe_payment_intent_id)
             WHERE stripe_payment_intent_id IS NOT NULL AND stripe_payment_intent_id != '';

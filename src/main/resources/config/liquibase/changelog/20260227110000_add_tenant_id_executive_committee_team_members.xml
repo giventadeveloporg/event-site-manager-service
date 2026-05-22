@@ -8,13 +8,13 @@
         Add tenant_id to executive_committee_team_members for tenant-scoping.
         Step 1: Add column as nullable (table may already have rows).
     -->
-    <changeSet id="20260227110000-1" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="executive_committee_team_members" columnName="tenant_id"/>
-            </not>
+    <changeSet id="20260227110000-1" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="executive_committee_team_members"/>
+        <not>
+        <columnExists tableName="executive_committee_team_members" columnName="tenant_id"/>
+        </not>
         </preConditions>
-        <addColumn tableName="executive_committee_team_members">
+<addColumn tableName="executive_committee_team_members">
             <column name="tenant_id" type="varchar(255)">
                 <constraints nullable="true"/>
             </column>
@@ -24,11 +24,11 @@
     <!--
         Step 2: Backfill tenant_id from default tenant for existing rows.
     -->
-    <changeSet id="20260227110000-2" author="system">
-        <preConditions onFail="MARK_RAN">
-            <columnExists tableName="executive_committee_team_members" columnName="tenant_id"/>
+    <changeSet id="20260227110000-2" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="executive_committee_team_members"/>
+        <columnExists tableName="executive_committee_team_members" columnName="tenant_id"/>
         </preConditions>
-        <sql>UPDATE executive_committee_team_members SET tenant_id = COALESCE(
+<sql>UPDATE executive_committee_team_members SET tenant_id = COALESCE(
             (SELECT tenant_id FROM tenant_settings ORDER BY id LIMIT 1),
             'tenant_demo_001'
         ) WHERE tenant_id IS NULL</sql>
@@ -37,11 +37,11 @@
     <!--
         Step 3: Alter tenant_id to NOT NULL.
     -->
-    <changeSet id="20260227110000-3" author="system">
-        <preConditions onFail="MARK_RAN">
-            <columnExists tableName="executive_committee_team_members" columnName="tenant_id"/>
+    <changeSet id="20260227110000-3" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="executive_committee_team_members"/>
+        <columnExists tableName="executive_committee_team_members" columnName="tenant_id"/>
         </preConditions>
-        <addNotNullConstraint tableName="executive_committee_team_members" columnName="tenant_id" columnDataType="varchar(255)"/>
+<addNotNullConstraint tableName="executive_committee_team_members" columnName="tenant_id" columnDataType="varchar(255)"/>
     </changeSet>
 
 </databaseChangeLog>

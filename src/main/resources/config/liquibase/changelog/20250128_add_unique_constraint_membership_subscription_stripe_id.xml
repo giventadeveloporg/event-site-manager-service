@@ -40,12 +40,14 @@
     </changeSet>
 
     <changeSet id="202501280001-2" author="jhipster">
-        <comment>
+                <preConditions onFail="MARK_RAN">
+        <tableExists tableName="membership_subscription"/>
+        </preConditions>
+<comment>
             Add performance indexes for membership subscription queries.
         </comment>
 
-        <!-- Index for user lookup with status filter -->
-        <createIndex indexName="idx_membership_subscription_user_status"
+        <!-- Index for user lookup with status filter --><createIndex indexName="idx_membership_subscription_user_status"
                      tableName="membership_subscription">
             <column name="user_profile_id"/>
             <column name="subscription_status"/>

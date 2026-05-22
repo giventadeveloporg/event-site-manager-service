@@ -152,7 +152,9 @@ DROP TABLE IF EXISTS public.event_attendee CASCADE;
 DROP TABLE IF EXISTS public.event_admin_audit_log CASCADE;
 DROP TABLE IF EXISTS public.event_calendar_entry CASCADE;
 DROP TABLE IF EXISTS public.gallery_album CASCADE;
+DROP TABLE IF EXISTS public.official_document_year_bundle CASCADE;
 DROP TABLE IF EXISTS public.event_media CASCADE;
+DROP TABLE IF EXISTS public.official_document_category CASCADE;
 DROP TABLE IF EXISTS public.event_poll_response CASCADE;
 DROP TABLE IF EXISTS public.event_poll_option CASCADE;
 DROP TABLE IF EXISTS public.event_poll CASCADE;
@@ -178,6 +180,16 @@ DROP TABLE IF EXISTS public.event_sponsors CASCADE;
 DROP TABLE IF EXISTS public.event_contacts CASCADE;
 DROP TABLE IF EXISTS public.event_featured_performers CASCADE;
 
+
+-- Event competitions (drop children before event_details)
+DROP TABLE IF EXISTS public.event_competition_group_member CASCADE;
+DROP TABLE IF EXISTS public.event_competition_result CASCADE;
+DROP TABLE IF EXISTS public.event_competition_registration CASCADE;
+DROP TABLE IF EXISTS public.event_competition_participant CASCADE;
+DROP TABLE IF EXISTS public.event_competition CASCADE;
+DROP TABLE IF EXISTS public.event_competition_content_block CASCADE;
+DROP TABLE IF EXISTS public.event_competition_day CASCADE;
+DROP TABLE IF EXISTS public.event_competition_settings CASCADE;
 
 DROP TABLE IF EXISTS public.event_recurrence_series CASCADE;
 DROP TABLE IF EXISTS public.event_details CASCADE;
@@ -222,6 +234,9 @@ DROP TABLE IF EXISTS public.donation_transaction CASCADE;
 DROP TABLE IF EXISTS public.donation_statistics CASCADE;
 
 DROP TABLE IF EXISTS public.tenant_email_addresses CASCADE;
+
+-- Satellite domain configuration
+DROP TABLE IF EXISTS public.satellite_domain CASCADE;
 
 -- News portal tables (drop children first, then parents)
 DROP TABLE IF EXISTS public.news_article_category CASCADE;
@@ -784,6 +799,7 @@ CREATE TABLE public.event_details (
                                       updated_at timestamp DEFAULT now() NOT NULL,
                                       is_registration_required bool DEFAULT false NULL,
                                       is_sports_event bool DEFAULT false NULL,
+                                      is_competition_event bool DEFAULT false NOT NULL,
                                       is_live bool DEFAULT false NULL,
                                       is_featured_event BOOLEAN NOT NULL DEFAULT false,
                                       featured_event_priority_ranking INT4 NOT NULL DEFAULT 0,
@@ -877,6 +893,16 @@ COMMENT ON COLUMN public.event_details.is_registration_required IS 'Whether form
 --
 
 COMMENT ON COLUMN public.event_details.is_sports_event IS 'Whether this event is a sports event';
+
+
+--
+-- TOC entry 3950b (class 0 OID 0)
+-- Dependencies: 234
+-- Name: COLUMN event_details.is_competition_event; Type: COMMENT; Schema: public; Owner: giventa_event_management
+--
+
+COMMENT ON COLUMN public.event_details.is_competition_event IS
+    'When true, event uses Event Competitions flow (catalog + registrations + results), not default ticket-only checkout.';
 
 
 --
@@ -1621,6 +1647,49 @@ COMMENT ON COLUMN public.gallery_album.is_public IS 'Whether album is visible to
 
 
 --
+-- Official document categories (tenant-scoped lookup for Church Resources / downloads).
+-- S3 path when is_event_management_official_document = true:
+--   media/{tenant_id}/official_document/{category.slug}/{official_document_year}/filename
+--
+
+CREATE TABLE public.official_document_category (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    slug character varying(128) NOT NULL,
+    display_name character varying(255) NOT NULL,
+    description character varying(1024) NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT official_document_category_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_official_document_category_tenant_slug UNIQUE (tenant_id, slug),
+    CONSTRAINT check_official_document_category_slug_format CHECK (
+        slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'
+    ),
+    CONSTRAINT check_official_document_category_sort_non_negative CHECK (sort_order >= 0)
+);
+
+COMMENT ON TABLE public.official_document_category IS 'Lookup for official document types (Church Resources). Admin CRUD per tenant; slug is used as the S3 path segment under official_document/.';
+
+COMMENT ON COLUMN public.official_document_category.slug IS 'URL-safe segment for S3: .../official_document/{slug}/{year}/. Lowercase letters, digits, single hyphens between tokens.';
+
+CREATE INDEX idx_official_document_category_tenant_active ON public.official_document_category (tenant_id, is_active, sort_order);
+
+-- Optional seed for tenant_demo_002. Maps legacy Church Resources titles to stable slugs for S3.
+-- INSERT INTO public.official_document_category (tenant_id, slug, display_name, description, sort_order, is_active) VALUES
+-- ('tenant_demo_002', 'photos', 'Photos', 'Election photos, merit evening, general downloads', 10, true),
+-- ('tenant_demo_002', 'brochures', 'Brochures', 'Catholicate day book cover, brochures', 20, true),
+-- ('tenant_demo_002', 'calendars', 'Calendars', 'Panjangom and yearly calendars', 30, true),
+-- ('tenant_demo_002', 'insurance-benefits', 'Insurance & benefits', 'Medical insurance TPA and similar', 40, true),
+-- ('tenant_demo_002', 'official-circulars', 'Official circulars', 'Kalpana and official notices', 50, true),
+-- ('tenant_demo_002', 'financial-statements', 'Financial statements', 'Covering notes, MOSC financial statement formats', 60, true),
+-- ('tenant_demo_002', 'magazines', 'Magazines', 'Malankara Sabha magazine and periodicals', 70, true),
+-- ('tenant_demo_002', 'scholarships', 'Scholarships', 'Educational scholarship materials', 80, true),
+-- ('tenant_demo_002', 'awards-events', 'Awards & merit events', 'Merit awards, merit evening', 90, true);
+
+
+--
 -- TOC entry 246 (class 1259 OID 83070)
 -- Name: event_media; Type: TABLE; Schema: public; Owner: giventa_event_management
 --
@@ -1640,6 +1709,11 @@ CREATE TABLE public.event_media (
                                     event_flyer bool DEFAULT false NULL,
                                     is_email_header_image bool DEFAULT false NULL,
                                     is_event_management_official_document bool DEFAULT false NULL,
+                                    official_document_category_id bigint NULL,
+                                    official_document_year integer NULL,
+                                    hierarchy_path text NULL,
+                                    hierarchy_category_label text NULL,
+                                    display_priority int4 NULL,
                                     pre_signed_url varchar(2048) NULL,
                                     pre_signed_url_expires_at timestamp NULL,
                                     alt_text varchar(500) NULL,
@@ -1665,6 +1739,7 @@ CREATE TABLE public.event_media (
                                     is_live_event_image bool DEFAULT false NOT NULL,
                                     album_id int8 NULL,
                                     event_focus_group_id bigint NULL,
+                                    CONSTRAINT event_media_pkey PRIMARY KEY (id),
                                     CONSTRAINT check_download_count_non_negative CHECK ((download_count >= 0)),
                                     CONSTRAINT check_file_size_positive CHECK (((file_size IS NULL) OR (file_size >= 0))),
                                     CONSTRAINT check_priority_ranking_non_negative CHECK (priority_ranking >= 0),
@@ -1675,7 +1750,8 @@ CREATE TABLE public.event_media (
                                     CONSTRAINT fk_event_media_sponsor_id FOREIGN KEY (sponsor_id) REFERENCES public.event_sponsors(id) ON DELETE CASCADE,
                                     CONSTRAINT fk_event_media_event_sponsors_join_id FOREIGN KEY (event_sponsors_join_id) REFERENCES public.event_sponsors_join(id) ON DELETE CASCADE,
                                     CONSTRAINT fk_event_media_album_id FOREIGN KEY (album_id) REFERENCES public.gallery_album(id) ON DELETE SET NULL,
-                                    CONSTRAINT fk_event_media__event_focus_group_id FOREIGN KEY (event_focus_group_id) REFERENCES public.event_focus_groups(id) ON DELETE SET NULL
+                                    CONSTRAINT fk_event_media__event_focus_group_id FOREIGN KEY (event_focus_group_id) REFERENCES public.event_focus_groups(id) ON DELETE SET NULL,
+                                    CONSTRAINT fk_event_media_official_document_category_id FOREIGN KEY (official_document_category_id) REFERENCES public.official_document_category(id) ON DELETE SET NULL
 );
 
 
@@ -1697,7 +1773,48 @@ COMMENT ON COLUMN public.event_media.album_id IS 'Reference to gallery album. Mu
 
 COMMENT ON COLUMN public.event_media.event_focus_group_id IS 'Optional link to event_focus_groups. When set, this media is associated with that event focus group (e.g. for uploads tagged by focus group).';
 
+COMMENT ON COLUMN public.event_media.official_document_category_id IS 'When is_event_management_official_document is true, links to official_document_category; category.slug is used in S3 path media/{tenant_id}/official_document/{slug}/{year}/.';
+
+COMMENT ON COLUMN public.event_media.official_document_year IS 'Calendar year segment for official-document S3 path (e.g. 2025, 2026). Required for new uploads when official document + category are set; may be NULL for legacy rows.';
+
+COMMENT ON COLUMN public.event_media.hierarchy_path IS 'Canonical hierarchy path used for official-document tree rendering (example: Kalpana 2023\Kalpana 110 Commission\Kalpana-Commission-1.pdf).';
+
+COMMENT ON COLUMN public.event_media.hierarchy_category_label IS 'Top-level human-readable category label inferred from mirrored legacy folders.';
+
+COMMENT ON COLUMN public.event_media.display_priority IS 'Dedicated display priority for official documents. Lower values appear first in paginated downloads listing.';
+
 COMMENT ON COLUMN public.event_media.home_page_hero_display_duration_seconds IS 'Duration in seconds to display this image in the homepage hero slider when is_home_page_hero_image is true. Stored as total seconds (e.g. 50, 80 for 1m20s). NULL = use app default (8 seconds). Valid range: 1–600.';
+
+
+--
+-- Official document year bundle (option B): one row per (tenant, category, calendar year) with optional cover image.
+-- cover_event_media_id references an image (or representative) event_media row for downloads / category tiles.
+--
+
+CREATE TABLE public.official_document_year_bundle (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    official_document_category_id bigint NOT NULL,
+    document_year integer NOT NULL,
+    cover_event_media_id bigint NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT official_document_year_bundle_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_official_document_year_bundle_tenant_category_year UNIQUE (tenant_id, official_document_category_id, document_year),
+    CONSTRAINT fk_official_document_year_bundle_category FOREIGN KEY (official_document_category_id) REFERENCES public.official_document_category(id) ON DELETE CASCADE,
+    CONSTRAINT fk_official_document_year_bundle_cover_media FOREIGN KEY (cover_event_media_id) REFERENCES public.event_media(id) ON DELETE SET NULL,
+    CONSTRAINT check_official_document_year_bundle_year CHECK (document_year >= 1900 AND document_year <= 2100)
+);
+
+COMMENT ON TABLE public.official_document_year_bundle IS 'Per-tenant, per-category, per-calendar-year grouping for Church Resources / official documents; optional cover points to event_media for UI thumbnails.';
+
+COMMENT ON COLUMN public.official_document_year_bundle.document_year IS 'Calendar year segment matching event_media.official_document_year and S3 path .../official_document/{slug}/{year}/.';
+
+COMMENT ON COLUMN public.official_document_year_bundle.cover_event_media_id IS 'Optional FK to event_media used as cover/thumbnail for this category+year (typically image; should match tenant and official-document flags).';
+
+CREATE INDEX idx_official_document_year_bundle_tenant_category_year ON public.official_document_year_bundle (tenant_id, official_document_category_id, document_year);
+
+CREATE TRIGGER update_official_document_year_bundle_updated_at BEFORE UPDATE ON public.official_document_year_bundle FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 
@@ -2760,6 +2877,15 @@ CREATE INDEX idx_parent_event_id ON public.event_details USING btree (parent_eve
 
 
 --
+-- Name: idx_event_details__is_competition_event; Type: INDEX; Schema: public; Owner: giventa_event_management
+--
+
+CREATE INDEX idx_event_details__is_competition_event
+    ON public.event_details(is_competition_event)
+    WHERE is_competition_event = true;
+
+
+--
 -- TOC entry 3669 (class 1259 OID 83375)
 -- Name: idx_event_guest_pricing_description; Type: INDEX; Schema: public; Owner: giventa_event_management
 --
@@ -3415,6 +3541,10 @@ CREATE INDEX IF NOT EXISTS idx_event_media_event_sponsor_join_priority ON public
 -- Indexes for event_media album references
 CREATE INDEX IF NOT EXISTS idx_event_media_album_id ON public.event_media(album_id) WHERE album_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_event_media_album_public ON public.event_media(album_id, is_public) WHERE album_id IS NOT NULL AND is_public = true;
+
+-- Official document library: filter by tenant, category slug (FK), and year for S3 path media/{tenant}/official_document/{slug}/{year}/
+CREATE INDEX IF NOT EXISTS idx_event_media_official_doc_tenant_category_year ON public.event_media(tenant_id, official_document_category_id, official_document_year) WHERE is_event_management_official_document = true AND official_document_category_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_event_media_official_doc_tree_listing ON public.event_media(tenant_id, official_document_category_id, official_document_year, display_priority, priority_ranking, created_at) WHERE is_event_management_official_document = true AND is_public = true;
 
 -- Index for event_sponsors_join custom_poster_url
 CREATE INDEX IF NOT EXISTS idx_event_sponsors_join_custom_poster ON public.event_sponsors_join(custom_poster_url) WHERE custom_poster_url IS NOT NULL;
@@ -4832,6 +4962,80 @@ CREATE TRIGGER trg_donation_statistics_updated_at
     EXECUTE FUNCTION public.update_updated_at_column();
 
 -- =====================================================
+-- SATELLITE DOMAIN CONFIGURATION TABLE
+-- =====================================================
+-- Stores satellite domain configuration for multi-tenant architecture.
+-- Replaces static config/satellites.json with database-backed configuration.
+-- Allows runtime addition of new satellite domains without redeployment.
+
+CREATE TABLE public.satellite_domain (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    satellite_key character varying(100) NOT NULL,
+    domain character varying(500) NOT NULL,
+    hostname character varying(255) NOT NULL,
+    display_name character varying(255) NOT NULL,
+    tenant_id character varying(255),
+    enabled boolean DEFAULT true NOT NULL,
+    added_date timestamp without time zone DEFAULT now(),
+
+    -- Branding basics
+    org_name character varying(255),
+    full_name character varying(500),
+    tagline character varying(500),
+
+    -- Logo configuration
+    logo_type character varying(50) DEFAULT 'text',
+    logo_url character varying(1024),
+    logo_primary_color character varying(50),
+    logo_secondary_color character varying(50),
+
+    -- Theme colors
+    theme_primary_color character varying(50),
+    theme_hover_color character varying(50),
+    theme_active_color character varying(50),
+
+    -- Contact information
+    contact_address character varying(1024),
+    contact_phone character varying(100),
+    contact_toll_free character varying(100),
+    contact_email character varying(255),
+
+    -- Social media links
+    social_facebook character varying(1024),
+    social_twitter character varying(1024),
+    social_linkedin character varying(1024),
+    social_youtube character varying(1024),
+
+    -- Auth page display flags
+    show_on_auth_header boolean DEFAULT true NOT NULL,
+    show_on_auth_footer boolean DEFAULT true NOT NULL,
+
+    -- Timestamps
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT satellite_domain_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_satellite_domain_satellite_key UNIQUE (satellite_key),
+    CONSTRAINT ux_satellite_domain_hostname UNIQUE (hostname)
+);
+
+CREATE INDEX idx_satellite_domain_tenant_id ON public.satellite_domain(tenant_id);
+CREATE INDEX idx_satellite_domain_enabled ON public.satellite_domain(enabled) WHERE enabled = true;
+
+COMMENT ON TABLE public.satellite_domain IS 'Satellite domain configuration for multi-tenant architecture. Each row represents a satellite site that authenticates via the primary domain.';
+COMMENT ON COLUMN public.satellite_domain.satellite_key IS 'Unique short identifier for the satellite (e.g. mosc-temp, mcefee-temp).';
+COMMENT ON COLUMN public.satellite_domain.domain IS 'Full domain URL with protocol (e.g. https://www.mosc-temp.com).';
+COMMENT ON COLUMN public.satellite_domain.hostname IS 'Domain hostname without protocol (e.g. www.mosc-temp.com).';
+COMMENT ON COLUMN public.satellite_domain.logo_type IS 'Logo display type: text (render org name as text) or image (use logo_url).';
+
+-- Trigger for updated_at
+CREATE TRIGGER trg_satellite_domain_updated_at
+    BEFORE UPDATE ON public.satellite_domain
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+-- Seed existing satellite domains from config/satellites.json
+--seed removed
+-- =====================================================
 -- NEWS PORTAL TABLES
 -- =====================================================
 -- Tables follow schema standards: id bigint with sequence_generator, tenant_id, created_at/updated_at.
@@ -5019,6 +5223,293 @@ CREATE TRIGGER trg_news_live_stream_config_updated_at
     EXECUTE FUNCTION public.update_updated_at_column();
 
 -- =====================================================
+-- EVENT COMPETITIONS TABLES
+-- =====================================================
+-- Generic Event Competitions domain (youth, adult, mixed).
+-- See documentation/kanj_feature_comparison/event_competitions/database_schema_prd.html
+-- and .cursor/rules/database_schema_guidelines.mdc
+
+-- event_competition_settings: Per-event competition configuration (1:1 with event_details).
+CREATE TABLE public.event_competition_settings (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    event_id bigint NOT NULL,
+    audience_mode character varying(20) DEFAULT 'YOUTH' NOT NULL,
+    registration_mode character varying(32) DEFAULT 'PARENT_CHILD' NOT NULL,
+    registration_deadline timestamp without time zone,
+    registration_open boolean DEFAULT true NOT NULL,
+    allow_ticket_sales boolean DEFAULT false NOT NULL,
+    points_first integer DEFAULT 5 NOT NULL,
+    points_second integer DEFAULT 3 NOT NULL,
+    points_third integer DEFAULT 1 NOT NULL,
+    champion_enabled boolean DEFAULT false NOT NULL,
+    champion_exclude_group_points boolean DEFAULT true NOT NULL,
+    champion_max_category integer,
+    results_display_mode character varying(32) DEFAULT 'FULL_NAME',
+    eligibility_text text,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT event_competition_settings_pkey PRIMARY KEY (id),
+    CONSTRAINT chk_event_competition_settings__audience
+        CHECK (audience_mode IN ('YOUTH', 'ADULT', 'MIXED')),
+    CONSTRAINT chk_event_competition_settings__reg_mode
+        CHECK (registration_mode IN ('PARENT_CHILD', 'SELF', 'TEAM_CAPTAIN', 'MIXED')),
+    CONSTRAINT ux_event_competition_settings__event UNIQUE (event_id),
+    CONSTRAINT fk_event_competition_settings__event
+        FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE public.event_competition_settings IS 'Per-event competition settings (audience, registration, scoring, results display).';
+
+-- event_competition_day: Multi-day festival schedule rows.
+CREATE TABLE public.event_competition_day (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    event_id bigint NOT NULL,
+    day_label character varying(100) NOT NULL,
+    event_date date NOT NULL,
+    venue_name character varying(255) NOT NULL,
+    venue_address character varying(500),
+    sort_order integer DEFAULT 0 NOT NULL,
+    notes text,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT event_competition_day_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_event_competition_day__event
+        FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_event_competition_day__event_id ON public.event_competition_day(event_id);
+
+COMMENT ON TABLE public.event_competition_day IS 'Competition festival days (venue, date, sort order).';
+
+-- event_competition: Competition catalog entries for an event.
+CREATE TABLE public.event_competition (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    event_id bigint NOT NULL,
+    competition_day_id bigint,
+    name character varying(255) NOT NULL,
+    description text,
+    competition_type character varying(20) NOT NULL,
+    eligible_audience character varying(20) DEFAULT 'ALL' NOT NULL,
+    category_code character varying(20),
+    division_label character varying(100),
+    track character varying(50),
+    fee_amount numeric(10,2) DEFAULT 0 NOT NULL,
+    max_participants integer,
+    min_group_size integer DEFAULT 3,
+    max_group_size integer DEFAULT 10,
+    time_limit_minutes integer,
+    requires_soundtrack boolean DEFAULT false NOT NULL,
+    judgment_criteria_json text,
+    display_order integer DEFAULT 0 NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT event_competition_pkey PRIMARY KEY (id),
+    CONSTRAINT chk_event_competition__type
+        CHECK (competition_type IN ('INDIVIDUAL', 'GROUP')),
+    CONSTRAINT chk_event_competition__eligible_audience
+        CHECK (eligible_audience IN ('YOUTH_ONLY', 'ADULT_ONLY', 'ALL')),
+    CONSTRAINT fk_event_competition__event
+        FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
+    CONSTRAINT fk_event_competition__day
+        FOREIGN KEY (competition_day_id) REFERENCES public.event_competition_day(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_event_competition__event_id ON public.event_competition(event_id);
+
+COMMENT ON TABLE public.event_competition IS 'Competition catalog (individual/group, fees, categories, eligibility).';
+
+-- event_competition_participant: Child, adult, or team member profiles for registrations.
+CREATE TABLE public.event_competition_participant (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    participant_type character varying(20) NOT NULL,
+    user_profile_id bigint NOT NULL,
+    clerk_user_id character varying(255) NOT NULL,
+    guardian_user_profile_id bigint,
+    first_name character varying(100) NOT NULL,
+    last_name character varying(100) NOT NULL,
+    display_name character varying(200),
+    date_of_birth date,
+    current_grade integer,
+    school_name character varying(255),
+    phone character varying(50),
+    email character varying(255),
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT event_competition_participant_pkey PRIMARY KEY (id),
+    CONSTRAINT chk_event_competition_participant__type
+        CHECK (participant_type IN ('CHILD', 'ADULT', 'TEAM_MEMBER')),
+    CONSTRAINT fk_event_competition_participant__user_profile
+        FOREIGN KEY (user_profile_id) REFERENCES public.user_profile(id),
+    CONSTRAINT fk_event_competition_participant__guardian
+        FOREIGN KEY (guardian_user_profile_id) REFERENCES public.user_profile(id)
+);
+
+CREATE INDEX idx_event_competition_participant__tenant_clerk
+    ON public.event_competition_participant(tenant_id, clerk_user_id);
+CREATE INDEX idx_event_competition_participant__guardian
+    ON public.event_competition_participant(tenant_id, guardian_user_profile_id)
+    WHERE guardian_user_profile_id IS NOT NULL;
+
+COMMENT ON TABLE public.event_competition_participant IS 'Competition participants (child/adult/team member) linked to user_profile.';
+
+-- event_competition_registration: Participant enrolled in a competition.
+CREATE TABLE public.event_competition_registration (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    event_id bigint NOT NULL,
+    competition_id bigint NOT NULL,
+    participant_profile_id bigint NOT NULL,
+    registration_status character varying(32) DEFAULT 'PENDING_PAYMENT' NOT NULL,
+    fee_amount numeric(10,2) NOT NULL,
+    effective_category character varying(20),
+    stripe_payment_intent_id character varying(255),
+    group_leader_registration_id bigint,
+    registered_by_user_profile_id bigint NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT event_competition_registration_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_event_comp_reg__participant_competition
+        UNIQUE (competition_id, participant_profile_id),
+    CONSTRAINT fk_event_comp_reg__competition
+        FOREIGN KEY (competition_id) REFERENCES public.event_competition(id),
+    CONSTRAINT fk_event_comp_reg__participant
+        FOREIGN KEY (participant_profile_id) REFERENCES public.event_competition_participant(id),
+    CONSTRAINT fk_event_comp_reg__event
+        FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
+    CONSTRAINT fk_event_comp_reg__registered_by
+        FOREIGN KEY (registered_by_user_profile_id) REFERENCES public.user_profile(id),
+    CONSTRAINT fk_event_comp_reg__group_leader
+        FOREIGN KEY (group_leader_registration_id) REFERENCES public.event_competition_registration(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_event_comp_reg__event_id ON public.event_competition_registration(event_id);
+
+COMMENT ON TABLE public.event_competition_registration IS 'Competition registrations with payment and group leader linkage.';
+
+-- event_competition_result: Placements, prizes, and winner media.
+CREATE TABLE public.event_competition_result (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    event_id bigint NOT NULL,
+    competition_id bigint NOT NULL,
+    participant_profile_id bigint,
+    registration_id bigint,
+    display_name character varying(200) NOT NULL,
+    placement integer,
+    placement_label character varying(50),
+    prize_title character varying(255),
+    prize_details text,
+    points_awarded integer DEFAULT 0 NOT NULL,
+    winner_photo_url character varying(1024),
+    winner_media_id bigint,
+    notes text,
+    is_published boolean DEFAULT false NOT NULL,
+    published_at timestamp without time zone,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT event_competition_result_pkey PRIMARY KEY (id),
+    CONSTRAINT chk_event_comp_result__placement
+        CHECK (placement IS NULL OR placement >= 1),
+    CONSTRAINT fk_event_comp_result__competition
+        FOREIGN KEY (competition_id) REFERENCES public.event_competition(id) ON DELETE CASCADE,
+    CONSTRAINT fk_event_comp_result__participant
+        FOREIGN KEY (participant_profile_id) REFERENCES public.event_competition_participant(id),
+    CONSTRAINT fk_event_comp_result__registration
+        FOREIGN KEY (registration_id) REFERENCES public.event_competition_registration(id),
+    CONSTRAINT fk_event_comp_result__winner_media
+        FOREIGN KEY (winner_media_id) REFERENCES public.event_media(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_event_comp_result__event_published
+    ON public.event_competition_result(event_id, is_published);
+CREATE INDEX idx_event_comp_result__competition_placement
+    ON public.event_competition_result(competition_id, placement)
+    WHERE is_published = true;
+
+COMMENT ON TABLE public.event_competition_result IS 'Competition results (placement, prizes, winner photo via event_media).';
+
+-- event_competition_content_block: Markdown content blocks per event (rules, FAQ, etc.).
+CREATE TABLE public.event_competition_content_block (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    event_id bigint NOT NULL,
+    block_type character varying(32) NOT NULL,
+    title character varying(255),
+    body_markdown text NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT event_competition_content_block_pkey PRIMARY KEY (id),
+    CONSTRAINT ux_event_comp_content__event_type UNIQUE (event_id, block_type),
+    CONSTRAINT fk_event_comp_content__event
+        FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE public.event_competition_content_block IS 'Per-event competition content blocks (markdown).';
+
+-- event_competition_group_member: Optional normalized group roster members (v1.1).
+CREATE TABLE public.event_competition_group_member (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255) NOT NULL,
+    registration_id bigint NOT NULL,
+    participant_profile_id bigint NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT event_competition_group_member_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_event_comp_group_member__registration
+        FOREIGN KEY (registration_id) REFERENCES public.event_competition_registration(id) ON DELETE CASCADE,
+    CONSTRAINT fk_event_comp_group_member__participant
+        FOREIGN KEY (participant_profile_id) REFERENCES public.event_competition_participant(id)
+);
+
+COMMENT ON TABLE public.event_competition_group_member IS 'Group competition roster members linked to leader registration.';
+
+-- Triggers for updated_at on tables that have updated_at
+CREATE TRIGGER trg_event_competition_settings_updated_at
+    BEFORE UPDATE ON public.event_competition_settings
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_event_competition_day_updated_at
+    BEFORE UPDATE ON public.event_competition_day
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_event_competition_updated_at
+    BEFORE UPDATE ON public.event_competition
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_event_competition_participant_updated_at
+    BEFORE UPDATE ON public.event_competition_participant
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_event_competition_registration_updated_at
+    BEFORE UPDATE ON public.event_competition_registration
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_event_competition_result_updated_at
+    BEFORE UPDATE ON public.event_competition_result
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER trg_event_competition_content_block_updated_at
+    BEFORE UPDATE ON public.event_competition_content_block
+    FOR EACH ROW
+    EXECUTE FUNCTION public.update_updated_at_column();
+
+-- =====================================================
+-- END OF EVENT COMPETITIONS TABLES
+-- =====================================================
+
+-- =====================================================
 -- END OF PAYMENT ORCHESTRATION LAYER MIGRATION
 -- =====================================================
 
@@ -5116,6 +5607,14 @@ SELECT pg_catalog.setval(
                    COALESCE((SELECT MAX(id) FROM public.bulk_operation_log), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_type_details), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_details), 0),
+                   COALESCE((SELECT MAX(id) FROM public.event_competition), 0),
+                   COALESCE((SELECT MAX(id) FROM public.event_competition_content_block), 0),
+                   COALESCE((SELECT MAX(id) FROM public.event_competition_day), 0),
+                   COALESCE((SELECT MAX(id) FROM public.event_competition_group_member), 0),
+                   COALESCE((SELECT MAX(id) FROM public.event_competition_participant), 0),
+                   COALESCE((SELECT MAX(id) FROM public.event_competition_registration), 0),
+                   COALESCE((SELECT MAX(id) FROM public.event_competition_result), 0),
+                   COALESCE((SELECT MAX(id) FROM public.event_competition_settings), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_recurrence_series), 0),
                    COALESCE((SELECT MAX(id) FROM public.focus_group), 0),
                    COALESCE((SELECT MAX(id) FROM public.focus_group_members), 0),
@@ -5130,6 +5629,8 @@ SELECT pg_catalog.setval(
                    COALESCE((SELECT MAX(id) FROM public.event_sponsors), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_sponsors_join), 0),
                    COALESCE((SELECT MAX(id) FROM public.gallery_album), 0),
+                   COALESCE((SELECT MAX(id) FROM public.official_document_category), 0),
+                   COALESCE((SELECT MAX(id) FROM public.official_document_year_bundle), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_media), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_organizer), 0),
                    COALESCE((SELECT MAX(id) FROM public.event_poll), 0),
@@ -5176,6 +5677,7 @@ SELECT pg_catalog.setval(
                    COALESCE((SELECT MAX(id) FROM public.news_flash), 0),
                    COALESCE((SELECT MAX(id) FROM public.news_live_stream_config), 0),
                    COALESCE((SELECT MAX(id) FROM public.news_article_category), 0),
+                   COALESCE((SELECT MAX(id) FROM public.satellite_domain), 0),
                    1
                ),
                true

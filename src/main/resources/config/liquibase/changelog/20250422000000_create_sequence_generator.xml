@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Shared BIGINT id sequence used by JPA @SequenceGenerator(sequenceName = "public.sequence_generator") -->
+    <changeSet id="20250422000000-1" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="sequence_generator" schemaName="public"/>
+            </not>
+        </preConditions>
+        <createSequence
+            sequenceName="sequence_generator"
+            schemaName="public"
+            startValue="1050"
+            incrementBy="50"
+            minValue="1"
+            cycle="false"/>
+    </changeSet>
+
+</databaseChangeLog>

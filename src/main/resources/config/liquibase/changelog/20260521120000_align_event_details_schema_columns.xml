@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Align event_details with JPA entity / Latest_Schema (columns missing from base JHipster createTable) -->
+
+    <changeSet id="20260521120000-promotion-start-date" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="promotion_start_date"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="promotion_start_date" type="date" defaultValueDate="1970-01-01">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-timezone" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="timezone"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="timezone" type="varchar(64)" defaultValue="UTC">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-from-email" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="from_email"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="from_email" type="varchar(255)" defaultValue="noreply@example.com">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-is-featured-event" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="is_featured_event"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="is_featured_event" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-featured-priority" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="featured_event_priority_ranking"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="featured_event_priority_ranking" type="integer" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-live-priority" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="live_event_priority_ranking"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="live_event_priority_ranking" type="integer" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-donation-metadata" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="donation_metadata"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="donation_metadata" type="text"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-email-header-image-url" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="email_header_image_url"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="email_header_image_url" type="varchar(2048)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-event-recurrence-metadata" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="event_recurrence_metadata"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="event_recurrence_metadata" type="text"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-is-recurring" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="is_recurring"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="is_recurring" type="boolean" defaultValueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-recurrence-pattern" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="recurrence_pattern"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="recurrence_pattern" type="varchar(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-recurrence-interval" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="recurrence_interval"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="recurrence_interval" type="integer"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-recurrence-end-type" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="recurrence_end_type"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="recurrence_end_type" type="varchar(20)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-recurrence-end-date" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="recurrence_end_date"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="recurrence_end_date" type="date"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-recurrence-occurrences" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="recurrence_occurrences"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="recurrence_occurrences" type="integer"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-recurrence-weekly-days" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="recurrence_weekly_days"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="recurrence_weekly_days" type="integer[]"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-recurrence-monthly-day" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="recurrence_monthly_day"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="recurrence_monthly_day" type="integer"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-parent-event-id" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="parent_event_id"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="parent_event_id" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-recurrence-series-id" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="recurrence_series_id"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="recurrence_series_id" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-payment-flow-mode" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="payment_flow_mode"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="payment_flow_mode" type="varchar(30)" defaultValue="STRIPE_ONLY"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120000-manual-payment-enabled" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not><columnExists tableName="event_details" columnName="manual_payment_enabled"/></not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="manual_payment_enabled" type="boolean" defaultValueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

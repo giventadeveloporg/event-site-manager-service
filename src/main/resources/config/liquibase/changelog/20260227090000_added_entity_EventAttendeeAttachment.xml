@@ -41,7 +41,6 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-
         <createIndex tableName="event_attendee_attachment" indexName="idx_event_attendee_attachment_attendee_created">
             <column name="attendee_id"/>
             <column name="created_at"/>

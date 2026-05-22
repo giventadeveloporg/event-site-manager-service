@@ -4,24 +4,64 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
 
-    <changeSet id="20241201-01-add-email-performance-indexes" author="system">
-        <comment>Add indexes for email performance optimization</comment>
+    <changeSet id="20241201-00-add-user-profile-email-columns" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="user_profile"/>
+        <not><columnExists tableName="user_profile" columnName="is_email_subscribed"/></not>
+        </preConditions>
+<addColumn tableName="user_profile">
+            <column name="is_email_subscribed" type="boolean"/>
+        </addColumn>
+    </changeSet>
 
-        <!-- Index for finding subscribed emails by tenant -->
+    <changeSet id="20241201-00b-add-user-profile-email-token-column" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="user_profile"/>
+        <not><columnExists tableName="user_profile" columnName="email_subscription_token"/></not>
+        </preConditions>
+<addColumn tableName="user_profile">
+            <column name="email_subscription_token" type="varchar(2048)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20241201-00c-add-user-profile-email-token-used-column" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="user_profile"/>
+        <not><columnExists tableName="user_profile" columnName="is_email_subscription_token_used"/></not>
+        </preConditions>
+<addColumn tableName="user_profile">
+            <column name="is_email_subscription_token_used" type="boolean"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20241201-01-add-email-performance-indexes" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="user_profile"/>
+        <columnExists tableName="user_profile" columnName="is_email_subscribed"/>
+        <columnExists tableName="user_profile" columnName="email"/>
+        <not><indexExists tableName="user_profile" indexName="idx_user_profile_tenant_subscribed"/></not>
+        </preConditions>
+<comment>Add indexes for email performance optimization</comment>
         <createIndex tableName="user_profile" indexName="idx_user_profile_tenant_subscribed">
             <column name="tenant_id"/>
             <column name="is_email_subscribed"/>
             <column name="email"/>
         </createIndex>
+    </changeSet>
 
-        <!-- Index for email and tenant lookup -->
-        <createIndex tableName="user_profile" indexName="idx_user_profile_email_tenant">
+    <changeSet id="20241201-02-add-email-tenant-index" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="user_profile"/>
+        <columnExists tableName="user_profile" columnName="email"/>
+        <not><indexExists tableName="user_profile" indexName="idx_user_profile_email_tenant"/></not>
+        </preConditions>
+<createIndex tableName="user_profile" indexName="idx_user_profile_email_tenant">
             <column name="email"/>
             <column name="tenant_id"/>
         </createIndex>
+    </changeSet>
 
-        <!-- Index for subscription token lookup -->
-        <createIndex tableName="user_profile" indexName="idx_user_profile_subscription_token">
+    <changeSet id="20241201-03-add-subscription-token-index" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="user_profile"/>
+        <columnExists tableName="user_profile" columnName="email_subscription_token"/>
+        <not><indexExists tableName="user_profile" indexName="idx_user_profile_subscription_token"/></not>
+        </preConditions>
+<createIndex tableName="user_profile" indexName="idx_user_profile_subscription_token">
             <column name="email_subscription_token"/>
         </createIndex>
     </changeSet>

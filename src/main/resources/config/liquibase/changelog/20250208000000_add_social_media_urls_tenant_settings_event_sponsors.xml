@@ -8,73 +8,73 @@
         Add social media URL columns to tenant_settings (all six).
         Schema: varchar(1024) NULL. Only add if column does not exist.
     -->
-    <changeSet id="20250208000000-1" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="tenant_settings" columnName="facebook_url"/>
-            </not>
+    <changeSet id="20250208000000-1" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="tenant_settings"/>
+        <not>
+        <columnExists tableName="tenant_settings" columnName="facebook_url"/>
+        </not>
         </preConditions>
-        <addColumn tableName="tenant_settings">
+<addColumn tableName="tenant_settings">
             <column name="facebook_url" type="varchar(1024)">
                 <constraints nullable="true"/>
             </column>
         </addColumn>
     </changeSet>
-    <changeSet id="20250208000000-2" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="tenant_settings" columnName="instagram_url"/>
-            </not>
+    <changeSet id="20250208000000-2" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="tenant_settings"/>
+        <not>
+        <columnExists tableName="tenant_settings" columnName="instagram_url"/>
+        </not>
         </preConditions>
-        <addColumn tableName="tenant_settings">
+<addColumn tableName="tenant_settings">
             <column name="instagram_url" type="varchar(1024)">
                 <constraints nullable="true"/>
             </column>
         </addColumn>
     </changeSet>
-    <changeSet id="20250208000000-3" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="tenant_settings" columnName="twitter_url"/>
-            </not>
+    <changeSet id="20250208000000-3" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="tenant_settings"/>
+        <not>
+        <columnExists tableName="tenant_settings" columnName="twitter_url"/>
+        </not>
         </preConditions>
-        <addColumn tableName="tenant_settings">
+<addColumn tableName="tenant_settings">
             <column name="twitter_url" type="varchar(1024)">
                 <constraints nullable="true"/>
             </column>
         </addColumn>
     </changeSet>
-    <changeSet id="20250208000000-4" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="tenant_settings" columnName="linkedin_url"/>
-            </not>
+    <changeSet id="20250208000000-4" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="tenant_settings"/>
+        <not>
+        <columnExists tableName="tenant_settings" columnName="linkedin_url"/>
+        </not>
         </preConditions>
-        <addColumn tableName="tenant_settings">
+<addColumn tableName="tenant_settings">
             <column name="linkedin_url" type="varchar(1024)">
                 <constraints nullable="true"/>
             </column>
         </addColumn>
     </changeSet>
-    <changeSet id="20250208000000-5" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="tenant_settings" columnName="youtube_url"/>
-            </not>
+    <changeSet id="20250208000000-5" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="tenant_settings"/>
+        <not>
+        <columnExists tableName="tenant_settings" columnName="youtube_url"/>
+        </not>
         </preConditions>
-        <addColumn tableName="tenant_settings">
+<addColumn tableName="tenant_settings">
             <column name="youtube_url" type="varchar(1024)">
                 <constraints nullable="true"/>
             </column>
         </addColumn>
     </changeSet>
-    <changeSet id="20250208000000-6" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="tenant_settings" columnName="tiktok_url"/>
-            </not>
+    <changeSet id="20250208000000-6" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="tenant_settings"/>
+        <not>
+        <columnExists tableName="tenant_settings" columnName="tiktok_url"/>
+        </not>
         </preConditions>
-        <addColumn tableName="tenant_settings">
+<addColumn tableName="tenant_settings">
             <column name="tiktok_url" type="varchar(1024)">
                 <constraints nullable="true"/>
             </column>
@@ -84,25 +84,25 @@
     <!--
         Add missing social media URL columns to event_sponsors (youtube_url, tiktok_url).
     -->
-    <changeSet id="20250208000000-7" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="event_sponsors" columnName="youtube_url"/>
-            </not>
+    <changeSet id="20250208000000-7" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_sponsors"/>
+        <not>
+        <columnExists tableName="event_sponsors" columnName="youtube_url"/>
+        </not>
         </preConditions>
-        <addColumn tableName="event_sponsors">
+<addColumn tableName="event_sponsors">
             <column name="youtube_url" type="varchar(1024)">
                 <constraints nullable="true"/>
             </column>
         </addColumn>
     </changeSet>
-    <changeSet id="20250208000000-8" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="event_sponsors" columnName="tiktok_url"/>
-            </not>
+    <changeSet id="20250208000000-8" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_sponsors"/>
+        <not>
+        <columnExists tableName="event_sponsors" columnName="tiktok_url"/>
+        </not>
         </preConditions>
-        <addColumn tableName="event_sponsors">
+<addColumn tableName="event_sponsors">
             <column name="tiktok_url" type="varchar(1024)">
                 <constraints nullable="true"/>
             </column>

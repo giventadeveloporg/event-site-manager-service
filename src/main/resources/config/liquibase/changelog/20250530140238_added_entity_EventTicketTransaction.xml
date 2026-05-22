@@ -122,12 +122,6 @@
             <column name="updated_at" type="${datetimeType}">
                 <constraints nullable="false" />
             </column>
-            <column name="event_id" type="bigint">
-                <constraints nullable="true" />
-            </column>
-            <column name="user_id" type="bigint">
-                <constraints nullable="true" />
-            </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
         <dropDefaultValue tableName="event_ticket_transaction" columnName="purchase_date" columnDataType="${datetimeType}"/>

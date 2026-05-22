@@ -67,6 +67,8 @@ public class EventDetailsCriteria implements Serializable, Criteria {
 
     private BooleanFilter isSportsEvent;
 
+    private BooleanFilter isCompetitionEvent;
+
     private BooleanFilter isLive;
 
     private BooleanFilter isFeaturedEvent;
@@ -114,6 +116,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.enableQrCode = other.enableQrCode == null ? null : other.enableQrCode.copy();
         this.isRegistrationRequired = other.isRegistrationRequired == null ? null : other.isRegistrationRequired.copy();
         this.isSportsEvent = other.isSportsEvent == null ? null : other.isSportsEvent.copy();
+        this.isCompetitionEvent = other.isCompetitionEvent == null ? null : other.isCompetitionEvent.copy();
         this.isLive = other.isLive == null ? null : other.isLive.copy();
         this.isFeaturedEvent = other.optionalIsFeaturedEvent().map(BooleanFilter::copy).orElse(null);
         this.featuredEventPriorityRanking = other.optionalFeaturedEventPriorityRanking().map(IntegerFilter::copy).orElse(null);
@@ -475,6 +478,21 @@ public class EventDetailsCriteria implements Serializable, Criteria {
 
     public void setIsSportsEvent(BooleanFilter isSportsEvent) {
         this.isSportsEvent = isSportsEvent;
+    }
+
+    public BooleanFilter getIsCompetitionEvent() {
+        return isCompetitionEvent;
+    }
+
+    public BooleanFilter isCompetitionEvent() {
+        if (isCompetitionEvent == null) {
+            isCompetitionEvent = new BooleanFilter();
+        }
+        return isCompetitionEvent;
+    }
+
+    public void setIsCompetitionEvent(BooleanFilter isCompetitionEvent) {
+        this.isCompetitionEvent = isCompetitionEvent;
     }
 
     public BooleanFilter getIsLive() {

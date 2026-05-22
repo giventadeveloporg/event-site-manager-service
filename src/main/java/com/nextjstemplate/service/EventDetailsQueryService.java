@@ -157,6 +157,9 @@ public class EventDetailsQueryService extends QueryService<EventDetails> {
             if (criteria.getIsSportsEvent() != null) {
                 specification = specification.and(buildSpecification(criteria.getIsSportsEvent(), EventDetails_.isSportsEvent));
             }
+            if (criteria.getIsCompetitionEvent() != null) {
+                specification = specification.and(buildSpecification(criteria.getIsCompetitionEvent(), EventDetails_.isCompetitionEvent));
+            }
             if (criteria.getIsLive() != null) {
                 specification = specification.and(buildSpecification(criteria.getIsLive(), EventDetails_.isLive));
             }

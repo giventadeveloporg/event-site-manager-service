@@ -80,6 +80,8 @@ public class EventDetailsDTO implements Serializable {
 
     private Boolean isSportsEvent;
 
+    private Boolean isCompetitionEvent;
+
     private Boolean isLive;
 
     @NotNull
@@ -326,6 +328,14 @@ public class EventDetailsDTO implements Serializable {
 
     public void setIsSportsEvent(Boolean isSportsEvent) {
         this.isSportsEvent = isSportsEvent;
+    }
+
+    public Boolean getIsCompetitionEvent() {
+        return isCompetitionEvent;
+    }
+
+    public void setIsCompetitionEvent(Boolean isCompetitionEvent) {
+        this.isCompetitionEvent = isCompetitionEvent;
     }
 
     public Boolean getIsLive() {
