@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260523120000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="team_groups"/>
+            </not>
+        </preConditions>
+        <createTable tableName="team_groups">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="team_type" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slug" type="varchar(100)"/>
+            <column name="section_label" type="varchar(64)"/>
+            <column name="headline" type="varchar(255)"/>
+            <column name="description" type="varchar(2048)"/>
+            <column name="cta_label" type="varchar(128)"/>
+            <column name="cta_href" type="varchar(500)"/>
+            <column name="display_order" type="integer"/>
+            <column name="is_active" type="boolean" defaultValueBoolean="true"/>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="team_groups"
+            baseColumnNames="tenant_id"
+            constraintName="fk_team_groups__tenant_id"
+            referencedTableName="tenant_organization"
+            referencedColumnNames="tenant_id"
+            onDelete="CASCADE"/>
+        <createIndex indexName="idx_team_groups_tenant_id" tableName="team_groups">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_team_groups_tenant_active" tableName="team_groups">
+            <column name="tenant_id"/>
+            <column name="is_active"/>
+        </createIndex>
+        <sql dbms="postgresql">
+            CREATE UNIQUE INDEX ux_team_groups_tenant_slug ON team_groups (tenant_id, slug) WHERE slug IS NOT NULL;
+        </sql>
+        <sql dbms="h2">
+            CREATE UNIQUE INDEX ux_team_groups_tenant_slug ON team_groups (tenant_id, slug);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260523120000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="team_members"/>
+            </not>
+        </preConditions>
+        <createTable tableName="team_members">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="team_group_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_profile_id" type="bigint"/>
+            <column name="first_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="designation" type="varchar(255)"/>
+            <column name="bio" type="varchar(2048)"/>
+            <column name="email" type="varchar(255)"/>
+            <column name="priority_order" type="integer"/>
+            <column name="profile_image_url" type="varchar(500)"/>
+            <column name="expertise" type="varchar(500)"/>
+            <column name="image_background" type="varchar(255)"/>
+            <column name="image_style" type="varchar(100)"/>
+            <column name="department" type="varchar(100)"/>
+            <column name="join_date" type="date"/>
+            <column name="is_active" type="boolean" defaultValueBoolean="true"/>
+            <column name="linkedin_url" type="varchar(500)"/>
+            <column name="twitter_url" type="varchar(500)"/>
+            <column name="website_url" type="varchar(500)"/>
+            <column name="jersey_number" type="integer"/>
+            <column name="position" type="varchar(128)"/>
+            <column name="lineup_subtitle" type="varchar(128)"/>
+            <column name="instrument" type="varchar(128)"/>
+            <column name="vocal_role" type="varchar(128)"/>
+            <column name="created_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="team_members"
+            baseColumnNames="tenant_id"
+            constraintName="fk_team_members__tenant_id"
+            referencedTableName="tenant_organization"
+            referencedColumnNames="tenant_id"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="team_members"
+            baseColumnNames="team_group_id"
+            constraintName="fk_team_members__team_group_id"
+            referencedTableName="team_groups"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="team_members"
+            baseColumnNames="user_profile_id"
+            constraintName="fk_team_members__user_profile_id"
+            referencedTableName="user_profile"
+            referencedColumnNames="id"
+            onDelete="SET NULL"/>
+        <createIndex indexName="idx_team_members_team_group_id" tableName="team_members">
+            <column name="team_group_id"/>
+        </createIndex>
+        <createIndex indexName="idx_team_members_tenant_id" tableName="team_members">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_team_members_user_profile_id" tableName="team_members">
+            <column name="user_profile_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20260523120000-3" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="show_executive_committee_section_in_home_page"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="show_executive_committee_section_in_home_page" type="boolean" defaultValueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260523120000-4" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <columnExists tableName="tenant_settings" columnName="show_executive_committee_section_in_home_page"/>
+            <columnExists tableName="tenant_settings" columnName="show_team_members_section_in_home_page"/>
+        </preConditions>
+        <sql>
+            UPDATE tenant_settings
+            SET show_executive_committee_section_in_home_page = COALESCE(show_team_members_section_in_home_page, false)
+            WHERE show_executive_committee_section_in_home_page IS NULL
+               OR show_executive_committee_section_in_home_page = false;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

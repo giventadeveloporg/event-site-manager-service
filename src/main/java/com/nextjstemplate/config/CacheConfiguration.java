@@ -80,6 +80,8 @@ public class CacheConfiguration {
             createCache(cm, com.nextjstemplate.domain.CommunicationCampaign.class.getName());
             createCache(cm, com.nextjstemplate.domain.EventTicketTransactionItem.class.getName());
             createCache(cm, com.nextjstemplate.domain.ExecutiveCommitteeTeamMember.class.getName());
+            createCache(cm, com.nextjstemplate.domain.TeamGroup.class.getName());
+            createCache(cm, com.nextjstemplate.domain.TeamMember.class.getName());
             // jhipster-needle-ehcache-add-entry
         };
     }
