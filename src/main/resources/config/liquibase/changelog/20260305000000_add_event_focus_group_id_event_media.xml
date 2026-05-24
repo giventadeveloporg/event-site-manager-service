@@ -8,26 +8,25 @@
         Add event_focus_group_id to event_media for Focus Group – Event Media Integration.
         Column: bigint NULL, FK to event_focus_group(id) ON DELETE SET NULL, partial index.
     -->
-    <changeSet id="20260305000000-1" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="event_media" columnName="event_focus_group_id"/>
-            </not>
+    <changeSet id="20260305000000-1" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_media"/>
+        <not>
+        <columnExists tableName="event_media" columnName="event_focus_group_id"/>
+        </not>
         </preConditions>
-        <addColumn tableName="event_media">
+<addColumn tableName="event_media">
             <column name="event_focus_group_id" type="bigint">
                 <constraints nullable="true"/>
             </column>
         </addColumn>
     </changeSet>
 
-    <changeSet id="20260305000000-2" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <foreignKeyConstraintExists foreignKeyName="fk_event_media_event_focus_group_id"/>
-            </not>
+    <changeSet id="20260305000000-2" author="system">        <preConditions onFail="MARK_RAN">
+        <not>
+        <foreignKeyConstraintExists foreignKeyName="fk_event_media_event_focus_group_id"/>
+        </not>
         </preConditions>
-        <addForeignKeyConstraint
+<addForeignKeyConstraint
             baseTableName="event_media"
             baseColumnNames="event_focus_group_id"
             constraintName="fk_event_media_event_focus_group_id"
@@ -36,13 +35,12 @@
             onDelete="SET NULL"/>
     </changeSet>
 
-    <changeSet id="20260305000000-3" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <indexExists indexName="idx_event_media_event_focus_group_id"/>
-            </not>
+    <changeSet id="20260305000000-3" author="system">        <preConditions onFail="MARK_RAN">
+        <not>
+        <indexExists indexName="idx_event_media_event_focus_group_id"/>
+        </not>
         </preConditions>
-        <sql dbms="postgresql">CREATE INDEX idx_event_media_event_focus_group_id ON event_media (event_focus_group_id) WHERE event_focus_group_id IS NOT NULL;</sql>
+<sql dbms="postgresql">CREATE INDEX idx_event_media_event_focus_group_id ON event_media (event_focus_group_id) WHERE event_focus_group_id IS NOT NULL;</sql>
         <rollback>
             <dropIndex tableName="event_media" indexName="idx_event_media_event_focus_group_id"/>
         </rollback>

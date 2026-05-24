@@ -1,0 +1,69 @@
+﻿def patch_event_details() -> None:
+    patches = [
+        (
+            JAVA / "domain/EventDetails.java",
+            [
+                (
+                    "    @Column(name = \"is_sports_event\")\n    private Boolean isSportsEvent;\n",
+                    "    @Column(name = \"is_sports_event\")\n    private Boolean isSportsEvent;\n\n    @Column(name = \"is_competition_event\")\n    private Boolean isCompetitionEvent;\n",
+                ),
+                (
+                    "    public void setIsSportsEvent(Boolean isSportsEvent) {\n        this.isSportsEvent = isSportsEvent;\n    }\n",
+                    "    public void setIsSportsEvent(Boolean isSportsEvent) {\n        this.isSportsEvent = isSportsEvent;\n    }\n\n    public Boolean getIsCompetitionEvent() {\n        return this.isCompetitionEvent;\n    }\n\n    public EventDetails isCompetitionEvent(Boolean isCompetitionEvent) {\n        this.setIsCompetitionEvent(isCompetitionEvent);\n        return this;\n    }\n\n    public void setIsCompetitionEvent(Boolean isCompetitionEvent) {\n        this.isCompetitionEvent = isCompetitionEvent;\n    }\n",
+                ),
+                (
+                    "                \", isSportsEvent='\" + getIsSportsEvent() + \"'\" +\n",
+                    "                \", isSportsEvent='\" + getIsSportsEvent() + \"'\" +\n                \", isCompetitionEvent='\" + getIsCompetitionEvent() + \"'\" +\n",
+                ),
+            ],
+        ),
+        (
+            JAVA / "service/dto/EventDetailsDTO.java",
+            [
+                (
+                    "    private Boolean isSportsEvent;\n",
+                    "    private Boolean isSportsEvent;\n\n    private Boolean isCompetitionEvent;\n",
+                ),
+                (
+                    "    public void setIsSportsEvent(Boolean isSportsEvent) {\n        this.isSportsEvent = isSportsEvent;\n    }\n",
+                    "    public void setIsSportsEvent(Boolean isSportsEvent) {\n        this.isSportsEvent = isSportsEvent;\n    }\n\n    public Boolean getIsCompetitionEvent() {\n        return isCompetitionEvent;\n    }\n\n    public void setIsCompetitionEvent(Boolean isCompetitionEvent) {\n        this.isCompetitionEvent = isCompetitionEvent;\n    }\n",
+                ),
+            ],
+        ),
+        (
+            JAVA / "service/criteria/EventDetailsCriteria.java",
+            [
+                (
+                    "    private BooleanFilter isSportsEvent;\n",
+                    "    private BooleanFilter isSportsEvent;\n\n    private BooleanFilter isCompetitionEvent;\n",
+                ),
+                (
+                    "        this.isSportsEvent = other.isSportsEvent == null ? null : other.isSportsEvent.copy();\n",
+                    "        this.isSportsEvent = other.isSportsEvent == null ? null : other.isSportsEvent.copy();\n        this.isCompetitionEvent = other.isCompetitionEvent == null ? null : other.isCompetitionEvent.copy();\n",
+                ),
+                (
+                    "    public void setIsSportsEvent(BooleanFilter isSportsEvent) {\n        this.isSportsEvent = isSportsEvent;\n    }\n",
+                    "    public void setIsSportsEvent(BooleanFilter isSportsEvent) {\n        this.isSportsEvent = isSportsEvent;\n    }\n\n    public BooleanFilter getIsCompetitionEvent() {\n        return isCompetitionEvent;\n    }\n\n    public BooleanFilter isCompetitionEvent() {\n        if (isCompetitionEvent == null) {\n            isCompetitionEvent = new BooleanFilter();\n        }\n        return isCompetitionEvent;\n    }\n\n    public void setIsCompetitionEvent(BooleanFilter isCompetitionEvent) {\n        this.isCompetitionEvent = isCompetitionEvent;\n    }\n",
+                ),
+            ],
+        ),
+        (
+            JAVA / "service/EventDetailsQueryService.java",
+            [
+                (
+                    "            if (criteria.getIsSportsEvent() != null) {\n                specification = specification.and(buildSpecification(criteria.getIsSportsEvent(), EventDetails_.isSportsEvent));\n            }\n",
+                    "            if (criteria.getIsSportsEvent() != null) {\n                specification = specification.and(buildSpecification(criteria.getIsSportsEvent(), EventDetails_.isSportsEvent));\n            }\n            if (criteria.getIsCompetitionEvent() != null) {\n                specification = specification.and(buildSpecification(criteria.getIsCompetitionEvent(), EventDetails_.isCompetitionEvent));\n            }\n",
+                ),
+            ],
+        ),
+    ]
+    for path, replacements in patches:
+        text = path.read_text(encoding="utf-8")
+        if "isCompetitionEvent" in text:
+            continue
+        for old, new in replacements:
+            if old not in text:
+                raise RuntimeError(f"Patch failed in {path}: missing snippet")
+            text = text.replace(old, new, 1)
+        write(path, text)
+

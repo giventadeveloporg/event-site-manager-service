@@ -121,6 +121,9 @@ public class EventDetails implements Serializable {
     @Column(name = "is_sports_event")
     private Boolean isSportsEvent;
 
+    @Column(name = "is_competition_event")
+    private Boolean isCompetitionEvent;
+
     @Column(name = "is_live")
     private Boolean isLive;
 
@@ -554,6 +557,19 @@ public class EventDetails implements Serializable {
 
     public void setIsSportsEvent(Boolean isSportsEvent) {
         this.isSportsEvent = isSportsEvent;
+    }
+
+    public Boolean getIsCompetitionEvent() {
+        return this.isCompetitionEvent;
+    }
+
+    public EventDetails isCompetitionEvent(Boolean isCompetitionEvent) {
+        this.setIsCompetitionEvent(isCompetitionEvent);
+        return this;
+    }
+
+    public void setIsCompetitionEvent(Boolean isCompetitionEvent) {
+        this.isCompetitionEvent = isCompetitionEvent;
     }
 
     public Boolean getIsLive() {
@@ -1188,6 +1204,7 @@ public class EventDetails implements Serializable {
                 ", enableQrCode='" + getEnableQrCode() + "'" +
                 ", isRegistrationRequired='" + getIsRegistrationRequired() + "'" +
                 ", isSportsEvent='" + getIsSportsEvent() + "'" +
+                ", isCompetitionEvent='" + getIsCompetitionEvent() + "'" +
                 ", isLive='" + getIsLive() + "'" +
                 ", isFeaturedEvent='" + getIsFeaturedEvent() + "'" +
                 ", featuredEventPriorityRanking=" + getFeaturedEventPriorityRanking() +

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260327000000-1" author="system">        <preConditions onFail="MARK_RAN">
+        <not><tableExists tableName="official_document_year_bundle"/></not>
+        </preConditions>
+<createTable tableName="official_document_year_bundle">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="official_document_category_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_year" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cover_event_media_id" type="bigint"/>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint
+            tableName="official_document_year_bundle"
+            columnNames="tenant_id, official_document_category_id, document_year"
+            constraintName="ux_official_document_year_bundle_tenant_category_year"/>
+        <addForeignKeyConstraint
+            baseTableName="official_document_year_bundle"
+            baseColumnNames="official_document_category_id"
+            constraintName="fk_official_document_year_bundle_category"
+            referencedTableName="official_document_category"
+            referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+            baseTableName="official_document_year_bundle"
+            baseColumnNames="cover_event_media_id"
+            constraintName="fk_official_document_year_bundle_cover_media"
+            referencedTableName="event_media"
+            referencedColumnNames="id"/>
+        <createIndex indexName="idx_official_document_year_bundle_tenant_category_year" tableName="official_document_year_bundle">
+            <column name="tenant_id"/>
+            <column name="official_document_category_id"/>
+            <column name="document_year"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

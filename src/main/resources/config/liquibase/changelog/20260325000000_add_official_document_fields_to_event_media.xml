@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260325000000-1" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_media"/>
+        <not><columnExists tableName="event_media" columnName="is_event_management_official_document"/></not>
+        </preConditions>
+<addColumn tableName="event_media">
+            <column name="is_event_management_official_document" type="boolean" defaultValueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260325000000-2" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_media"/>
+        <not><columnExists tableName="event_media" columnName="official_document_category_id"/></not>
+        </preConditions>
+<addColumn tableName="event_media">
+            <column name="official_document_category_id" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260325000000-3" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_media"/>
+        <not><columnExists tableName="event_media" columnName="official_document_year"/></not>
+        </preConditions>
+<addColumn tableName="event_media">
+            <column name="official_document_year" type="integer"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

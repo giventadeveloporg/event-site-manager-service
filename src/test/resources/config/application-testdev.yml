@@ -33,3 +33,23 @@ spring:
       hibernate.jdbc.time_zone: UTC
       hibernate.timezone.default_storage: NORMALIZE
       hibernate.query.fail_on_pagination_over_collection_fetch: true
+
+aws:
+  s3:
+    access-key: test-access-key
+    secret-key: test-secret-key
+    region: us-east-2
+    bucket-name: test-bucket
+
+twilio:
+  account-sid: test-twilio-sid
+  auth-token: test-twilio-token
+  whatsapp-from: whatsapp:+10000000000
+
+qrcode:
+  scan-host:
+    url-prefix: http://localhost:3000/admin
+
+email:
+  host:
+    url-prefix: http://localhost:3000

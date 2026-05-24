@@ -18,6 +18,9 @@
     <property name="uuidType" value="uuid" dbms="h2"/>
     <property name="datetimeType" value="timestamp" dbms="h2"/>
 
+    <!-- Shared id sequence (must run before entity tables that use sequence_generator) -->
+    <include file="config/liquibase/changelog/20250422000000_create_sequence_generator.xml" relativeToChangelogFile="false"/>
+
     <!-- Entity changelogs -->
     <include file="config/liquibase/changelog/20250422195856_added_entity_UserProfile.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250422195956_added_entity_UserSubscription.xml" relativeToChangelogFile="false"/>
@@ -95,11 +98,13 @@
 
     <!-- Additional changelog -->
     <include file="config/liquibase/changelog/20241201_add_email_indexes.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260521120001_align_user_profile_schema_columns.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250101000000_add_home_page_section_fields_to_tenant_settings.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250101000000_add_poll_fields.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20251207_fix_focus_group_description_lob.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250208000000_add_social_media_urls_tenant_settings_event_sponsors.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250211000000_add_eventcube_embed_url_event_details.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260521120000_align_event_details_schema_columns.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260227090010_increase_event_attendee_notes_length.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260227100000_add_homepage_cache_version_tenant_settings.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260227110000_add_tenant_id_executive_committee_team_members.xml" relativeToChangelogFile="false"/>
@@ -110,6 +115,9 @@
     <include file="config/liquibase/changelog/20260328000000_add_official_document_hierarchy_fields.xml" relativeToChangelogFile="false"/>
     <!-- <include file="config/liquibase/changelog/20241211_refactor_tenant_relationship.xml" relativeToChangelogFile="false"/> -->
 
+    <include file="config/liquibase/changelog/20260522000000_add_is_competition_event_event_details.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260522000001_added_entity_event_competition_tables.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260523120000_added_entity_team_groups_and_team_members.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->

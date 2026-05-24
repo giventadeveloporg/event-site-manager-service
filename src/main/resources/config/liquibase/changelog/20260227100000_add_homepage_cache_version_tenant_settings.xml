@@ -8,13 +8,13 @@
         Add homepage_cache_version to tenant_settings.
         Schema: bigint DEFAULT 0 NOT NULL. Only add if column does not exist.
     -->
-    <changeSet id="20260227100000-1" author="system">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <columnExists tableName="tenant_settings" columnName="homepage_cache_version"/>
-            </not>
+    <changeSet id="20260227100000-1" author="system">        <preConditions onFail="MARK_RAN">
+        <tableExists tableName="tenant_settings"/>
+        <not>
+        <columnExists tableName="tenant_settings" columnName="homepage_cache_version"/>
+        </not>
         </preConditions>
-        <addColumn tableName="tenant_settings">
+<addColumn tableName="tenant_settings">
             <column name="homepage_cache_version" type="bigint" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>

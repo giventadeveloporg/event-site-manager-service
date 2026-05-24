@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260521120001-clerk-user-id" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profile"/>
+            <not><columnExists tableName="user_profile" columnName="clerk_user_id"/></not>
+        </preConditions>
+        <addColumn tableName="user_profile">
+            <column name="clerk_user_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120001-clerk-session-id" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profile"/>
+            <not><columnExists tableName="user_profile" columnName="clerk_session_id"/></not>
+        </preConditions>
+        <addColumn tableName="user_profile">
+            <column name="clerk_session_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120001-clerk-org-id" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profile"/>
+            <not><columnExists tableName="user_profile" columnName="clerk_org_id"/></not>
+        </preConditions>
+        <addColumn tableName="user_profile">
+            <column name="clerk_org_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120001-clerk-org-role" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profile"/>
+            <not><columnExists tableName="user_profile" columnName="clerk_org_role"/></not>
+        </preConditions>
+        <addColumn tableName="user_profile">
+            <column name="clerk_org_role" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120001-auth-provider" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profile"/>
+            <not><columnExists tableName="user_profile" columnName="auth_provider"/></not>
+        </preConditions>
+        <addColumn tableName="user_profile">
+            <column name="auth_provider" type="varchar(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120001-auth-provider-user-id" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profile"/>
+            <not><columnExists tableName="user_profile" columnName="auth_provider_user_id"/></not>
+        </preConditions>
+        <addColumn tableName="user_profile">
+            <column name="auth_provider_user_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120001-email-verified" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profile"/>
+            <not><columnExists tableName="user_profile" columnName="email_verified"/></not>
+        </preConditions>
+        <addColumn tableName="user_profile">
+            <column name="email_verified" type="boolean" defaultValueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120001-profile-image-url-clerk" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profile"/>
+            <not><columnExists tableName="user_profile" columnName="profile_image_url_clerk"/></not>
+        </preConditions>
+        <addColumn tableName="user_profile">
+            <column name="profile_image_url_clerk" type="varchar(1024)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120001-last-sign-in-at" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profile"/>
+            <not><columnExists tableName="user_profile" columnName="last_sign_in_at"/></not>
+        </preConditions>
+        <addColumn tableName="user_profile">
+            <column name="last_sign_in_at" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260521120001-clerk-metadata" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="user_profile"/>
+            <not><columnExists tableName="user_profile" columnName="clerk_metadata"/></not>
+        </preConditions>
+        <addColumn tableName="user_profile">
+            <column name="clerk_metadata" type="text"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

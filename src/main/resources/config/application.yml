@@ -243,8 +243,8 @@ aws:
     # Sandbox: 1 email/second
     rate-limit-per-second: 200
   s3:
-    access-key: ${AWS_ACCESS_KEY_ID}
-    secret-key: ${AWS_SECRET_ACCESS_KEY}
+    access-key: ${AWS_ACCESS_KEY_ID:test-access-key}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:test-secret-key}
     region: ${AWS_REGION:us-east-2}
     bucket-name: ${AWS_S3_BUCKET_NAME:eventapp-media-bucket}
 
@@ -253,17 +253,17 @@ aws:
 # ===================================================================
 
 twilio:
-  account-sid: ${TWILIO_ACCOUNT_SID}
-  auth-token: ${TWILIO_AUTH_TOKEN}
-  whatsapp-from: ${TWILIO_WHATSAPP_FROM} # e.g., 'whatsapp:+14155238886'
+  account-sid: ${TWILIO_ACCOUNT_SID:test-twilio-sid}
+  auth-token: ${TWILIO_AUTH_TOKEN:test-twilio-token}
+  whatsapp-from: ${TWILIO_WHATSAPP_FROM:whatsapp:+10000000000} # e.g., 'whatsapp:+14155238886'
 # url prefix for host http://localhost:3000/admin
 qrcode:
   scan-host:
-    url-prefix: ${QRCODE_SCAN_HOST_PREFIX}
+    url-prefix: ${QRCODE_SCAN_HOST_PREFIX:http://localhost:3000/admin}
 
 email:
   host:
-    url-prefix: ${EMAIL_HOST_URL_PREFIX}
+    url-prefix: ${EMAIL_HOST_URL_PREFIX:http://localhost:3000}
   # Tenant-based rate limiting for promotional emails
   # Each tenant can send up to this many emails per second
   tenant:

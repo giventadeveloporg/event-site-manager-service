@@ -95,12 +95,6 @@
             <column name="uploaded_by_id" type="bigint">
                 <constraints nullable="true" />
             </column>
-            <column name="event_id" type="bigint">
-                <constraints nullable="true" />
-            </column>
-            <column name="uploaded_by_id" type="bigint">
-                <constraints nullable="true" />
-            </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
         <dropDefaultValue tableName="event_media" columnName="pre_signed_url_expires_at" columnDataType="${datetimeType}"/>

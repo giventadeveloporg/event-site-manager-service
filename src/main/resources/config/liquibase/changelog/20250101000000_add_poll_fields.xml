@@ -5,9 +5,10 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
 
     <changeSet id="20250101-01-add-event-poll-fields" author="claude">
-        <comment>Add missing fields to event_poll table: isAnonymous, allowMultipleChoices, maxResponsesPerUser, resultsVisibleTo</comment>
-
-        <addColumn tableName="event_poll">
+                <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_poll"/>
+        </preConditions>
+<comment>Add missing fields to event_poll table: isAnonymous, allowMultipleChoices, maxResponsesPerUser, resultsVisibleTo</comment><addColumn tableName="event_poll">
             <column name="is_anonymous" type="boolean" defaultValueBoolean="false">
                 <constraints nullable="true"/>
             </column>
@@ -33,9 +34,10 @@
     </changeSet>
 
     <changeSet id="20250101-02-add-event-poll-response-fields" author="claude">
-        <comment>Add missing fields to event_poll_response table: responseValue, isAnonymous</comment>
-
-        <addColumn tableName="event_poll_response">
+                <preConditions onFail="MARK_RAN">
+        <tableExists tableName="event_poll_response"/>
+        </preConditions>
+<comment>Add missing fields to event_poll_response table: responseValue, isAnonymous</comment><addColumn tableName="event_poll_response">
             <column name="response_value" type="varchar(1000)">
                 <constraints nullable="true"/>
             </column>
