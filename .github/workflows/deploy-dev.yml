@@ -29,9 +29,10 @@ env:
   # Aligned with infrastructure_deployment/deployment-scripts/production-vpc/deploy-docker-image-to-ecs.ps1 (Environment=dev)
   # ECS/ECR deploy region (override via vars.AWS_DEPLOY_REGION if needed)
   AWS_DEPLOY_REGION: ${{ vars.AWS_DEPLOY_REGION || 'us-east-1' }}
-  # S3 runtime region injected into the container (matches application.yml default)
+  # S3/SES runtime region injected into the container (matches application.yml default)
   AWS_S3_REGION: ${{ vars.AWS_REGION || 'us-east-2' }}
-  ECR_REPOSITORY: event-site-manager-dev
+  # Set ECR_REPOSITORY_DEV in GitHub environment variables to override the default repo name
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY_DEV || 'event-site-manager-dev' }}
   ECS_CLUSTER: event-site-manager-dev-cluster
   ECS_SERVICE: event-site-manager-dev-backend-service
   ECS_TASK_DEFINITION: event-site-manager-dev-backend
@@ -72,6 +73,24 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Verify ECR repository exists
+        env:
+          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+        run: |
+          if [ -z "$ECR_REPOSITORY" ]; then
+            echo "::error::ECR_REPOSITORY is empty. Set ECR_REPOSITORY_DEV in the dev environment variables."
+            exit 1
+          fi
+          echo "Checking ECR repository '$ECR_REPOSITORY' in region '${{ env.AWS_DEPLOY_REGION }}'..."
+          if ! aws ecr describe-repositories \
+            --repository-names "$ECR_REPOSITORY" \
+            --region "${{ env.AWS_DEPLOY_REGION }}" >/dev/null 2>&1; then
+            echo "::error::ECR repository '$ECR_REPOSITORY' was not found in account/region ${{ env.AWS_DEPLOY_REGION }}."
+            echo "Create the repository in AWS ECR or set ECR_REPOSITORY_DEV to the existing repository name."
+            exit 1
+          fi
+          echo "ECR repository '$ECR_REPOSITORY' exists."
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
