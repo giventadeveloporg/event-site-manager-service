@@ -1,5 +1,5 @@
 # Deploy Malayalees Backend (Nextjs Template Boot) to AWS ECS Fargate — Production
-# Trigger manually (workflow_dispatch) or by push to a release tag/branch.
+# Trigger manually (workflow_dispatch) or by push/merge to release/v1.0.0 only.
 # See documentation/DEPLOYMENT_AUTOMATION_GIT_ACTIONS/ for setup and troubleshooting.
 # CONTAINER_NAME must match the container "name" in your ECS task definition in AWS.
 
@@ -19,9 +19,7 @@ on:
         default: false
   push:
     branches:
-      - 'release/**'
-    tags:
-      - 'v*'
+      - release/v1.0.0
 
 env:
   # ECS/ECR deploy region (override via vars.AWS_DEPLOY_REGION if needed)
