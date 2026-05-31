@@ -273,4 +273,25 @@ public interface S3Service {
         Integer officialDocumentYear,
         String title
     );
+
+    /**
+     * S3 path for official-document thumbnail images under the category/year folder.
+     */
+    String generateTenantOfficialDocumentThumbnailPath(
+        String tenantId,
+        String categorySlug,
+        Integer officialDocumentYear,
+        String originalFilename
+    );
+
+    /**
+     * Upload a thumbnail image for a tenant official document.
+     */
+    String uploadTenantOfficialDocumentThumbnailFile(
+        MultipartFile file,
+        String tenantId,
+        String categorySlug,
+        Integer officialDocumentYear,
+        String label
+    );
 }

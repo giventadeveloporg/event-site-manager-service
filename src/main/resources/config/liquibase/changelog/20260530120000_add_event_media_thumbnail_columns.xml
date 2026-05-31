@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260530120000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_media"/>
+            <not><columnExists tableName="event_media" columnName="thumbnail_url"/></not>
+        </preConditions>
+        <addColumn tableName="event_media">
+            <column name="thumbnail_url" type="varchar(2048)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260530120000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_media"/>
+            <not><columnExists tableName="event_media" columnName="thumbnail_pre_signed_url"/></not>
+        </preConditions>
+        <addColumn tableName="event_media">
+            <column name="thumbnail_pre_signed_url" type="varchar(2048)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260530120000-3" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_media"/>
+            <not><columnExists tableName="event_media" columnName="thumbnail_pre_signed_url_expires_at"/></not>
+        </preConditions>
+        <addColumn tableName="event_media">
+            <column name="thumbnail_pre_signed_url_expires_at" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

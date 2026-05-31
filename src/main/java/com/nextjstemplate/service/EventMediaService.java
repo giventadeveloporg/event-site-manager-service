@@ -137,6 +137,7 @@ public interface EventMediaService {
         String hierarchyCategoryLabel,
         Integer displayPriority,
         boolean isPublic,
+        MultipartFile thumbnailFile,
         Long userProfileId
     );
 
@@ -155,8 +156,14 @@ public interface EventMediaService {
         String hierarchyCategoryLabel,
         Integer displayPriority,
         boolean isPublic,
+        MultipartFile thumbnailFile,
         Long userProfileId
     );
+
+    /**
+     * Attach or replace thumbnail on an existing official document row.
+     */
+    EventMediaDTO uploadOfficialDocumentThumbnail(Long mediaId, MultipartFile thumbnailFile, Long userProfileId);
 
     List<EventMediaDTO> getEventMediaWithUrls(Long eventId, Long userProfileId, boolean includePrivate);
 
