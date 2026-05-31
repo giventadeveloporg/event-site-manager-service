@@ -1203,6 +1203,7 @@ public class EventMediaResource {
         @RequestParam(value = "hierarchyCategoryLabel", required = false) String hierarchyCategoryLabel,
         @RequestParam(value = "displayPriority", required = false) Integer displayPriority,
         @RequestParam(value = "isPublic", required = false) Boolean isPublic,
+        @RequestParam(value = "thumbnailFile", required = false) MultipartFile thumbnailFile,
         Authentication authentication
     ) throws URISyntaxException {
         if (log.isDebugEnabled()) {
@@ -1230,6 +1231,7 @@ public class EventMediaResource {
             hierarchyCategoryLabel,
             displayPriority,
             isPublicValue,
+            thumbnailFile,
             userProfileId
         );
 
@@ -1261,6 +1263,7 @@ public class EventMediaResource {
         @RequestParam(value = "hierarchyCategoryLabel", required = false) String hierarchyCategoryLabel,
         @RequestParam(value = "displayPriority", required = false) Integer displayPriority,
         @RequestParam(value = "isPublic", required = false) Boolean isPublic,
+        @RequestParam(value = "thumbnailFile", required = false) MultipartFile thumbnailFile,
         Authentication authentication
     ) throws URISyntaxException {
         requireAdmin(authentication);
@@ -1280,6 +1283,7 @@ public class EventMediaResource {
             hierarchyCategoryLabel,
             displayPriority,
             isPublicValue,
+            thumbnailFile,
             userProfileId
         );
 
@@ -1287,6 +1291,21 @@ public class EventMediaResource {
             .ok()
             .headers(HeaderUtil.createAlert(applicationName, "eventMedia.bulkUploaded", String.valueOf(result.size())))
             .body(result);
+    }
+
+    /**
+     * POST /event-medias/{id}/upload-official-document-thumbnail : Attach or replace thumbnail on an official document.
+     */
+    @PostMapping(value = "/{id}/upload-official-document-thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadOfficialDocumentThumbnail(
+        @PathVariable Long id,
+        @RequestParam("thumbnailFile") MultipartFile thumbnailFile,
+        Authentication authentication
+    ) {
+        requireAdmin(authentication);
+        Long userProfileId = getCurrentUserProfileId(authentication);
+        EventMediaDTO result = eventMediaService.uploadOfficialDocumentThumbnail(id, thumbnailFile, userProfileId);
+        return ResponseEntity.ok().body(result);
     }
 
     /**

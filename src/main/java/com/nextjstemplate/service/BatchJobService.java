@@ -3,10 +3,14 @@ package com.nextjstemplate.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nextjstemplate.errors.BatchJobException;
 import com.nextjstemplate.properties.BatchJobProperties;
+import com.nextjstemplate.service.dto.BatchJobExecutionDTO;
+import com.nextjstemplate.service.dto.BatchJobExecutionPageResponseDTO;
 import com.nextjstemplate.service.dto.BatchJobRequest;
 import com.nextjstemplate.service.dto.BatchJobResponse;
 import com.nextjstemplate.service.dto.BatchJobServiceRequest;
 import com.nextjstemplate.service.dto.BatchJobServiceResponse;
+import com.nextjstemplate.service.dto.BatchJobSummaryResponseDTO;
+import com.nextjstemplate.service.dto.ConfiguredBatchJobResponseDTO;
 import com.nextjstemplate.service.dto.ManualPaymentSummaryJobRequest;
 import com.nextjstemplate.service.dto.ManualPaymentSummaryJobResponse;
 import com.nextjstemplate.service.dto.StripeFeesTaxUpdateRequest;
@@ -17,10 +21,14 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -36,6 +44,15 @@ public class BatchJobService {
     private static final String STRIPE_FEES_TAX_UPDATE_ENDPOINT = "/api/batch-jobs/stripe-fees-tax-update";
     private static final String MANUAL_PAYMENT_SUMMARY_ENDPOINT = "/api/batch-jobs/manual-payment-summary";
     private static final String STRIPE_TICKET_BATCH_REFUND_ENDPOINT = "/api/batch-jobs/stripe-ticket-batch-refund";
+    private static final String MONITORING_EXECUTIONS_ENDPOINT = "/api/batch-jobs/executions";
+    private static final String MONITORING_EXECUTION_BY_ID_ENDPOINT = "/api/batch-jobs/executions/{id}";
+    private static final String MONITORING_FAILED_EXECUTIONS_ENDPOINT = "/api/batch-jobs/executions/failed";
+    private static final String MONITORING_RUNNING_EXECUTIONS_ENDPOINT = "/api/batch-jobs/executions/running";
+    private static final String MONITORING_SUMMARY_ENDPOINT = "/api/batch-jobs/summary";
+    private static final String MONITORING_CONFIGURED_JOBS_ENDPOINT = "/api/batch-jobs/configured-jobs";
+    private static final ParameterizedTypeReference<List<BatchJobExecutionDTO>> EXECUTION_LIST_TYPE = new ParameterizedTypeReference<>() {};
+    private static final ParameterizedTypeReference<List<ConfiguredBatchJobResponseDTO>> CONFIGURED_JOBS_LIST_TYPE =
+        new ParameterizedTypeReference<>() {};
     private static final int DEFAULT_BATCH_SIZE = 100;
     private static final int DEFAULT_MAX_SUBSCRIPTIONS = 10000;
     private static final String DEFAULT_ESTIMATED_DURATION = "15-30 minutes";
@@ -368,5 +385,233 @@ public class BatchJobService {
             log.error("Unexpected error triggering Stripe ticket batch refund job", e);
             throw new BatchJobException("Failed to trigger batch job: " + e.getMessage(), "batchjobsubmissionfailed");
         }
+    }
+
+    public BatchJobExecutionPageResponseDTO getExecutions(
+        String status,
+        String jobName,
+        String tenantId,
+        ZonedDateTime startedAfter,
+        ZonedDateTime startedBefore,
+        Integer page,
+        Integer size,
+        String sort,
+        String authHeader
+    ) {
+        requireBatchJobsEnabled();
+        try {
+            BatchJobExecutionPageResponseDTO response = withForwardedAuth(
+                webClient
+                    .get()
+                    .uri(uriBuilder -> {
+                        uriBuilder.path(MONITORING_EXECUTIONS_ENDPOINT);
+                        if (StringUtils.hasText(status)) {
+                            uriBuilder.queryParam("status", status);
+                        }
+                        if (StringUtils.hasText(jobName)) {
+                            uriBuilder.queryParam("jobName", jobName);
+                        }
+                        if (StringUtils.hasText(tenantId)) {
+                            uriBuilder.queryParam("tenantId", tenantId);
+                        }
+                        if (startedAfter != null) {
+                            uriBuilder.queryParam("startedAfter", startedAfter);
+                        }
+                        if (startedBefore != null) {
+                            uriBuilder.queryParam("startedBefore", startedBefore);
+                        }
+                        if (page != null) {
+                            uriBuilder.queryParam("page", page);
+                        }
+                        if (size != null) {
+                            uriBuilder.queryParam("size", size);
+                        }
+                        if (StringUtils.hasText(sort)) {
+                            uriBuilder.queryParam("sort", sort);
+                        }
+                        return uriBuilder.build();
+                    }),
+                authHeader
+            )
+                .retrieve()
+                .bodyToMono(BatchJobExecutionPageResponseDTO.class)
+                .timeout(Duration.ofMillis(batchJobProperties.getTimeout()))
+                .block();
+
+            if (response == null) {
+                throw new BatchJobException("Received null response from batch job service", "nullresponse");
+            }
+            return response;
+        } catch (WebClientResponseException e) {
+            log.error("HTTP error fetching batch job executions: {} - {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new BatchJobException("HTTP " + e.getStatusCode() + ": " + e.getMessage(), "batchjobhttperror");
+        } catch (BatchJobException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error fetching batch job executions", e);
+            throw new BatchJobException("Failed to fetch batch job executions: " + e.getMessage(), "batchjobfetchfailed");
+        }
+    }
+
+    public BatchJobExecutionDTO getExecution(Long id, String authHeader) {
+        requireBatchJobsEnabled();
+        try {
+            BatchJobExecutionDTO response = withForwardedAuth(webClient.get().uri(MONITORING_EXECUTION_BY_ID_ENDPOINT, id), authHeader)
+                .retrieve()
+                .bodyToMono(BatchJobExecutionDTO.class)
+                .timeout(Duration.ofMillis(batchJobProperties.getTimeout()))
+                .block();
+
+            if (response == null) {
+                throw new BatchJobException("Received null response from batch job service", "nullresponse");
+            }
+            return response;
+        } catch (WebClientResponseException.NotFound e) {
+            throw new BatchJobException("Batch job execution not found: " + id, "batchjobnotfound");
+        } catch (WebClientResponseException e) {
+            log.error("HTTP error fetching batch job execution {}: {} - {}", id, e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new BatchJobException("HTTP " + e.getStatusCode() + ": " + e.getMessage(), "batchjobhttperror");
+        } catch (BatchJobException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error fetching batch job execution {}", id, e);
+            throw new BatchJobException("Failed to fetch batch job execution: " + e.getMessage(), "batchjobfetchfailed");
+        }
+    }
+
+    public List<BatchJobExecutionDTO> getFailedExecutions(Integer limit, String authHeader) {
+        requireBatchJobsEnabled();
+        return fetchExecutionList(MONITORING_FAILED_EXECUTIONS_ENDPOINT, limit, authHeader);
+    }
+
+    public List<BatchJobExecutionDTO> getRunningExecutions(Integer limit, String authHeader) {
+        requireBatchJobsEnabled();
+        return fetchExecutionList(MONITORING_RUNNING_EXECUTIONS_ENDPOINT, limit, authHeader);
+    }
+
+    public BatchJobSummaryResponseDTO getSummary(
+        String tenantId,
+        ZonedDateTime startedAfter,
+        ZonedDateTime startedBefore,
+        String authHeader
+    ) {
+        requireBatchJobsEnabled();
+        try {
+            BatchJobSummaryResponseDTO response = withForwardedAuth(
+                webClient
+                    .get()
+                    .uri(uriBuilder -> {
+                        uriBuilder.path(MONITORING_SUMMARY_ENDPOINT);
+                        if (StringUtils.hasText(tenantId)) {
+                            uriBuilder.queryParam("tenantId", tenantId);
+                        }
+                        if (startedAfter != null) {
+                            uriBuilder.queryParam("startedAfter", startedAfter);
+                        }
+                        if (startedBefore != null) {
+                            uriBuilder.queryParam("startedBefore", startedBefore);
+                        }
+                        return uriBuilder.build();
+                    }),
+                authHeader
+            )
+                .retrieve()
+                .bodyToMono(BatchJobSummaryResponseDTO.class)
+                .timeout(Duration.ofMillis(batchJobProperties.getTimeout()))
+                .block();
+
+            if (response == null) {
+                throw new BatchJobException("Received null response from batch job service", "nullresponse");
+            }
+            return response;
+        } catch (WebClientResponseException e) {
+            log.error("HTTP error fetching batch job summary: {} - {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new BatchJobException("HTTP " + e.getStatusCode() + ": " + e.getMessage(), "batchjobhttperror");
+        } catch (BatchJobException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error fetching batch job summary", e);
+            throw new BatchJobException("Failed to fetch batch job summary: " + e.getMessage(), "batchjobfetchfailed");
+        }
+    }
+
+    public List<ConfiguredBatchJobResponseDTO> getConfiguredJobs(String authHeader) {
+        requireBatchJobsEnabled();
+        try {
+            List<ConfiguredBatchJobResponseDTO> response = withForwardedAuth(
+                webClient.get().uri(MONITORING_CONFIGURED_JOBS_ENDPOINT),
+                authHeader
+            )
+                .retrieve()
+                .bodyToMono(CONFIGURED_JOBS_LIST_TYPE)
+                .timeout(Duration.ofMillis(batchJobProperties.getTimeout()))
+                .block();
+
+            if (response == null) {
+                throw new BatchJobException("Received null response from batch job service", "nullresponse");
+            }
+            return response;
+        } catch (WebClientResponseException e) {
+            log.error("HTTP error fetching configured batch jobs: {} - {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new BatchJobException("HTTP " + e.getStatusCode() + ": " + e.getMessage(), "batchjobhttperror");
+        } catch (BatchJobException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error fetching configured batch jobs", e);
+            throw new BatchJobException("Failed to fetch configured batch jobs: " + e.getMessage(), "batchjobfetchfailed");
+        }
+    }
+
+    private List<BatchJobExecutionDTO> fetchExecutionList(String endpoint, Integer limit, String authHeader) {
+        try {
+            List<BatchJobExecutionDTO> response = withForwardedAuth(
+                webClient
+                    .get()
+                    .uri(uriBuilder -> {
+                        uriBuilder.path(endpoint);
+                        if (limit != null) {
+                            uriBuilder.queryParam("limit", limit);
+                        }
+                        return uriBuilder.build();
+                    }),
+                authHeader
+            )
+                .retrieve()
+                .bodyToMono(EXECUTION_LIST_TYPE)
+                .timeout(Duration.ofMillis(batchJobProperties.getTimeout()))
+                .block();
+
+            if (response == null) {
+                throw new BatchJobException("Received null response from batch job service", "nullresponse");
+            }
+            return response;
+        } catch (WebClientResponseException e) {
+            log.error(
+                "HTTP error fetching batch job executions from {}: {} - {}",
+                endpoint,
+                e.getStatusCode(),
+                e.getResponseBodyAsString(),
+                e
+            );
+            throw new BatchJobException("HTTP " + e.getStatusCode() + ": " + e.getMessage(), "batchjobhttperror");
+        } catch (BatchJobException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error fetching batch job executions from {}", endpoint, e);
+            throw new BatchJobException("Failed to fetch batch job executions: " + e.getMessage(), "batchjobfetchfailed");
+        }
+    }
+
+    private void requireBatchJobsEnabled() {
+        if (!batchJobProperties.getEnabled()) {
+            throw new BatchJobException("Batch job service is disabled", "batchjobdisabled");
+        }
+    }
+
+    private WebClient.RequestHeadersSpec<?> withForwardedAuth(WebClient.RequestHeadersSpec<?> spec, String authHeader) {
+        if (StringUtils.hasText(authHeader)) {
+            return spec.header(HttpHeaders.AUTHORIZATION, authHeader);
+        }
+        return spec;
     }
 }

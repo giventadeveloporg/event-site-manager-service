@@ -1216,6 +1216,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         String hierarchyCategoryLabel,
         Integer displayPriority,
         boolean isPublic,
+        MultipartFile thumbnailFile,
         Long userProfileId
     ) {
         if (file == null || file.isEmpty()) {
@@ -1254,6 +1255,9 @@ public class EventMediaServiceImpl implements EventMediaService {
         eventMedia.setFileUrl(s3Url);
         eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(s3Url, 1));
         eventMedia.setFileSize((int) file.getSize());
+        if (file.getContentType() != null && !file.getContentType().isBlank()) {
+            eventMedia.setContentType(file.getContentType());
+        }
         eventMedia.setIsPublic(isPublic);
 
         eventMedia.setEventFlyer(false);
@@ -1278,6 +1282,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         eventMedia.setHierarchyCategoryLabel(hierarchyCategoryLabel);
         eventMedia.setDisplayPriority(displayPriority);
 
+        applyOptionalOfficialDocumentThumbnail(thumbnailFile, eventMedia, tenantId, normalizedSlug, officialDocumentYear, title);
+
         eventMedia.setCreatedAt(ZonedDateTime.now());
         eventMedia.setUpdatedAt(ZonedDateTime.now());
 
@@ -1298,6 +1304,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         String hierarchyCategoryLabel,
         Integer displayPriority,
         boolean isPublic,
+        MultipartFile thumbnailFile,
         Long userProfileId
     ) {
         if (files == null || files.isEmpty()) {
@@ -1351,6 +1358,9 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setFileUrl(s3Url);
             eventMedia.setPreSignedUrl(s3Service.generatePresignedUrl(s3Url, 1));
             eventMedia.setFileSize((int) file.getSize());
+            if (file.getContentType() != null && !file.getContentType().isBlank()) {
+                eventMedia.setContentType(file.getContentType());
+            }
             eventMedia.setIsPublic(isPublic);
 
             eventMedia.setEventFlyer(false);
@@ -1375,6 +1385,8 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setHierarchyCategoryLabel(hierarchyCategoryLabel);
             eventMedia.setDisplayPriority(displayPriority);
 
+            applyOptionalOfficialDocumentThumbnail(thumbnailFile, eventMedia, tenantId, normalizedSlug, officialDocumentYear, title);
+
             eventMedia.setCreatedAt(ZonedDateTime.now());
             eventMedia.setUpdatedAt(ZonedDateTime.now());
 
@@ -1384,6 +1396,74 @@ public class EventMediaServiceImpl implements EventMediaService {
 
         officialDocumentYearBundleService.ensureBundleForUpload(tenantId, category.getId(), officialDocumentYear);
         return result;
+    }
+
+    @Override
+    public EventMediaDTO uploadOfficialDocumentThumbnail(Long mediaId, MultipartFile thumbnailFile, Long userProfileId) {
+        if (mediaId == null) {
+            throw new BadRequestAlertException("Media id is required", "eventMedia", "idrequired");
+        }
+        validateThumbnailFile(thumbnailFile);
+
+        EventMedia eventMedia = eventMediaRepository
+            .findById(mediaId)
+            .orElseThrow(() -> new BadRequestAlertException("EventMedia not found", "eventMedia", "idnotfound"));
+
+        if (!Boolean.TRUE.equals(eventMedia.getIsEventManagementOfficialDocument())) {
+            throw new BadRequestAlertException("Not an official document", "eventMedia", "notofficialdocument");
+        }
+
+        String tenantId = eventMedia.getTenantId();
+        Integer year = eventMedia.getOfficialDocumentYear();
+        Long categoryId = eventMedia.getOfficialDocumentCategoryId();
+        if (tenantId == null || tenantId.isBlank() || year == null || categoryId == null) {
+            throw new BadRequestAlertException("Official document metadata incomplete", "eventMedia", "metadatarequired");
+        }
+
+        OfficialDocumentCategory category = officialDocumentCategoryRepository
+            .findById(categoryId)
+            .orElseThrow(() -> new BadRequestAlertException("Invalid category", "eventMedia", "invalidcategory"));
+
+        String categorySlug = normalizeOfficialDocumentCategorySlug(category.getSlug());
+        applyOptionalOfficialDocumentThumbnail(thumbnailFile, eventMedia, tenantId, categorySlug, year, eventMedia.getTitle());
+        eventMedia.setUploadedById(userProfileId);
+        eventMedia.setUpdatedAt(ZonedDateTime.now());
+        eventMedia = eventMediaRepository.save(eventMedia);
+        return eventMediaMapper.toDto(eventMedia);
+    }
+
+    private void applyOptionalOfficialDocumentThumbnail(
+        MultipartFile thumbnailFile,
+        EventMedia eventMedia,
+        String tenantId,
+        String categorySlug,
+        Integer officialDocumentYear,
+        String label
+    ) {
+        if (thumbnailFile == null || thumbnailFile.isEmpty()) {
+            return;
+        }
+        validateThumbnailFile(thumbnailFile);
+        String thumbUrl = s3Service.uploadTenantOfficialDocumentThumbnailFile(
+            thumbnailFile,
+            tenantId,
+            categorySlug,
+            officialDocumentYear,
+            label
+        );
+        eventMedia.setThumbnailUrl(thumbUrl);
+        eventMedia.setThumbnailPreSignedUrl(s3Service.generatePresignedUrl(thumbUrl, 1));
+        eventMedia.setThumbnailPreSignedUrlExpiresAt(ZonedDateTime.now().plusHours(1));
+    }
+
+    private void validateThumbnailFile(MultipartFile thumbnailFile) {
+        if (thumbnailFile == null || thumbnailFile.isEmpty()) {
+            throw new BadRequestAlertException("Thumbnail file cannot be empty", "eventMedia", "thumbnailempty");
+        }
+        String contentType = thumbnailFile.getContentType();
+        if (contentType == null || !contentType.toLowerCase().startsWith("image/")) {
+            throw new BadRequestAlertException("Thumbnail must be an image", "eventMedia", "thumbnailnotimage");
+        }
     }
 
     private String normalizeOfficialDocumentCategorySlug(String categorySlug) {

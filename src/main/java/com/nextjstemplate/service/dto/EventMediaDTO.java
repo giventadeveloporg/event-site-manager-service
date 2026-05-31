@@ -63,6 +63,14 @@ public class EventMediaDTO implements Serializable {
 
     private ZonedDateTime preSignedUrlExpiresAt;
 
+    @Size(max = 2048)
+    private String thumbnailUrl;
+
+    @Size(max = 2048)
+    private String thumbnailPreSignedUrl;
+
+    private ZonedDateTime thumbnailPreSignedUrlExpiresAt;
+
     @Size(max = 500)
     private String altText;
 
@@ -280,6 +288,30 @@ public class EventMediaDTO implements Serializable {
 
     public void setPreSignedUrlExpiresAt(ZonedDateTime preSignedUrlExpiresAt) {
         this.preSignedUrlExpiresAt = preSignedUrlExpiresAt;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public String getThumbnailPreSignedUrl() {
+        return thumbnailPreSignedUrl;
+    }
+
+    public void setThumbnailPreSignedUrl(String thumbnailPreSignedUrl) {
+        this.thumbnailPreSignedUrl = thumbnailPreSignedUrl;
+    }
+
+    public ZonedDateTime getThumbnailPreSignedUrlExpiresAt() {
+        return thumbnailPreSignedUrlExpiresAt;
+    }
+
+    public void setThumbnailPreSignedUrlExpiresAt(ZonedDateTime thumbnailPreSignedUrlExpiresAt) {
+        this.thumbnailPreSignedUrlExpiresAt = thumbnailPreSignedUrlExpiresAt;
     }
 
     public String getAltText() {

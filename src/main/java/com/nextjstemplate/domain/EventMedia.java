@@ -92,6 +92,17 @@ public class EventMedia implements Serializable {
     @Column(name = "pre_signed_url_expires_at")
     private ZonedDateTime preSignedUrlExpiresAt;
 
+    @Size(max = 2048)
+    @Column(name = "thumbnail_url", length = 2048)
+    private String thumbnailUrl;
+
+    @Size(max = 2048)
+    @Column(name = "thumbnail_pre_signed_url", length = 2048)
+    private String thumbnailPreSignedUrl;
+
+    @Column(name = "thumbnail_pre_signed_url_expires_at")
+    private ZonedDateTime thumbnailPreSignedUrlExpiresAt;
+
     @Size(max = 500)
     @Column(name = "alt_text", length = 500)
     private String altText;
@@ -416,6 +427,45 @@ public class EventMedia implements Serializable {
 
     public void setPreSignedUrlExpiresAt(ZonedDateTime preSignedUrlExpiresAt) {
         this.preSignedUrlExpiresAt = preSignedUrlExpiresAt;
+    }
+
+    public String getThumbnailUrl() {
+        return this.thumbnailUrl;
+    }
+
+    public EventMedia thumbnailUrl(String thumbnailUrl) {
+        this.setThumbnailUrl(thumbnailUrl);
+        return this;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public String getThumbnailPreSignedUrl() {
+        return this.thumbnailPreSignedUrl;
+    }
+
+    public EventMedia thumbnailPreSignedUrl(String thumbnailPreSignedUrl) {
+        this.setThumbnailPreSignedUrl(thumbnailPreSignedUrl);
+        return this;
+    }
+
+    public void setThumbnailPreSignedUrl(String thumbnailPreSignedUrl) {
+        this.thumbnailPreSignedUrl = thumbnailPreSignedUrl;
+    }
+
+    public ZonedDateTime getThumbnailPreSignedUrlExpiresAt() {
+        return this.thumbnailPreSignedUrlExpiresAt;
+    }
+
+    public EventMedia thumbnailPreSignedUrlExpiresAt(ZonedDateTime thumbnailPreSignedUrlExpiresAt) {
+        this.setThumbnailPreSignedUrlExpiresAt(thumbnailPreSignedUrlExpiresAt);
+        return this;
+    }
+
+    public void setThumbnailPreSignedUrlExpiresAt(ZonedDateTime thumbnailPreSignedUrlExpiresAt) {
+        this.thumbnailPreSignedUrlExpiresAt = thumbnailPreSignedUrlExpiresAt;
     }
 
     public String getAltText() {
