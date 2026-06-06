@@ -8,5 +8,7 @@ import org.springframework.stereotype.Repository;
  * Spring Data JPA repository for the EventCompetitionResult entity.
  */
 @Repository
-public interface EventCompetitionResultRepository extends JpaRepository<EventCompetitionResult, Long>, JpaSpecificationExecutor<EventCompetitionResult> {
+public interface EventCompetitionResultRepository
+    extends JpaRepository<EventCompetitionResult, Long>, JpaSpecificationExecutor<EventCompetitionResult> {
+    boolean existsByCompetitionIdAndPlacementAndIsPublishedTrueAndIdNot(Long competitionId, Integer placement, Long id);
 }

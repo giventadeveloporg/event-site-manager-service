@@ -1,11 +1,11 @@
 package com.nextjstemplate.service.dto;
 
-import jakarta.validation.constraints.*;
-import java.io.Serializable;
-import java.util.Objects;
-import java.time.ZonedDateTime;
 import com.nextjstemplate.domain.enumeration.*;
 import com.nextjstemplate.service.dto.EventDetailsDTO;
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+import java.time.ZonedDateTime;
+import java.util.Objects;
 
 /**
  * A DTO for the {@link com.nextjstemplate.domain.EventCompetitionSettings} entity.
@@ -42,6 +42,10 @@ public class EventCompetitionSettingsDTO implements Serializable {
     @NotNull
     private Integer pointsThird;
 
+    private Integer pointsFourth;
+
+    private Integer defaultMaxPlacements;
+
     @NotNull
     private Boolean championEnabled;
 
@@ -53,6 +57,8 @@ public class EventCompetitionSettingsDTO implements Serializable {
     private CompetitionResultsDisplayMode resultsDisplayMode;
 
     private String eligibilityText;
+
+    private ZonedDateTime winnersPublishedEmailSentAt;
 
     @NotNull
     private ZonedDateTime createdAt;
@@ -142,6 +148,22 @@ public class EventCompetitionSettingsDTO implements Serializable {
         this.pointsThird = pointsThird;
     }
 
+    public Integer getPointsFourth() {
+        return pointsFourth;
+    }
+
+    public void setPointsFourth(Integer pointsFourth) {
+        this.pointsFourth = pointsFourth;
+    }
+
+    public Integer getDefaultMaxPlacements() {
+        return defaultMaxPlacements;
+    }
+
+    public void setDefaultMaxPlacements(Integer defaultMaxPlacements) {
+        this.defaultMaxPlacements = defaultMaxPlacements;
+    }
+
     public Boolean getChampionEnabled() {
         return championEnabled;
     }
@@ -180,6 +202,14 @@ public class EventCompetitionSettingsDTO implements Serializable {
 
     public void setEligibilityText(String eligibilityText) {
         this.eligibilityText = eligibilityText;
+    }
+
+    public ZonedDateTime getWinnersPublishedEmailSentAt() {
+        return winnersPublishedEmailSentAt;
+    }
+
+    public void setWinnersPublishedEmailSentAt(ZonedDateTime winnersPublishedEmailSentAt) {
+        this.winnersPublishedEmailSentAt = winnersPublishedEmailSentAt;
     }
 
     public ZonedDateTime getCreatedAt() {

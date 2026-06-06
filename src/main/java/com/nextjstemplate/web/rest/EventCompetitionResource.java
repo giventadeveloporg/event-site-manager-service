@@ -5,6 +5,7 @@ import com.nextjstemplate.repository.EventCompetitionRepository;
 import com.nextjstemplate.service.EventCompetitionQueryService;
 import com.nextjstemplate.service.EventCompetitionService;
 import com.nextjstemplate.service.criteria.EventCompetitionCriteria;
+import com.nextjstemplate.service.dto.CompetitionEligibilityCheckDTO;
 import com.nextjstemplate.service.dto.EventCompetitionDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -43,7 +44,11 @@ public class EventCompetitionResource {
 
     private final EventCompetitionQueryService eventCompetitionQueryService;
 
-    public EventCompetitionResource(EventCompetitionService eventCompetitionService, EventCompetitionRepository eventCompetitionRepository, EventCompetitionQueryService eventCompetitionQueryService) {
+    public EventCompetitionResource(
+        EventCompetitionService eventCompetitionService,
+        EventCompetitionRepository eventCompetitionRepository,
+        EventCompetitionQueryService eventCompetitionQueryService
+    ) {
         this.eventCompetitionService = eventCompetitionService;
         this.eventCompetitionRepository = eventCompetitionRepository;
         this.eventCompetitionQueryService = eventCompetitionQueryService;
@@ -62,7 +67,10 @@ public class EventCompetitionResource {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EventCompetitionDTO> update(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody EventCompetitionDTO dto) throws URISyntaxException {
+    public ResponseEntity<EventCompetitionDTO> update(
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody EventCompetitionDTO dto
+    ) throws URISyntaxException {
         if (dto.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -72,11 +80,17 @@ public class EventCompetitionResource {
         if (!eventCompetitionRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-        return ResponseEntity.ok().headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, dto.getId().toString())).body(eventCompetitionService.update(dto));
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, dto.getId().toString()))
+            .body(eventCompetitionService.update(dto));
     }
 
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<EventCompetitionDTO> partialUpdate(@PathVariable(value = "id", required = false) final Long id, @NotNull @RequestBody EventCompetitionDTO dto) throws URISyntaxException {
+    public ResponseEntity<EventCompetitionDTO> partialUpdate(
+        @PathVariable(value = "id", required = false) final Long id,
+        @NotNull @RequestBody EventCompetitionDTO dto
+    ) throws URISyntaxException {
         if (dto.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -87,11 +101,17 @@ public class EventCompetitionResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
         Optional<EventCompetitionDTO> result = eventCompetitionService.partialUpdate(dto);
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, dto.getId().toString()));
+        return ResponseUtil.wrapOrNotFound(
+            result,
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, dto.getId().toString())
+        );
     }
 
     @GetMapping("")
-    public ResponseEntity<List<EventCompetitionDTO>> getAll(EventCompetitionCriteria criteria, @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+    public ResponseEntity<List<EventCompetitionDTO>> getAll(
+        EventCompetitionCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
         Page<EventCompetitionDTO> page = eventCompetitionQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -108,9 +128,20 @@ public class EventCompetitionResource {
         return ResponseUtil.wrapOrNotFound(dto);
     }
 
+    @GetMapping("/{id}/eligibility-check")
+    public ResponseEntity<CompetitionEligibilityCheckDTO> checkEligibility(
+        @PathVariable Long id,
+        @RequestParam(name = "participantProfileId.equals") Long participantProfileId
+    ) {
+        return ResponseEntity.ok(eventCompetitionService.checkEligibility(id, participantProfileId));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         eventCompetitionService.delete(id);
-        return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
+        return ResponseEntity
+            .noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .build();
     }
 }

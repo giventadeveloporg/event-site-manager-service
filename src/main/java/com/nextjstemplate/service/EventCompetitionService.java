@@ -1,5 +1,6 @@
 package com.nextjstemplate.service;
 
+import com.nextjstemplate.service.dto.CompetitionEligibilityCheckDTO;
 import com.nextjstemplate.service.dto.EventCompetitionDTO;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -20,4 +21,6 @@ public interface EventCompetitionService {
     Optional<EventCompetitionDTO> findOne(Long id);
 
     void delete(Long id);
+
+    CompetitionEligibilityCheckDTO checkEligibility(Long competitionId, Long participantProfileId);
 }

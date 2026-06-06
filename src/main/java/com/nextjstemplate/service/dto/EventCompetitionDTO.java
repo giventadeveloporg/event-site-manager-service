@@ -1,13 +1,13 @@
 package com.nextjstemplate.service.dto;
 
+import com.nextjstemplate.domain.enumeration.*;
+import com.nextjstemplate.service.dto.EventCompetitionDayDTO;
+import com.nextjstemplate.service.dto.EventDetailsDTO;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
-import java.util.Objects;
-import java.time.ZonedDateTime;
 import java.math.BigDecimal;
-import com.nextjstemplate.domain.enumeration.*;
-import com.nextjstemplate.service.dto.EventDetailsDTO;
-import com.nextjstemplate.service.dto.EventCompetitionDayDTO;
+import java.time.ZonedDateTime;
+import java.util.Objects;
 
 /**
  * A DTO for the {@link com.nextjstemplate.domain.EventCompetition} entity.
@@ -63,6 +63,24 @@ public class EventCompetitionDTO implements Serializable {
 
     @NotNull
     private Boolean isActive;
+
+    private CompetitionDisciplineCode disciplineCode;
+
+    private Integer minAge;
+
+    private Integer maxAge;
+
+    private Integer minGrade;
+
+    private Integer maxGrade;
+
+    private Integer maxPlacements;
+
+    private ZonedDateTime registrationDeadline;
+
+    private String rulesMarkdown;
+
+    private Boolean requiresTeamName;
 
     @NotNull
     private ZonedDateTime createdAt;
@@ -216,6 +234,78 @@ public class EventCompetitionDTO implements Serializable {
 
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public CompetitionDisciplineCode getDisciplineCode() {
+        return disciplineCode;
+    }
+
+    public void setDisciplineCode(CompetitionDisciplineCode disciplineCode) {
+        this.disciplineCode = disciplineCode;
+    }
+
+    public Integer getMinAge() {
+        return minAge;
+    }
+
+    public void setMinAge(Integer minAge) {
+        this.minAge = minAge;
+    }
+
+    public Integer getMaxAge() {
+        return maxAge;
+    }
+
+    public void setMaxAge(Integer maxAge) {
+        this.maxAge = maxAge;
+    }
+
+    public Integer getMinGrade() {
+        return minGrade;
+    }
+
+    public void setMinGrade(Integer minGrade) {
+        this.minGrade = minGrade;
+    }
+
+    public Integer getMaxGrade() {
+        return maxGrade;
+    }
+
+    public void setMaxGrade(Integer maxGrade) {
+        this.maxGrade = maxGrade;
+    }
+
+    public Integer getMaxPlacements() {
+        return maxPlacements;
+    }
+
+    public void setMaxPlacements(Integer maxPlacements) {
+        this.maxPlacements = maxPlacements;
+    }
+
+    public ZonedDateTime getRegistrationDeadline() {
+        return registrationDeadline;
+    }
+
+    public void setRegistrationDeadline(ZonedDateTime registrationDeadline) {
+        this.registrationDeadline = registrationDeadline;
+    }
+
+    public String getRulesMarkdown() {
+        return rulesMarkdown;
+    }
+
+    public void setRulesMarkdown(String rulesMarkdown) {
+        this.rulesMarkdown = rulesMarkdown;
+    }
+
+    public Boolean getRequiresTeamName() {
+        return requiresTeamName;
+    }
+
+    public void setRequiresTeamName(Boolean requiresTeamName) {
+        this.requiresTeamName = requiresTeamName;
     }
 
     public ZonedDateTime getCreatedAt() {

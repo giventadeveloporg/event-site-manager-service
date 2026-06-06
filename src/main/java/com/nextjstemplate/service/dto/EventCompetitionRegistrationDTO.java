@@ -1,16 +1,16 @@
 package com.nextjstemplate.service.dto;
 
-import jakarta.validation.constraints.*;
-import java.io.Serializable;
-import java.util.Objects;
-import java.time.ZonedDateTime;
-import java.math.BigDecimal;
 import com.nextjstemplate.domain.enumeration.*;
-import com.nextjstemplate.service.dto.EventDetailsDTO;
 import com.nextjstemplate.service.dto.EventCompetitionDTO;
 import com.nextjstemplate.service.dto.EventCompetitionParticipantDTO;
 import com.nextjstemplate.service.dto.EventCompetitionRegistrationDTO;
+import com.nextjstemplate.service.dto.EventDetailsDTO;
 import com.nextjstemplate.service.dto.UserProfileDTO;
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Objects;
 
 /**
  * A DTO for the {@link com.nextjstemplate.domain.EventCompetitionRegistration} entity.
@@ -35,6 +35,14 @@ public class EventCompetitionRegistrationDTO implements Serializable {
 
     @Size(max = 255)
     private String stripePaymentIntentId;
+
+    @Size(max = 200)
+    private String teamName;
+
+    @Size(max = 200)
+    private String teamDisplayName;
+
+    private Boolean confirmationEmailSent = false;
 
     @NotNull
     private ZonedDateTime createdAt;
@@ -98,6 +106,30 @@ public class EventCompetitionRegistrationDTO implements Serializable {
 
     public void setStripePaymentIntentId(String stripePaymentIntentId) {
         this.stripePaymentIntentId = stripePaymentIntentId;
+    }
+
+    public String getTeamName() {
+        return teamName;
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
+    }
+
+    public String getTeamDisplayName() {
+        return teamDisplayName;
+    }
+
+    public void setTeamDisplayName(String teamDisplayName) {
+        this.teamDisplayName = teamDisplayName;
+    }
+
+    public Boolean getConfirmationEmailSent() {
+        return confirmationEmailSent;
+    }
+
+    public void setConfirmationEmailSent(Boolean confirmationEmailSent) {
+        this.confirmationEmailSent = confirmationEmailSent;
     }
 
     public ZonedDateTime getCreatedAt() {

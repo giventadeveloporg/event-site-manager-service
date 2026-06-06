@@ -1,12 +1,12 @@
 package com.nextjstemplate.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.nextjstemplate.domain.EventDetails;
+import com.nextjstemplate.domain.enumeration.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import com.nextjstemplate.domain.enumeration.*;
-import com.nextjstemplate.domain.EventDetails;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -65,6 +65,12 @@ public class EventCompetitionSettings implements Serializable {
     @Column(name = "points_third")
     private Integer pointsThird;
 
+    @Column(name = "points_fourth")
+    private Integer pointsFourth;
+
+    @Column(name = "default_max_placements")
+    private Integer defaultMaxPlacements;
+
     @NotNull
     @Column(name = "champion_enabled")
     private Boolean championEnabled;
@@ -83,6 +89,9 @@ public class EventCompetitionSettings implements Serializable {
     @Lob
     @Column(name = "eligibility_text")
     private String eligibilityText;
+
+    @Column(name = "winners_published_email_sent_at")
+    private ZonedDateTime winnersPublishedEmailSentAt;
 
     @NotNull
     @Column(name = "created_at")
@@ -213,6 +222,32 @@ public class EventCompetitionSettings implements Serializable {
         this.pointsThird = pointsThird;
     }
 
+    public Integer getPointsFourth() {
+        return this.pointsFourth;
+    }
+
+    public EventCompetitionSettings pointsFourth(Integer pointsFourth) {
+        this.setPointsFourth(pointsFourth);
+        return this;
+    }
+
+    public void setPointsFourth(Integer pointsFourth) {
+        this.pointsFourth = pointsFourth;
+    }
+
+    public Integer getDefaultMaxPlacements() {
+        return this.defaultMaxPlacements;
+    }
+
+    public EventCompetitionSettings defaultMaxPlacements(Integer defaultMaxPlacements) {
+        this.setDefaultMaxPlacements(defaultMaxPlacements);
+        return this;
+    }
+
+    public void setDefaultMaxPlacements(Integer defaultMaxPlacements) {
+        this.defaultMaxPlacements = defaultMaxPlacements;
+    }
+
     public Boolean getChampionEnabled() {
         return this.championEnabled;
     }
@@ -276,6 +311,19 @@ public class EventCompetitionSettings implements Serializable {
 
     public void setEligibilityText(String eligibilityText) {
         this.eligibilityText = eligibilityText;
+    }
+
+    public ZonedDateTime getWinnersPublishedEmailSentAt() {
+        return this.winnersPublishedEmailSentAt;
+    }
+
+    public EventCompetitionSettings winnersPublishedEmailSentAt(ZonedDateTime winnersPublishedEmailSentAt) {
+        this.setWinnersPublishedEmailSentAt(winnersPublishedEmailSentAt);
+        return this;
+    }
+
+    public void setWinnersPublishedEmailSentAt(ZonedDateTime winnersPublishedEmailSentAt) {
+        this.winnersPublishedEmailSentAt = winnersPublishedEmailSentAt;
     }
 
     public ZonedDateTime getCreatedAt() {
