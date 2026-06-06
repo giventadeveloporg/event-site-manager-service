@@ -1,17 +1,17 @@
 package com.nextjstemplate.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
-import java.math.BigDecimal;
-import com.nextjstemplate.domain.enumeration.*;
-import com.nextjstemplate.domain.EventDetails;
 import com.nextjstemplate.domain.EventCompetition;
 import com.nextjstemplate.domain.EventCompetitionParticipant;
 import com.nextjstemplate.domain.EventCompetitionRegistration;
+import com.nextjstemplate.domain.EventDetails;
 import com.nextjstemplate.domain.UserProfile;
+import com.nextjstemplate.domain.enumeration.*;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -54,6 +54,18 @@ public class EventCompetitionRegistration implements Serializable {
     @Column(name = "stripe_payment_intent_id")
     private String stripePaymentIntentId;
 
+    @Size(max = 200)
+    @Column(name = "team_name")
+    private String teamName;
+
+    @Size(max = 200)
+    @Column(name = "team_display_name")
+    private String teamDisplayName;
+
+    @NotNull
+    @Column(name = "confirmation_email_sent")
+    private Boolean confirmationEmailSent = false;
+
     @NotNull
     @Column(name = "created_at")
     private ZonedDateTime createdAt;
@@ -75,7 +87,10 @@ public class EventCompetitionRegistration implements Serializable {
     private EventCompetitionParticipant participantProfile;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "event", "competition", "participantProfile", "registeredByUserProfile", "groupLeaderRegistration" }, allowSetters = true)
+    @JsonIgnoreProperties(
+        value = { "event", "competition", "participantProfile", "registeredByUserProfile", "groupLeaderRegistration" },
+        allowSetters = true
+    )
     private EventCompetitionRegistration groupLeaderRegistration;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -145,6 +160,45 @@ public class EventCompetitionRegistration implements Serializable {
 
     public void setStripePaymentIntentId(String stripePaymentIntentId) {
         this.stripePaymentIntentId = stripePaymentIntentId;
+    }
+
+    public String getTeamName() {
+        return this.teamName;
+    }
+
+    public EventCompetitionRegistration teamName(String teamName) {
+        this.setTeamName(teamName);
+        return this;
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
+    }
+
+    public String getTeamDisplayName() {
+        return this.teamDisplayName;
+    }
+
+    public EventCompetitionRegistration teamDisplayName(String teamDisplayName) {
+        this.setTeamDisplayName(teamDisplayName);
+        return this;
+    }
+
+    public void setTeamDisplayName(String teamDisplayName) {
+        this.teamDisplayName = teamDisplayName;
+    }
+
+    public Boolean getConfirmationEmailSent() {
+        return this.confirmationEmailSent;
+    }
+
+    public EventCompetitionRegistration confirmationEmailSent(Boolean confirmationEmailSent) {
+        this.setConfirmationEmailSent(confirmationEmailSent);
+        return this;
+    }
+
+    public void setConfirmationEmailSent(Boolean confirmationEmailSent) {
+        this.confirmationEmailSent = confirmationEmailSent;
     }
 
     public ZonedDateTime getCreatedAt() {

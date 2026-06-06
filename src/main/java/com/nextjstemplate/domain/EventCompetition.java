@@ -1,14 +1,14 @@
 package com.nextjstemplate.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.nextjstemplate.domain.EventCompetitionDay;
+import com.nextjstemplate.domain.EventDetails;
+import com.nextjstemplate.domain.enumeration.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
-import java.time.ZonedDateTime;
 import java.math.BigDecimal;
-import com.nextjstemplate.domain.enumeration.*;
-import com.nextjstemplate.domain.EventDetails;
-import com.nextjstemplate.domain.EventCompetitionDay;
+import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -96,6 +96,36 @@ public class EventCompetition implements Serializable {
     @NotNull
     @Column(name = "is_active")
     private Boolean isActive;
+
+    @Enumerated(EnumType.STRING)
+    @Size(max = 32)
+    @Column(name = "discipline_code", length = 32)
+    private CompetitionDisciplineCode disciplineCode;
+
+    @Column(name = "min_age")
+    private Integer minAge;
+
+    @Column(name = "max_age")
+    private Integer maxAge;
+
+    @Column(name = "min_grade")
+    private Integer minGrade;
+
+    @Column(name = "max_grade")
+    private Integer maxGrade;
+
+    @Column(name = "max_placements")
+    private Integer maxPlacements;
+
+    @Column(name = "registration_deadline")
+    private ZonedDateTime registrationDeadline;
+
+    @Lob
+    @Column(name = "rules_markdown")
+    private String rulesMarkdown;
+
+    @Column(name = "requires_team_name")
+    private Boolean requiresTeamName;
 
     @NotNull
     @Column(name = "created_at")
@@ -332,6 +362,123 @@ public class EventCompetition implements Serializable {
 
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public CompetitionDisciplineCode getDisciplineCode() {
+        return this.disciplineCode;
+    }
+
+    public EventCompetition disciplineCode(CompetitionDisciplineCode disciplineCode) {
+        this.setDisciplineCode(disciplineCode);
+        return this;
+    }
+
+    public void setDisciplineCode(CompetitionDisciplineCode disciplineCode) {
+        this.disciplineCode = disciplineCode;
+    }
+
+    public Integer getMinAge() {
+        return this.minAge;
+    }
+
+    public EventCompetition minAge(Integer minAge) {
+        this.setMinAge(minAge);
+        return this;
+    }
+
+    public void setMinAge(Integer minAge) {
+        this.minAge = minAge;
+    }
+
+    public Integer getMaxAge() {
+        return this.maxAge;
+    }
+
+    public EventCompetition maxAge(Integer maxAge) {
+        this.setMaxAge(maxAge);
+        return this;
+    }
+
+    public void setMaxAge(Integer maxAge) {
+        this.maxAge = maxAge;
+    }
+
+    public Integer getMinGrade() {
+        return this.minGrade;
+    }
+
+    public EventCompetition minGrade(Integer minGrade) {
+        this.setMinGrade(minGrade);
+        return this;
+    }
+
+    public void setMinGrade(Integer minGrade) {
+        this.minGrade = minGrade;
+    }
+
+    public Integer getMaxGrade() {
+        return this.maxGrade;
+    }
+
+    public EventCompetition maxGrade(Integer maxGrade) {
+        this.setMaxGrade(maxGrade);
+        return this;
+    }
+
+    public void setMaxGrade(Integer maxGrade) {
+        this.maxGrade = maxGrade;
+    }
+
+    public Integer getMaxPlacements() {
+        return this.maxPlacements;
+    }
+
+    public EventCompetition maxPlacements(Integer maxPlacements) {
+        this.setMaxPlacements(maxPlacements);
+        return this;
+    }
+
+    public void setMaxPlacements(Integer maxPlacements) {
+        this.maxPlacements = maxPlacements;
+    }
+
+    public ZonedDateTime getRegistrationDeadline() {
+        return this.registrationDeadline;
+    }
+
+    public EventCompetition registrationDeadline(ZonedDateTime registrationDeadline) {
+        this.setRegistrationDeadline(registrationDeadline);
+        return this;
+    }
+
+    public void setRegistrationDeadline(ZonedDateTime registrationDeadline) {
+        this.registrationDeadline = registrationDeadline;
+    }
+
+    public String getRulesMarkdown() {
+        return this.rulesMarkdown;
+    }
+
+    public EventCompetition rulesMarkdown(String rulesMarkdown) {
+        this.setRulesMarkdown(rulesMarkdown);
+        return this;
+    }
+
+    public void setRulesMarkdown(String rulesMarkdown) {
+        this.rulesMarkdown = rulesMarkdown;
+    }
+
+    public Boolean getRequiresTeamName() {
+        return this.requiresTeamName;
+    }
+
+    public EventCompetition requiresTeamName(Boolean requiresTeamName) {
+        this.setRequiresTeamName(requiresTeamName);
+        return this;
+    }
+
+    public void setRequiresTeamName(Boolean requiresTeamName) {
+        this.requiresTeamName = requiresTeamName;
     }
 
     public ZonedDateTime getCreatedAt() {

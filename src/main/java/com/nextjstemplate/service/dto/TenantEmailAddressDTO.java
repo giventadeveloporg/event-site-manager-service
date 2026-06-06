@@ -30,9 +30,13 @@ public class TenantEmailAddressDTO implements Serializable {
     @Size(max = 255)
     private String displayName;
 
-    @NotNull
+    @Email
     @Size(max = 255)
     private String copyToEmailAddress;
+
+    @Email
+    @Size(max = 255)
+    private String replyToEmailAddress;
 
     @NotNull
     private Boolean isActive;
@@ -94,6 +98,14 @@ public class TenantEmailAddressDTO implements Serializable {
 
     public void setCopyToEmailAddress(String copyToEmailAddress) {
         this.copyToEmailAddress = copyToEmailAddress;
+    }
+
+    public String getReplyToEmailAddress() {
+        return replyToEmailAddress;
+    }
+
+    public void setReplyToEmailAddress(String replyToEmailAddress) {
+        this.replyToEmailAddress = replyToEmailAddress;
     }
 
     public Boolean getIsActive() {
@@ -167,6 +179,7 @@ public class TenantEmailAddressDTO implements Serializable {
             ", emailType='" + getEmailType() + "'" +
             ", displayName='" + getDisplayName() + "'" +
             ", copyToEmailAddress='" + getCopyToEmailAddress() + "'" +
+            ", replyToEmailAddress='" + getReplyToEmailAddress() + "'" +
             ", isActive=" + getIsActive() +
             ", isDefault=" + getIsDefault() +
             ", description='" + getDescription() + "'" +

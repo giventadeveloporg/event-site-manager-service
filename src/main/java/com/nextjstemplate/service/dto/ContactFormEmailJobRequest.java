@@ -4,8 +4,7 @@ import java.io.Serializable;
 
 /**
  * DTO for submitting a contact form email job to the batch jobs microservice.
- * This should mirror the ContactFormEmailJobRequest structure expected by the
- * Event Site Manager Batch Jobs project.
+ * Mirrors ContactFormEmailJobRequest in the Event Site Manager Batch Jobs project.
  */
 public class ContactFormEmailJobRequest implements Serializable {
 
@@ -13,7 +12,11 @@ public class ContactFormEmailJobRequest implements Serializable {
     private String firstName;
     private String lastName;
     private String messageBody;
-    private String fromEmail;
+    /** Visitor email (Reply-To and optional confirmation copy). */
+    private String senderEmail;
+    /** Tenant email type for resolving SES from/to (e.g. CONTACT). */
+    private String emailType;
+    /** Optional legacy inbox override; batch resolves from tenant_email_addresses when null. */
     private String toEmail;
     private Long submittedAtEpochMillis;
     private Long userId;
@@ -50,12 +53,20 @@ public class ContactFormEmailJobRequest implements Serializable {
         this.messageBody = messageBody;
     }
 
-    public String getFromEmail() {
-        return fromEmail;
+    public String getSenderEmail() {
+        return senderEmail;
     }
 
-    public void setFromEmail(String fromEmail) {
-        this.fromEmail = fromEmail;
+    public void setSenderEmail(String senderEmail) {
+        this.senderEmail = senderEmail;
+    }
+
+    public String getEmailType() {
+        return emailType;
+    }
+
+    public void setEmailType(String emailType) {
+        this.emailType = emailType;
     }
 
     public String getToEmail() {
@@ -98,8 +109,11 @@ public class ContactFormEmailJobRequest implements Serializable {
             ", messageBody='" +
             (messageBody != null ? "[length=" + messageBody.length() + "]" : null) +
             '\'' +
-            ", fromEmail='" +
-            fromEmail +
+            ", senderEmail='" +
+            senderEmail +
+            '\'' +
+            ", emailType='" +
+            emailType +
             '\'' +
             ", toEmail='" +
             toEmail +

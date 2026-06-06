@@ -1,11 +1,13 @@
 package com.nextjstemplate.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * A DTO for contact form email submission.
+ * SES from/to addresses are resolved server-side from tenant_email_addresses using emailType.
  */
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class ContactFormDTO implements Serializable {
@@ -24,17 +26,23 @@ public class ContactFormDTO implements Serializable {
     @NotBlank
     private String messageBody;
 
+    /**
+     * Visitor email address (Reply-To and confirmation recipient).
+     */
     @NotNull
     @NotBlank
     @Size(max = 255)
     @Email
-    private String fromEmail;
+    @JsonAlias("fromEmail")
+    private String senderEmail;
 
+    /**
+     * Tenant email type used to look up verified from/copy-to addresses (e.g. CONTACT).
+     */
     @NotNull
     @NotBlank
-    @Size(max = 255)
-    @Email
-    private String toEmail;
+    @Size(max = 50)
+    private String emailType;
 
     public String getFirstName() {
         return firstName;
@@ -60,20 +68,20 @@ public class ContactFormDTO implements Serializable {
         this.messageBody = messageBody;
     }
 
-    public String getFromEmail() {
-        return fromEmail;
+    public String getSenderEmail() {
+        return senderEmail;
     }
 
-    public void setFromEmail(String fromEmail) {
-        this.fromEmail = fromEmail;
+    public void setSenderEmail(String senderEmail) {
+        this.senderEmail = senderEmail;
     }
 
-    public String getToEmail() {
-        return toEmail;
+    public String getEmailType() {
+        return emailType;
     }
 
-    public void setToEmail(String toEmail) {
-        this.toEmail = toEmail;
+    public void setEmailType(String emailType) {
+        this.emailType = emailType;
     }
 
     @Override
@@ -89,14 +97,14 @@ public class ContactFormDTO implements Serializable {
         return (
             Objects.equals(this.firstName, contactFormDTO.firstName) &&
             Objects.equals(this.lastName, contactFormDTO.lastName) &&
-            Objects.equals(this.fromEmail, contactFormDTO.fromEmail) &&
-            Objects.equals(this.toEmail, contactFormDTO.toEmail)
+            Objects.equals(this.senderEmail, contactFormDTO.senderEmail) &&
+            Objects.equals(this.emailType, contactFormDTO.emailType)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.firstName, this.lastName, this.fromEmail, this.toEmail);
+        return Objects.hash(this.firstName, this.lastName, this.senderEmail, this.emailType);
     }
 
     @Override
@@ -109,11 +117,11 @@ public class ContactFormDTO implements Serializable {
             ", lastName='" +
             getLastName() +
             "'" +
-            ", fromEmail='" +
-            getFromEmail() +
+            ", senderEmail='" +
+            getSenderEmail() +
             "'" +
-            ", toEmail='" +
-            getToEmail() +
+            ", emailType='" +
+            getEmailType() +
             "'" +
             "}"
         );

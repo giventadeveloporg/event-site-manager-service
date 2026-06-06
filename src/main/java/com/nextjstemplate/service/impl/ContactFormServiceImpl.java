@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ContactFormServiceImpl implements ContactFormService {
 
+    private static final String DEFAULT_EMAIL_TYPE = "CONTACT";
+
     private final Logger log = LoggerFactory.getLogger(ContactFormServiceImpl.class);
 
     private final ContactFormBatchJobService contactFormBatchJobService;
@@ -28,23 +30,23 @@ public class ContactFormServiceImpl implements ContactFormService {
 
     @Override
     public Map<String, Object> sendContactFormEmail(ContactFormDTO contactFormDTO, String tenantId) {
+        String emailType = normalizeEmailType(contactFormDTO.getEmailType());
+
         log.debug(
-            "Request to send contact form email: from={}, to={}, tenantId={}",
-            contactFormDTO.getFromEmail(),
-            contactFormDTO.getToEmail(),
+            "Request to send contact form email: senderEmail={}, emailType={}, tenantId={}",
+            contactFormDTO.getSenderEmail(),
+            emailType,
             tenantId
         );
 
-        // Build job request for batch job microservice
         ContactFormEmailJobRequest request = new ContactFormEmailJobRequest();
         request.setTenantId(tenantId);
         request.setFirstName(contactFormDTO.getFirstName());
         request.setLastName(contactFormDTO.getLastName());
         request.setMessageBody(contactFormDTO.getMessageBody());
-        request.setFromEmail(contactFormDTO.getFromEmail());
-        request.setToEmail(contactFormDTO.getToEmail());
+        request.setSenderEmail(contactFormDTO.getSenderEmail());
+        request.setEmailType(emailType);
         request.setSubmittedAtEpochMillis(System.currentTimeMillis());
-        // userId is optional and not available from the contact form request; leave null
 
         ContactFormEmailJobResponse response = contactFormBatchJobService.triggerContactFormEmailJob(request);
 
@@ -70,5 +72,12 @@ public class ContactFormServiceImpl implements ContactFormService {
         }
 
         return result;
+    }
+
+    private String normalizeEmailType(String emailType) {
+        if (emailType == null || emailType.isBlank()) {
+            return DEFAULT_EMAIL_TYPE;
+        }
+        return emailType.trim().toUpperCase();
     }
 }

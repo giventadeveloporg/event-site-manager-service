@@ -44,6 +44,8 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
     public TenantEmailAddressDTO save(TenantEmailAddressDTO tenantEmailAddressDTO) {
         log.debug("Request to save TenantEmailAddress : {}", tenantEmailAddressDTO);
 
+        normalizeOptionalEmailAddresses(tenantEmailAddressDTO);
+
         // Set default isActive if null
         if (tenantEmailAddressDTO.getIsActive() == null) {
             tenantEmailAddressDTO.setIsActive(true);
@@ -86,6 +88,8 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
     public TenantEmailAddressDTO update(TenantEmailAddressDTO tenantEmailAddressDTO) {
         log.debug("Request to update TenantEmailAddress : {}", tenantEmailAddressDTO);
 
+        normalizeOptionalEmailAddresses(tenantEmailAddressDTO);
+
         // If setting as default, unset other defaults for the same tenant
         if (Boolean.TRUE.equals(tenantEmailAddressDTO.getIsDefault())) {
             tenantEmailAddressRepository
@@ -118,6 +122,8 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
     @CacheEvict(value = "tenantEmailAddresses", allEntries = true)
     public Optional<TenantEmailAddressDTO> partialUpdate(TenantEmailAddressDTO tenantEmailAddressDTO) {
         log.debug("Request to partially update TenantEmailAddress : {}", tenantEmailAddressDTO);
+
+        normalizeOptionalEmailAddresses(tenantEmailAddressDTO);
 
         // If setting as default, unset other defaults for the same tenant
         if (Boolean.TRUE.equals(tenantEmailAddressDTO.getIsDefault())) {
@@ -194,5 +200,20 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
             .stream()
             .map(tenantEmailAddressMapper::toDto)
             .collect(Collectors.toList());
+    }
+
+    /** Blank optional email fields are stored as null. */
+    private void normalizeOptionalEmailAddresses(TenantEmailAddressDTO tenantEmailAddressDTO) {
+        if (tenantEmailAddressDTO == null) {
+            return;
+        }
+        String copyTo = tenantEmailAddressDTO.getCopyToEmailAddress();
+        if (copyTo != null && copyTo.isBlank()) {
+            tenantEmailAddressDTO.setCopyToEmailAddress(null);
+        }
+        String replyTo = tenantEmailAddressDTO.getReplyToEmailAddress();
+        if (replyTo != null && replyTo.isBlank()) {
+            tenantEmailAddressDTO.setReplyToEmailAddress(null);
+        }
     }
 }

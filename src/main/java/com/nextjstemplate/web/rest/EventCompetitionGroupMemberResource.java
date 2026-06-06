@@ -1,12 +1,11 @@
 package com.nextjstemplate.web.rest;
 
 import com.nextjstemplate.errors.BadRequestAlertException;
-import com.nextjstemplate.repository.EventCompetitionRepository;
-import com.nextjstemplate.service.EventCompetitionQueryService;
-import com.nextjstemplate.service.EventCompetitionService;
-import com.nextjstemplate.service.criteria.EventCompetitionCriteria;
-import com.nextjstemplate.service.dto.CompetitionEligibilityCheckDTO;
-import com.nextjstemplate.service.dto.EventCompetitionDTO;
+import com.nextjstemplate.repository.EventCompetitionGroupMemberRepository;
+import com.nextjstemplate.service.EventCompetitionGroupMemberQueryService;
+import com.nextjstemplate.service.EventCompetitionGroupMemberService;
+import com.nextjstemplate.service.criteria.EventCompetitionGroupMemberCriteria;
+import com.nextjstemplate.service.dto.EventCompetitionGroupMemberDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -28,48 +27,49 @@ import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 @RestController
-@RequestMapping("/api/event-competitions")
-public class EventCompetitionResource {
+@RequestMapping("/api/event-competition-group-members")
+public class EventCompetitionGroupMemberResource {
 
-    private final Logger log = LoggerFactory.getLogger(EventCompetitionResource.class);
+    private final Logger log = LoggerFactory.getLogger(EventCompetitionGroupMemberResource.class);
 
-    private static final String ENTITY_NAME = "eventCompetition";
+    private static final String ENTITY_NAME = "eventCompetitionGroupMember";
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final EventCompetitionService eventCompetitionService;
+    private final EventCompetitionGroupMemberService eventCompetitionGroupMemberService;
 
-    private final EventCompetitionRepository eventCompetitionRepository;
+    private final EventCompetitionGroupMemberRepository eventCompetitionGroupMemberRepository;
 
-    private final EventCompetitionQueryService eventCompetitionQueryService;
+    private final EventCompetitionGroupMemberQueryService eventCompetitionGroupMemberQueryService;
 
-    public EventCompetitionResource(
-        EventCompetitionService eventCompetitionService,
-        EventCompetitionRepository eventCompetitionRepository,
-        EventCompetitionQueryService eventCompetitionQueryService
+    public EventCompetitionGroupMemberResource(
+        EventCompetitionGroupMemberService eventCompetitionGroupMemberService,
+        EventCompetitionGroupMemberRepository eventCompetitionGroupMemberRepository,
+        EventCompetitionGroupMemberQueryService eventCompetitionGroupMemberQueryService
     ) {
-        this.eventCompetitionService = eventCompetitionService;
-        this.eventCompetitionRepository = eventCompetitionRepository;
-        this.eventCompetitionQueryService = eventCompetitionQueryService;
+        this.eventCompetitionGroupMemberService = eventCompetitionGroupMemberService;
+        this.eventCompetitionGroupMemberRepository = eventCompetitionGroupMemberRepository;
+        this.eventCompetitionGroupMemberQueryService = eventCompetitionGroupMemberQueryService;
     }
 
     @PostMapping("")
-    public ResponseEntity<EventCompetitionDTO> create(@Valid @RequestBody EventCompetitionDTO dto) throws URISyntaxException {
+    public ResponseEntity<EventCompetitionGroupMemberDTO> create(@Valid @RequestBody EventCompetitionGroupMemberDTO dto)
+        throws URISyntaxException {
         if (dto.getId() != null) {
-            throw new BadRequestAlertException("A new eventCompetition cannot already have an ID", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException("A new eventCompetitionGroupMember cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        EventCompetitionDTO result = eventCompetitionService.save(dto);
+        EventCompetitionGroupMemberDTO result = eventCompetitionGroupMemberService.save(dto);
         return ResponseEntity
-            .created(new URI("/api/event-competitions/" + result.getId()))
+            .created(new URI("/api/event-competition-group-members/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EventCompetitionDTO> update(
+    public ResponseEntity<EventCompetitionGroupMemberDTO> update(
         @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody EventCompetitionDTO dto
+        @Valid @RequestBody EventCompetitionGroupMemberDTO dto
     ) throws URISyntaxException {
         if (dto.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -77,19 +77,19 @@ public class EventCompetitionResource {
         if (!Objects.equals(id, dto.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
-        if (!eventCompetitionRepository.existsById(id)) {
+        if (!eventCompetitionGroupMemberRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, dto.getId().toString()))
-            .body(eventCompetitionService.update(dto));
+            .body(eventCompetitionGroupMemberService.update(dto));
     }
 
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<EventCompetitionDTO> partialUpdate(
+    public ResponseEntity<EventCompetitionGroupMemberDTO> partialUpdate(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody EventCompetitionDTO dto
+        @NotNull @RequestBody EventCompetitionGroupMemberDTO dto
     ) throws URISyntaxException {
         if (dto.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -97,10 +97,10 @@ public class EventCompetitionResource {
         if (!Objects.equals(id, dto.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
-        if (!eventCompetitionRepository.existsById(id)) {
+        if (!eventCompetitionGroupMemberRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-        Optional<EventCompetitionDTO> result = eventCompetitionService.partialUpdate(dto);
+        Optional<EventCompetitionGroupMemberDTO> result = eventCompetitionGroupMemberService.partialUpdate(dto);
         return ResponseUtil.wrapOrNotFound(
             result,
             HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, dto.getId().toString())
@@ -108,37 +108,29 @@ public class EventCompetitionResource {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<EventCompetitionDTO>> getAll(
-        EventCompetitionCriteria criteria,
+    public ResponseEntity<List<EventCompetitionGroupMemberDTO>> getAll(
+        EventCompetitionGroupMemberCriteria criteria,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        Page<EventCompetitionDTO> page = eventCompetitionQueryService.findByCriteria(criteria, pageable);
+        Page<EventCompetitionGroupMemberDTO> page = eventCompetitionGroupMemberQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Long> count(EventCompetitionCriteria criteria) {
-        return ResponseEntity.ok().body(eventCompetitionQueryService.countByCriteria(criteria));
+    public ResponseEntity<Long> count(EventCompetitionGroupMemberCriteria criteria) {
+        return ResponseEntity.ok().body(eventCompetitionGroupMemberQueryService.countByCriteria(criteria));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EventCompetitionDTO> getOne(@PathVariable Long id) {
-        Optional<EventCompetitionDTO> dto = eventCompetitionService.findOne(id);
+    public ResponseEntity<EventCompetitionGroupMemberDTO> getOne(@PathVariable Long id) {
+        Optional<EventCompetitionGroupMemberDTO> dto = eventCompetitionGroupMemberService.findOne(id);
         return ResponseUtil.wrapOrNotFound(dto);
-    }
-
-    @GetMapping("/{id}/eligibility-check")
-    public ResponseEntity<CompetitionEligibilityCheckDTO> checkEligibility(
-        @PathVariable Long id,
-        @RequestParam(name = "participantProfileId.equals") Long participantProfileId
-    ) {
-        return ResponseEntity.ok(eventCompetitionService.checkEligibility(id, participantProfileId));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        eventCompetitionService.delete(id);
+        eventCompetitionGroupMemberService.delete(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))

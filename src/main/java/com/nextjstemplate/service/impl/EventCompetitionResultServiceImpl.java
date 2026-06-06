@@ -1,9 +1,13 @@
 package com.nextjstemplate.service.impl;
 
+import com.nextjstemplate.domain.EventCompetition;
 import com.nextjstemplate.domain.EventCompetitionResult;
+import com.nextjstemplate.domain.EventCompetitionSettings;
 import com.nextjstemplate.domain.EventMedia;
 import com.nextjstemplate.errors.BadRequestAlertException;
+import com.nextjstemplate.repository.EventCompetitionRepository;
 import com.nextjstemplate.repository.EventCompetitionResultRepository;
+import com.nextjstemplate.repository.EventCompetitionSettingsRepository;
 import com.nextjstemplate.repository.EventMediaRepository;
 import com.nextjstemplate.service.EventCompetitionResultService;
 import com.nextjstemplate.service.dto.EventCompetitionResultDTO;
@@ -31,14 +35,22 @@ public class EventCompetitionResultServiceImpl implements EventCompetitionResult
 
     private final EventMediaRepository eventMediaRepository;
 
+    private final EventCompetitionRepository eventCompetitionRepository;
+
+    private final EventCompetitionSettingsRepository eventCompetitionSettingsRepository;
+
     public EventCompetitionResultServiceImpl(
         EventCompetitionResultRepository eventCompetitionResultRepository,
         EventCompetitionResultMapper eventCompetitionResultMapper,
-        EventMediaRepository eventMediaRepository
+        EventMediaRepository eventMediaRepository,
+        EventCompetitionRepository eventCompetitionRepository,
+        EventCompetitionSettingsRepository eventCompetitionSettingsRepository
     ) {
         this.eventCompetitionResultRepository = eventCompetitionResultRepository;
         this.eventCompetitionResultMapper = eventCompetitionResultMapper;
         this.eventMediaRepository = eventMediaRepository;
+        this.eventCompetitionRepository = eventCompetitionRepository;
+        this.eventCompetitionSettingsRepository = eventCompetitionSettingsRepository;
     }
 
     @Override
@@ -109,5 +121,68 @@ public class EventCompetitionResultServiceImpl implements EventCompetitionResult
                 throw new BadRequestAlertException("Winner media must belong to the same event", ENTITY_NAME, "winnermediaeventmismatch");
             }
         }
+
+        if (result.getCompetition() == null || result.getCompetition().getId() == null) {
+            throw new BadRequestAlertException("Competition is required", ENTITY_NAME, "competitionrequired");
+        }
+
+        EventCompetition competition = eventCompetitionRepository
+            .findById(result.getCompetition().getId())
+            .orElseThrow(() -> new BadRequestAlertException("Competition not found", ENTITY_NAME, "competitionnotfound"));
+
+        Integer maxPlacements = competition.getMaxPlacements();
+        if (maxPlacements == null && competition.getEvent() != null && competition.getEvent().getId() != null) {
+            maxPlacements =
+                eventCompetitionSettingsRepository
+                    .findOneByEventId(competition.getEvent().getId())
+                    .map(EventCompetitionSettings::getDefaultMaxPlacements)
+                    .orElse(3);
+        }
+        if (maxPlacements == null) {
+            maxPlacements = 3;
+        }
+
+        if (result.getPlacement() != null) {
+            if (result.getPlacement() < 1 || result.getPlacement() > maxPlacements) {
+                throw new BadRequestAlertException("Placement must be between 1 and " + maxPlacements, ENTITY_NAME, "placementoutofrange");
+            }
+
+            if (Boolean.TRUE.equals(result.getIsPublished())) {
+                boolean duplicatePlacement = eventCompetitionResultRepository.existsByCompetitionIdAndPlacementAndIsPublishedTrueAndIdNot(
+                    competition.getId(),
+                    result.getPlacement(),
+                    result.getId() == null ? -1L : result.getId()
+                );
+                if (duplicatePlacement) {
+                    throw new BadRequestAlertException(
+                        "Placement already assigned for this competition",
+                        ENTITY_NAME,
+                        "duplicateplacement"
+                    );
+                }
+            }
+        }
+
+        if (
+            result.getPointsAwarded() != null &&
+            result.getPointsAwarded() == 0 &&
+            result.getPlacement() != null &&
+            competition.getEvent() != null &&
+            competition.getEvent().getId() != null
+        ) {
+            eventCompetitionSettingsRepository
+                .findOneByEventId(competition.getEvent().getId())
+                .ifPresent(settings -> result.setPointsAwarded(resolvePointsForPlacement(settings, result.getPlacement())));
+        }
+    }
+
+    private int resolvePointsForPlacement(EventCompetitionSettings settings, int placement) {
+        return switch (placement) {
+            case 1 -> settings.getPointsFirst() != null ? settings.getPointsFirst() : 0;
+            case 2 -> settings.getPointsSecond() != null ? settings.getPointsSecond() : 0;
+            case 3 -> settings.getPointsThird() != null ? settings.getPointsThird() : 0;
+            case 4 -> settings.getPointsFourth() != null ? settings.getPointsFourth() : 0;
+            default -> 0;
+        };
     }
 }

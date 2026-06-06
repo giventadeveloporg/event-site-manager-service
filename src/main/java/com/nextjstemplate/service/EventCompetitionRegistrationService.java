@@ -1,6 +1,8 @@
 package com.nextjstemplate.service;
 
 import com.nextjstemplate.service.dto.EventCompetitionRegistrationDTO;
+import com.nextjstemplate.service.dto.TeamRegistrationRequestDTO;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +22,8 @@ public interface EventCompetitionRegistrationService {
     Optional<EventCompetitionRegistrationDTO> findOne(Long id);
 
     void delete(Long id);
+
+    EventCompetitionRegistrationDTO saveTeamRegistration(TeamRegistrationRequestDTO request);
+
+    List<EventCompetitionRegistrationDTO> saveBulkRegistrations(List<EventCompetitionRegistrationDTO> registrations);
 }

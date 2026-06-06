@@ -52,11 +52,11 @@ public class ContactFormBatchJobServiceImpl implements ContactFormBatchJobServic
             return response;
         }
 
-        if (request == null || request.getTenantId() == null || request.getFromEmail() == null || request.getToEmail() == null) {
+        if (request == null || request.getTenantId() == null || request.getSenderEmail() == null || request.getEmailType() == null) {
             log.error("Invalid ContactFormEmailJobRequest: {}", request);
             ContactFormEmailJobResponse response = new ContactFormEmailJobResponse();
             response.setSuccess(false);
-            response.setMessage("TenantId, fromEmail, and toEmail are required");
+            response.setMessage("TenantId, senderEmail, and emailType are required");
             return response;
         }
 
@@ -72,10 +72,10 @@ public class ContactFormBatchJobServiceImpl implements ContactFormBatchJobServic
                 }
             } else {
                 log.info(
-                    "Triggering contact form email batch job - tenantId: {}, fromEmail: {}, toEmail: {}",
+                    "Triggering contact form email batch job - tenantId: {}, senderEmail: {}, emailType: {}",
                     request.getTenantId(),
-                    request.getFromEmail(),
-                    request.getToEmail()
+                    request.getSenderEmail(),
+                    request.getEmailType()
                 );
             }
 
