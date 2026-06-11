@@ -1185,4 +1185,106 @@ class TenantSettingsResourceIT {
         List<TenantSettings> tenantSettingsList = tenantSettingsRepository.findAll();
         assertThat(tenantSettingsList).hasSize(databaseSizeBeforeDelete - 1);
     }
+
+    private static final String HERO_URL_1 =
+        "https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/tenants/x/hero-defaults/slide-01.webp";
+    private static final String HERO_URLS_JSON =
+        "[\"https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/tenants/x/hero-defaults/slide-01.webp\"]";
+
+    @Test
+    @Transactional
+    void getTenantSettingsIncludesDefaultHeroFields() throws Exception {
+        tenantSettings.defaultHeroImageUrlsJson(HERO_URLS_JSON).defaultHeroDisplayMode("random").defaultHeroIncludeWithEvents(false);
+        tenantSettingsRepository.saveAndFlush(tenantSettings);
+
+        restTenantSettingsMockMvc
+            .perform(get(ENTITY_API_URL_ID, tenantSettings.getId()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.defaultHeroImageUrlsJson").value(HERO_URLS_JSON))
+            .andExpect(jsonPath("$.defaultHeroDisplayMode").value("random"))
+            .andExpect(jsonPath("$.defaultHeroIncludeWithEvents").value(false))
+            .andExpect(jsonPath("$.defaultHeroImageUrls[0]").value(HERO_URL_1));
+    }
+
+    @Test
+    @Transactional
+    void createTenantSettingsAppliesDefaultHeroDisplayModeWhenOmitted() throws Exception {
+        int databaseSizeBeforeCreate = tenantSettingsRepository.findAll().size();
+        TenantSettingsDTO tenantSettingsDTO = tenantSettingsMapper.toDto(tenantSettings);
+
+        restTenantSettingsMockMvc
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(tenantSettingsDTO))
+            )
+            .andExpect(status().isCreated());
+
+        List<TenantSettings> tenantSettingsList = tenantSettingsRepository.findAll();
+        assertThat(tenantSettingsList).hasSize(databaseSizeBeforeCreate + 1);
+        TenantSettings saved = tenantSettingsList.get(tenantSettingsList.size() - 1);
+        assertThat(saved.getDefaultHeroDisplayMode()).isEqualTo("slideshow");
+        assertThat(saved.getDefaultHeroIncludeWithEvents()).isTrue();
+    }
+
+    @Test
+    @Transactional
+    void patchDefaultHeroImageUrlsJsonOnlyDoesNotClearOtherFields() throws Exception {
+        tenantSettings.defaultHeroDisplayMode("slideshow").defaultHeroIncludeWithEvents(true).whatsappApiKey(DEFAULT_WHATSAPP_API_KEY);
+        tenantSettingsRepository.saveAndFlush(tenantSettings);
+
+        String updatedJson =
+            "[\"https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/tenants/x/hero-defaults/slide-01.webp\",\"https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/tenants/x/hero-defaults/slide-02.webp\"]";
+        TenantSettingsDTO patchDto = new TenantSettingsDTO();
+        patchDto.setId(tenantSettings.getId());
+        patchDto.setDefaultHeroImageUrlsJson(updatedJson);
+
+        restTenantSettingsMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, tenantSettings.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(patchDto))
+            )
+            .andExpect(status().isOk());
+
+        TenantSettings updated = tenantSettingsRepository.findById(tenantSettings.getId()).orElseThrow();
+        assertThat(updated.getDefaultHeroImageUrlsJson()).isEqualTo(updatedJson);
+        assertThat(updated.getWhatsappApiKey()).isEqualTo(DEFAULT_WHATSAPP_API_KEY);
+        assertThat(updated.getDefaultHeroDisplayMode()).isEqualTo("slideshow");
+        assertThat(updated.getDefaultHeroIncludeWithEvents()).isTrue();
+    }
+
+    @Test
+    @Transactional
+    void patchInvalidDefaultHeroDisplayModeReturnsBadRequest() throws Exception {
+        tenantSettingsRepository.saveAndFlush(tenantSettings);
+
+        TenantSettingsDTO patchDto = new TenantSettingsDTO();
+        patchDto.setId(tenantSettings.getId());
+        patchDto.setDefaultHeroDisplayMode("invalid-mode");
+
+        restTenantSettingsMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, tenantSettings.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(patchDto))
+            )
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @Transactional
+    void patchMalformedDefaultHeroImageUrlsJsonReturnsBadRequest() throws Exception {
+        tenantSettingsRepository.saveAndFlush(tenantSettings);
+
+        TenantSettingsDTO patchDto = new TenantSettingsDTO();
+        patchDto.setId(tenantSettings.getId());
+        patchDto.setDefaultHeroImageUrlsJson("not-valid-json");
+
+        restTenantSettingsMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, tenantSettings.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(patchDto))
+            )
+            .andExpect(status().isBadRequest());
+    }
 }

@@ -7,6 +7,7 @@ import com.nextjstemplate.service.TenantSettingsService;
 import com.nextjstemplate.service.cache.TenantSettingsCacheInvalidation;
 import com.nextjstemplate.service.dto.TenantSettingsDTO;
 import com.nextjstemplate.service.mapper.TenantSettingsMapper;
+import com.nextjstemplate.service.validation.TenantSettingsHeroFieldsValidator;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -49,6 +50,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     @Override
     public TenantSettingsDTO save(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to save TenantSettings : {}", tenantSettingsDTO);
+        TenantSettingsHeroFieldsValidator.applyCreateDefaultsAndValidate(tenantSettingsDTO);
         TenantSettings tenantSettings = tenantSettingsMapper.toEntity(tenantSettingsDTO);
         tenantSettings = tenantSettingsRepository.save(tenantSettings);
         tenantSettingsCacheInvalidation.evictForTenantSettingsId(tenantSettings.getId());
@@ -58,6 +60,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     @Override
     public TenantSettingsDTO update(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to update TenantSettings : {}", tenantSettingsDTO);
+        TenantSettingsHeroFieldsValidator.validatePresentFields(tenantSettingsDTO);
         // Use merge semantics like PATCH: clients often omit server-managed fields (e.g. homepageCacheVersion).
         // Full toEntity() would map null onto @NotNull fields and fail Bean Validation on commit.
         TenantSettings tenantSettings = tenantSettingsRepository
@@ -72,6 +75,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     @Override
     public Optional<TenantSettingsDTO> partialUpdate(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to partially update TenantSettings : {}", tenantSettingsDTO);
+        TenantSettingsHeroFieldsValidator.validatePresentFields(tenantSettingsDTO);
 
         Optional<TenantSettingsDTO> result = tenantSettingsRepository
             .findById(tenantSettingsDTO.getId())

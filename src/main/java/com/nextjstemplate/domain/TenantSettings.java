@@ -177,6 +177,16 @@ public class TenantSettings implements Serializable {
     @Column(name = "homepage_cache_version", nullable = false)
     private Long homepageCacheVersion = 0L;
 
+    @Column(name = "default_hero_image_urls_json", columnDefinition = "text")
+    private String defaultHeroImageUrlsJson;
+
+    @Size(max = 32)
+    @Column(name = "default_hero_display_mode", length = 32)
+    private String defaultHeroDisplayMode;
+
+    @Column(name = "default_hero_include_with_events")
+    private Boolean defaultHeroIncludeWithEvents;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -777,6 +787,45 @@ public class TenantSettings implements Serializable {
         this.homepageCacheVersion = homepageCacheVersion;
     }
 
+    public String getDefaultHeroImageUrlsJson() {
+        return this.defaultHeroImageUrlsJson;
+    }
+
+    public TenantSettings defaultHeroImageUrlsJson(String defaultHeroImageUrlsJson) {
+        this.setDefaultHeroImageUrlsJson(defaultHeroImageUrlsJson);
+        return this;
+    }
+
+    public void setDefaultHeroImageUrlsJson(String defaultHeroImageUrlsJson) {
+        this.defaultHeroImageUrlsJson = defaultHeroImageUrlsJson;
+    }
+
+    public String getDefaultHeroDisplayMode() {
+        return this.defaultHeroDisplayMode;
+    }
+
+    public TenantSettings defaultHeroDisplayMode(String defaultHeroDisplayMode) {
+        this.setDefaultHeroDisplayMode(defaultHeroDisplayMode);
+        return this;
+    }
+
+    public void setDefaultHeroDisplayMode(String defaultHeroDisplayMode) {
+        this.defaultHeroDisplayMode = defaultHeroDisplayMode;
+    }
+
+    public Boolean getDefaultHeroIncludeWithEvents() {
+        return this.defaultHeroIncludeWithEvents;
+    }
+
+    public TenantSettings defaultHeroIncludeWithEvents(Boolean defaultHeroIncludeWithEvents) {
+        this.setDefaultHeroIncludeWithEvents(defaultHeroIncludeWithEvents);
+        return this;
+    }
+
+    public void setDefaultHeroIncludeWithEvents(Boolean defaultHeroIncludeWithEvents) {
+        this.defaultHeroIncludeWithEvents = defaultHeroIncludeWithEvents;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
     // setters here
 
@@ -844,6 +893,9 @@ public class TenantSettings implements Serializable {
                 ", youtubeUrl='" + getYoutubeUrl() + "'" +
                 ", tiktokUrl='" + getTiktokUrl() + "'" +
                 ", homepageCacheVersion=" + getHomepageCacheVersion() +
+                ", defaultHeroImageUrlsJson='" + getDefaultHeroImageUrlsJson() + "'" +
+                ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +
+                ", defaultHeroIncludeWithEvents='" + getDefaultHeroIncludeWithEvents() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";
