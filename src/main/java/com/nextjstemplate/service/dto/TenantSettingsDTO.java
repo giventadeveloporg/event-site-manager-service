@@ -1,9 +1,12 @@
 package com.nextjstemplate.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -122,6 +125,31 @@ public class TenantSettingsDTO implements Serializable {
     private String tiktokUrl;
 
     private Long homepageCacheVersion;
+
+    @Schema(
+        description = "JSON array of HTTPS URLs for default homepage hero slides",
+        example = "[\"https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/tenants/x/hero-defaults/slide-01.webp\"]"
+    )
+    @Size(max = 16384)
+    private String defaultHeroImageUrlsJson;
+
+    @Schema(
+        description = "How tenant default hero URLs are presented on the homepage",
+        example = "slideshow",
+        allowableValues = { "slideshow", "random", "single" }
+    )
+    @Size(max = 32)
+    private String defaultHeroDisplayMode;
+
+    @Schema(description = "When true, tenant default slides may appear alongside event hero images", example = "true")
+    private Boolean defaultHeroIncludeWithEvents;
+
+    @Schema(
+        description = "Parsed default hero image URLs (GET only; computed from defaultHeroImageUrlsJson)",
+        accessMode = Schema.AccessMode.READ_ONLY
+    )
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<String> defaultHeroImageUrls;
 
     @NotNull
     private ZonedDateTime createdAt;
@@ -467,6 +495,38 @@ public class TenantSettingsDTO implements Serializable {
         this.homepageCacheVersion = homepageCacheVersion;
     }
 
+    public String getDefaultHeroImageUrlsJson() {
+        return defaultHeroImageUrlsJson;
+    }
+
+    public void setDefaultHeroImageUrlsJson(String defaultHeroImageUrlsJson) {
+        this.defaultHeroImageUrlsJson = defaultHeroImageUrlsJson;
+    }
+
+    public String getDefaultHeroDisplayMode() {
+        return defaultHeroDisplayMode;
+    }
+
+    public void setDefaultHeroDisplayMode(String defaultHeroDisplayMode) {
+        this.defaultHeroDisplayMode = defaultHeroDisplayMode;
+    }
+
+    public Boolean getDefaultHeroIncludeWithEvents() {
+        return defaultHeroIncludeWithEvents;
+    }
+
+    public void setDefaultHeroIncludeWithEvents(Boolean defaultHeroIncludeWithEvents) {
+        this.defaultHeroIncludeWithEvents = defaultHeroIncludeWithEvents;
+    }
+
+    public List<String> getDefaultHeroImageUrls() {
+        return defaultHeroImageUrls;
+    }
+
+    public void setDefaultHeroImageUrls(List<String> defaultHeroImageUrls) {
+        this.defaultHeroImageUrls = defaultHeroImageUrls;
+    }
+
     public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
@@ -558,6 +618,10 @@ public class TenantSettingsDTO implements Serializable {
                 ", youtubeUrl='" + getYoutubeUrl() + "'" +
                 ", tiktokUrl='" + getTiktokUrl() + "'" +
                 ", homepageCacheVersion=" + getHomepageCacheVersion() +
+                ", defaultHeroImageUrlsJson='" + getDefaultHeroImageUrlsJson() + "'" +
+                ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +
+                ", defaultHeroIncludeWithEvents='" + getDefaultHeroIncludeWithEvents() + "'" +
+                ", defaultHeroImageUrls=" + getDefaultHeroImageUrls() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 ", tenantOrganization=" + getTenantOrganization() +
