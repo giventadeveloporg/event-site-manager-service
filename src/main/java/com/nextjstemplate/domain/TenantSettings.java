@@ -187,6 +187,9 @@ public class TenantSettings implements Serializable {
     @Column(name = "default_hero_include_with_events")
     private Boolean defaultHeroIncludeWithEvents;
 
+    @Column(name = "default_hero_max_display_count")
+    private Integer defaultHeroMaxDisplayCount;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -826,6 +829,19 @@ public class TenantSettings implements Serializable {
         this.defaultHeroIncludeWithEvents = defaultHeroIncludeWithEvents;
     }
 
+    public Integer getDefaultHeroMaxDisplayCount() {
+        return this.defaultHeroMaxDisplayCount;
+    }
+
+    public TenantSettings defaultHeroMaxDisplayCount(Integer defaultHeroMaxDisplayCount) {
+        this.setDefaultHeroMaxDisplayCount(defaultHeroMaxDisplayCount);
+        return this;
+    }
+
+    public void setDefaultHeroMaxDisplayCount(Integer defaultHeroMaxDisplayCount) {
+        this.defaultHeroMaxDisplayCount = defaultHeroMaxDisplayCount;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
     // setters here
 
@@ -896,6 +912,7 @@ public class TenantSettings implements Serializable {
                 ", defaultHeroImageUrlsJson='" + getDefaultHeroImageUrlsJson() + "'" +
                 ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +
                 ", defaultHeroIncludeWithEvents='" + getDefaultHeroIncludeWithEvents() + "'" +
+                ", defaultHeroMaxDisplayCount=" + getDefaultHeroMaxDisplayCount() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";
