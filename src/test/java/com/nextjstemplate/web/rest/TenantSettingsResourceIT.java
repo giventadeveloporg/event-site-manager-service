@@ -1194,7 +1194,11 @@ class TenantSettingsResourceIT {
     @Test
     @Transactional
     void getTenantSettingsIncludesDefaultHeroFields() throws Exception {
-        tenantSettings.defaultHeroImageUrlsJson(HERO_URLS_JSON).defaultHeroDisplayMode("random").defaultHeroIncludeWithEvents(false);
+        tenantSettings
+            .defaultHeroImageUrlsJson(HERO_URLS_JSON)
+            .defaultHeroDisplayMode("random")
+            .defaultHeroIncludeWithEvents(false)
+            .defaultHeroMaxDisplayCount(3);
         tenantSettingsRepository.saveAndFlush(tenantSettings);
 
         restTenantSettingsMockMvc
@@ -1203,6 +1207,7 @@ class TenantSettingsResourceIT {
             .andExpect(jsonPath("$.defaultHeroImageUrlsJson").value(HERO_URLS_JSON))
             .andExpect(jsonPath("$.defaultHeroDisplayMode").value("random"))
             .andExpect(jsonPath("$.defaultHeroIncludeWithEvents").value(false))
+            .andExpect(jsonPath("$.defaultHeroMaxDisplayCount").value(3))
             .andExpect(jsonPath("$.defaultHeroImageUrls[0]").value(HERO_URL_1));
     }
 
@@ -1278,6 +1283,24 @@ class TenantSettingsResourceIT {
         TenantSettingsDTO patchDto = new TenantSettingsDTO();
         patchDto.setId(tenantSettings.getId());
         patchDto.setDefaultHeroImageUrlsJson("not-valid-json");
+
+        restTenantSettingsMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, tenantSettings.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(patchDto))
+            )
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @Transactional
+    void patchInvalidDefaultHeroMaxDisplayCountReturnsBadRequest() throws Exception {
+        tenantSettingsRepository.saveAndFlush(tenantSettings);
+
+        TenantSettingsDTO patchDto = new TenantSettingsDTO();
+        patchDto.setId(tenantSettings.getId());
+        patchDto.setDefaultHeroMaxDisplayCount(0);
 
         restTenantSettingsMockMvc
             .perform(

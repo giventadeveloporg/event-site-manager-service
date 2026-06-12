@@ -22,6 +22,9 @@ public final class TenantSettingsHeroFieldsValidator {
 
     private static final int MAX_JSON_LENGTH = 16 * 1024;
 
+    /** Aligns with frontend {@code MAX_TENANT_HERO_SLIDES} in defaultHeroImages.ts */
+    private static final int MAX_HERO_DISPLAY_COUNT = 20;
+
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private TenantSettingsHeroFieldsValidator() {}
@@ -46,6 +49,9 @@ public final class TenantSettingsHeroFieldsValidator {
         }
         if (dto.getDefaultHeroDisplayMode() != null) {
             validateDisplayMode(dto.getDefaultHeroDisplayMode());
+        }
+        if (dto.getDefaultHeroMaxDisplayCount() != null) {
+            validateMaxDisplayCount(dto.getDefaultHeroMaxDisplayCount());
         }
     }
 
@@ -107,6 +113,15 @@ public final class TenantSettingsHeroFieldsValidator {
     public static void validateDisplayMode(String displayMode) {
         if (!ALLOWED_DISPLAY_MODES.contains(displayMode)) {
             throw badRequest("defaultHeroDisplayMode must be one of: slideshow, random, single", "invalidDefaultHeroDisplayMode");
+        }
+    }
+
+    public static void validateMaxDisplayCount(Integer maxDisplayCount) {
+        if (maxDisplayCount < 1) {
+            throw badRequest("defaultHeroMaxDisplayCount must be at least 1 when set", "invalidDefaultHeroMaxDisplayCount");
+        }
+        if (maxDisplayCount > MAX_HERO_DISPLAY_COUNT) {
+            throw badRequest("defaultHeroMaxDisplayCount must not exceed " + MAX_HERO_DISPLAY_COUNT, "invalidDefaultHeroMaxDisplayCount");
         }
     }
 

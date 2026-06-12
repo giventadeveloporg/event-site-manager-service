@@ -52,4 +52,25 @@ class TenantSettingsHeroFieldsValidatorTest {
     void parseUrlList_returnsUrlsFromValidJson() {
         assertThat(TenantSettingsHeroFieldsValidator.parseUrlList("[\"" + VALID_URL + "\"]")).containsExactly(VALID_URL);
     }
+
+    @Test
+    void validateMaxDisplayCount_acceptsNullViaValidatePresentFields() {
+        TenantSettingsDTO dto = new TenantSettingsDTO();
+        dto.setDefaultHeroMaxDisplayCount(null);
+        TenantSettingsHeroFieldsValidator.validatePresentFields(dto);
+    }
+
+    @Test
+    void validateMaxDisplayCount_rejectsZeroOrNegative() {
+        assertThatThrownBy(() -> TenantSettingsHeroFieldsValidator.validateMaxDisplayCount(0))
+            .isInstanceOf(BadRequestAlertException.class)
+            .hasMessageContaining("at least 1");
+    }
+
+    @Test
+    void validateMaxDisplayCount_rejectsAboveCap() {
+        assertThatThrownBy(() -> TenantSettingsHeroFieldsValidator.validateMaxDisplayCount(21))
+            .isInstanceOf(BadRequestAlertException.class)
+            .hasMessageContaining("20");
+    }
 }

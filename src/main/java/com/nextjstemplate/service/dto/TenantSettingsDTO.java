@@ -144,6 +144,9 @@ public class TenantSettingsDTO implements Serializable {
     @Schema(description = "When true, tenant default slides may appear alongside event hero images", example = "true")
     private Boolean defaultHeroIncludeWithEvents;
 
+    @Schema(description = "Maximum number of tenant default hero slides to show on the homepage; null means no limit", example = "5")
+    private Integer defaultHeroMaxDisplayCount;
+
     @Schema(
         description = "Parsed default hero image URLs (GET only; computed from defaultHeroImageUrlsJson)",
         accessMode = Schema.AccessMode.READ_ONLY
@@ -519,6 +522,14 @@ public class TenantSettingsDTO implements Serializable {
         this.defaultHeroIncludeWithEvents = defaultHeroIncludeWithEvents;
     }
 
+    public Integer getDefaultHeroMaxDisplayCount() {
+        return defaultHeroMaxDisplayCount;
+    }
+
+    public void setDefaultHeroMaxDisplayCount(Integer defaultHeroMaxDisplayCount) {
+        this.defaultHeroMaxDisplayCount = defaultHeroMaxDisplayCount;
+    }
+
     public List<String> getDefaultHeroImageUrls() {
         return defaultHeroImageUrls;
     }
@@ -621,6 +632,7 @@ public class TenantSettingsDTO implements Serializable {
                 ", defaultHeroImageUrlsJson='" + getDefaultHeroImageUrlsJson() + "'" +
                 ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +
                 ", defaultHeroIncludeWithEvents='" + getDefaultHeroIncludeWithEvents() + "'" +
+                ", defaultHeroMaxDisplayCount=" + getDefaultHeroMaxDisplayCount() +
                 ", defaultHeroImageUrls=" + getDefaultHeroImageUrls() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +

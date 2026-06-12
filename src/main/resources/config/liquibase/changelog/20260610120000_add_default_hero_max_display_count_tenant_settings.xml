@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260610120000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="default_hero_max_display_count"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="default_hero_max_display_count" type="integer"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260610120000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'tenant_settings'
+                  AND constraint_name = 'chk_tenant_settings_default_hero_max_display_count'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE tenant_settings
+                ADD CONSTRAINT chk_tenant_settings_default_hero_max_display_count
+                CHECK (
+                    default_hero_max_display_count IS NULL
+                    OR default_hero_max_display_count > 0
+                );
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
