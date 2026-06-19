@@ -60,6 +60,14 @@ public class GalleryAlbum implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
 
+    @Column(name = "album_year")
+    private Integer albumYear;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gallery_category_id")
+    @JsonIgnoreProperties(value = { "tenantId", "description", "sortOrder", "isActive", "createdAt", "updatedAt" }, allowSetters = true)
+    private GalleryCategory galleryCategory;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_id")
     @JsonIgnoreProperties(value = { "reviewedByAdmin", "userSubscription" }, allowSetters = true)
@@ -197,6 +205,32 @@ public class GalleryAlbum implements Serializable {
         return this;
     }
 
+    public Integer getAlbumYear() {
+        return albumYear;
+    }
+
+    public void setAlbumYear(Integer albumYear) {
+        this.albumYear = albumYear;
+    }
+
+    public GalleryAlbum albumYear(Integer albumYear) {
+        this.setAlbumYear(albumYear);
+        return this;
+    }
+
+    public GalleryCategory getGalleryCategory() {
+        return galleryCategory;
+    }
+
+    public void setGalleryCategory(GalleryCategory galleryCategory) {
+        this.galleryCategory = galleryCategory;
+    }
+
+    public GalleryAlbum galleryCategory(GalleryCategory galleryCategory) {
+        this.setGalleryCategory(galleryCategory);
+        return this;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -227,6 +261,7 @@ public class GalleryAlbum implements Serializable {
             ", coverImageUrl='" + getCoverImageUrl() + "'" +
             ", isPublic='" + getIsPublic() + "'" +
             ", displayOrder=" + getDisplayOrder() +
+            ", albumYear=" + getAlbumYear() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             "}";

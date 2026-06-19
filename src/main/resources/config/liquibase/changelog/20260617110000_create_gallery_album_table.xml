@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Base gallery_album table (production may already have this from manual SQL). -->
+    <changeSet id="20260617110000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="gallery_album"/>
+            </not>
+        </preConditions>
+        <createTable tableName="gallery_album">
+            <column name="id" type="bigint" defaultValueComputed="nextval('sequence_generator')">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_gallery_album"/>
+            </column>
+            <column name="tenant_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(2048)"/>
+            <column name="cover_image_url" type="varchar(2048)"/>
+            <column name="is_public" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_order" type="integer" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_id" type="bigint"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20260617110000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <tableExists tableName="user_profile"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'gallery_album'
+                  AND constraint_name = 'fk_gallery_album_created_by'
+            </sqlCheck>
+        </preConditions>
+        <addForeignKeyConstraint
+            baseTableName="gallery_album"
+            baseColumnNames="created_by_id"
+            constraintName="fk_gallery_album_created_by"
+            referencedTableName="user_profile"
+            referencedColumnNames="id"
+            onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="20260617110000-3" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'gallery_album'
+                  AND constraint_name = 'check_display_order_non_negative'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE gallery_album
+                ADD CONSTRAINT check_display_order_non_negative
+                CHECK (display_order >= 0);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

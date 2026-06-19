@@ -5,6 +5,10 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="20260604120000-1" author="cursor">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_email_addresses"/>
+            <columnExists tableName="tenant_email_addresses" columnName="copy_to_email_address"/>
+        </preConditions>
         <dropNotNullConstraint
             tableName="tenant_email_addresses"
             columnName="copy_to_email_address"

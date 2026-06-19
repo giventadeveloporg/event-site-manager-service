@@ -123,6 +123,18 @@ public class GalleryAlbumQueryService extends QueryService<GalleryAlbum> {
                         )
                     );
             }
+            if (criteria.getGalleryCategoryId() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(
+                            criteria.getGalleryCategoryId(),
+                            root -> root.join(GalleryAlbum_.galleryCategory, JoinType.LEFT).get(GalleryCategory_.id)
+                        )
+                    );
+            }
+            if (criteria.getAlbumYear() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getAlbumYear(), GalleryAlbum_.albumYear));
+            }
         }
         return specification;
     }

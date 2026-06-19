@@ -1,5 +1,7 @@
 package com.nextjstemplate.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nextjstemplate.service.validation.GalleryAlbumCategoryValidator;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -39,6 +41,17 @@ public class GalleryAlbumDTO implements Serializable {
 
     @NotNull
     private ZonedDateTime updatedAt;
+
+    @Min(GalleryAlbumCategoryValidator.MIN_ALBUM_YEAR)
+    @Max(GalleryAlbumCategoryValidator.MAX_ALBUM_YEAR)
+    private Integer albumYear;
+
+    private Long galleryCategoryId;
+
+    @JsonIgnore
+    private boolean galleryCategoryIdSet;
+
+    private GalleryCategoryDTO galleryCategory;
 
     private Long createdById;
 
@@ -116,6 +129,36 @@ public class GalleryAlbumDTO implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public Integer getAlbumYear() {
+        return albumYear;
+    }
+
+    public void setAlbumYear(Integer albumYear) {
+        this.albumYear = albumYear;
+    }
+
+    public Long getGalleryCategoryId() {
+        return galleryCategoryId;
+    }
+
+    public void setGalleryCategoryId(Long galleryCategoryId) {
+        this.galleryCategoryId = galleryCategoryId;
+        this.galleryCategoryIdSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isGalleryCategoryIdSet() {
+        return galleryCategoryIdSet;
+    }
+
+    public GalleryCategoryDTO getGalleryCategory() {
+        return galleryCategory;
+    }
+
+    public void setGalleryCategory(GalleryCategoryDTO galleryCategory) {
+        this.galleryCategory = galleryCategory;
+    }
+
     public Long getCreatedById() {
         return createdById;
     }
@@ -164,6 +207,8 @@ public class GalleryAlbumDTO implements Serializable {
             ", coverImageUrl='" + getCoverImageUrl() + "'" +
             ", isPublic='" + getIsPublic() + "'" +
             ", displayOrder=" + getDisplayOrder() +
+            ", albumYear=" + getAlbumYear() +
+            ", galleryCategoryId=" + getGalleryCategoryId() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", createdById=" + getCreatedById() +

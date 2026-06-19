@@ -1,10 +1,12 @@
 package com.nextjstemplate.service.impl;
 
 import com.nextjstemplate.domain.GalleryAlbum;
+import com.nextjstemplate.domain.GalleryCategory;
 import com.nextjstemplate.repository.GalleryAlbumRepository;
 import com.nextjstemplate.service.GalleryAlbumService;
 import com.nextjstemplate.service.dto.GalleryAlbumDTO;
 import com.nextjstemplate.service.mapper.GalleryAlbumMapper;
+import com.nextjstemplate.service.validation.GalleryAlbumCategoryValidator;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -27,15 +29,25 @@ public class GalleryAlbumServiceImpl implements GalleryAlbumService {
 
     private final GalleryAlbumMapper galleryAlbumMapper;
 
-    public GalleryAlbumServiceImpl(GalleryAlbumRepository galleryAlbumRepository, GalleryAlbumMapper galleryAlbumMapper) {
+    private final GalleryAlbumCategoryValidator galleryAlbumCategoryValidator;
+
+    public GalleryAlbumServiceImpl(
+        GalleryAlbumRepository galleryAlbumRepository,
+        GalleryAlbumMapper galleryAlbumMapper,
+        GalleryAlbumCategoryValidator galleryAlbumCategoryValidator
+    ) {
         this.galleryAlbumRepository = galleryAlbumRepository;
         this.galleryAlbumMapper = galleryAlbumMapper;
+        this.galleryAlbumCategoryValidator = galleryAlbumCategoryValidator;
     }
 
     @Override
     public GalleryAlbumDTO save(GalleryAlbumDTO galleryAlbumDTO) {
         log.debug("Request to save GalleryAlbum : {}", galleryAlbumDTO);
+        galleryAlbumCategoryValidator.validateAlbumYear(galleryAlbumDTO.getAlbumYear());
+
         GalleryAlbum galleryAlbum = galleryAlbumMapper.toEntity(galleryAlbumDTO);
+        applyGalleryCategory(galleryAlbum, galleryAlbumDTO, true);
 
         // Set timestamps
         ZonedDateTime now = ZonedDateTime.now();
@@ -59,9 +71,11 @@ public class GalleryAlbumServiceImpl implements GalleryAlbumService {
     @Override
     public GalleryAlbumDTO update(GalleryAlbumDTO galleryAlbumDTO) {
         log.debug("Request to update GalleryAlbum : {}", galleryAlbumDTO);
-        GalleryAlbum galleryAlbum = galleryAlbumMapper.toEntity(galleryAlbumDTO);
+        galleryAlbumCategoryValidator.validateAlbumYear(galleryAlbumDTO.getAlbumYear());
 
-        // Always update the updatedAt timestamp
+        GalleryAlbum galleryAlbum = galleryAlbumMapper.toEntity(galleryAlbumDTO);
+        applyGalleryCategory(galleryAlbum, galleryAlbumDTO, true);
+
         galleryAlbum.setUpdatedAt(ZonedDateTime.now());
 
         galleryAlbum = galleryAlbumRepository.save(galleryAlbum);
@@ -72,12 +86,19 @@ public class GalleryAlbumServiceImpl implements GalleryAlbumService {
     public Optional<GalleryAlbumDTO> partialUpdate(GalleryAlbumDTO galleryAlbumDTO) {
         log.debug("Request to partially update GalleryAlbum : {}", galleryAlbumDTO);
 
+        if (galleryAlbumDTO.getAlbumYear() != null) {
+            galleryAlbumCategoryValidator.validateAlbumYear(galleryAlbumDTO.getAlbumYear());
+        }
+
         return galleryAlbumRepository
             .findById(galleryAlbumDTO.getId())
             .map(existingGalleryAlbum -> {
                 galleryAlbumMapper.partialUpdate(existingGalleryAlbum, galleryAlbumDTO);
 
-                // Always update the updatedAt timestamp
+                if (galleryAlbumDTO.isGalleryCategoryIdSet()) {
+                    applyGalleryCategory(existingGalleryAlbum, galleryAlbumDTO, true);
+                }
+
                 existingGalleryAlbum.setUpdatedAt(ZonedDateTime.now());
 
                 return existingGalleryAlbum;
@@ -103,8 +124,20 @@ public class GalleryAlbumServiceImpl implements GalleryAlbumService {
     @Override
     public void delete(Long id) {
         log.debug("Request to delete GalleryAlbum : {}", id);
-        // When album is deleted, associated media records should be updated (album_id set to NULL),
-        // NOT deleted (media files are preserved). This is handled by ON DELETE SET NULL foreign key constraint.
         galleryAlbumRepository.deleteById(id);
+    }
+
+    private void applyGalleryCategory(GalleryAlbum galleryAlbum, GalleryAlbumDTO galleryAlbumDTO, boolean requireActiveCategory) {
+        if (galleryAlbumDTO.getGalleryCategoryId() == null) {
+            galleryAlbum.setGalleryCategory(null);
+            return;
+        }
+
+        GalleryCategory category = galleryAlbumCategoryValidator.resolveCategory(
+            galleryAlbum.getTenantId(),
+            galleryAlbumDTO.getGalleryCategoryId(),
+            requireActiveCategory
+        );
+        galleryAlbum.setGalleryCategory(category);
     }
 }
