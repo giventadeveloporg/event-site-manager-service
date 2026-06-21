@@ -63,6 +63,38 @@ public class TenantOrganization implements Serializable {
     @Column(name = "contact_phone", length = 50)
     private String contactPhone;
 
+    @Size(max = 1000)
+    @Column(name = "description", length = 1000)
+    private String description;
+
+    @Size(max = 255)
+    @Column(name = "address_line_1", length = 255)
+    private String addressLine1;
+
+    @Size(max = 255)
+    @Column(name = "address_line_2", length = 255)
+    private String addressLine2;
+
+    @Size(max = 255)
+    @Column(name = "city", length = 255)
+    private String city;
+
+    @Size(max = 255)
+    @Column(name = "state_province", length = 255)
+    private String stateProvince;
+
+    @Size(max = 20)
+    @Column(name = "zip_code", length = 20)
+    private String zipCode;
+
+    @Size(max = 100)
+    @Column(name = "country", length = 100)
+    private String country;
+
+    @Size(max = 1024)
+    @Column(name = "website_url", length = 1024)
+    private String websiteUrl;
+
     @Size(max = 20)
     @Column(name = "subscription_plan", length = 20)
     private String subscriptionPlan;
@@ -216,6 +248,110 @@ public class TenantOrganization implements Serializable {
 
     public void setContactPhone(String contactPhone) {
         this.contactPhone = contactPhone;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public TenantOrganization description(String description) {
+        this.setDescription(description);
+        return this;
+    }
+
+    public String getAddressLine1() {
+        return addressLine1;
+    }
+
+    public void setAddressLine1(String addressLine1) {
+        this.addressLine1 = addressLine1;
+    }
+
+    public TenantOrganization addressLine1(String addressLine1) {
+        this.setAddressLine1(addressLine1);
+        return this;
+    }
+
+    public String getAddressLine2() {
+        return addressLine2;
+    }
+
+    public void setAddressLine2(String addressLine2) {
+        this.addressLine2 = addressLine2;
+    }
+
+    public TenantOrganization addressLine2(String addressLine2) {
+        this.setAddressLine2(addressLine2);
+        return this;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public TenantOrganization city(String city) {
+        this.setCity(city);
+        return this;
+    }
+
+    public String getStateProvince() {
+        return stateProvince;
+    }
+
+    public void setStateProvince(String stateProvince) {
+        this.stateProvince = stateProvince;
+    }
+
+    public TenantOrganization stateProvince(String stateProvince) {
+        this.setStateProvince(stateProvince);
+        return this;
+    }
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+    }
+
+    public TenantOrganization zipCode(String zipCode) {
+        this.setZipCode(zipCode);
+        return this;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public TenantOrganization country(String country) {
+        this.setCountry(country);
+        return this;
+    }
+
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+
+    public TenantOrganization websiteUrl(String websiteUrl) {
+        this.setWebsiteUrl(websiteUrl);
+        return this;
     }
 
     public String getSubscriptionPlan() {
@@ -388,6 +524,13 @@ public class TenantOrganization implements Serializable {
                 ", logoUrl='" + getLogoUrl() + "'" +
                 ", contactEmail='" + getContactEmail() + "'" +
                 ", contactPhone='" + getContactPhone() + "'" +
+                ", description='" + getDescription() + "'" +
+                ", addressLine1='" + getAddressLine1() + "'" +
+                ", city='" + getCity() + "'" +
+                ", stateProvince='" + getStateProvince() + "'" +
+                ", zipCode='" + getZipCode() + "'" +
+                ", country='" + getCountry() + "'" +
+                ", websiteUrl='" + getWebsiteUrl() + "'" +
                 ", subscriptionPlan='" + getSubscriptionPlan() + "'" +
                 ", subscriptionStatus='" + getSubscriptionStatus() + "'" +
                 ", subscriptionStartDate='" + getSubscriptionStartDate() + "'" +

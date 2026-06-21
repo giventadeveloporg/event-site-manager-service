@@ -45,9 +45,11 @@ public class GalleryAlbumServiceImpl implements GalleryAlbumService {
     public GalleryAlbumDTO save(GalleryAlbumDTO galleryAlbumDTO) {
         log.debug("Request to save GalleryAlbum : {}", galleryAlbumDTO);
         galleryAlbumCategoryValidator.validateAlbumYear(galleryAlbumDTO.getAlbumYear());
+        galleryAlbumCategoryValidator.validateAndNormalizeEventFields(galleryAlbumDTO);
 
         GalleryAlbum galleryAlbum = galleryAlbumMapper.toEntity(galleryAlbumDTO);
         applyGalleryCategory(galleryAlbum, galleryAlbumDTO, true);
+        applyEventFields(galleryAlbum, galleryAlbumDTO);
 
         // Set timestamps
         ZonedDateTime now = ZonedDateTime.now();
@@ -72,9 +74,11 @@ public class GalleryAlbumServiceImpl implements GalleryAlbumService {
     public GalleryAlbumDTO update(GalleryAlbumDTO galleryAlbumDTO) {
         log.debug("Request to update GalleryAlbum : {}", galleryAlbumDTO);
         galleryAlbumCategoryValidator.validateAlbumYear(galleryAlbumDTO.getAlbumYear());
+        galleryAlbumCategoryValidator.validateAndNormalizeEventFields(galleryAlbumDTO);
 
         GalleryAlbum galleryAlbum = galleryAlbumMapper.toEntity(galleryAlbumDTO);
         applyGalleryCategory(galleryAlbum, galleryAlbumDTO, true);
+        applyEventFields(galleryAlbum, galleryAlbumDTO);
 
         galleryAlbum.setUpdatedAt(ZonedDateTime.now());
 
@@ -98,6 +102,14 @@ public class GalleryAlbumServiceImpl implements GalleryAlbumService {
                 if (galleryAlbumDTO.isGalleryCategoryIdSet()) {
                     applyGalleryCategory(existingGalleryAlbum, galleryAlbumDTO, true);
                 }
+
+                applyPartialEventFields(existingGalleryAlbum, galleryAlbumDTO);
+                galleryAlbumCategoryValidator.validateEventDateFields(
+                    existingGalleryAlbum.getAlbumYear(),
+                    existingGalleryAlbum.getEventDateStart(),
+                    existingGalleryAlbum.getEventDateEnd(),
+                    existingGalleryAlbum.getEventLocation()
+                );
 
                 existingGalleryAlbum.setUpdatedAt(ZonedDateTime.now());
 
@@ -127,6 +139,17 @@ public class GalleryAlbumServiceImpl implements GalleryAlbumService {
         galleryAlbumRepository.deleteById(id);
     }
 
+    @Override
+    public void updateCoverImageUrl(Long albumId, String coverImageUrl) {
+        log.debug("Request to update cover image URL for GalleryAlbum : {}", albumId);
+        GalleryAlbum album = galleryAlbumRepository
+            .findById(albumId)
+            .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Gallery album not found: " + albumId));
+        album.setCoverImageUrl(coverImageUrl);
+        album.setUpdatedAt(ZonedDateTime.now());
+        galleryAlbumRepository.save(album);
+    }
+
     private void applyGalleryCategory(GalleryAlbum galleryAlbum, GalleryAlbumDTO galleryAlbumDTO, boolean requireActiveCategory) {
         if (galleryAlbumDTO.getGalleryCategoryId() == null) {
             galleryAlbum.setGalleryCategory(null);
@@ -139,5 +162,23 @@ public class GalleryAlbumServiceImpl implements GalleryAlbumService {
             requireActiveCategory
         );
         galleryAlbum.setGalleryCategory(category);
+    }
+
+    private void applyEventFields(GalleryAlbum galleryAlbum, GalleryAlbumDTO galleryAlbumDTO) {
+        galleryAlbum.setEventDateStart(galleryAlbumDTO.getEventDateStart());
+        galleryAlbum.setEventDateEnd(galleryAlbumDTO.getEventDateEnd());
+        galleryAlbum.setEventLocation(galleryAlbumDTO.getEventLocation());
+    }
+
+    private void applyPartialEventFields(GalleryAlbum galleryAlbum, GalleryAlbumDTO galleryAlbumDTO) {
+        if (galleryAlbumDTO.isEventDateStartSet()) {
+            galleryAlbum.setEventDateStart(galleryAlbumDTO.getEventDateStart());
+        }
+        if (galleryAlbumDTO.isEventDateEndSet()) {
+            galleryAlbum.setEventDateEnd(galleryAlbumDTO.getEventDateEnd());
+        }
+        if (galleryAlbumDTO.isEventLocationSet()) {
+            galleryAlbum.setEventLocation(galleryAlbumCategoryValidator.normalizeEventLocation(galleryAlbumDTO.getEventLocation()));
+        }
     }
 }

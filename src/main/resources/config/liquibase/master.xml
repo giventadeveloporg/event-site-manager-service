@@ -126,6 +126,9 @@
     <include file="config/liquibase/changelog/20260610120000_add_default_hero_max_display_count_tenant_settings.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260617110000_create_gallery_album_table.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260617120000_gallery_category_and_album_year.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260619120000_gallery_album_event_date_location.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260620120000_tenant_org_address_description.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260620120001_align_tenant_settings_profile_columns.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -62,6 +63,16 @@ public class GalleryAlbum implements Serializable {
 
     @Column(name = "album_year")
     private Integer albumYear;
+
+    @Column(name = "event_date_start")
+    private LocalDate eventDateStart;
+
+    @Column(name = "event_date_end")
+    private LocalDate eventDateEnd;
+
+    @Size(max = 256)
+    @Column(name = "event_location", length = 256)
+    private String eventLocation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gallery_category_id")
@@ -231,6 +242,45 @@ public class GalleryAlbum implements Serializable {
         return this;
     }
 
+    public LocalDate getEventDateStart() {
+        return eventDateStart;
+    }
+
+    public void setEventDateStart(LocalDate eventDateStart) {
+        this.eventDateStart = eventDateStart;
+    }
+
+    public GalleryAlbum eventDateStart(LocalDate eventDateStart) {
+        this.setEventDateStart(eventDateStart);
+        return this;
+    }
+
+    public LocalDate getEventDateEnd() {
+        return eventDateEnd;
+    }
+
+    public void setEventDateEnd(LocalDate eventDateEnd) {
+        this.eventDateEnd = eventDateEnd;
+    }
+
+    public GalleryAlbum eventDateEnd(LocalDate eventDateEnd) {
+        this.setEventDateEnd(eventDateEnd);
+        return this;
+    }
+
+    public String getEventLocation() {
+        return eventLocation;
+    }
+
+    public void setEventLocation(String eventLocation) {
+        this.eventLocation = eventLocation;
+    }
+
+    public GalleryAlbum eventLocation(String eventLocation) {
+        this.setEventLocation(eventLocation);
+        return this;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -262,6 +312,9 @@ public class GalleryAlbum implements Serializable {
             ", isPublic='" + getIsPublic() + "'" +
             ", displayOrder=" + getDisplayOrder() +
             ", albumYear=" + getAlbumYear() +
+            ", eventDateStart='" + getEventDateStart() + "'" +
+            ", eventDateEnd='" + getEventDateEnd() + "'" +
+            ", eventLocation='" + getEventLocation() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             "}";

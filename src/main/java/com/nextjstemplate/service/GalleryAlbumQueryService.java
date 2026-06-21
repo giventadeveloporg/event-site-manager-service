@@ -135,6 +135,12 @@ public class GalleryAlbumQueryService extends QueryService<GalleryAlbum> {
             if (criteria.getAlbumYear() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getAlbumYear(), GalleryAlbum_.albumYear));
             }
+            if (criteria.getEventDateStart() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getEventDateStart(), GalleryAlbum_.eventDateStart));
+            }
+            if (criteria.getEventLocation() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getEventLocation(), GalleryAlbum_.eventLocation));
+            }
         }
         return specification;
     }

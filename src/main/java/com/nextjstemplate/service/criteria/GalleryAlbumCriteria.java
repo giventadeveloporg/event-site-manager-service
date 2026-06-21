@@ -43,6 +43,10 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
 
     private IntegerFilter albumYear;
 
+    private LocalDateFilter eventDateStart;
+
+    private StringFilter eventLocation;
+
     private Boolean distinct;
 
     public GalleryAlbumCriteria() {}
@@ -60,6 +64,8 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
         this.createdById = other.createdById == null ? null : other.createdById.copy();
         this.galleryCategoryId = other.galleryCategoryId == null ? null : other.galleryCategoryId.copy();
         this.albumYear = other.albumYear == null ? null : other.albumYear.copy();
+        this.eventDateStart = other.eventDateStart == null ? null : other.eventDateStart.copy();
+        this.eventLocation = other.eventLocation == null ? null : other.eventLocation.copy();
         this.distinct = other.distinct;
     }
 
@@ -248,6 +254,36 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
         this.albumYear = albumYear;
     }
 
+    public LocalDateFilter getEventDateStart() {
+        return eventDateStart;
+    }
+
+    public LocalDateFilter eventDateStart() {
+        if (eventDateStart == null) {
+            eventDateStart = new LocalDateFilter();
+        }
+        return eventDateStart;
+    }
+
+    public void setEventDateStart(LocalDateFilter eventDateStart) {
+        this.eventDateStart = eventDateStart;
+    }
+
+    public StringFilter getEventLocation() {
+        return eventLocation;
+    }
+
+    public StringFilter eventLocation() {
+        if (eventLocation == null) {
+            eventLocation = new StringFilter();
+        }
+        return eventLocation;
+    }
+
+    public void setEventLocation(StringFilter eventLocation) {
+        this.eventLocation = eventLocation;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -278,6 +314,8 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
             Objects.equals(createdById, that.createdById) &&
             Objects.equals(galleryCategoryId, that.galleryCategoryId) &&
             Objects.equals(albumYear, that.albumYear) &&
+            Objects.equals(eventDateStart, that.eventDateStart) &&
+            Objects.equals(eventLocation, that.eventLocation) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -297,6 +335,8 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
             createdById,
             galleryCategoryId,
             albumYear,
+            eventDateStart,
+            eventLocation,
             distinct
         );
     }
@@ -317,6 +357,8 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
             (createdById != null ? "createdById=" + createdById + ", " : "") +
             (galleryCategoryId != null ? "galleryCategoryId=" + galleryCategoryId + ", " : "") +
             (albumYear != null ? "albumYear=" + albumYear + ", " : "") +
+            (eventDateStart != null ? "eventDateStart=" + eventDateStart + ", " : "") +
+            (eventLocation != null ? "eventLocation=" + eventLocation + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}";
     }

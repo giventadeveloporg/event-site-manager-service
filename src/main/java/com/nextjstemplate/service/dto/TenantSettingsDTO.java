@@ -1,6 +1,8 @@
 package com.nextjstemplate.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.nextjstemplate.service.validation.TenantOrganizationProfileValidator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -86,21 +88,55 @@ public class TenantSettingsDTO implements Serializable {
     private String logoImageUrl;
 
     @Size(max = 255)
+    @Schema(deprecated = true, description = "Deprecated v2.0 — use tenant-organization identity fields")
     private String addressLine1;
 
     @Size(max = 255)
+    @Schema(deprecated = true, description = "Deprecated v2.0 — use tenant-organization identity fields")
     private String addressLine2;
+
+    @Size(max = TenantOrganizationProfileValidator.MAX_DESCRIPTION_LENGTH)
+    @Schema(deprecated = true, description = "Deprecated v2.0 — use tenant-organization identity fields")
+    private String description;
+
+    @Size(max = 255)
+    @Schema(deprecated = true, description = "Deprecated v2.0 — use tenant-organization identity fields")
+    private String city;
+
+    @JsonIgnore
+    private boolean descriptionSet;
+
+    @JsonIgnore
+    private boolean citySet;
+
+    @JsonIgnore
+    private boolean addressLine1Set;
+
+    @JsonIgnore
+    private boolean addressLine2Set;
+
+    @JsonIgnore
+    private boolean stateProvinceSet;
+
+    @JsonIgnore
+    private boolean zipCodeSet;
+
+    @JsonIgnore
+    private boolean countrySet;
 
     @Size(max = 50)
     private String phoneNumber;
 
     @Size(max = 20)
+    @Schema(deprecated = true, description = "Deprecated v2.0 — use tenant-organization identity fields")
     private String zipCode;
 
     @Size(max = 100)
+    @Schema(deprecated = true, description = "Deprecated v2.0 — use tenant-organization identity fields")
     private String country;
 
     @Size(max = 100)
+    @Schema(deprecated = true, description = "Deprecated v2.0 — use tenant-organization identity fields")
     private String stateProvince;
 
     @Size(max = 255)
@@ -392,6 +428,12 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setAddressLine1(String addressLine1) {
         this.addressLine1 = addressLine1;
+        this.addressLine1Set = true;
+    }
+
+    @JsonIgnore
+    public boolean isAddressLine1Set() {
+        return addressLine1Set;
     }
 
     public String getAddressLine2() {
@@ -400,6 +442,40 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setAddressLine2(String addressLine2) {
         this.addressLine2 = addressLine2;
+        this.addressLine2Set = true;
+    }
+
+    @JsonIgnore
+    public boolean isAddressLine2Set() {
+        return addressLine2Set;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+        this.descriptionSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isDescriptionSet() {
+        return descriptionSet;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+        this.citySet = true;
+    }
+
+    @JsonIgnore
+    public boolean isCitySet() {
+        return citySet;
     }
 
     public String getPhoneNumber() {
@@ -416,6 +492,12 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
+        this.zipCodeSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isZipCodeSet() {
+        return zipCodeSet;
     }
 
     public String getCountry() {
@@ -424,6 +506,12 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setCountry(String country) {
         this.country = country;
+        this.countrySet = true;
+    }
+
+    @JsonIgnore
+    public boolean isCountrySet() {
+        return countrySet;
     }
 
     public String getStateProvince() {
@@ -432,6 +520,12 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setStateProvince(String stateProvince) {
         this.stateProvince = stateProvince;
+        this.stateProvinceSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isStateProvinceSet() {
+        return stateProvinceSet;
     }
 
     public String getEmail() {
@@ -617,6 +711,8 @@ public class TenantSettingsDTO implements Serializable {
                 ", logoImageUrl='" + getLogoImageUrl() + "'" +
                 ", addressLine1='" + getAddressLine1() + "'" +
                 ", addressLine2='" + getAddressLine2() + "'" +
+                ", description='" + getDescription() + "'" +
+                ", city='" + getCity() + "'" +
                 ", phoneNumber='" + getPhoneNumber() + "'" +
                 ", zipCode='" + getZipCode() + "'" +
                 ", country='" + getCountry() + "'" +

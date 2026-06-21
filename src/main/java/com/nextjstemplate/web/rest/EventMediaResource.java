@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -39,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.jhipster.web.rest.errors.ProblemDetailWithCause.ProblemDetailWithCauseBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -899,6 +901,74 @@ public class EventMediaResource {
         } catch (Exception e) {
             log.error("Failed to upload focus group cover image", e);
             throw new BadRequestAlertException("Failed to upload focus group cover image: " + e.getMessage(), ENTITY_NAME, "uploadFailed");
+        }
+    }
+
+    /**
+     * POST /event-medias/upload/gallery-album-cover-image : Upload gallery album cover image.
+     */
+    @PostMapping(value = "/upload/gallery-album-cover-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EventMediaDTO> uploadGalleryAlbumCoverImage(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("albumId") Long albumId,
+        @RequestParam(value = "tenantId", required = false) String tenantId,
+        @RequestParam(value = "title", required = false, defaultValue = "Gallery Album Cover Image") String title,
+        @RequestParam(value = "description", required = false, defaultValue = "Cover image for gallery album") String description,
+        @RequestParam(value = "isPublic", required = false, defaultValue = "true") Boolean isPublic
+    ) throws URISyntaxException {
+        log.debug("REST request to upload gallery album cover image for album: {}", albumId);
+
+        if (albumId == null) {
+            throw new BadRequestAlertException("Missing required parameter: albumId", ENTITY_NAME, "missingParameter");
+        }
+
+        String finalTenantId = tenantId;
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            try {
+                finalTenantId = com.nextjstemplate.security.TenantContext.getCurrentTenant();
+                log.debug("Tenant ID from context: {}", finalTenantId);
+            } catch (Exception e) {
+                log.warn("Could not get tenant ID from context: {}", e.getMessage());
+            }
+        }
+
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            throw new BadRequestAlertException("Missing required parameter: tenantId", ENTITY_NAME, "tenantIdRequired");
+        }
+
+        try {
+            EventMediaDTO result = eventMediaService.uploadGalleryAlbumCoverImage(
+                albumId,
+                file,
+                finalTenantId,
+                title,
+                description,
+                isPublic
+            );
+            return ResponseEntity
+                .created(new URI("/api/event-medias/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        } catch (EntityNotFoundException e) {
+            log.error("Gallery album not found: {}", albumId);
+            throw new org.springframework.web.ErrorResponseException(
+                HttpStatus.NOT_FOUND,
+                ProblemDetailWithCauseBuilder
+                    .instance()
+                    .withStatus(HttpStatus.NOT_FOUND.value())
+                    .withTitle("Gallery album not found")
+                    .build(),
+                e
+            );
+        } catch (org.springframework.security.access.AccessDeniedException e) {
+            log.error("Tenant mismatch for gallery album cover upload: {}", e.getMessage());
+            throw e;
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid request: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidRequest");
+        } catch (Exception e) {
+            log.error("Failed to upload gallery album cover image", e);
+            throw new BadRequestAlertException("Upload failed", ENTITY_NAME, "uploadFailed");
         }
     }
 

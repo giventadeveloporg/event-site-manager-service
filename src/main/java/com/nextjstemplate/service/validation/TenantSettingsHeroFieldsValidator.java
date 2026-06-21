@@ -32,7 +32,11 @@ public final class TenantSettingsHeroFieldsValidator {
     /**
      * Apply create-time defaults and validate all hero fields present on the DTO.
      */
+    public static final String IDENTITY_FIELDS_MOVED_MESSAGE =
+        "Identity fields moved to tenant-organization; use PATCH /api/tenant-organizations/{id}";
+
     public static void applyCreateDefaultsAndValidate(TenantSettingsDTO dto) {
+        rejectDeprecatedIdentityFieldWrites(dto);
         applyCreateDefaults(dto);
         validatePresentFields(dto);
     }
@@ -44,6 +48,7 @@ public final class TenantSettingsHeroFieldsValidator {
         if (dto == null) {
             return;
         }
+        rejectDeprecatedIdentityFieldWrites(dto);
         if (dto.getDefaultHeroImageUrlsJson() != null) {
             validateImageUrlsJson(dto.getDefaultHeroImageUrlsJson());
         }
@@ -64,6 +69,9 @@ public final class TenantSettingsHeroFieldsValidator {
         }
         if (dto.getDefaultHeroIncludeWithEvents() == null) {
             dto.setDefaultHeroIncludeWithEvents(Boolean.TRUE);
+        }
+        if (dto.getHomepageCacheVersion() == null) {
+            dto.setHomepageCacheVersion(0L);
         }
     }
 
@@ -122,6 +130,26 @@ public final class TenantSettingsHeroFieldsValidator {
         }
         if (maxDisplayCount > MAX_HERO_DISPLAY_COUNT) {
             throw badRequest("defaultHeroMaxDisplayCount must not exceed " + MAX_HERO_DISPLAY_COUNT, "invalidDefaultHeroMaxDisplayCount");
+        }
+    }
+
+    /**
+     * Reject writes of deprecated identity fields on tenant-settings (v2.0 — canonical on tenant-organization).
+     */
+    public static void rejectDeprecatedIdentityFieldWrites(TenantSettingsDTO dto) {
+        if (dto == null) {
+            return;
+        }
+        if (
+            dto.isDescriptionSet() ||
+            dto.isCitySet() ||
+            dto.isAddressLine1Set() ||
+            dto.isAddressLine2Set() ||
+            dto.isStateProvinceSet() ||
+            dto.isZipCodeSet() ||
+            dto.isCountrySet()
+        ) {
+            throw badRequest(IDENTITY_FIELDS_MOVED_MESSAGE, "identityFieldsMovedToTenantOrganization");
         }
     }
 

@@ -3,6 +3,8 @@ package com.nextjstemplate.service.validation;
 import com.nextjstemplate.domain.GalleryCategory;
 import com.nextjstemplate.errors.BadRequestAlertException;
 import com.nextjstemplate.repository.GalleryCategoryRepository;
+import com.nextjstemplate.service.dto.GalleryAlbumDTO;
+import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,6 +17,7 @@ public class GalleryAlbumCategoryValidator {
 
     public static final int MIN_ALBUM_YEAR = 1900;
     public static final int MAX_ALBUM_YEAR = 2100;
+    public static final int MAX_EVENT_LOCATION_LENGTH = 256;
 
     private final GalleryCategoryRepository galleryCategoryRepository;
 
@@ -57,5 +60,49 @@ public class GalleryAlbumCategoryValidator {
         }
 
         return category;
+    }
+
+    public String normalizeEventLocation(String eventLocation) {
+        if (eventLocation == null) {
+            return null;
+        }
+        String trimmed = eventLocation.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        if (trimmed.length() > MAX_EVENT_LOCATION_LENGTH) {
+            throw new BadRequestAlertException("Event location must not exceed 256 characters", ENTITY_NAME, "eventLocationTooLong");
+        }
+        return trimmed;
+    }
+
+    public void validateEventDateFields(Integer albumYear, LocalDate eventDateStart, LocalDate eventDateEnd, String eventLocation) {
+        if (eventLocation != null && eventLocation.length() > MAX_EVENT_LOCATION_LENGTH) {
+            throw new BadRequestAlertException("Event location must not exceed 256 characters", ENTITY_NAME, "eventLocationTooLong");
+        }
+
+        if (eventDateEnd != null && eventDateStart == null) {
+            throw new BadRequestAlertException("Event start date is required when end date is set", ENTITY_NAME, "eventDateStartRequired");
+        }
+
+        if (eventDateStart != null && eventDateEnd != null && eventDateEnd.isBefore(eventDateStart)) {
+            throw new BadRequestAlertException("Event end date must be on or after start date", ENTITY_NAME, "eventDateOrderInvalid");
+        }
+
+        if (albumYear != null && eventDateStart != null && albumYear != eventDateStart.getYear()) {
+            throw new BadRequestAlertException("Album year must match event start year", ENTITY_NAME, "albumYearEventDateMismatch");
+        }
+    }
+
+    public void validateAndNormalizeEventFields(GalleryAlbumDTO galleryAlbumDTO) {
+        if (galleryAlbumDTO.isEventLocationSet() || galleryAlbumDTO.getEventLocation() != null) {
+            galleryAlbumDTO.setEventLocation(normalizeEventLocation(galleryAlbumDTO.getEventLocation()));
+        }
+        validateEventDateFields(
+            galleryAlbumDTO.getAlbumYear(),
+            galleryAlbumDTO.getEventDateStart(),
+            galleryAlbumDTO.getEventDateEnd(),
+            galleryAlbumDTO.getEventLocation()
+        );
     }
 }

@@ -1,5 +1,7 @@
 package com.nextjstemplate.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nextjstemplate.service.validation.TenantOrganizationProfileValidator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -43,6 +45,54 @@ public class TenantOrganizationDTO implements Serializable {
 
     @Size(max = 50)
     private String contactPhone;
+
+    @Size(max = TenantOrganizationProfileValidator.MAX_DESCRIPTION_LENGTH)
+    private String description;
+
+    @Size(max = 255)
+    private String addressLine1;
+
+    @Size(max = 255)
+    private String addressLine2;
+
+    @Size(max = 255)
+    private String city;
+
+    @Size(max = 255)
+    private String stateProvince;
+
+    @Size(max = 20)
+    private String zipCode;
+
+    @Size(max = 100)
+    private String country;
+
+    @Size(max = 1024)
+    private String websiteUrl;
+
+    @JsonIgnore
+    private boolean descriptionSet;
+
+    @JsonIgnore
+    private boolean addressLine1Set;
+
+    @JsonIgnore
+    private boolean addressLine2Set;
+
+    @JsonIgnore
+    private boolean citySet;
+
+    @JsonIgnore
+    private boolean stateProvinceSet;
+
+    @JsonIgnore
+    private boolean zipCodeSet;
+
+    @JsonIgnore
+    private boolean countrySet;
+
+    @JsonIgnore
+    private boolean websiteUrlSet;
 
     @Size(max = 20)
     private String subscriptionPlan;
@@ -137,6 +187,118 @@ public class TenantOrganizationDTO implements Serializable {
 
     public void setContactPhone(String contactPhone) {
         this.contactPhone = contactPhone;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+        this.descriptionSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isDescriptionSet() {
+        return descriptionSet;
+    }
+
+    public String getAddressLine1() {
+        return addressLine1;
+    }
+
+    public void setAddressLine1(String addressLine1) {
+        this.addressLine1 = addressLine1;
+        this.addressLine1Set = true;
+    }
+
+    @JsonIgnore
+    public boolean isAddressLine1Set() {
+        return addressLine1Set;
+    }
+
+    public String getAddressLine2() {
+        return addressLine2;
+    }
+
+    public void setAddressLine2(String addressLine2) {
+        this.addressLine2 = addressLine2;
+        this.addressLine2Set = true;
+    }
+
+    @JsonIgnore
+    public boolean isAddressLine2Set() {
+        return addressLine2Set;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+        this.citySet = true;
+    }
+
+    @JsonIgnore
+    public boolean isCitySet() {
+        return citySet;
+    }
+
+    public String getStateProvince() {
+        return stateProvince;
+    }
+
+    public void setStateProvince(String stateProvince) {
+        this.stateProvince = stateProvince;
+        this.stateProvinceSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isStateProvinceSet() {
+        return stateProvinceSet;
+    }
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+        this.zipCodeSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isZipCodeSet() {
+        return zipCodeSet;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+        this.countrySet = true;
+    }
+
+    @JsonIgnore
+    public boolean isCountrySet() {
+        return countrySet;
+    }
+
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+        this.websiteUrlSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isWebsiteUrlSet() {
+        return websiteUrlSet;
     }
 
     public String getSubscriptionPlan() {
@@ -245,6 +407,13 @@ public class TenantOrganizationDTO implements Serializable {
             ", logoUrl='" + getLogoUrl() + "'" +
             ", contactEmail='" + getContactEmail() + "'" +
             ", contactPhone='" + getContactPhone() + "'" +
+            ", description='" + getDescription() + "'" +
+            ", addressLine1='" + getAddressLine1() + "'" +
+            ", city='" + getCity() + "'" +
+            ", stateProvince='" + getStateProvince() + "'" +
+            ", zipCode='" + getZipCode() + "'" +
+            ", country='" + getCountry() + "'" +
+            ", websiteUrl='" + getWebsiteUrl() + "'" +
             ", subscriptionPlan='" + getSubscriptionPlan() + "'" +
             ", subscriptionStatus='" + getSubscriptionStatus() + "'" +
             ", subscriptionStartDate='" + getSubscriptionStartDate() + "'" +
