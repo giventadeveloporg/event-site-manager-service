@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Align tenant_settings with JPA entity / production baseline (profile, address, Twilio, branding) -->
+
+    <changeSet id="20260620120001-membership-flag" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="is_membership_subscription_enabled"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="is_membership_subscription_enabled" type="boolean"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-twilio-account-sid" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="twilio_account_sid"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="twilio_account_sid" type="varchar(500)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-twilio-auth-token" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="twilio_auth_token"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="twilio_auth_token" type="varchar(1048)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-twilio-whatsapp-from" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="twilio_whatsapp_from"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="twilio_whatsapp_from" type="varchar(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-whatsapp-webhook-url" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="whatsapp_webhook_url"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="whatsapp_webhook_url" type="varchar(1048)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-whatsapp-webhook-token" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="whatsapp_webhook_token"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="whatsapp_webhook_token" type="varchar(1048)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-email-footer-html-url" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="email_footer_html_url"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="email_footer_html_url" type="varchar(2048)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-email-header-image-url" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="email_header_image_url"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="email_header_image_url" type="varchar(2048)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-logo-image-url" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="logo_image_url"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="logo_image_url" type="varchar(2048)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-address-line-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="address_line_1"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="address_line_1" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-address-line-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="address_line_2"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="address_line_2" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-phone-number" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="phone_number"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="phone_number" type="varchar(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-zip-code" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="zip_code"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="zip_code" type="varchar(20)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-country" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="country"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="country" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-state-province" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="state_province"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="state_province" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-email" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="email"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="email" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- city was bundled with description in 20260620120000-2; add separately if that changeset was MARK_RAN -->
+    <changeSet id="20260620120001-city" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="city"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="city" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260620120001-description" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not><columnExists tableName="tenant_settings" columnName="description"/></not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="description" type="varchar(1000)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

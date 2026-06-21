@@ -1,7 +1,10 @@
 package com.nextjstemplate.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nextjstemplate.service.validation.GalleryAlbumCategoryValidator;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -39,6 +42,33 @@ public class GalleryAlbumDTO implements Serializable {
 
     @NotNull
     private ZonedDateTime updatedAt;
+
+    @Min(GalleryAlbumCategoryValidator.MIN_ALBUM_YEAR)
+    @Max(GalleryAlbumCategoryValidator.MAX_ALBUM_YEAR)
+    private Integer albumYear;
+
+    private Long galleryCategoryId;
+
+    @JsonIgnore
+    private boolean galleryCategoryIdSet;
+
+    private LocalDate eventDateStart;
+
+    private LocalDate eventDateEnd;
+
+    @Size(max = GalleryAlbumCategoryValidator.MAX_EVENT_LOCATION_LENGTH)
+    private String eventLocation;
+
+    @JsonIgnore
+    private boolean eventDateStartSet;
+
+    @JsonIgnore
+    private boolean eventDateEndSet;
+
+    @JsonIgnore
+    private boolean eventLocationSet;
+
+    private GalleryCategoryDTO galleryCategory;
 
     private Long createdById;
 
@@ -116,6 +146,78 @@ public class GalleryAlbumDTO implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public Integer getAlbumYear() {
+        return albumYear;
+    }
+
+    public void setAlbumYear(Integer albumYear) {
+        this.albumYear = albumYear;
+    }
+
+    public Long getGalleryCategoryId() {
+        return galleryCategoryId;
+    }
+
+    public void setGalleryCategoryId(Long galleryCategoryId) {
+        this.galleryCategoryId = galleryCategoryId;
+        this.galleryCategoryIdSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isGalleryCategoryIdSet() {
+        return galleryCategoryIdSet;
+    }
+
+    public LocalDate getEventDateStart() {
+        return eventDateStart;
+    }
+
+    public void setEventDateStart(LocalDate eventDateStart) {
+        this.eventDateStart = eventDateStart;
+        this.eventDateStartSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isEventDateStartSet() {
+        return eventDateStartSet;
+    }
+
+    public LocalDate getEventDateEnd() {
+        return eventDateEnd;
+    }
+
+    public void setEventDateEnd(LocalDate eventDateEnd) {
+        this.eventDateEnd = eventDateEnd;
+        this.eventDateEndSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isEventDateEndSet() {
+        return eventDateEndSet;
+    }
+
+    public String getEventLocation() {
+        return eventLocation;
+    }
+
+    public void setEventLocation(String eventLocation) {
+        this.eventLocation = eventLocation;
+        this.eventLocationSet = true;
+    }
+
+    @JsonIgnore
+    public boolean isEventLocationSet() {
+        return eventLocationSet;
+    }
+
+    public GalleryCategoryDTO getGalleryCategory() {
+        return galleryCategory;
+    }
+
+    public void setGalleryCategory(GalleryCategoryDTO galleryCategory) {
+        this.galleryCategory = galleryCategory;
+    }
+
     public Long getCreatedById() {
         return createdById;
     }
@@ -164,6 +266,11 @@ public class GalleryAlbumDTO implements Serializable {
             ", coverImageUrl='" + getCoverImageUrl() + "'" +
             ", isPublic='" + getIsPublic() + "'" +
             ", displayOrder=" + getDisplayOrder() +
+            ", albumYear=" + getAlbumYear() +
+            ", galleryCategoryId=" + getGalleryCategoryId() +
+            ", eventDateStart='" + getEventDateStart() + "'" +
+            ", eventDateEnd='" + getEventDateEnd() + "'" +
+            ", eventLocation='" + getEventLocation() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", createdById=" + getCreatedById() +

@@ -56,6 +56,7 @@ public class SequenceSynchronizationService {
                     COALESCE((SELECT MAX(id) FROM public.event_sponsors), 0),
                     COALESCE((SELECT MAX(id) FROM public.event_sponsors_join), 0),
                     COALESCE((SELECT MAX(id) FROM public.gallery_album), 0),
+                    COALESCE((SELECT MAX(id) FROM public.gallery_category), 0),
                     COALESCE((SELECT MAX(id) FROM public.event_media), 0),
                     COALESCE((SELECT MAX(id) FROM public.event_organizer), 0),
                     COALESCE((SELECT MAX(id) FROM public.event_poll), 0),

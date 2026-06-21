@@ -57,4 +57,12 @@ public interface GalleryAlbumService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * Update the cover image URL for a gallery album.
+     *
+     * @param albumId the album id.
+     * @param coverImageUrl the S3 URL for the cover image.
+     */
+    void updateCoverImageUrl(Long albumId, String coverImageUrl);
 }

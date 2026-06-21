@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260619120000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <not>
+                <columnExists tableName="gallery_album" columnName="event_date_start"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="gallery_album">
+            <column name="event_date_start" type="date"/>
+            <column name="event_date_end" type="date"/>
+            <column name="event_location" type="varchar(256)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260619120000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'gallery_album'
+                  AND constraint_name = 'chk_gallery_album_event_date_order'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE gallery_album
+                ADD CONSTRAINT chk_gallery_album_event_date_order
+                    CHECK (
+                        event_date_start IS NULL
+                        OR event_date_end IS NULL
+                        OR event_date_end &gt;= event_date_start
+                    );
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260619120000-3" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <columnExists tableName="gallery_album" columnName="event_date_start"/>
+            <not>
+                <indexExists indexName="idx_gallery_album_event_date_start"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX idx_gallery_album_event_date_start
+                ON gallery_album (tenant_id, event_date_start)
+                WHERE event_date_start IS NOT NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

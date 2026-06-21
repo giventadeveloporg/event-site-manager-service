@@ -16,6 +16,25 @@ public interface TenantSettingsMapper extends EntityMapper<TenantSettingsDTO, Te
     @Mapping(target = "defaultHeroImageUrls", ignore = true)
     TenantSettingsDTO toDto(TenantSettings s);
 
+    @Mapping(target = "addressLine1", ignore = true)
+    @Mapping(target = "addressLine2", ignore = true)
+    @Mapping(target = "description", ignore = true)
+    @Mapping(target = "city", ignore = true)
+    @Mapping(target = "stateProvince", ignore = true)
+    @Mapping(target = "zipCode", ignore = true)
+    @Mapping(target = "country", ignore = true)
+    TenantSettings toEntity(TenantSettingsDTO dto);
+
+    @Override
+    @Mapping(target = "addressLine1", ignore = true)
+    @Mapping(target = "addressLine2", ignore = true)
+    @Mapping(target = "description", ignore = true)
+    @Mapping(target = "city", ignore = true)
+    @Mapping(target = "stateProvince", ignore = true)
+    @Mapping(target = "zipCode", ignore = true)
+    @Mapping(target = "country", ignore = true)
+    void partialUpdate(@MappingTarget TenantSettings entity, TenantSettingsDTO dto);
+
     @AfterMapping
     default void enrichDefaultHeroImageUrls(@MappingTarget TenantSettingsDTO dto) {
         dto.setDefaultHeroImageUrls(TenantSettingsHeroFieldsValidator.parseUrlList(dto.getDefaultHeroImageUrlsJson()));

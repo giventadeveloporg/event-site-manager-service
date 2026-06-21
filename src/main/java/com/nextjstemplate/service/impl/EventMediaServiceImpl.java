@@ -26,6 +26,7 @@ import com.nextjstemplate.repository.PromotionEmailTemplateRepository;
 import com.nextjstemplate.service.EventDetailsService;
 import com.nextjstemplate.service.EventMediaService;
 import com.nextjstemplate.service.FocusGroupService;
+import com.nextjstemplate.service.GalleryAlbumService;
 import com.nextjstemplate.service.OfficialDocumentYearBundleService;
 import com.nextjstemplate.service.PromotionEmailTemplateService;
 import com.nextjstemplate.service.S3Service;
@@ -49,6 +50,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -91,6 +93,8 @@ public class EventMediaServiceImpl implements EventMediaService {
 
     private final FocusGroupService focusGroupService;
 
+    private final GalleryAlbumService galleryAlbumService;
+
     private final GalleryAlbumRepository galleryAlbumRepository;
 
     private final EventFocusGroupRepository eventFocusGroupRepository;
@@ -115,6 +119,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         PromotionEmailTemplateService promotionEmailTemplateService,
         PromotionEmailTemplateMapper promotionEmailTemplateMapper,
         FocusGroupService focusGroupService,
+        GalleryAlbumService galleryAlbumService,
         GalleryAlbumRepository galleryAlbumRepository,
         EventFocusGroupRepository eventFocusGroupRepository,
         OfficialDocumentCategoryRepository officialDocumentCategoryRepository,
@@ -134,6 +139,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         this.promotionEmailTemplateService = promotionEmailTemplateService;
         this.promotionEmailTemplateMapper = promotionEmailTemplateMapper;
         this.focusGroupService = focusGroupService;
+        this.galleryAlbumService = galleryAlbumService;
         this.galleryAlbumRepository = galleryAlbumRepository;
         this.eventFocusGroupRepository = eventFocusGroupRepository;
         this.officialDocumentCategoryRepository = officialDocumentCategoryRepository;
@@ -2352,6 +2358,87 @@ public class EventMediaServiceImpl implements EventMediaService {
         }
 
         return savedMedia;
+    }
+
+    @Override
+    public EventMediaDTO uploadGalleryAlbumCoverImage(
+        Long albumId,
+        MultipartFile file,
+        String tenantId,
+        String title,
+        String description,
+        Boolean isPublic
+    ) {
+        log.debug("Request to upload gallery album cover image: albumId={}, tenantId={}", albumId, tenantId);
+
+        if (albumId == null) {
+            throw new IllegalArgumentException("Missing required parameter: albumId");
+        }
+        if (tenantId == null || tenantId.isBlank()) {
+            throw new IllegalArgumentException("Missing required parameter: tenantId");
+        }
+
+        GalleryAlbum album = galleryAlbumRepository
+            .findById(albumId)
+            .orElseThrow(() -> new EntityNotFoundException("Gallery album not found: " + albumId));
+
+        if (!tenantId.equals(album.getTenantId())) {
+            throw new AccessDeniedException("Tenant does not match album");
+        }
+
+        validateGalleryCoverImageFile(file);
+
+        String s3Path = s3Service.generateGalleryAlbumCoverPath(tenantId, albumId, file.getOriginalFilename());
+        String s3Url = s3Service.uploadFile(s3Path, file);
+        log.debug("Uploaded gallery album cover image to S3: {}", s3Url);
+
+        EventMediaDTO mediaDTO = new EventMediaDTO();
+        mediaDTO.setEventId(null);
+        mediaDTO.setAlbumId(albumId);
+        mediaDTO.setTenantId(tenantId);
+        mediaDTO.setTitle(title != null && !title.isEmpty() ? title : "Gallery Album Cover Image");
+        mediaDTO.setDescription(description != null && !description.isEmpty() ? description : "Cover image for gallery album");
+        mediaDTO.setFileUrl(s3Url);
+        mediaDTO.setEventMediaType("GALLERY_COVER");
+        mediaDTO.setStorageType("S3");
+        mediaDTO.setIsPublic(isPublic != null ? isPublic : true);
+        mediaDTO.setPriorityRanking(0);
+        mediaDTO.setIsHomePageHeroImage(false);
+        mediaDTO.setIsFeaturedEventImage(false);
+        mediaDTO.setIsLiveEventImage(false);
+        mediaDTO.setIsEmailHeaderImage(false);
+        mediaDTO.setStartDisplayingFromDate(LocalDate.now());
+        mediaDTO.setCreatedAt(ZonedDateTime.now());
+        mediaDTO.setUpdatedAt(ZonedDateTime.now());
+
+        EventMediaDTO savedMedia = save(mediaDTO);
+        log.debug("Created EventMedia record for gallery album cover image: {}", savedMedia.getId());
+
+        galleryAlbumService.updateCoverImageUrl(albumId, s3Url);
+        log.info("Updated gallery album {} with cover image URL: {}", albumId, s3Url);
+
+        return savedMedia;
+    }
+
+    private void validateGalleryCoverImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        String contentType = file.getContentType();
+        if (
+            contentType == null ||
+            (!contentType.equals("image/jpeg") &&
+                !contentType.equals("image/png") &&
+                !contentType.equals("image/webp") &&
+                !contentType.equals("image/gif"))
+        ) {
+            throw new IllegalArgumentException("Invalid file type");
+        }
+
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("File too large");
+        }
     }
 
     /**

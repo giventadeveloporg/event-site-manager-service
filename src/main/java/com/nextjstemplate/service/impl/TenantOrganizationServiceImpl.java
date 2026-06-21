@@ -5,6 +5,7 @@ import com.nextjstemplate.repository.TenantOrganizationRepository;
 import com.nextjstemplate.service.TenantOrganizationService;
 import com.nextjstemplate.service.dto.TenantOrganizationDTO;
 import com.nextjstemplate.service.mapper.TenantOrganizationMapper;
+import com.nextjstemplate.service.validation.TenantOrganizationProfileValidator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -30,17 +31,22 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
 
     private final TenantOrganizationMapper tenantOrganizationMapper;
 
+    private final TenantOrganizationProfileValidator tenantOrganizationProfileValidator;
+
     public TenantOrganizationServiceImpl(
         TenantOrganizationRepository tenantOrganizationRepository,
-        TenantOrganizationMapper tenantOrganizationMapper
+        TenantOrganizationMapper tenantOrganizationMapper,
+        TenantOrganizationProfileValidator tenantOrganizationProfileValidator
     ) {
         this.tenantOrganizationRepository = tenantOrganizationRepository;
         this.tenantOrganizationMapper = tenantOrganizationMapper;
+        this.tenantOrganizationProfileValidator = tenantOrganizationProfileValidator;
     }
 
     @Override
     public TenantOrganizationDTO save(TenantOrganizationDTO tenantOrganizationDTO) {
         log.debug("Request to save TenantOrganization : {}", tenantOrganizationDTO);
+        tenantOrganizationProfileValidator.validateAndNormalize(tenantOrganizationDTO);
         TenantOrganization tenantOrganization = tenantOrganizationMapper.toEntity(tenantOrganizationDTO);
         tenantOrganization = tenantOrganizationRepository.save(tenantOrganization);
         return tenantOrganizationMapper.toDto(tenantOrganization);
@@ -49,6 +55,7 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
     @Override
     public TenantOrganizationDTO update(TenantOrganizationDTO tenantOrganizationDTO) {
         log.debug("Request to update TenantOrganization : {}", tenantOrganizationDTO);
+        tenantOrganizationProfileValidator.validateAndNormalize(tenantOrganizationDTO);
         TenantOrganization tenantOrganization = tenantOrganizationMapper.toEntity(tenantOrganizationDTO);
         tenantOrganization = tenantOrganizationRepository.save(tenantOrganization);
         return tenantOrganizationMapper.toDto(tenantOrganization);
@@ -57,11 +64,14 @@ public class TenantOrganizationServiceImpl implements TenantOrganizationService 
     @Override
     public Optional<TenantOrganizationDTO> partialUpdate(TenantOrganizationDTO tenantOrganizationDTO) {
         log.debug("Request to partially update TenantOrganization : {}", tenantOrganizationDTO);
+        tenantOrganizationProfileValidator.validatePresentFields(tenantOrganizationDTO);
 
         return tenantOrganizationRepository
             .findById(tenantOrganizationDTO.getId())
             .map(existingTenantOrganization -> {
                 tenantOrganizationMapper.partialUpdate(existingTenantOrganization, tenantOrganizationDTO);
+                tenantOrganizationProfileValidator.applyPartialNullableFields(existingTenantOrganization, tenantOrganizationDTO);
+                tenantOrganizationProfileValidator.validateEntityFields(existingTenantOrganization);
 
                 return existingTenantOrganization;
             })

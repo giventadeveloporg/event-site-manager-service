@@ -129,6 +129,14 @@ public class TenantSettings implements Serializable {
     @Column(name = "address_line_2", length = 255)
     private String addressLine2;
 
+    @Size(max = 1000)
+    @Column(name = "description", length = 1000)
+    private String description;
+
+    @Size(max = 255)
+    @Column(name = "city", length = 255)
+    private String city;
+
     @Size(max = 50)
     @Column(name = "phone_number", length = 50)
     private String phoneNumber;
@@ -634,6 +642,32 @@ public class TenantSettings implements Serializable {
         this.addressLine2 = addressLine2;
     }
 
+    public String getDescription() {
+        return this.description;
+    }
+
+    public TenantSettings description(String description) {
+        this.setDescription(description);
+        return this;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCity() {
+        return this.city;
+    }
+
+    public TenantSettings city(String city) {
+        this.setCity(city);
+        return this;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
     public String getPhoneNumber() {
         return this.phoneNumber;
     }
@@ -897,6 +931,8 @@ public class TenantSettings implements Serializable {
                 ", logoImageUrl='" + getLogoImageUrl() + "'" +
                 ", addressLine1='" + getAddressLine1() + "'" +
                 ", addressLine2='" + getAddressLine2() + "'" +
+                ", description='" + getDescription() + "'" +
+                ", city='" + getCity() + "'" +
                 ", phoneNumber='" + getPhoneNumber() + "'" +
                 ", zipCode='" + getZipCode() + "'" +
                 ", country='" + getCountry() + "'" +

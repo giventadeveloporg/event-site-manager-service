@@ -249,6 +249,17 @@ public interface S3Service {
     String generateFocusGroupCoverImagePath(String tenantId, Long focusGroupId, String originalFilename);
 
     /**
+     * Generate S3 path for gallery album cover images.
+     * Path format: {profile}/media/tenantId/{tenantId}/gallery-album/album-id/{albumId}/cover_{timestamp}_{uuid}.{ext}
+     *
+     * @param tenantId Tenant ID
+     * @param albumId Gallery album ID
+     * @param originalFilename Original filename from upload
+     * @return S3 path string
+     */
+    String generateGalleryAlbumCoverPath(String tenantId, Long albumId, String originalFilename);
+
+    /**
      * Generate S3 path for event attendee registration attachments.
      * Path format:
      * {profile}/events/tenantId/{tenantId}/event-id/{eventId}/attendees/attendee-id/{attendeeId}/attachments/{base}_{timestamp}_{uuid}.{ext}

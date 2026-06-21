@@ -367,4 +367,25 @@ public interface EventMediaService {
         String description,
         Boolean isPublic
     );
+
+    /**
+     * Upload gallery album cover image.
+     * Uploads an image to S3, creates an EventMedia record, and updates gallery_album.cover_image_url.
+     *
+     * @param albumId Gallery album ID
+     * @param file Multipart file to upload
+     * @param tenantId Tenant ID
+     * @param title Optional title (defaults to "Gallery Album Cover Image")
+     * @param description Optional description (defaults to "Cover image for gallery album")
+     * @param isPublic Optional public flag (defaults to true)
+     * @return EventMediaDTO with uploaded image details
+     */
+    EventMediaDTO uploadGalleryAlbumCoverImage(
+        Long albumId,
+        MultipartFile file,
+        String tenantId,
+        String title,
+        String description,
+        Boolean isPublic
+    );
 }

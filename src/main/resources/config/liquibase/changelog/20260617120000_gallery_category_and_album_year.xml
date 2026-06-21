@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Gallery album category & year enhancements.
+        See documentation/gallery_album_category_year_enhancements/database_schema_enhancements_prd.html
+    -->
+
+    <changeSet id="20260617120000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="gallery_category"/>
+            </not>
+        </preConditions>
+        <createTable tableName="gallery_category">
+            <column name="id" type="bigint" defaultValueComputed="nextval('sequence_generator')">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_gallery_category"/>
+            </column>
+            <column name="tenant_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slug" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_name" type="varchar(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(512)"/>
+            <column name="sort_order" type="integer" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="${datetimeType}" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20260617120000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_category"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'gallery_category'
+                  AND constraint_name = 'ux_gallery_category_tenant_slug'
+            </sqlCheck>
+        </preConditions>
+        <addUniqueConstraint
+            tableName="gallery_category"
+            columnNames="tenant_id, slug"
+            constraintName="ux_gallery_category_tenant_slug"/>
+    </changeSet>
+
+    <changeSet id="20260617120000-3" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_category"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'gallery_category'
+                  AND constraint_name = 'chk_gallery_category_slug_format'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE gallery_category
+                ADD CONSTRAINT chk_gallery_category_slug_format
+                CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$');
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260617120000-4" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_category"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'gallery_category'
+                  AND constraint_name = 'chk_gallery_category_sort_non_negative'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE gallery_category
+                ADD CONSTRAINT chk_gallery_category_sort_non_negative
+                CHECK (sort_order >= 0);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260617120000-5" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_category"/>
+            <not>
+                <indexExists indexName="idx_gallery_category_tenant_active"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="idx_gallery_category_tenant_active" tableName="gallery_category">
+            <column name="tenant_id"/>
+            <column name="is_active"/>
+            <column name="sort_order"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20260617120000-6" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <not>
+                <columnExists tableName="gallery_album" columnName="gallery_category_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="gallery_album">
+            <column name="gallery_category_id" type="bigint"/>
+            <column name="album_year" type="integer"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260617120000-7" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <tableExists tableName="gallery_category"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'gallery_album'
+                  AND constraint_name = 'fk_gallery_album_category'
+            </sqlCheck>
+        </preConditions>
+        <addForeignKeyConstraint
+            baseTableName="gallery_album"
+            baseColumnNames="gallery_category_id"
+            constraintName="fk_gallery_album_category"
+            referencedTableName="gallery_category"
+            referencedColumnNames="id"
+            onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="20260617120000-8" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'gallery_album'
+                  AND constraint_name = 'chk_gallery_album_year_range'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE gallery_album
+                ADD CONSTRAINT chk_gallery_album_year_range
+                CHECK (album_year IS NULL OR (album_year >= 1900 AND album_year &lt;= 2100));
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260617120000-9" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <not>
+                <indexExists indexName="idx_gallery_album_category_id"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX idx_gallery_album_category_id
+                ON gallery_album (gallery_category_id)
+                WHERE gallery_category_id IS NOT NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260617120000-10" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gallery_album"/>
+            <not>
+                <indexExists indexName="idx_gallery_album_album_year"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX idx_gallery_album_album_year
+                ON gallery_album (tenant_id, album_year)
+                WHERE album_year IS NOT NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

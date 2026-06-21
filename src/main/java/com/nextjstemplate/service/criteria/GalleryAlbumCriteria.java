@@ -39,6 +39,14 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
 
     private LongFilter createdById;
 
+    private LongFilter galleryCategoryId;
+
+    private IntegerFilter albumYear;
+
+    private LocalDateFilter eventDateStart;
+
+    private StringFilter eventLocation;
+
     private Boolean distinct;
 
     public GalleryAlbumCriteria() {}
@@ -54,6 +62,10 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.createdById = other.createdById == null ? null : other.createdById.copy();
+        this.galleryCategoryId = other.galleryCategoryId == null ? null : other.galleryCategoryId.copy();
+        this.albumYear = other.albumYear == null ? null : other.albumYear.copy();
+        this.eventDateStart = other.eventDateStart == null ? null : other.eventDateStart.copy();
+        this.eventLocation = other.eventLocation == null ? null : other.eventLocation.copy();
         this.distinct = other.distinct;
     }
 
@@ -212,6 +224,66 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
         this.createdById = createdById;
     }
 
+    public LongFilter getGalleryCategoryId() {
+        return galleryCategoryId;
+    }
+
+    public LongFilter galleryCategoryId() {
+        if (galleryCategoryId == null) {
+            galleryCategoryId = new LongFilter();
+        }
+        return galleryCategoryId;
+    }
+
+    public void setGalleryCategoryId(LongFilter galleryCategoryId) {
+        this.galleryCategoryId = galleryCategoryId;
+    }
+
+    public IntegerFilter getAlbumYear() {
+        return albumYear;
+    }
+
+    public IntegerFilter albumYear() {
+        if (albumYear == null) {
+            albumYear = new IntegerFilter();
+        }
+        return albumYear;
+    }
+
+    public void setAlbumYear(IntegerFilter albumYear) {
+        this.albumYear = albumYear;
+    }
+
+    public LocalDateFilter getEventDateStart() {
+        return eventDateStart;
+    }
+
+    public LocalDateFilter eventDateStart() {
+        if (eventDateStart == null) {
+            eventDateStart = new LocalDateFilter();
+        }
+        return eventDateStart;
+    }
+
+    public void setEventDateStart(LocalDateFilter eventDateStart) {
+        this.eventDateStart = eventDateStart;
+    }
+
+    public StringFilter getEventLocation() {
+        return eventLocation;
+    }
+
+    public StringFilter eventLocation() {
+        if (eventLocation == null) {
+            eventLocation = new StringFilter();
+        }
+        return eventLocation;
+    }
+
+    public void setEventLocation(StringFilter eventLocation) {
+        this.eventLocation = eventLocation;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -240,6 +312,10 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(createdById, that.createdById) &&
+            Objects.equals(galleryCategoryId, that.galleryCategoryId) &&
+            Objects.equals(albumYear, that.albumYear) &&
+            Objects.equals(eventDateStart, that.eventDateStart) &&
+            Objects.equals(eventLocation, that.eventLocation) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -257,6 +333,10 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
             createdAt,
             updatedAt,
             createdById,
+            galleryCategoryId,
+            albumYear,
+            eventDateStart,
+            eventLocation,
             distinct
         );
     }
@@ -275,6 +355,10 @@ public class GalleryAlbumCriteria implements Serializable, Criteria {
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
             (createdById != null ? "createdById=" + createdById + ", " : "") +
+            (galleryCategoryId != null ? "galleryCategoryId=" + galleryCategoryId + ", " : "") +
+            (albumYear != null ? "albumYear=" + albumYear + ", " : "") +
+            (eventDateStart != null ? "eventDateStart=" + eventDateStart + ", " : "") +
+            (eventLocation != null ? "eventLocation=" + eventLocation + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}";
     }

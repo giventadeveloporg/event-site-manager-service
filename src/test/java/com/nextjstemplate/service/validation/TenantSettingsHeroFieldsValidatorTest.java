@@ -20,6 +20,7 @@ class TenantSettingsHeroFieldsValidatorTest {
 
         assertThat(dto.getDefaultHeroDisplayMode()).isEqualTo("slideshow");
         assertThat(dto.getDefaultHeroIncludeWithEvents()).isTrue();
+        assertThat(dto.getHomepageCacheVersion()).isEqualTo(0L);
     }
 
     @Test
@@ -65,6 +66,16 @@ class TenantSettingsHeroFieldsValidatorTest {
         assertThatThrownBy(() -> TenantSettingsHeroFieldsValidator.validateMaxDisplayCount(0))
             .isInstanceOf(BadRequestAlertException.class)
             .hasMessageContaining("at least 1");
+    }
+
+    @Test
+    void rejectDeprecatedIdentityFieldWrites_rejectsAddressLine1() {
+        TenantSettingsDTO dto = new TenantSettingsDTO();
+        dto.setAddressLine1("123 Main Street");
+
+        assertThatThrownBy(() -> TenantSettingsHeroFieldsValidator.rejectDeprecatedIdentityFieldWrites(dto))
+            .isInstanceOf(BadRequestAlertException.class)
+            .hasMessageContaining("tenant-organization");
     }
 
     @Test

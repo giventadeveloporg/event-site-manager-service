@@ -627,6 +627,27 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
+    public String generateGalleryAlbumCoverPath(String tenantId, Long albumId, String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String extension = getFileExtension(originalFilename);
+        if (extension == null || extension.isEmpty()) {
+            extension = ".jpeg";
+        }
+        String profilePrefix = getActiveProfilePrefix();
+
+        return String.format(
+            "%s/media/tenantId/%s/gallery-album/album-id/%d/cover_%s_%s%s",
+            profilePrefix,
+            tenantId,
+            albumId,
+            timestamp,
+            uuid,
+            extension
+        );
+    }
+
+    @Override
     public String generateEventAttendeeAttachmentPath(String tenantId, Long eventId, Long attendeeId, String originalFilename) {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
