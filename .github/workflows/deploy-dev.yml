@@ -1,0 +1,182 @@
+# Deploy Event Site Manager Service to AWS ECS Fargate — Dev
+# Triggered on push to any branch, or manually (workflow_dispatch).
+# See documentation/DEPLOYMENT_AUTOMATION_GIT_ACTIONS/ for setup and troubleshooting.
+# CONTAINER_NAME must match the container "name" in your ECS task definition in AWS.
+#
+# Skip unit tests:
+#  - On push: set repository variable SKIP_TESTS = 'true' (Settings → Secrets and variables → Actions → Variables).
+#  - On manual run: check the "Skip unit tests (not recommended)" input when running the workflow.
+
+name: Deploy to Dev
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (optional)'
+        required: false
+        type: string
+      skip_tests:
+        description: 'Skip unit tests (not recommended)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  # Aligned with infrastructure_deployment/deployment-scripts/production-vpc/deploy-docker-image-to-ecs.ps1 (Environment=dev)
+  # ECS/ECR deploy region (override via vars.AWS_DEPLOY_REGION if needed)
+  AWS_DEPLOY_REGION: ${{ vars.AWS_DEPLOY_REGION || 'us-east-1' }}
+  # S3/SES runtime region injected into the container (matches application.yml default)
+  AWS_S3_REGION: ${{ vars.AWS_REGION || 'us-east-2' }}
+  # Set ECR_REPOSITORY_DEV in GitHub environment variables to override the default repo name
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY_DEV || 'event-site-manager-dev' }}
+  ECS_CLUSTER: event-site-manager-dev-cluster
+  ECS_SERVICE: event-site-manager-dev-backend-service
+  ECS_TASK_DEFINITION: event-site-manager-dev-backend
+  CONTAINER_NAME: spring-boot-backend
+
+jobs:
+  deploy:
+    name: Deploy to Dev Environment
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      # Skip tests if: repo variable SKIP_TESTS is 'true', or (manual run and "Skip unit tests" is checked)
+      - name: Run tests
+        if: ${{ vars.SKIP_TESTS != 'true' && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_tests != 'true') }}
+        run: mvn test
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEPLOY_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Verify ECR repository exists
+        env:
+          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+        run: |
+          if [ -z "$ECR_REPOSITORY" ]; then
+            echo "::error::ECR_REPOSITORY is empty. Set ECR_REPOSITORY_DEV in the dev environment variables."
+            exit 1
+          fi
+          echo "Checking ECR repository '$ECR_REPOSITORY' in region '${{ env.AWS_DEPLOY_REGION }}'..."
+          if ! aws ecr describe-repositories \
+            --repository-names "$ECR_REPOSITORY" \
+            --region "${{ env.AWS_DEPLOY_REGION }}" >/dev/null 2>&1; then
+            echo "::error::ECR repository '$ECR_REPOSITORY' was not found in account/region ${{ env.AWS_DEPLOY_REGION }}."
+            echo "Create the repository in AWS ECR or set ECR_REPOSITORY_DEV to the existing repository name."
+            exit 1
+          fi
+          echo "ECR repository '$ECR_REPOSITORY' exists."
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+            --query taskDefinition > task-definition.json
+          echo "Container names in task definition:"
+          cat task-definition.json | jq -r '.containerDefinitions[].name'
+
+      # Sync runtime AWS credentials from GitHub Secrets into the ECS task definition.
+      # GitHub Secrets are used for CI/CD above; this step ensures the running container
+      # receives the same credentials. Removes duplicate Secrets Manager entries for
+      # these keys to avoid stale values overriding the synced environment variables.
+      - name: Sync AWS credentials into ECS task definition
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET_NAME: ${{ vars.AWS_S3_BUCKET_NAME }}
+          CONTAINER_NAME: ${{ env.CONTAINER_NAME }}
+        run: |
+          jq --arg container "$CONTAINER_NAME" \
+             --arg access_key "$AWS_ACCESS_KEY_ID" \
+             --arg secret_key "$AWS_SECRET_ACCESS_KEY" \
+             --arg region "${{ env.AWS_S3_REGION }}" \
+             --arg bucket "$AWS_S3_BUCKET_NAME" \
+             '
+             .containerDefinitions = [
+               .containerDefinitions[] |
+               if .name == $container then
+                 .environment = (
+                   ((.environment // []) | map(select(
+                     .name != "AWS_ACCESS_KEY_ID" and
+                     .name != "AWS_SECRET_ACCESS_KEY" and
+                     .name != "AWS_REGION" and
+                     .name != "AWS_S3_BUCKET_NAME"
+                   ))) +
+                   [
+                     {"name": "AWS_ACCESS_KEY_ID", "value": $access_key},
+                     {"name": "AWS_SECRET_ACCESS_KEY", "value": $secret_key},
+                     {"name": "AWS_REGION", "value": $region}
+                   ] +
+                   (if ($bucket | length) > 0 then [{"name": "AWS_S3_BUCKET_NAME", "value": $bucket}] else [] end)
+                 )
+                 | .secrets = (
+                   (.secrets // []) | map(select(
+                     .name != "AWS_ACCESS_KEY_ID" and
+                     .name != "AWS_SECRET_ACCESS_KEY"
+                   ))
+                 )
+               else .
+               end
+             ]
+             ' task-definition.json > task-definition-synced.json
+          mv task-definition-synced.json task-definition.json
+          echo "Synced AWS credentials into container '$CONTAINER_NAME' (values are masked in logs)."
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting for service to stabilize..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+          echo "Deployment verified successfully!"

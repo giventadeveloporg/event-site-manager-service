@@ -18,7 +18,7 @@ PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Configuration
-APPLICATION_NAME="malayalees-us-site-boot"
+APPLICATION_NAME="event-site-manager-service"
 LOCAL_PORT=8080
 POSTGRES_PORT=5432
 REDIS_PORT=6379
@@ -103,7 +103,7 @@ start_infrastructure() {
     
     # Wait for services to be healthy
     log "Waiting for PostgreSQL to be ready..."
-    timeout 60 bash -c 'until docker-compose -f docker-compose.local.yml exec postgres pg_isready -U postgres -d malayalees_us_site; do sleep 2; done'
+    timeout 60 bash -c 'until docker-compose -f docker-compose.local.yml exec postgres pg_isready -U postgres -d event_site_manager_db; do sleep 2; done'
     
     log "Waiting for Redis to be ready..."
     timeout 60 bash -c 'until docker-compose -f docker-compose.local.yml exec redis redis-cli ping | grep -q PONG; do sleep 2; done'
@@ -153,7 +153,7 @@ create_test_data() {
     log "Creating test data..."
     
     # Create test tenants and users
-    docker-compose -f docker-compose.local.yml exec postgres psql -U postgres -d malayalees_us_site -c "
+    docker-compose -f docker-compose.local.yml exec postgres psql -U postgres -d event_site_manager_db -c "
         INSERT INTO tenant_organization (id, tenant_id, organization_name, domain_name, is_active, created_at, updated_at)
         VALUES 
             (1, 'tenant_demo_001', 'Demo Organization 1', 'demo1.local', true, NOW(), NOW()),
@@ -187,7 +187,7 @@ health_check() {
     fi
     
     # Database connectivity
-    if docker-compose -f docker-compose.local.yml exec postgres pg_isready -U postgres -d malayalees_us_site &>/dev/null; then
+    if docker-compose -f docker-compose.local.yml exec postgres pg_isready -U postgres -d event_site_manager_db &>/dev/null; then
         success "Database connectivity check passed"
     else
         error "Database connectivity check failed"

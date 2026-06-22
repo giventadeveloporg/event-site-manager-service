@@ -1,4 +1,4 @@
-# nextjs_template_boot
+# event_site_manager_service
 
 This application was generated using JHipster 8.0.0, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v8.0.0](https://www.jhipster.tech/documentation-archive/v8.0.0).
 
@@ -45,7 +45,7 @@ Refer to [Doing API-First development][] for more details.
 
 ### Packaging as jar
 
-To build the final jar and optimize the nextjs_template_boot application for production, run:
+To build the final jar and optimize the event_site_manager_service application for production, run:
 
 ```
 ./mvnw -Pprod clean verify

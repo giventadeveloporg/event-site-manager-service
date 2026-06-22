@@ -18,7 +18,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 REGION="us-east-1"
-APPLICATION_NAME="malayalees-us-site-boot"
+APPLICATION_NAME="event-site-manager-service"
 ENVIRONMENT="prod"
 VERSION=${1:-"latest"}
 

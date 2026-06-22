@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Nextjs Template Boot API",
+    "title": "Event Site Manager Service API",
     "description": "API Documentation for all REST endpoints",
     "license": { "name": "Unlicensed" },
     "version": "1.0"

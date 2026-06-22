@@ -1,7 +1,9 @@
 # AWS Deployment Architecture Guide
+
 ## Multi-Tenant Spring Boot Application
 
 ### Table of Contents
+
 1. [Overview](#overview)
 2. [Architecture Design](#architecture-design)
 3. [AWS Services Selection](#aws-services-selection)
@@ -20,6 +22,7 @@
 ## Overview
 
 This document outlines the recommended AWS deployment architecture for a multi-tenant Spring Boot application supporting:
+
 - **Initial Scale**: 10 domains, 1000 users/month
 - **Growth Potential**: Scalable to 100+ domains, 100K+ users
 - **Requirements**: Low cost, low maintenance, fully automated
@@ -39,35 +42,35 @@ graph TB
         C2[Domain 2<br/>Client App]
         CN[Domain N<br/>Client App]
     end
-    
+
     subgraph "AWS CloudFront"
         CF[CloudFront CDN]
     end
-    
+
     subgraph "Application Load Balancer"
         ALB[Application Load Balancer<br/>SSL Termination]
     end
-    
+
     subgraph "Auto Scaling Group"
         EC2A[EC2 Instance 1<br/>Spring Boot App]
         EC2B[EC2 Instance 2<br/>Spring Boot App]
         EC2C[EC2 Instance N<br/>Spring Boot App]
     end
-    
+
     subgraph "Database Layer"
         RDS[Amazon RDS PostgreSQL<br/>Multi-AZ]
         READ[Read Replica<br/>Optional]
     end
-    
+
     subgraph "Caching Layer"
         REDIS[ElastiCache Redis<br/>Session Store]
     end
-    
+
     subgraph "Storage & Monitoring"
         S3[S3 Bucket<br/>Static Assets]
         CW[CloudWatch<br/>Monitoring]
     end
-    
+
     C1 --> CF
     C2 --> CF
     CN --> CF
@@ -96,26 +99,26 @@ graph TB
 
 ### Core Services (Required)
 
-| Service | Purpose | Cost (Monthly) | Justification |
-|---------|---------|----------------|---------------|
-| **EC2 t3.medium** | Application servers | ~$60 | Balanced CPU/memory for Spring Boot |
-| **RDS PostgreSQL db.t3.micro** | Primary database | ~$25 | Multi-AZ for HA, automated backups |
-| **Application Load Balancer** | Traffic distribution | ~$25 | SSL termination, health checks |
-| **ElastiCache Redis t3.micro** | Session caching | ~$15 | Session clustering, performance |
-| **S3 Standard** | Static assets | ~$5 | Unlimited storage, CDN integration |
-| **Route 53** | DNS management | ~$5 | Domain routing, health checks |
-| **CloudWatch** | Monitoring | ~$10 | Metrics, logs, alerts |
+| Service                        | Purpose              | Cost (Monthly) | Justification                       |
+| ------------------------------ | -------------------- | -------------- | ----------------------------------- |
+| **EC2 t3.medium**              | Application servers  | ~$60           | Balanced CPU/memory for Spring Boot |
+| **RDS PostgreSQL db.t3.micro** | Primary database     | ~$25           | Multi-AZ for HA, automated backups  |
+| **Application Load Balancer**  | Traffic distribution | ~$25           | SSL termination, health checks      |
+| **ElastiCache Redis t3.micro** | Session caching      | ~$15           | Session clustering, performance     |
+| **S3 Standard**                | Static assets        | ~$5            | Unlimited storage, CDN integration  |
+| **Route 53**                   | DNS management       | ~$5            | Domain routing, health checks       |
+| **CloudWatch**                 | Monitoring           | ~$10           | Metrics, logs, alerts               |
 
 **Total Monthly Cost: ~$145**
 
 ### Optional Services (Growth)
 
-| Service | Purpose | When to Add | Cost |
-|---------|---------|-------------|------|
-| **RDS Read Replica** | Read scaling | 10K+ users | +$25/month |
-| **ElastiCache Redis t3.small** | Enhanced caching | 50K+ users | +$30/month |
-| **Auto Scaling Group** | Dynamic scaling | Variable load | +$20/month |
-| **CloudFront** | Global CDN | Global users | +$10/month |
+| Service                        | Purpose          | When to Add   | Cost       |
+| ------------------------------ | ---------------- | ------------- | ---------- |
+| **RDS Read Replica**           | Read scaling     | 10K+ users    | +$25/month |
+| **ElastiCache Redis t3.small** | Enhanced caching | 50K+ users    | +$30/month |
+| **Auto Scaling Group**         | Dynamic scaling  | Variable load | +$20/month |
+| **CloudFront**                 | Global CDN       | Global users  | +$10/month |
 
 ---
 
@@ -124,6 +127,7 @@ graph TB
 ### PostgreSQL Configuration
 
 #### Primary Database (RDS)
+
 ```yaml
 # application-prod-aws.yml
 spring:
@@ -134,7 +138,7 @@ spring:
     password: ${DB_PASSWORD}
     hikari:
       poolName: HikariCP
-      maximum-pool-size: 10          # Increased for multi-instance
+      maximum-pool-size: 10 # Increased for multi-instance
       minimum-idle: 2
       connection-timeout: 30000
       idle-timeout: 600000
@@ -150,30 +154,33 @@ spring:
 ```
 
 #### Connection Pooling Strategy
+
 ```java
 // Recommended HikariCP settings for multi-tenant
 @Configuration
 public class DatabaseConfig {
-    
-    @Value("${spring.datasource.hikari.maximum-pool-size:10}")
-    private int maxPoolSize;
-    
-    @Bean
-    @ConfigurationProperties("spring.datasource.hikari")
-    public HikariConfig hikariConfig() {
-        HikariConfig config = new HikariConfig();
-        config.setMaximumPoolSize(maxPoolSize);
-        config.setMinimumIdle(2);
-        config.setConnectionTimeout(30000);
-        config.setIdleTimeout(600000);
-        config.setMaxLifetime(1800000);
-        config.setLeakDetectionThreshold(60000);
-        return config;
-    }
+
+  @Value("${spring.datasource.hikari.maximum-pool-size:10}")
+  private int maxPoolSize;
+
+  @Bean
+  @ConfigurationProperties("spring.datasource.hikari")
+  public HikariConfig hikariConfig() {
+    HikariConfig config = new HikariConfig();
+    config.setMaximumPoolSize(maxPoolSize);
+    config.setMinimumIdle(2);
+    config.setConnectionTimeout(30000);
+    config.setIdleTimeout(600000);
+    config.setMaxLifetime(1800000);
+    config.setLeakDetectionThreshold(60000);
+    return config;
+  }
 }
+
 ```
 
 #### Database Scaling Approach
+
 1. **Vertical Scaling**: Start with db.t3.micro → db.t3.small → db.t3.medium
 2. **Read Replicas**: Add when read-heavy operations increase
 3. **Connection Pooling**: Distributed across multiple application instances
@@ -186,6 +193,7 @@ public class DatabaseConfig {
 ### EC2 Auto Scaling Configuration
 
 #### Launch Template
+
 ```json
 {
   "LaunchTemplateName": "spring-boot-app-template",
@@ -198,8 +206,8 @@ public class DatabaseConfig {
     {
       "ResourceType": "instance",
       "Tags": [
-        {"Key": "Name", "Value": "SpringBoot-App"},
-        {"Key": "Environment", "Value": "Production"}
+        { "Key": "Name", "Value": "SpringBoot-App" },
+        { "Key": "Environment", "Value": "Production" }
       ]
     }
   ]
@@ -207,17 +215,18 @@ public class DatabaseConfig {
 ```
 
 #### Auto Scaling Group
+
 ```yaml
 AutoScalingGroup:
   MinSize: 2
   MaxSize: 10
   DesiredCapacity: 2
-  TargetGroupARNs: ["arn:aws:elasticloadbalancing:region:account:targetgroup/app-tg"]
+  TargetGroupARNs: ['arn:aws:elasticloadbalancing:region:account:targetgroup/app-tg']
   HealthCheckType: ELB
   HealthCheckGracePeriod: 300
   ScalingPolicies:
     - ScaleOutPolicy:
-        TargetValue: 70.0  # CPU utilization
+        TargetValue: 70.0 # CPU utilization
         ScaleOutCooldown: 300
         ScaleInCooldown: 600
 ```
@@ -225,25 +234,26 @@ AutoScalingGroup:
 ### Application Configuration
 
 #### Environment-Specific Config
+
 ```yaml
 # application-prod-aws.yml
 spring:
   profiles:
     active: prod-aws
-  
+
   datasource:
     url: jdbc:postgresql://${RDS_ENDPOINT}:5432/${DB_NAME}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: 10
-      
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
     show-sql: false
-    
+
   redis:
     host: ${REDIS_ENDPOINT}
     port: 6379
@@ -258,13 +268,13 @@ server:
   port: 8080
   servlet:
     context-path: /
-    
+
 logging:
   level:
     ROOT: INFO
-    com.nextjstemplate: INFO
+    com.eventsitemanager: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
 ```
 
 ---
@@ -274,6 +284,7 @@ logging:
 ### Application Load Balancer Setup
 
 #### Target Group Configuration
+
 ```yaml
 TargetGroup:
   Name: spring-boot-app-tg
@@ -289,19 +300,20 @@ TargetGroup:
 ```
 
 #### Load Balancer Rules
+
 ```yaml
 Rules:
   - Priority: 100
     Conditions:
       - Field: path-pattern
-        Values: ["/api/*"]
+        Values: ['/api/*']
     Actions:
       - Type: forward
-        TargetGroupArn: "arn:aws:elasticloadbalancing:region:account:targetgroup/spring-boot-app-tg"
+        TargetGroupArn: 'arn:aws:elasticloadbalancing:region:account:targetgroup/spring-boot-app-tg'
   - Priority: 200
     Conditions:
       - Field: path-pattern
-        Values: ["/static/*"]
+        Values: ['/static/*']
     Actions:
       - Type: redirect
         RedirectConfig:
@@ -313,6 +325,7 @@ Rules:
 ### Auto Scaling Policies
 
 #### CPU-Based Scaling
+
 ```yaml
 ScalingPolicies:
   ScaleOut:
@@ -320,13 +333,13 @@ ScalingPolicies:
     TargetValue: 70.0
     ScaleOutCooldown: 300
     ScaleInCooldown: 600
-    
+
   CustomMetric:
     MetricType: RequestCountPerTarget
     TargetValue: 1000.0
     PredefinedMetricSpecification:
       PredefinedMetricType: ALBRequestCountPerTarget
-      ResourceLabel: "app/spring-boot-alb/50dc6c495c0c9188/targetgroup/spring-boot-tg/*"
+      ResourceLabel: 'app/spring-boot-alb/50dc6c495c0c9188/targetgroup/spring-boot-tg/*'
 ```
 
 ---
@@ -336,6 +349,7 @@ ScalingPolicies:
 ### Resource Sizing Strategy
 
 #### Phase 1: Initial Deployment (10 domains, 1K users)
+
 ```
 - EC2: 2x t3.medium instances (~$60/month)
 - RDS: db.t3.micro Multi-AZ (~$25/month)
@@ -345,6 +359,7 @@ ScalingPolicies:
 ```
 
 #### Phase 2: Growth (50 domains, 10K users)
+
 ```
 - EC2: 3-5x t3.medium instances (~$90-150/month)
 - RDS: db.t3.small Multi-AZ (~$50/month)
@@ -354,6 +369,7 @@ ScalingPolicies:
 ```
 
 #### Phase 3: Scale (100+ domains, 100K+ users)
+
 ```
 - EC2: Auto Scaling Group (2-10 instances)
 - RDS: db.t3.medium + Read Replica (~$100/month)
@@ -378,25 +394,27 @@ ScalingPolicies:
 ### Network Security
 
 #### VPC Configuration
+
 ```yaml
 VPC:
   CIDR: 10.0.0.0/16
-  
+
 Subnets:
   Public:
     - CIDR: 10.0.1.0/24 (AZ-a)
     - CIDR: 10.0.2.0/24 (AZ-b)
-    
+
   Private:
     - CIDR: 10.0.10.0/24 (AZ-a)
     - CIDR: 10.0.20.0/24 (AZ-b)
-    
+
   Database:
     - CIDR: 10.0.100.0/24 (AZ-a)
     - CIDR: 10.0.200.0/24 (AZ-b)
 ```
 
 #### Security Groups
+
 ```yaml
 SecurityGroups:
   ALB-SG:
@@ -405,14 +423,14 @@ SecurityGroups:
       - Port: 443, Protocol: TCP, Source: 0.0.0.0/0
     Outbound:
       - Port: 8080, Protocol: TCP, Destination: App-SG
-      
+
   App-SG:
     Inbound:
       - Port: 8080, Protocol: TCP, Source: ALB-SG
     Outbound:
       - Port: 5432, Protocol: TCP, Destination: DB-SG
       - Port: 6379, Protocol: TCP, Destination: Redis-SG
-      
+
   DB-SG:
     Inbound:
       - Port: 5432, Protocol: TCP, Source: App-SG
@@ -422,13 +440,14 @@ SecurityGroups:
 ### Application Security
 
 #### SSL/TLS Configuration
+
 ```yaml
 # SSL Certificate (AWS Certificate Manager)
 Certificate:
-  Domain: "*.yourdomain.com"
+  Domain: '*.yourdomain.com'
   Validation: DNS
   AutoRenew: true
-  
+
 # Application SSL
 server:
   ssl:
@@ -439,33 +458,33 @@ server:
 ```
 
 #### Multi-Tenant Security
+
 ```java
 // Tenant isolation at application level
 @Component
 public class TenantSecurityFilter implements Filter {
-    
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, 
-                        FilterChain chain) throws IOException, ServletException {
-        
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String tenantId = extractTenantFromDomain(httpRequest);
-        
-        // Validate tenant exists and is active
-        if (!tenantService.isValidTenant(tenantId)) {
-            throw new TenantNotFoundException("Invalid tenant: " + tenantId);
-        }
-        
-        // Set tenant context
-        TenantContext.setCurrentTenant(tenantId);
-        
-        try {
-            chain.doFilter(request, response);
-        } finally {
-            TenantContext.clear();
-        }
+
+  @Override
+  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    HttpServletRequest httpRequest = (HttpServletRequest) request;
+    String tenantId = extractTenantFromDomain(httpRequest);
+
+    // Validate tenant exists and is active
+    if (!tenantService.isValidTenant(tenantId)) {
+      throw new TenantNotFoundException("Invalid tenant: " + tenantId);
     }
+
+    // Set tenant context
+    TenantContext.setCurrentTenant(tenantId);
+
+    try {
+      chain.doFilter(request, response);
+    } finally {
+      TenantContext.clear();
+    }
+  }
 }
+
 ```
 
 ---
@@ -475,35 +494,37 @@ public class TenantSecurityFilter implements Filter {
 ### CloudWatch Configuration
 
 #### Application Metrics
+
 ```yaml
 CloudWatchMetrics:
   CustomMetrics:
     - MetricName: ActiveTenants
       Unit: Count
       Namespace: Application/Tenants
-      
+
     - MetricName: RequestLatency
       Unit: Milliseconds
       Namespace: Application/Performance
-      
+
     - MetricName: DatabaseConnections
       Unit: Count
       Namespace: Application/Database
-      
+
     - MetricName: ErrorRate
       Unit: Percent
       Namespace: Application/Errors
 ```
 
 #### Log Groups
+
 ```yaml
 LogGroups:
   - LogGroupName: /aws/ec2/spring-boot-app
     RetentionInDays: 30
-    
+
   - LogGroupName: /aws/rds/postgresql
     RetentionInDays: 7
-    
+
   - LogGroupName: /aws/elasticloadbalancing/application
     RetentionInDays: 14
 ```
@@ -511,46 +532,49 @@ LogGroups:
 ### Application Monitoring
 
 #### Health Checks
+
 ```java
 @RestController
 @RequestMapping("/management")
 public class HealthController {
-    
-    @GetMapping("/health")
-    public ResponseEntity<Map<String, Object>> health() {
-        Map<String, Object> health = new HashMap<>();
-        health.put("status", "UP");
-        health.put("timestamp", Instant.now());
-        health.put("tenant", TenantContext.getCurrentTenant());
-        
-        // Database health
-        health.put("database", checkDatabaseHealth());
-        
-        // Redis health
-        health.put("redis", checkRedisHealth());
-        
-        return ResponseEntity.ok(health);
-    }
+
+  @GetMapping("/health")
+  public ResponseEntity<Map<String, Object>> health() {
+    Map<String, Object> health = new HashMap<>();
+    health.put("status", "UP");
+    health.put("timestamp", Instant.now());
+    health.put("tenant", TenantContext.getCurrentTenant());
+
+    // Database health
+    health.put("database", checkDatabaseHealth());
+
+    // Redis health
+    health.put("redis", checkRedisHealth());
+
+    return ResponseEntity.ok(health);
+  }
 }
+
 ```
 
 #### Performance Monitoring
+
 ```java
 @Component
 public class PerformanceMonitor {
-    
-    private final MeterRegistry meterRegistry;
-    
-    @EventListener
-    public void handleRequest(RequestEvent event) {
-        Timer.Sample sample = Timer.start(meterRegistry);
-        
-        sample.stop(Timer.builder("http.request.duration")
-            .tag("tenant", event.getTenantId())
-            .tag("endpoint", event.getEndpoint())
-            .register(meterRegistry));
-    }
+
+  private final MeterRegistry meterRegistry;
+
+  @EventListener
+  public void handleRequest(RequestEvent event) {
+    Timer.Sample sample = Timer.start(meterRegistry);
+
+    sample.stop(
+      Timer.builder("http.request.duration").tag("tenant", event.getTenantId()).tag("endpoint", event.getEndpoint()).register(meterRegistry)
+    );
+  }
 }
+
 ```
 
 ---
@@ -560,6 +584,7 @@ public class PerformanceMonitor {
 ### 1. Infrastructure Setup
 
 #### Using AWS CDK (Recommended)
+
 ```typescript
 // infrastructure/app-stack.ts
 export class SpringBootAppStack extends Stack {
@@ -629,6 +654,7 @@ export class SpringBootAppStack extends Stack {
 ### 2. Application Deployment
 
 #### Build & Package
+
 ```bash
 # Build the application
 ./mvnw clean package -Pprod-aws -DskipTests
@@ -643,6 +669,7 @@ docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/spring-boot-app:latest
 ```
 
 #### Deployment Script
+
 ```bash
 #!/bin/bash
 # deploy.sh
@@ -663,6 +690,7 @@ echo "Deployment initiated. Monitor progress in AWS Console."
 ### 3. Database Migration
 
 #### Liquibase Migration
+
 ```bash
 # Run database migrations
 java -jar target/spring-boot-app.jar \
@@ -678,31 +706,33 @@ java -jar target/spring-boot-app.jar \
 ### Minimal Code Changes Required
 
 #### 1. Add AWS Profile
+
 ```yaml
 # src/main/resources/config/application-prod-aws.yml
 spring:
   profiles:
     active: prod-aws
-    
+
   datasource:
     url: jdbc:postgresql://${RDS_ENDPOINT}:5432/${DB_NAME}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-    
+
   redis:
     host: ${REDIS_ENDPOINT}
     port: 6379
-    
+
 server:
   port: 8080
-  
+
 logging:
   level:
     ROOT: INFO
-    com.nextjstemplate: INFO
+    com.eventsitemanager: INFO
 ```
 
 #### 2. Environment Variables
+
 ```bash
 # Set in EC2 User Data or Parameter Store
 export RDS_ENDPOINT=your-rds-endpoint.region.rds.amazonaws.com
@@ -714,6 +744,7 @@ export SPRING_PROFILES_ACTIVE=prod-aws
 ```
 
 #### 3. Dockerfile (Optional)
+
 ```dockerfile
 FROM openjdk:11-jre-slim
 
@@ -732,6 +763,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 ### Automated Operations
 
 #### 1. Database Maintenance
+
 ```bash
 # Automated backup verification
 aws rds describe-db-snapshots \
@@ -741,6 +773,7 @@ aws rds describe-db-snapshots \
 ```
 
 #### 2. Application Updates
+
 ```bash
 # Blue-green deployment script
 #!/bin/bash
@@ -764,6 +797,7 @@ aws autoscaling delete-auto-scaling-group \
 ```
 
 #### 3. Monitoring & Alerts
+
 ```yaml
 CloudWatchAlarms:
   - AlarmName: HighCPUUtilization
@@ -771,13 +805,13 @@ CloudWatchAlarms:
     Threshold: 80
     ComparisonOperator: GreaterThanThreshold
     EvaluationPeriods: 2
-    
+
   - AlarmName: DatabaseConnectionsHigh
     MetricName: DatabaseConnections
     Threshold: 80
     ComparisonOperator: GreaterThanThreshold
     EvaluationPeriods: 1
-    
+
   - AlarmName: ApplicationErrors
     MetricName: ErrorRate
     Threshold: 5
@@ -788,10 +822,11 @@ CloudWatchAlarms:
 ### Cost Monitoring
 
 #### Budget Alerts
+
 ```yaml
 Budgets:
   - BudgetName: MonthlyAWSBudget
-    BudgetLimit: 200  # USD
+    BudgetLimit: 200 # USD
     TimeUnit: MONTHLY
     BudgetType: COST
     Notifications:
@@ -809,27 +844,30 @@ Budgets:
 
 ### Horizontal Scaling Triggers
 
-| Metric | Threshold | Action | New Capacity |
-|--------|-----------|---------|--------------|
-| CPU Utilization | > 70% | Scale Out | +1 instance |
-| Memory Utilization | > 80% | Scale Out | +1 instance |
-| Request Latency | > 500ms | Scale Out | +1 instance |
-| Error Rate | > 5% | Scale Out | +1 instance |
-| Database Connections | > 80% | Add Read Replica | +1 replica |
+| Metric               | Threshold | Action           | New Capacity |
+| -------------------- | --------- | ---------------- | ------------ |
+| CPU Utilization      | > 70%     | Scale Out        | +1 instance  |
+| Memory Utilization   | > 80%     | Scale Out        | +1 instance  |
+| Request Latency      | > 500ms   | Scale Out        | +1 instance  |
+| Error Rate           | > 5%      | Scale Out        | +1 instance  |
+| Database Connections | > 80%     | Add Read Replica | +1 replica   |
 
 ### Vertical Scaling Plan
 
 #### Phase 1: Initial (0-1K users)
+
 - EC2: t3.medium (2 vCPU, 4 GB RAM)
 - RDS: db.t3.micro (1 vCPU, 1 GB RAM)
 - Redis: t3.micro (1 vCPU, 0.5 GB RAM)
 
 #### Phase 2: Growth (1K-10K users)
+
 - EC2: t3.large (2 vCPU, 8 GB RAM)
 - RDS: db.t3.small (1 vCPU, 2 GB RAM)
 - Redis: t3.small (1 vCPU, 1.37 GB RAM)
 
 #### Phase 3: Scale (10K+ users)
+
 - EC2: t3.xlarge (4 vCPU, 16 GB RAM)
 - RDS: db.t3.medium (2 vCPU, 4 GB RAM)
 - Redis: t3.medium (2 vCPU, 3.09 GB RAM)
@@ -839,18 +877,19 @@ Budgets:
 ## Disaster Recovery
 
 ### Backup Strategy
+
 ```yaml
 Backups:
   Database:
     - Type: Automated
     - Retention: 7 days
     - CrossRegion: Yes
-    
+
   Application:
     - Type: AMI Snapshots
     - Frequency: Weekly
     - Retention: 4 weeks
-    
+
   Configuration:
     - Type: Parameter Store
     - Encryption: Yes
@@ -858,6 +897,7 @@ Backups:
 ```
 
 ### Recovery Procedures
+
 ```bash
 # Database Recovery
 aws rds restore-db-instance-from-db-snapshot \
@@ -890,5 +930,5 @@ The solution balances cost optimization with performance requirements while main
 
 ---
 
-*Last Updated: January 2025*
-*Version: 1.0*
+_Last Updated: January 2025_
+_Version: 1.0_
