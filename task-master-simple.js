@@ -103,7 +103,7 @@ class TaskMaster {
     tasks[taskIndex].status = newStatus;
 
     try {
-      const data = { meta: { projectName: "nextjs-template", version: "1.5.0" }, tasks };
+      const data = { meta: { projectName: "event-site-manager-service", version: "1.5.0" }, tasks };
       fs.writeFileSync(this.tasksPath, JSON.stringify(data, null, 2));
       console.log(`✅ Task ${taskId} status updated to: ${newStatus}`);
     } catch (error) {

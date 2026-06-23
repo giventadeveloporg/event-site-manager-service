@@ -287,7 +287,7 @@ applicationEventPublisher.publishEvent(
 
 - **Architecture Analysis**: `ARCHITECTURE_ANALYSIS_TICKET_GENERATION.md`
 - **Original Deadlock Fix**: `DEADLOCK_AND_TENANT_ID_FIX_SUMMARY.md`
-- **Event Class**: `src/main/java/com/nextjstemplate/service/payment/event/PaymentSuccessEvent.java`
+- **Event Class**: `src/main/java/com/eventsitemanager/service/payment/event/PaymentSuccessEvent.java`
 
 ---
 

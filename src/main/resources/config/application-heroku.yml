@@ -9,7 +9,7 @@ logging:
   level:
     ROOT: INFO
     tech.jhipster: INFO
-    com.nextjstemplate: INFO
+    com.eventsitemanager: INFO
 
 management:
   prometheus:

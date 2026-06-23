@@ -2,7 +2,7 @@
   "generator-jhipster": {
     "applicationIndex": 0,
     "applicationType": "monolith",
-    "baseName": "nextjs_template_boot",
+    "baseName": "event_site_manager_service",
     "devDatabaseType": "postgresql",
     "enableSwaggerCodegen": true,
     "entities": [
@@ -29,8 +29,8 @@
     "languages": ["en"],
     "lastLiquibaseTimestamp": 1746561056000,
     "nativeLanguage": "en",
-    "packageFolder": "com/nextjstemplate",
-    "packageName": "com.nextjstemplate",
+    "packageFolder": "com/eventsitemanager",
+    "packageName": "com.eventsitemanager",
     "prodDatabaseType": "postgresql",
     "serverPort": "8080",
     "skipClient": true,

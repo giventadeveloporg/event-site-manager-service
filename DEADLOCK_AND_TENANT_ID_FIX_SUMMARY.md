@@ -404,8 +404,8 @@ This would:
 
 ## Files Modified
 
-1. `src/main/java/com/nextjstemplate/service/payment/TicketGenerationService.java`
-2. `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionItemServiceImpl.java`
+1. `src/main/java/com/eventsitemanager/service/payment/TicketGenerationService.java`
+2. `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionItemServiceImpl.java`
 
 ---
 

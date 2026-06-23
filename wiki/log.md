@@ -1,4 +1,4 @@
-# Operation Log — malayalees-us-site-boot
+# Operation Log — event-site-manager-service
 
 > Append-only. Each entry prefixed with date and operation type.
 

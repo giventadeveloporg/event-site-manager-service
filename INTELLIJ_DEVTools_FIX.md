@@ -35,7 +35,7 @@ If you want to keep restart enabled but exclude Stripe classes:
 2. Select your Spring Boot run configuration
 3. In the **VM options** field, add:
    ```
-   -Dspring.devtools.restart.exclude=com/nextjstemplate/service/payment/adapter/**,com/stripe/**
+   -Dspring.devtools.restart.exclude=com/eventsitemanager/service/payment/adapter/**,com/stripe/**
    ```
 4. Click **OK** and restart the application
 

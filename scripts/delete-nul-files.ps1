@@ -1,5 +1,5 @@
 # Standalone Script to Scan and Delete Files with Reserved Device Names (NUL, CON, PRN, etc.)
-# Project: malayalees-us-site-boot
+# Project: event-site-manager-service
 # Purpose: Automatically find and remove problematic files created by corrupted scripts
 
 param(

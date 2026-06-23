@@ -3,8 +3,8 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-JAVA = ROOT / "src/main/java/com/nextjstemplate"
-TEST = ROOT / "src/test/java/com/nextjstemplate"
+JAVA = ROOT / "src/main/java/com/eventsitemanager"
+TEST = ROOT / "src/test/java/com/eventsitemanager"
 LIQ = ROOT / "src/main/resources/config/liquibase/changelog"
 
 ENUMS = {
@@ -29,7 +29,7 @@ def gen_enums():
         body = ",\n    ".join(values)
         write(
             JAVA / "domain/enumeration" / f"{name}.java",
-            f"""package com.nextjstemplate.domain.enumeration;
+            f"""package com.eventsitemanager.domain.enumeration;
 
 /**
  * The {name} enumeration.

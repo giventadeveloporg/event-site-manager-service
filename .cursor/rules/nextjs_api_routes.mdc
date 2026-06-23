@@ -826,7 +826,7 @@ alwaysApply: true
   - Test on both iOS Safari and Android Chrome
   - Verify API proxy calls succeed without authentication
 - **References:**
-  - Comparison with working `nextjs-template` project
+  - Comparison with working `event-site-manager-service` frontend project
   - Mobile browser debugging logs in CloudWatch
   - See `src/middleware.ts:63-75` for implementation
 
@@ -919,7 +919,7 @@ alwaysApply: true
   - Always test on actual mobile devices, not just dev tools emulation
   - Check browser console for CORS errors on mobile (use remote debugging)
 - **References:**
-  - Working `nextjs-template` project has no CORS headers in proxy handler
+  - Working `event-site-manager-service` frontend project has no CORS headers in proxy handler
   - See `src/lib/proxyHandler.ts:17-19` for clean implementation
   - Next.js API Routes documentation: https://nextjs.org/docs/api-routes/introduction
 
@@ -1017,7 +1017,7 @@ When API calls fail on mobile browsers but work on desktop:
 - **References:**
   - Mobile browser debugging: Chrome Remote Debugging, Safari Web Inspector
   - CloudWatch logs for AWS Amplify deployments
-  - See working `nextjs-template` project for comparison
+  - See working `event-site-manager-service` frontend project for comparison
   - iOS Safari re-hydration: https://webkit.org/blog/7846/
 
 

@@ -1,1 +1,403 @@
-{"openapi":"3.0.1","info":{"title":"Nextjs Template Boot API","description":"API Documentation for all REST endpoints including Clerk Authentication, Admin Management, and Webhooks","license":{"name":"Unlicensed"},"version":"1.0"},"servers":[{"url":"http://localhost","description":"Generated server url"}],"security":[{"bearer-jwt":[]}],"tags":[{"name":"Clerk Authentication","description":"Endpoints for user authentication with Clerk"}],"paths":{"/api/auth/verify-token":{"post":{"tags":["Clerk Authentication"],"summary":"Validate a JWT token","description":"Verify the validity of a JWT token and get user details","operationId":"verifyToken","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TokenValidationRequest"}}},"required":true},"responses":{"200":{"description":"Token validated","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TokenValidationResponse"}}}},"400":{"description":"Invalid request","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TokenValidationResponse"}}}}}}},"/api/auth/sign-up":{"post":{"tags":["Clerk Authentication"],"summary":"Register a new user","description":"Create a new user account with Clerk and in the database","operationId":"signUp","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SignUpRequest"}}},"required":true},"responses":{"400":{"description":"Invalid request or user already exists","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SignUpResponse"}}}},"500":{"description":"Internal server error","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SignUpResponse"}}}},"201":{"description":"User registered successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SignUpResponse"}}}}}}},"/api/auth/sign-out":{"post":{"tags":["Clerk Authentication"],"summary":"Sign out user","description":"Revoke user session in Clerk and clear security context","operationId":"signOut","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SignOutRequest"}}},"required":true},"responses":{"200":{"description":"User signed out successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SignOutResponse"}}}},"400":{"description":"Invalid request","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SignOutResponse"}}}}}}},"/api/auth/sign-in":{"post":{"tags":["Clerk Authentication"],"summary":"Authenticate a user","description":"Sign in with email and password to get a JWT token","operationId":"signIn","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SignInRequest"}}},"required":true},"responses":{"200":{"description":"User authenticated successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SignInResponse"}}}},"401":{"description":"Invalid credentials","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SignInResponse"}}}},"400":{"description":"Invalid request","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SignInResponse"}}}}}}},"/api/auth/sign-in/social":{"post":{"tags":["Clerk Authentication"],"summary":"Authenticate with social provider","description":"Sign in using Google, GitHub, Facebook, Apple, etc.","operationId":"socialSignIn","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/SocialSignInRequest"}}},"required":true},"responses":{"200":{"description":"User authenticated successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SocialSignInResponse"}}}},"401":{"description":"Invalid session token","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SocialSignInResponse"}}}},"400":{"description":"Invalid request","content":{"*/*":{"schema":{"$ref":"#/components/schemas/SocialSignInResponse"}}}}}}},"/api/auth/refresh-token":{"post":{"tags":["Clerk Authentication"],"summary":"Refresh access token","description":"Get a new access token using an existing valid token","operationId":"refreshToken","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RefreshTokenRequest"}}},"required":true},"responses":{"401":{"description":"Invalid or expired refresh token","content":{"*/*":{"schema":{"$ref":"#/components/schemas/RefreshTokenResponse"}}}},"200":{"description":"Token refreshed successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/RefreshTokenResponse"}}}},"400":{"description":"Invalid request","content":{"*/*":{"schema":{"$ref":"#/components/schemas/RefreshTokenResponse"}}}}}}},"/api/auth/user":{"get":{"tags":["Clerk Authentication"],"summary":"Get current user","description":"Get details of the currently authenticated user","operationId":"getCurrentUser","responses":{"200":{"description":"User details retrieved successfully","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TokenValidationResponse"}}}},"404":{"description":"User not found","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TokenValidationResponse"}}}},"401":{"description":"Unauthorized","content":{"*/*":{"schema":{"$ref":"#/components/schemas/TokenValidationResponse"}}}}}}}},"components":{"schemas":{"TokenValidationRequest":{"required":["token"],"type":"object","properties":{"token":{"type":"string","description":"JWT token to validate","example":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}},"description":"Request body for token validation"},"TokenValidationResponse":{"type":"object","properties":{"valid":{"type":"boolean","description":"Validation status","example":true},"id":{"type":"integer","description":"User profile ID in database","format":"int64","example":123},"clerkUserId":{"type":"string","description":"Clerk user ID","example":"user_2abc123def456"},"email":{"type":"string","description":"User's email address","example":"user@example.com"},"firstName":{"type":"string","description":"User's first name","example":"John"},"lastName":{"type":"string","description":"User's last name","example":"Doe"},"tenantId":{"type":"string","description":"Tenant ID","example":"tenant_demo_001"},"roles":{"type":"array","description":"User's roles","items":{"type":"string","description":"User's roles"}},"organizations":{"type":"array","description":"User's organizations with roles","items":{"type":"object","additionalProperties":{"type":"object","description":"User's organizations with roles"},"description":"User's organizations with roles"}},"error":{"type":"string","description":"Error message if validation failed"},"claims":{"type":"object","additionalProperties":{"type":"object","description":"Additional token claims"},"description":"Additional token claims"}},"description":"Response after token validation"},"SignUpRequest":{"required":["email","firstName","lastName","password","tenantId"],"type":"object","properties":{"email":{"maxLength":255,"minLength":0,"type":"string","description":"User's email address","example":"user@example.com"},"password":{"maxLength":100,"minLength":8,"type":"string","description":"User's password (minimum 8 characters)","example":"SecurePass123!"},"firstName":{"maxLength":255,"minLength":0,"type":"string","description":"User's first name","example":"John"},"lastName":{"maxLength":255,"minLength":0,"type":"string","description":"User's last name","example":"Doe"},"tenantId":{"maxLength":255,"minLength":0,"type":"string","description":"Tenant/organization identifier","example":"tenant_demo_001"},"phone":{"maxLength":255,"minLength":0,"type":"string","description":"User's phone number","example":"+1234567890"},"metadata":{"type":"object","additionalProperties":{"type":"object","description":"Additional metadata for the user"},"description":"Additional metadata for the user"}},"description":"Request body for user registration"},"SignUpResponse":{"type":"object","properties":{"id":{"type":"integer","description":"User profile ID in database","format":"int64","example":123},"clerkUserId":{"type":"string","description":"Clerk user ID","example":"user_2abc123def456"},"email":{"type":"string","description":"User's email address","example":"user@example.com"},"firstName":{"type":"string","description":"User's first name","example":"John"},"lastName":{"type":"string","description":"User's last name","example":"Doe"},"tenantId":{"type":"string","description":"Tenant ID","example":"tenant_demo_001"},"accessToken":{"type":"string","description":"JWT access token for authentication"},"tokenType":{"type":"string","description":"Token type","example":"Bearer"},"expiresIn":{"type":"integer","description":"Token expiration time in seconds","format":"int64","example":86400},"createdAt":{"type":"string","description":"User creation timestamp","format":"date-time"},"message":{"type":"string","description":"Success message","example":"User registered successfully"}},"description":"Response after successful user registration"},"SignOutRequest":{"required":["sessionId"],"type":"object","properties":{"sessionId":{"type":"string","description":"Clerk session ID to revoke","example":"sess_2abc123def456"}},"description":"Request body for user sign-out"},"SignOutResponse":{"type":"object","properties":{"success":{"type":"boolean","description":"Sign-out success status","example":true},"message":{"type":"string","description":"Success message","example":"User signed out successfully"}},"description":"Response after user sign-out"},"SignInRequest":{"required":["email","password","tenantId"],"type":"object","properties":{"email":{"maxLength":255,"minLength":0,"type":"string","description":"User's email address","example":"user@example.com"},"password":{"type":"string","description":"User's password","example":"SecurePass123!"},"tenantId":{"maxLength":255,"minLength":0,"type":"string","description":"Tenant/organization identifier","example":"tenant_demo_001"}},"description":"Request body for user authentication"},"SignInResponse":{"type":"object","properties":{"id":{"type":"integer","description":"User profile ID in database","format":"int64","example":123},"clerkUserId":{"type":"string","description":"Clerk user ID","example":"user_2abc123def456"},"email":{"type":"string","description":"User's email address","example":"user@example.com"},"firstName":{"type":"string","description":"User's first name","example":"John"},"lastName":{"type":"string","description":"User's last name","example":"Doe"},"tenantId":{"type":"string","description":"Tenant ID","example":"tenant_demo_001"},"accessToken":{"type":"string","description":"JWT access token for authentication"},"tokenType":{"type":"string","description":"Token type","example":"Bearer"},"expiresIn":{"type":"integer","description":"Token expiration time in seconds","format":"int64","example":86400},"lastSignInAt":{"type":"string","description":"Last sign-in timestamp","format":"date-time"},"message":{"type":"string","description":"Success message","example":"User authenticated successfully"}},"description":"Response after successful user authentication"},"SocialSignInRequest":{"required":["clerkSessionToken","tenantId"],"type":"object","properties":{"clerkSessionToken":{"type":"string","description":"Clerk session token from social login","example":"sess_2abc123def456"},"tenantId":{"maxLength":255,"minLength":0,"type":"string","description":"Tenant/organization identifier","example":"tenant_demo_001"},"provider":{"type":"string","description":"Social provider name","example":"google","enum":["google","github","facebook","apple","microsoft"]}},"description":"Request body for social provider authentication"},"SocialSignInResponse":{"type":"object","properties":{"id":{"type":"integer","description":"User profile ID in database","format":"int64","example":123},"clerkUserId":{"type":"string","description":"Clerk user ID","example":"user_2abc123def456"},"email":{"type":"string","description":"User's email address","example":"user@example.com"},"firstName":{"type":"string","description":"User's first name","example":"John"},"lastName":{"type":"string","description":"User's last name","example":"Doe"},"tenantId":{"type":"string","description":"Tenant ID","example":"tenant_demo_001"},"authProvider":{"type":"string","description":"Authentication provider","example":"google"},"newUser":{"type":"boolean","description":"Whether this is a new user","example":false},"accessToken":{"type":"string","description":"JWT access token for authentication"},"tokenType":{"type":"string","description":"Token type","example":"Bearer"},"expiresIn":{"type":"integer","description":"Token expiration time in seconds","format":"int64","example":86400},"lastSignInAt":{"type":"string","description":"Last sign-in timestamp","format":"date-time"},"message":{"type":"string","description":"Success message","example":"User authenticated successfully with Google"}},"description":"Response after successful social provider authentication"},"RefreshTokenRequest":{"required":["refreshToken"],"type":"object","properties":{"refreshToken":{"type":"string","description":"Current JWT token or refresh token","example":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}},"description":"Request body for refreshing access token"},"RefreshTokenResponse":{"type":"object","properties":{"accessToken":{"type":"string","description":"New JWT access token"},"tokenType":{"type":"string","description":"Token type","example":"Bearer"},"expiresIn":{"type":"integer","description":"Token expiration time in seconds","format":"int64","example":86400},"refreshToken":{"type":"string","description":"New refresh token (optional)"},"message":{"type":"string","description":"Success message","example":"Token refreshed successfully"}},"description":"Response after token refresh"}},"securitySchemes":{"bearer-jwt":{"type":"http","description":"JWT token obtained from /api/auth/sign-in or /api/auth/sign-in/social. Format: Bearer <token>","scheme":"bearer","bearerFormat":"JWT"}}}}
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Event Site Manager Service API",
+    "description": "API Documentation for all REST endpoints including Clerk Authentication, Admin Management, and Webhooks",
+    "license": { "name": "Unlicensed" },
+    "version": "1.0"
+  },
+  "servers": [{ "url": "http://localhost", "description": "Generated server url" }],
+  "security": [{ "bearer-jwt": [] }],
+  "tags": [{ "name": "Clerk Authentication", "description": "Endpoints for user authentication with Clerk" }],
+  "paths": {
+    "/api/auth/verify-token": {
+      "post": {
+        "tags": ["Clerk Authentication"],
+        "summary": "Validate a JWT token",
+        "description": "Verify the validity of a JWT token and get user details",
+        "operationId": "verifyToken",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenValidationRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Token validated",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/auth/sign-up": {
+      "post": {
+        "tags": ["Clerk Authentication"],
+        "summary": "Register a new user",
+        "description": "Create a new user account with Clerk and in the database",
+        "operationId": "signUp",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid request or user already exists",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
+          },
+          "201": {
+            "description": "User registered successfully",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SignUpResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/auth/sign-out": {
+      "post": {
+        "tags": ["Clerk Authentication"],
+        "summary": "Sign out user",
+        "description": "Revoke user session in Clerk and clear security context",
+        "operationId": "signOut",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignOutRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User signed out successfully",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SignOutResponse" } } }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SignOutResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/auth/sign-in": {
+      "post": {
+        "tags": ["Clerk Authentication"],
+        "summary": "Authenticate a user",
+        "description": "Sign in with email and password to get a JWT token",
+        "operationId": "signIn",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignInRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User authenticated successfully",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SignInResponse" } } }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SignInResponse" } } }
+          },
+          "400": { "description": "Invalid request", "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SignInResponse" } } } }
+        }
+      }
+    },
+    "/api/auth/sign-in/social": {
+      "post": {
+        "tags": ["Clerk Authentication"],
+        "summary": "Authenticate with social provider",
+        "description": "Sign in using Google, GitHub, Facebook, Apple, etc.",
+        "operationId": "socialSignIn",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SocialSignInRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User authenticated successfully",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SocialSignInResponse" } } }
+          },
+          "401": {
+            "description": "Invalid session token",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SocialSignInResponse" } } }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/SocialSignInResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/auth/refresh-token": {
+      "post": {
+        "tags": ["Clerk Authentication"],
+        "summary": "Refresh access token",
+        "description": "Get a new access token using an existing valid token",
+        "operationId": "refreshToken",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RefreshTokenRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Invalid or expired refresh token",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RefreshTokenResponse" } } }
+          },
+          "200": {
+            "description": "Token refreshed successfully",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RefreshTokenResponse" } } }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/RefreshTokenResponse" } } }
+          }
+        }
+      }
+    },
+    "/api/auth/user": {
+      "get": {
+        "tags": ["Clerk Authentication"],
+        "summary": "Get current user",
+        "description": "Get details of the currently authenticated user",
+        "operationId": "getCurrentUser",
+        "responses": {
+          "200": {
+            "description": "User details retrieved successfully",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
+          },
+          "404": {
+            "description": "User not found",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": { "*/*": { "schema": { "$ref": "#/components/schemas/TokenValidationResponse" } } }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TokenValidationRequest": {
+        "required": ["token"],
+        "type": "object",
+        "properties": {
+          "token": { "type": "string", "description": "JWT token to validate", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+        },
+        "description": "Request body for token validation"
+      },
+      "TokenValidationResponse": {
+        "type": "object",
+        "properties": {
+          "valid": { "type": "boolean", "description": "Validation status", "example": true },
+          "id": { "type": "integer", "description": "User profile ID in database", "format": "int64", "example": 123 },
+          "clerkUserId": { "type": "string", "description": "Clerk user ID", "example": "user_2abc123def456" },
+          "email": { "type": "string", "description": "User's email address", "example": "user@example.com" },
+          "firstName": { "type": "string", "description": "User's first name", "example": "John" },
+          "lastName": { "type": "string", "description": "User's last name", "example": "Doe" },
+          "tenantId": { "type": "string", "description": "Tenant ID", "example": "tenant_demo_001" },
+          "roles": { "type": "array", "description": "User's roles", "items": { "type": "string", "description": "User's roles" } },
+          "organizations": {
+            "type": "array",
+            "description": "User's organizations with roles",
+            "items": {
+              "type": "object",
+              "additionalProperties": { "type": "object", "description": "User's organizations with roles" },
+              "description": "User's organizations with roles"
+            }
+          },
+          "error": { "type": "string", "description": "Error message if validation failed" },
+          "claims": {
+            "type": "object",
+            "additionalProperties": { "type": "object", "description": "Additional token claims" },
+            "description": "Additional token claims"
+          }
+        },
+        "description": "Response after token validation"
+      },
+      "SignUpRequest": {
+        "required": ["email", "firstName", "lastName", "password", "tenantId"],
+        "type": "object",
+        "properties": {
+          "email": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
+            "description": "User's email address",
+            "example": "user@example.com"
+          },
+          "password": {
+            "maxLength": 100,
+            "minLength": 8,
+            "type": "string",
+            "description": "User's password (minimum 8 characters)",
+            "example": "SecurePass123!"
+          },
+          "firstName": { "maxLength": 255, "minLength": 0, "type": "string", "description": "User's first name", "example": "John" },
+          "lastName": { "maxLength": 255, "minLength": 0, "type": "string", "description": "User's last name", "example": "Doe" },
+          "tenantId": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
+            "description": "Tenant/organization identifier",
+            "example": "tenant_demo_001"
+          },
+          "phone": { "maxLength": 255, "minLength": 0, "type": "string", "description": "User's phone number", "example": "+1234567890" },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": { "type": "object", "description": "Additional metadata for the user" },
+            "description": "Additional metadata for the user"
+          }
+        },
+        "description": "Request body for user registration"
+      },
+      "SignUpResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "description": "User profile ID in database", "format": "int64", "example": 123 },
+          "clerkUserId": { "type": "string", "description": "Clerk user ID", "example": "user_2abc123def456" },
+          "email": { "type": "string", "description": "User's email address", "example": "user@example.com" },
+          "firstName": { "type": "string", "description": "User's first name", "example": "John" },
+          "lastName": { "type": "string", "description": "User's last name", "example": "Doe" },
+          "tenantId": { "type": "string", "description": "Tenant ID", "example": "tenant_demo_001" },
+          "accessToken": { "type": "string", "description": "JWT access token for authentication" },
+          "tokenType": { "type": "string", "description": "Token type", "example": "Bearer" },
+          "expiresIn": { "type": "integer", "description": "Token expiration time in seconds", "format": "int64", "example": 86400 },
+          "createdAt": { "type": "string", "description": "User creation timestamp", "format": "date-time" },
+          "message": { "type": "string", "description": "Success message", "example": "User registered successfully" }
+        },
+        "description": "Response after successful user registration"
+      },
+      "SignOutRequest": {
+        "required": ["sessionId"],
+        "type": "object",
+        "properties": { "sessionId": { "type": "string", "description": "Clerk session ID to revoke", "example": "sess_2abc123def456" } },
+        "description": "Request body for user sign-out"
+      },
+      "SignOutResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "description": "Sign-out success status", "example": true },
+          "message": { "type": "string", "description": "Success message", "example": "User signed out successfully" }
+        },
+        "description": "Response after user sign-out"
+      },
+      "SignInRequest": {
+        "required": ["email", "password", "tenantId"],
+        "type": "object",
+        "properties": {
+          "email": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
+            "description": "User's email address",
+            "example": "user@example.com"
+          },
+          "password": { "type": "string", "description": "User's password", "example": "SecurePass123!" },
+          "tenantId": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
+            "description": "Tenant/organization identifier",
+            "example": "tenant_demo_001"
+          }
+        },
+        "description": "Request body for user authentication"
+      },
+      "SignInResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "description": "User profile ID in database", "format": "int64", "example": 123 },
+          "clerkUserId": { "type": "string", "description": "Clerk user ID", "example": "user_2abc123def456" },
+          "email": { "type": "string", "description": "User's email address", "example": "user@example.com" },
+          "firstName": { "type": "string", "description": "User's first name", "example": "John" },
+          "lastName": { "type": "string", "description": "User's last name", "example": "Doe" },
+          "tenantId": { "type": "string", "description": "Tenant ID", "example": "tenant_demo_001" },
+          "accessToken": { "type": "string", "description": "JWT access token for authentication" },
+          "tokenType": { "type": "string", "description": "Token type", "example": "Bearer" },
+          "expiresIn": { "type": "integer", "description": "Token expiration time in seconds", "format": "int64", "example": 86400 },
+          "lastSignInAt": { "type": "string", "description": "Last sign-in timestamp", "format": "date-time" },
+          "message": { "type": "string", "description": "Success message", "example": "User authenticated successfully" }
+        },
+        "description": "Response after successful user authentication"
+      },
+      "SocialSignInRequest": {
+        "required": ["clerkSessionToken", "tenantId"],
+        "type": "object",
+        "properties": {
+          "clerkSessionToken": {
+            "type": "string",
+            "description": "Clerk session token from social login",
+            "example": "sess_2abc123def456"
+          },
+          "tenantId": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
+            "description": "Tenant/organization identifier",
+            "example": "tenant_demo_001"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Social provider name",
+            "example": "google",
+            "enum": ["google", "github", "facebook", "apple", "microsoft"]
+          }
+        },
+        "description": "Request body for social provider authentication"
+      },
+      "SocialSignInResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "description": "User profile ID in database", "format": "int64", "example": 123 },
+          "clerkUserId": { "type": "string", "description": "Clerk user ID", "example": "user_2abc123def456" },
+          "email": { "type": "string", "description": "User's email address", "example": "user@example.com" },
+          "firstName": { "type": "string", "description": "User's first name", "example": "John" },
+          "lastName": { "type": "string", "description": "User's last name", "example": "Doe" },
+          "tenantId": { "type": "string", "description": "Tenant ID", "example": "tenant_demo_001" },
+          "authProvider": { "type": "string", "description": "Authentication provider", "example": "google" },
+          "newUser": { "type": "boolean", "description": "Whether this is a new user", "example": false },
+          "accessToken": { "type": "string", "description": "JWT access token for authentication" },
+          "tokenType": { "type": "string", "description": "Token type", "example": "Bearer" },
+          "expiresIn": { "type": "integer", "description": "Token expiration time in seconds", "format": "int64", "example": 86400 },
+          "lastSignInAt": { "type": "string", "description": "Last sign-in timestamp", "format": "date-time" },
+          "message": { "type": "string", "description": "Success message", "example": "User authenticated successfully with Google" }
+        },
+        "description": "Response after successful social provider authentication"
+      },
+      "RefreshTokenRequest": {
+        "required": ["refreshToken"],
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Current JWT token or refresh token",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "description": "Request body for refreshing access token"
+      },
+      "RefreshTokenResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": { "type": "string", "description": "New JWT access token" },
+          "tokenType": { "type": "string", "description": "Token type", "example": "Bearer" },
+          "expiresIn": { "type": "integer", "description": "Token expiration time in seconds", "format": "int64", "example": 86400 },
+          "refreshToken": { "type": "string", "description": "New refresh token (optional)" },
+          "message": { "type": "string", "description": "Success message", "example": "Token refreshed successfully" }
+        },
+        "description": "Response after token refresh"
+      }
+    },
+    "securitySchemes": {
+      "bearer-jwt": {
+        "type": "http",
+        "description": "JWT token obtained from /api/auth/sign-in or /api/auth/sign-in/social. Format: Bearer <token>",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
-﻿from pathlib import Path
-root = Path(r"c:/project_workspace/malayalees-us-site-boot")
+from pathlib import Path
+root = Path(r"c:/project_workspace/event-site-manager-service")
 main = root / "scripts/generate_event_competitions_stack.py"
 part2 = root / "scripts/gen_stack_part2.py"
 text = main.read_text(encoding="utf-8")

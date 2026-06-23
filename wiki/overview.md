@@ -1,4 +1,4 @@
-# Overview — malayalees-us-site-boot
+# Overview — event-site-manager-service
 
 > Evolving synthesis maintained by the LLM. Updated as new sources are ingested.
 
