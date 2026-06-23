@@ -63,6 +63,23 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
+      - name: Verify JAR artifact
+        run: |
+          JAR_FILE=$(ls target/*.jar 2>/dev/null | head -1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "::error::No JAR file found in target/ after Maven build. Ensure pom.xml artifactId and packaging are correct."
+            exit 1
+          fi
+          # Verify the JAR was built with Spring Boot repackaging (contains BOOT-INF/classes)
+          if ! jar tf "$JAR_FILE" 2>/dev/null | grep -q "^BOOT-INF/classes/"; then
+            echo "::error::JAR '$JAR_FILE' does not contain Spring Boot application classes (BOOT-INF/classes/ missing)."
+            echo "This typically means no Java source files were compiled. Verify that src/main/java contains the application source code and that pom.xml start-class points to an existing class."
+            exit 1
+          fi
+          MAIN_CLASS=$(unzip -p "$JAR_FILE" META-INF/MANIFEST.MF 2>/dev/null | grep "Start-Class:" | tr -d '\r' | awk '{print $2}')
+          echo "JAR verified: $JAR_FILE"
+          echo "Spring Boot Start-Class: $MAIN_CLASS"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
