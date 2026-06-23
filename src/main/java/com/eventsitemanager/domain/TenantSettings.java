@@ -1,0 +1,956 @@
+package com.eventsitemanager.domain;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+/**
+ * A TenantSettings.
+ */
+@Entity
+@Table(name = "tenant_settings")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings("common-java:DuplicatedBlocks")
+public class TenantSettings implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @Column(name = "id")
+    private Long id;
+
+    @NotNull
+    @Size(max = 255)
+    @Column(name = "tenant_id", length = 255, nullable = false, unique = true)
+    private String tenantId;
+
+    @Column(name = "allow_user_registration")
+    private Boolean allowUserRegistration;
+
+    @Column(name = "require_admin_approval")
+    private Boolean requireAdminApproval;
+
+    @Column(name = "enable_whatsapp_integration")
+    private Boolean enableWhatsappIntegration;
+
+    @Column(name = "enable_email_marketing")
+    private Boolean enableEmailMarketing;
+
+    @Column(name = "is_membership_subscription_enabled")
+    private Boolean isMembershipSubscriptionEnabled;
+
+    @Size(max = 500)
+    @Column(name = "whatsapp_api_key", length = 500)
+    private String whatsappApiKey;
+
+    @Size(max = 2048)
+    @Column(name = "email_provider_config", length = 2048)
+    private String emailProviderConfig;
+
+    @Column(name = "max_events_per_month")
+    private Integer maxEventsPerMonth;
+
+    @Column(name = "max_attendees_per_event")
+    private Integer maxAttendeesPerEvent;
+
+    @Column(name = "enable_guest_registration")
+    private Boolean enableGuestRegistration;
+
+    @Column(name = "max_guests_per_attendee")
+    private Integer maxGuestsPerAttendee;
+
+    @Column(name = "default_event_capacity")
+    private Integer defaultEventCapacity;
+
+    @Column(name = "platform_fee_percentage", precision = 21, scale = 2)
+    private BigDecimal platformFeePercentage;
+
+    @Size(max = 8192)
+    @Column(name = "custom_css", length = 8192)
+    private String customCss;
+
+    @Size(max = 16384)
+    @Column(name = "custom_js", length = 16384)
+    private String customJs;
+
+    @Column(name = "show_events_section_in_home_page")
+    private Boolean showEventsSectionInHomePage;
+
+    @Column(name = "show_team_members_section_in_home_page")
+    private Boolean showTeamMembersSectionInHomePage;
+
+    @Column(name = "show_sponsors_section_in_home_page")
+    private Boolean showSponsorsSectionInHomePage;
+
+    @Size(max = 500)
+    @Column(name = "twilio_account_sid", length = 500)
+    private String twilioAccountSid;
+
+    @Size(max = 1048)
+    @Column(name = "twilio_auth_token", length = 1048)
+    private String twilioAuthToken;
+
+    @Size(max = 50)
+    @Column(name = "twilio_whatsapp_from", length = 50)
+    private String twilioWhatsappFrom;
+
+    @Size(max = 1048)
+    @Column(name = "whatsapp_webhook_url", length = 1048)
+    private String whatsappWebhookUrl;
+
+    @Size(max = 1048)
+    @Column(name = "whatsapp_webhook_token", length = 1048)
+    private String whatsappWebhookToken;
+
+    @Size(max = 2048)
+    @Column(name = "email_footer_html_url", length = 2048)
+    private String emailFooterHtmlUrl;
+
+    @Size(max = 2048)
+    @Column(name = "email_header_image_url", length = 2048)
+    private String emailHeaderImageUrl;
+
+    @Size(max = 2048)
+    @Column(name = "logo_image_url", length = 2048)
+    private String logoImageUrl;
+
+    @Size(max = 255)
+    @Column(name = "address_line_1", length = 255)
+    private String addressLine1;
+
+    @Size(max = 255)
+    @Column(name = "address_line_2", length = 255)
+    private String addressLine2;
+
+    @Size(max = 1000)
+    @Column(name = "description", length = 1000)
+    private String description;
+
+    @Size(max = 255)
+    @Column(name = "city", length = 255)
+    private String city;
+
+    @Size(max = 50)
+    @Column(name = "phone_number", length = 50)
+    private String phoneNumber;
+
+    @Size(max = 20)
+    @Column(name = "zip_code", length = 20)
+    private String zipCode;
+
+    @Size(max = 100)
+    @Column(name = "country", length = 100)
+    private String country;
+
+    @Size(max = 100)
+    @Column(name = "state_province", length = 100)
+    private String stateProvince;
+
+    @Size(max = 255)
+    @Column(name = "email", length = 255)
+    private String email;
+
+    @Size(max = 1024)
+    @Column(name = "facebook_url", length = 1024)
+    private String facebookUrl;
+
+    @Size(max = 1024)
+    @Column(name = "instagram_url", length = 1024)
+    private String instagramUrl;
+
+    @Size(max = 1024)
+    @Column(name = "twitter_url", length = 1024)
+    private String twitterUrl;
+
+    @Size(max = 1024)
+    @Column(name = "linkedin_url", length = 1024)
+    private String linkedinUrl;
+
+    @Size(max = 1024)
+    @Column(name = "youtube_url", length = 1024)
+    private String youtubeUrl;
+
+    @Size(max = 1024)
+    @Column(name = "tiktok_url", length = 1024)
+    private String tiktokUrl;
+
+    @NotNull
+    @Column(name = "homepage_cache_version", nullable = false)
+    private Long homepageCacheVersion = 0L;
+
+    @Column(name = "default_hero_image_urls_json", columnDefinition = "text")
+    private String defaultHeroImageUrlsJson;
+
+    @Size(max = 32)
+    @Column(name = "default_hero_display_mode", length = 32)
+    private String defaultHeroDisplayMode;
+
+    @Column(name = "default_hero_include_with_events")
+    private Boolean defaultHeroIncludeWithEvents;
+
+    @Column(name = "default_hero_max_display_count")
+    private Integer defaultHeroMaxDisplayCount;
+
+    @NotNull
+    @Column(name = "created_at", nullable = false)
+    private ZonedDateTime createdAt;
+
+    @NotNull
+    @Column(name = "updated_at", nullable = false)
+    private ZonedDateTime updatedAt;
+
+    @JsonIgnoreProperties(value = { "tenantSettings" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_organization_id", referencedColumnName = "id")
+    private TenantOrganization tenantOrganization;
+
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public TenantSettings id(Long id) {
+        this.setId(id);
+        return this;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTenantId() {
+        return this.tenantId;
+    }
+
+    public TenantSettings tenantId(String tenantId) {
+        this.setTenantId(tenantId);
+        return this;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public Boolean getAllowUserRegistration() {
+        return this.allowUserRegistration;
+    }
+
+    public TenantSettings allowUserRegistration(Boolean allowUserRegistration) {
+        this.setAllowUserRegistration(allowUserRegistration);
+        return this;
+    }
+
+    public void setAllowUserRegistration(Boolean allowUserRegistration) {
+        this.allowUserRegistration = allowUserRegistration;
+    }
+
+    public Boolean getRequireAdminApproval() {
+        return this.requireAdminApproval;
+    }
+
+    public TenantSettings requireAdminApproval(Boolean requireAdminApproval) {
+        this.setRequireAdminApproval(requireAdminApproval);
+        return this;
+    }
+
+    public void setRequireAdminApproval(Boolean requireAdminApproval) {
+        this.requireAdminApproval = requireAdminApproval;
+    }
+
+    public Boolean getEnableWhatsappIntegration() {
+        return this.enableWhatsappIntegration;
+    }
+
+    public TenantSettings enableWhatsappIntegration(Boolean enableWhatsappIntegration) {
+        this.setEnableWhatsappIntegration(enableWhatsappIntegration);
+        return this;
+    }
+
+    public void setEnableWhatsappIntegration(Boolean enableWhatsappIntegration) {
+        this.enableWhatsappIntegration = enableWhatsappIntegration;
+    }
+
+    public Boolean getEnableEmailMarketing() {
+        return this.enableEmailMarketing;
+    }
+
+    public TenantSettings enableEmailMarketing(Boolean enableEmailMarketing) {
+        this.setEnableEmailMarketing(enableEmailMarketing);
+        return this;
+    }
+
+    public void setEnableEmailMarketing(Boolean enableEmailMarketing) {
+        this.enableEmailMarketing = enableEmailMarketing;
+    }
+
+    public Boolean getIsMembershipSubscriptionEnabled() {
+        return this.isMembershipSubscriptionEnabled;
+    }
+
+    public TenantSettings isMembershipSubscriptionEnabled(Boolean isMembershipSubscriptionEnabled) {
+        this.setIsMembershipSubscriptionEnabled(isMembershipSubscriptionEnabled);
+        return this;
+    }
+
+    public void setIsMembershipSubscriptionEnabled(Boolean isMembershipSubscriptionEnabled) {
+        this.isMembershipSubscriptionEnabled = isMembershipSubscriptionEnabled;
+    }
+
+    public String getWhatsappApiKey() {
+        return this.whatsappApiKey;
+    }
+
+    public TenantSettings whatsappApiKey(String whatsappApiKey) {
+        this.setWhatsappApiKey(whatsappApiKey);
+        return this;
+    }
+
+    public void setWhatsappApiKey(String whatsappApiKey) {
+        this.whatsappApiKey = whatsappApiKey;
+    }
+
+    public String getEmailProviderConfig() {
+        return this.emailProviderConfig;
+    }
+
+    public TenantSettings emailProviderConfig(String emailProviderConfig) {
+        this.setEmailProviderConfig(emailProviderConfig);
+        return this;
+    }
+
+    public void setEmailProviderConfig(String emailProviderConfig) {
+        this.emailProviderConfig = emailProviderConfig;
+    }
+
+    public Integer getMaxEventsPerMonth() {
+        return this.maxEventsPerMonth;
+    }
+
+    public TenantSettings maxEventsPerMonth(Integer maxEventsPerMonth) {
+        this.setMaxEventsPerMonth(maxEventsPerMonth);
+        return this;
+    }
+
+    public void setMaxEventsPerMonth(Integer maxEventsPerMonth) {
+        this.maxEventsPerMonth = maxEventsPerMonth;
+    }
+
+    public Integer getMaxAttendeesPerEvent() {
+        return this.maxAttendeesPerEvent;
+    }
+
+    public TenantSettings maxAttendeesPerEvent(Integer maxAttendeesPerEvent) {
+        this.setMaxAttendeesPerEvent(maxAttendeesPerEvent);
+        return this;
+    }
+
+    public void setMaxAttendeesPerEvent(Integer maxAttendeesPerEvent) {
+        this.maxAttendeesPerEvent = maxAttendeesPerEvent;
+    }
+
+    public Boolean getEnableGuestRegistration() {
+        return this.enableGuestRegistration;
+    }
+
+    public TenantSettings enableGuestRegistration(Boolean enableGuestRegistration) {
+        this.setEnableGuestRegistration(enableGuestRegistration);
+        return this;
+    }
+
+    public void setEnableGuestRegistration(Boolean enableGuestRegistration) {
+        this.enableGuestRegistration = enableGuestRegistration;
+    }
+
+    public Integer getMaxGuestsPerAttendee() {
+        return this.maxGuestsPerAttendee;
+    }
+
+    public TenantSettings maxGuestsPerAttendee(Integer maxGuestsPerAttendee) {
+        this.setMaxGuestsPerAttendee(maxGuestsPerAttendee);
+        return this;
+    }
+
+    public void setMaxGuestsPerAttendee(Integer maxGuestsPerAttendee) {
+        this.maxGuestsPerAttendee = maxGuestsPerAttendee;
+    }
+
+    public Integer getDefaultEventCapacity() {
+        return this.defaultEventCapacity;
+    }
+
+    public TenantSettings defaultEventCapacity(Integer defaultEventCapacity) {
+        this.setDefaultEventCapacity(defaultEventCapacity);
+        return this;
+    }
+
+    public void setDefaultEventCapacity(Integer defaultEventCapacity) {
+        this.defaultEventCapacity = defaultEventCapacity;
+    }
+
+    public BigDecimal getPlatformFeePercentage() {
+        return this.platformFeePercentage;
+    }
+
+    public TenantSettings platformFeePercentage(BigDecimal platformFeePercentage) {
+        this.setPlatformFeePercentage(platformFeePercentage);
+        return this;
+    }
+
+    public void setPlatformFeePercentage(BigDecimal platformFeePercentage) {
+        this.platformFeePercentage = platformFeePercentage;
+    }
+
+    public String getCustomCss() {
+        return this.customCss;
+    }
+
+    public TenantSettings customCss(String customCss) {
+        this.setCustomCss(customCss);
+        return this;
+    }
+
+    public void setCustomCss(String customCss) {
+        this.customCss = customCss;
+    }
+
+    public String getCustomJs() {
+        return this.customJs;
+    }
+
+    public TenantSettings customJs(String customJs) {
+        this.setCustomJs(customJs);
+        return this;
+    }
+
+    public void setCustomJs(String customJs) {
+        this.customJs = customJs;
+    }
+
+    public Boolean getShowEventsSectionInHomePage() {
+        return this.showEventsSectionInHomePage;
+    }
+
+    public TenantSettings showEventsSectionInHomePage(Boolean showEventsSectionInHomePage) {
+        this.setShowEventsSectionInHomePage(showEventsSectionInHomePage);
+        return this;
+    }
+
+    public void setShowEventsSectionInHomePage(Boolean showEventsSectionInHomePage) {
+        this.showEventsSectionInHomePage = showEventsSectionInHomePage;
+    }
+
+    public Boolean getShowTeamMembersSectionInHomePage() {
+        return this.showTeamMembersSectionInHomePage;
+    }
+
+    public TenantSettings showTeamMembersSectionInHomePage(Boolean showTeamMembersSectionInHomePage) {
+        this.setShowTeamMembersSectionInHomePage(showTeamMembersSectionInHomePage);
+        return this;
+    }
+
+    public void setShowTeamMembersSectionInHomePage(Boolean showTeamMembersSectionInHomePage) {
+        this.showTeamMembersSectionInHomePage = showTeamMembersSectionInHomePage;
+    }
+
+    public Boolean getShowSponsorsSectionInHomePage() {
+        return this.showSponsorsSectionInHomePage;
+    }
+
+    public TenantSettings showSponsorsSectionInHomePage(Boolean showSponsorsSectionInHomePage) {
+        this.setShowSponsorsSectionInHomePage(showSponsorsSectionInHomePage);
+        return this;
+    }
+
+    public void setShowSponsorsSectionInHomePage(Boolean showSponsorsSectionInHomePage) {
+        this.showSponsorsSectionInHomePage = showSponsorsSectionInHomePage;
+    }
+
+    public ZonedDateTime getCreatedAt() {
+        return this.createdAt;
+    }
+
+    public TenantSettings createdAt(ZonedDateTime createdAt) {
+        this.setCreatedAt(createdAt);
+        return this;
+    }
+
+    public void setCreatedAt(ZonedDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public ZonedDateTime getUpdatedAt() {
+        return this.updatedAt;
+    }
+
+    public TenantSettings updatedAt(ZonedDateTime updatedAt) {
+        this.setUpdatedAt(updatedAt);
+        return this;
+    }
+
+    public void setUpdatedAt(ZonedDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public TenantOrganization getTenantOrganization() {
+        return this.tenantOrganization;
+    }
+
+    public void setTenantOrganization(TenantOrganization tenantOrganization) {
+        this.tenantOrganization = tenantOrganization;
+    }
+
+    public TenantSettings tenantOrganization(TenantOrganization tenantOrganization) {
+        this.setTenantOrganization(tenantOrganization);
+        return this;
+    }
+
+    public String getTwilioAccountSid() {
+        return this.twilioAccountSid;
+    }
+
+    public TenantSettings twilioAccountSid(String twilioAccountSid) {
+        this.setTwilioAccountSid(twilioAccountSid);
+        return this;
+    }
+
+    public void setTwilioAccountSid(String twilioAccountSid) {
+        this.twilioAccountSid = twilioAccountSid;
+    }
+
+    public String getTwilioAuthToken() {
+        return this.twilioAuthToken;
+    }
+
+    public TenantSettings twilioAuthToken(String twilioAuthToken) {
+        this.setTwilioAuthToken(twilioAuthToken);
+        return this;
+    }
+
+    public void setTwilioAuthToken(String twilioAuthToken) {
+        this.twilioAuthToken = twilioAuthToken;
+    }
+
+    public String getTwilioWhatsappFrom() {
+        return this.twilioWhatsappFrom;
+    }
+
+    public TenantSettings twilioWhatsappFrom(String twilioWhatsappFrom) {
+        this.setTwilioWhatsappFrom(twilioWhatsappFrom);
+        return this;
+    }
+
+    public void setTwilioWhatsappFrom(String twilioWhatsappFrom) {
+        this.twilioWhatsappFrom = twilioWhatsappFrom;
+    }
+
+    public String getWhatsappWebhookUrl() {
+        return this.whatsappWebhookUrl;
+    }
+
+    public TenantSettings whatsappWebhookUrl(String whatsappWebhookUrl) {
+        this.setWhatsappWebhookUrl(whatsappWebhookUrl);
+        return this;
+    }
+
+    public void setWhatsappWebhookUrl(String whatsappWebhookUrl) {
+        this.whatsappWebhookUrl = whatsappWebhookUrl;
+    }
+
+    public String getWhatsappWebhookToken() {
+        return this.whatsappWebhookToken;
+    }
+
+    public TenantSettings whatsappWebhookToken(String whatsappWebhookToken) {
+        this.setWhatsappWebhookToken(whatsappWebhookToken);
+        return this;
+    }
+
+    public void setWhatsappWebhookToken(String whatsappWebhookToken) {
+        this.whatsappWebhookToken = whatsappWebhookToken;
+    }
+
+    public String getEmailFooterHtmlUrl() {
+        return this.emailFooterHtmlUrl;
+    }
+
+    public TenantSettings emailFooterHtmlUrl(String emailFooterHtmlUrl) {
+        this.setEmailFooterHtmlUrl(emailFooterHtmlUrl);
+        return this;
+    }
+
+    public void setEmailFooterHtmlUrl(String emailFooterHtmlUrl) {
+        this.emailFooterHtmlUrl = emailFooterHtmlUrl;
+    }
+
+    public String getEmailHeaderImageUrl() {
+        return this.emailHeaderImageUrl;
+    }
+
+    public TenantSettings emailHeaderImageUrl(String emailHeaderImageUrl) {
+        this.setEmailHeaderImageUrl(emailHeaderImageUrl);
+        return this;
+    }
+
+    public void setEmailHeaderImageUrl(String emailHeaderImageUrl) {
+        this.emailHeaderImageUrl = emailHeaderImageUrl;
+    }
+
+    public String getLogoImageUrl() {
+        return this.logoImageUrl;
+    }
+
+    public TenantSettings logoImageUrl(String logoImageUrl) {
+        this.setLogoImageUrl(logoImageUrl);
+        return this;
+    }
+
+    public void setLogoImageUrl(String logoImageUrl) {
+        this.logoImageUrl = logoImageUrl;
+    }
+
+    public String getAddressLine1() {
+        return this.addressLine1;
+    }
+
+    public TenantSettings addressLine1(String addressLine1) {
+        this.setAddressLine1(addressLine1);
+        return this;
+    }
+
+    public void setAddressLine1(String addressLine1) {
+        this.addressLine1 = addressLine1;
+    }
+
+    public String getAddressLine2() {
+        return this.addressLine2;
+    }
+
+    public TenantSettings addressLine2(String addressLine2) {
+        this.setAddressLine2(addressLine2);
+        return this;
+    }
+
+    public void setAddressLine2(String addressLine2) {
+        this.addressLine2 = addressLine2;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public TenantSettings description(String description) {
+        this.setDescription(description);
+        return this;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCity() {
+        return this.city;
+    }
+
+    public TenantSettings city(String city) {
+        this.setCity(city);
+        return this;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getPhoneNumber() {
+        return this.phoneNumber;
+    }
+
+    public TenantSettings phoneNumber(String phoneNumber) {
+        this.setPhoneNumber(phoneNumber);
+        return this;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getZipCode() {
+        return this.zipCode;
+    }
+
+    public TenantSettings zipCode(String zipCode) {
+        this.setZipCode(zipCode);
+        return this;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+    }
+
+    public String getCountry() {
+        return this.country;
+    }
+
+    public TenantSettings country(String country) {
+        this.setCountry(country);
+        return this;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getStateProvince() {
+        return this.stateProvince;
+    }
+
+    public TenantSettings stateProvince(String stateProvince) {
+        this.setStateProvince(stateProvince);
+        return this;
+    }
+
+    public void setStateProvince(String stateProvince) {
+        this.stateProvince = stateProvince;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public TenantSettings email(String email) {
+        this.setEmail(email);
+        return this;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFacebookUrl() {
+        return this.facebookUrl;
+    }
+
+    public TenantSettings facebookUrl(String facebookUrl) {
+        this.setFacebookUrl(facebookUrl);
+        return this;
+    }
+
+    public void setFacebookUrl(String facebookUrl) {
+        this.facebookUrl = facebookUrl;
+    }
+
+    public String getInstagramUrl() {
+        return this.instagramUrl;
+    }
+
+    public TenantSettings instagramUrl(String instagramUrl) {
+        this.setInstagramUrl(instagramUrl);
+        return this;
+    }
+
+    public void setInstagramUrl(String instagramUrl) {
+        this.instagramUrl = instagramUrl;
+    }
+
+    public String getTwitterUrl() {
+        return this.twitterUrl;
+    }
+
+    public TenantSettings twitterUrl(String twitterUrl) {
+        this.setTwitterUrl(twitterUrl);
+        return this;
+    }
+
+    public void setTwitterUrl(String twitterUrl) {
+        this.twitterUrl = twitterUrl;
+    }
+
+    public String getLinkedinUrl() {
+        return this.linkedinUrl;
+    }
+
+    public TenantSettings linkedinUrl(String linkedinUrl) {
+        this.setLinkedinUrl(linkedinUrl);
+        return this;
+    }
+
+    public void setLinkedinUrl(String linkedinUrl) {
+        this.linkedinUrl = linkedinUrl;
+    }
+
+    public String getYoutubeUrl() {
+        return this.youtubeUrl;
+    }
+
+    public TenantSettings youtubeUrl(String youtubeUrl) {
+        this.setYoutubeUrl(youtubeUrl);
+        return this;
+    }
+
+    public void setYoutubeUrl(String youtubeUrl) {
+        this.youtubeUrl = youtubeUrl;
+    }
+
+    public String getTiktokUrl() {
+        return this.tiktokUrl;
+    }
+
+    public TenantSettings tiktokUrl(String tiktokUrl) {
+        this.setTiktokUrl(tiktokUrl);
+        return this;
+    }
+
+    public void setTiktokUrl(String tiktokUrl) {
+        this.tiktokUrl = tiktokUrl;
+    }
+
+    public Long getHomepageCacheVersion() {
+        return this.homepageCacheVersion;
+    }
+
+    public TenantSettings homepageCacheVersion(Long homepageCacheVersion) {
+        this.setHomepageCacheVersion(homepageCacheVersion);
+        return this;
+    }
+
+    public void setHomepageCacheVersion(Long homepageCacheVersion) {
+        this.homepageCacheVersion = homepageCacheVersion;
+    }
+
+    public String getDefaultHeroImageUrlsJson() {
+        return this.defaultHeroImageUrlsJson;
+    }
+
+    public TenantSettings defaultHeroImageUrlsJson(String defaultHeroImageUrlsJson) {
+        this.setDefaultHeroImageUrlsJson(defaultHeroImageUrlsJson);
+        return this;
+    }
+
+    public void setDefaultHeroImageUrlsJson(String defaultHeroImageUrlsJson) {
+        this.defaultHeroImageUrlsJson = defaultHeroImageUrlsJson;
+    }
+
+    public String getDefaultHeroDisplayMode() {
+        return this.defaultHeroDisplayMode;
+    }
+
+    public TenantSettings defaultHeroDisplayMode(String defaultHeroDisplayMode) {
+        this.setDefaultHeroDisplayMode(defaultHeroDisplayMode);
+        return this;
+    }
+
+    public void setDefaultHeroDisplayMode(String defaultHeroDisplayMode) {
+        this.defaultHeroDisplayMode = defaultHeroDisplayMode;
+    }
+
+    public Boolean getDefaultHeroIncludeWithEvents() {
+        return this.defaultHeroIncludeWithEvents;
+    }
+
+    public TenantSettings defaultHeroIncludeWithEvents(Boolean defaultHeroIncludeWithEvents) {
+        this.setDefaultHeroIncludeWithEvents(defaultHeroIncludeWithEvents);
+        return this;
+    }
+
+    public void setDefaultHeroIncludeWithEvents(Boolean defaultHeroIncludeWithEvents) {
+        this.defaultHeroIncludeWithEvents = defaultHeroIncludeWithEvents;
+    }
+
+    public Integer getDefaultHeroMaxDisplayCount() {
+        return this.defaultHeroMaxDisplayCount;
+    }
+
+    public TenantSettings defaultHeroMaxDisplayCount(Integer defaultHeroMaxDisplayCount) {
+        this.setDefaultHeroMaxDisplayCount(defaultHeroMaxDisplayCount);
+        return this;
+    }
+
+    public void setDefaultHeroMaxDisplayCount(Integer defaultHeroMaxDisplayCount) {
+        this.defaultHeroMaxDisplayCount = defaultHeroMaxDisplayCount;
+    }
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
+    // setters here
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof TenantSettings)) {
+            return false;
+        }
+        return getId() != null && getId().equals(((TenantSettings) o).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        // see
+        // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
+    }
+
+    // prettier-ignore
+    @Override
+    public String toString() {
+        return "TenantSettings{" +
+                "id=" + getId() +
+                ", tenantId='" + getTenantId() + "'" +
+                ", allowUserRegistration='" + getAllowUserRegistration() + "'" +
+                ", requireAdminApproval='" + getRequireAdminApproval() + "'" +
+                ", enableWhatsappIntegration='" + getEnableWhatsappIntegration() + "'" +
+                ", enableEmailMarketing='" + getEnableEmailMarketing() + "'" +
+                ", isMembershipSubscriptionEnabled='" + getIsMembershipSubscriptionEnabled() + "'" +
+                ", whatsappApiKey='" + getWhatsappApiKey() + "'" +
+                ", emailProviderConfig='" + getEmailProviderConfig() + "'" +
+                ", maxEventsPerMonth=" + getMaxEventsPerMonth() +
+                ", maxAttendeesPerEvent=" + getMaxAttendeesPerEvent() +
+                ", enableGuestRegistration='" + getEnableGuestRegistration() + "'" +
+                ", maxGuestsPerAttendee=" + getMaxGuestsPerAttendee() +
+                ", defaultEventCapacity=" + getDefaultEventCapacity() +
+                ", platformFeePercentage=" + getPlatformFeePercentage() +
+                ", customCss='" + getCustomCss() + "'" +
+                ", customJs='" + getCustomJs() + "'" +
+                ", showEventsSectionInHomePage='" + getShowEventsSectionInHomePage() + "'" +
+                ", showTeamMembersSectionInHomePage='" + getShowTeamMembersSectionInHomePage() + "'" +
+                ", showSponsorsSectionInHomePage='" + getShowSponsorsSectionInHomePage() + "'" +
+                ", twilioAccountSid='" + getTwilioAccountSid() + "'" +
+                ", twilioAuthToken='" + getTwilioAuthToken() + "'" +
+                ", twilioWhatsappFrom='" + getTwilioWhatsappFrom() + "'" +
+                ", whatsappWebhookUrl='" + getWhatsappWebhookUrl() + "'" +
+                ", whatsappWebhookToken='" + getWhatsappWebhookToken() + "'" +
+                ", emailFooterHtmlUrl='" + getEmailFooterHtmlUrl() + "'" +
+                ", emailHeaderImageUrl='" + getEmailHeaderImageUrl() + "'" +
+                ", logoImageUrl='" + getLogoImageUrl() + "'" +
+                ", addressLine1='" + getAddressLine1() + "'" +
+                ", addressLine2='" + getAddressLine2() + "'" +
+                ", description='" + getDescription() + "'" +
+                ", city='" + getCity() + "'" +
+                ", phoneNumber='" + getPhoneNumber() + "'" +
+                ", zipCode='" + getZipCode() + "'" +
+                ", country='" + getCountry() + "'" +
+                ", stateProvince='" + getStateProvince() + "'" +
+                ", email='" + getEmail() + "'" +
+                ", facebookUrl='" + getFacebookUrl() + "'" +
+                ", instagramUrl='" + getInstagramUrl() + "'" +
+                ", twitterUrl='" + getTwitterUrl() + "'" +
+                ", linkedinUrl='" + getLinkedinUrl() + "'" +
+                ", youtubeUrl='" + getYoutubeUrl() + "'" +
+                ", tiktokUrl='" + getTiktokUrl() + "'" +
+                ", homepageCacheVersion=" + getHomepageCacheVersion() +
+                ", defaultHeroImageUrlsJson='" + getDefaultHeroImageUrlsJson() + "'" +
+                ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +
+                ", defaultHeroIncludeWithEvents='" + getDefaultHeroIncludeWithEvents() + "'" +
+                ", defaultHeroMaxDisplayCount=" + getDefaultHeroMaxDisplayCount() +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                "}";
+    }
+}
