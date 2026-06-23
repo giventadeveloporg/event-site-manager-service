@@ -3,9 +3,7 @@ name: event-mgmnt-site
 services:
   # Spring Boot Application
   app:
-    # Load .env file from the same directory as docker-compose.local.yml
-    # Docker Compose automatically reads .env from the same directory for variable substitution
-    # env_file loads variables into the container environment
+    # Credentials: src/main/docker/Docker_Local/.env (run compose from this directory)
     env_file:
       - .env
     build:
@@ -17,7 +15,7 @@ services:
       - '127.0.0.1:8080:8080'
     environment:
       # Spring Configuration
-      SPRING_PROFILES_ACTIVE: local
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local-postgres-cache}
       JAVA_OPTS: ${JAVA_OPTS:--Xmx512m -Xms256m}
 
       # Disable Liquibase
@@ -117,3 +115,4 @@ networks:
   batch-jobs-network:
     external: true
     name: event-site-manager-batch-jobs_batch-jobs-network
+
