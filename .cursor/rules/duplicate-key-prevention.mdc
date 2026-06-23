@@ -72,7 +72,7 @@ public EntityDTO save(EntityDTO entityDTO) {
 
 The `SequenceSynchronizationAspect` provides automatic runtime protection:
 
-**Location:** `src/main/java/com/nextjstemplate/aop/sequence/SequenceSynchronizationAspect.java`
+**Location:** `src/main/java/com/eventsitemanager/aop/sequence/SequenceSynchronizationAspect.java`
 
 **Features:**
 - ✅ Catches `DataIntegrityViolationException` and `ConstraintViolationException`
@@ -120,7 +120,7 @@ public Object handleDuplicateKeyViolation(ProceedingJoinPoint joinPoint)
 
 ### Example 1: EventTicketTypeServiceImpl.save()
 
-**Location:** `src/main/java/com/nextjstemplate/service/impl/EventTicketTypeServiceImpl.java:38`
+**Location:** `src/main/java/com/eventsitemanager/service/impl/EventTicketTypeServiceImpl.java:38`
 
 ```java
 @Override
@@ -142,7 +142,7 @@ public EventTicketTypeDTO save(EventTicketTypeDTO eventTicketTypeDTO) {
 
 ### Example 2: ManualPaymentRequestServiceImpl.createManualPaymentRequestWithTickets()
 
-**Location:** `src/main/java/com/nextjstemplate/service/impl/ManualPaymentRequestServiceImpl.java`
+**Location:** `src/main/java/com/eventsitemanager/service/impl/ManualPaymentRequestServiceImpl.java`
 
 ```java
 // Entity is created fresh, ID should be null
@@ -154,7 +154,7 @@ paymentRequest = manualPaymentRequestRepository.save(paymentRequest);
 
 ### Example 3: EventAttendeeServiceImpl.save()
 
-**Location:** `src/main/java/com/nextjstemplate/service/impl/EventAttendeeServiceImpl.java`
+**Location:** `src/main/java/com/eventsitemanager/service/impl/EventAttendeeServiceImpl.java`
 
 ```java
 @Override
@@ -178,7 +178,7 @@ public EventAttendeeDTO save(EventAttendeeDTO eventAttendeeDTO) {
 
 ### Example 4: EventAttendeeAttachmentServiceImpl.save()
 
-**Location:** `src/main/java/com/nextjstemplate/service/impl/EventAttendeeAttachmentServiceImpl.java`
+**Location:** `src/main/java/com/eventsitemanager/service/impl/EventAttendeeAttachmentServiceImpl.java`
 
 ```java
 @Override
@@ -346,7 +346,7 @@ void testSaveWithoutId() {
 
 - **Analysis:** `documentation/fixes/DUPLICATE_KEY_ERROR_ANALYSIS.md`
 - **Summary:** `documentation/fixes/DUPLICATE_KEY_ERROR_SUMMARY.html`
-- **AOP Aspect:** `src/main/java/com/nextjstemplate/aop/sequence/SequenceSynchronizationAspect.java`
+- **AOP Aspect:** `src/main/java/com/eventsitemanager/aop/sequence/SequenceSynchronizationAspect.java`
 - **SQL Sync Script:** `src/main/resources/sqls/sync_sequence_after_inserts.sql`
 - **Schema Script:** `src/main/resources/sqls/Latest_Schema_Post__Blob_Claude_12.sql`
 

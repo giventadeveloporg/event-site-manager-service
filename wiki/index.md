@@ -1,4 +1,4 @@
-# Wiki Index — malayalees-us-site-boot
+# Wiki Index — event-site-manager-service
 
 > Auto-generated on 2026-04-15. LLM maintains this file.
 

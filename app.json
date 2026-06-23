@@ -1,6 +1,6 @@
 {
-  "name": "NextJS Template Boot",
-  "description": "JHipster Spring Boot application for NextJS Template",
+  "name": "Event Site Manager Service",
+  "description": "JHipster Spring Boot application for Event Site Manager Service",
   "image": "heroku/java",
   "addons": [
     {

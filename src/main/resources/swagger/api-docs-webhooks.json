@@ -1,1 +1,32 @@
-{"openapi":"3.0.1","info":{"title":"Nextjs Template Boot API","description":"API Documentation for all REST endpoints including Clerk Authentication, Admin Management, and Webhooks","license":{"name":"Unlicensed"},"version":"1.0"},"servers":[{"url":"http://localhost","description":"Generated server url"}],"security":[{"bearer-jwt":[]}],"paths":{"/api/webhooks/givebutter":{"post":{"tags":["givebutter-webhook-controller"],"operationId":"handleWebhook","parameters":[{"name":"X-Givebutter-Signature","in":"header","required":false,"schema":{"type":"string"}}],"requestBody":{"content":{"application/json":{"schema":{"type":"string"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"object"}}}}}}}},"components":{"securitySchemes":{"bearer-jwt":{"type":"http","description":"JWT token obtained from /api/auth/sign-in or /api/auth/sign-in/social. Format: Bearer <token>","scheme":"bearer","bearerFormat":"JWT"}}}}
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Event Site Manager Service API",
+    "description": "API Documentation for all REST endpoints including Clerk Authentication, Admin Management, and Webhooks",
+    "license": { "name": "Unlicensed" },
+    "version": "1.0"
+  },
+  "servers": [{ "url": "http://localhost", "description": "Generated server url" }],
+  "security": [{ "bearer-jwt": [] }],
+  "paths": {
+    "/api/webhooks/givebutter": {
+      "post": {
+        "tags": ["givebutter-webhook-controller"],
+        "operationId": "handleWebhook",
+        "parameters": [{ "name": "X-Givebutter-Signature", "in": "header", "required": false, "schema": { "type": "string" } }],
+        "requestBody": { "content": { "application/json": { "schema": { "type": "string" } } }, "required": true },
+        "responses": { "200": { "description": "OK", "content": { "*/*": { "schema": { "type": "object" } } } } }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer-jwt": {
+        "type": "http",
+        "description": "JWT token obtained from /api/auth/sign-in or /api/auth/sign-in/social. Format: Bearer <token>",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

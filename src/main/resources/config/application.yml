@@ -21,7 +21,7 @@ spring:
       on-profile: '!api-docs'
     ignore-unknown-fields: true
   application:
-    name: nextjs_template_boot
+    name: event_site_manager_service
   jmx:
     enabled: false
   data:
@@ -48,13 +48,13 @@ spring:
         - USER
   task:
     execution:
-      thread-name-prefix: nextjs-template-boot-task-
+      thread-name-prefix: event-site-manager-service-task-
       pool:
         core-size: 2
         max-size: 50
         queue-capacity: 10000
     scheduling:
-      thread-name-prefix: nextjs-template-boot-scheduling-
+      thread-name-prefix: event-site-manager-service-scheduling-
       pool:
         size: 2
   output:
@@ -98,7 +98,7 @@ springdoc:
     tagsSorter: alpha
     disable-swagger-default-url: true
   show-actuator: true
-  packages-to-scan: com.nextjstemplate.web.rest
+  packages-to-scan: com.eventsitemanager.web.rest
   paths-to-match: /**
   default-produces-media-type: application/json
   default-consumes-media-type: application/json
@@ -185,7 +185,7 @@ info:
 
 jhipster:
   clientApp:
-    name: 'nextjsTemplateBootApp'
+    name: 'eventSiteManagerService'
   cors:
     allowed-origins: '*'
     allowed-methods: 'GET,POST,PUT,DELETE,OPTIONS'
@@ -198,8 +198,8 @@ jhipster:
   api-docs:
     default-include-pattern: /api/**
     management-include-pattern: /management/**
-    title: Nextjs Template Boot API
-    description: Nextjs Template Boot API documentation
+    title: Event Site Manager Service API
+    description: Event Site Manager Service API documentation
     version: 0.0.1
     terms-of-service-url:
     contact-name:

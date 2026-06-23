@@ -90,7 +90,7 @@ docker-compose -f docker-compose.local.yml up -d postgres redis
 REM Wait for services to be ready
 echo [%date% %time%] Waiting for PostgreSQL to be ready...
 :wait_postgres
-docker-compose -f docker-compose.local.yml exec postgres pg_isready -U postgres -d malayalees_us_site >nul 2>&1
+docker-compose -f docker-compose.local.yml exec postgres pg_isready -U postgres -d event_site_manager_db >nul 2>&1
 if errorlevel 1 (
     timeout /t 2 /nobreak >nul
     goto :wait_postgres
@@ -122,7 +122,7 @@ REM Create test data
 echo [%date% %time%] Creating test data...
 
 REM Create test tenants and users
-docker-compose -f docker-compose.local.yml exec postgres psql -U postgres -d malayalees_us_site -c "INSERT INTO tenant_organization (id, tenant_id, organization_name, domain_name, is_active, created_at, updated_at) VALUES (1, 'tenant_demo_001', 'Demo Organization 1', 'demo1.local', true, NOW(), NOW()), (2, 'tenant_demo_002', 'Demo Organization 2', 'demo2.local', true, NOW(), NOW()), (3, 'tenant_demo_003', 'Demo Organization 3', 'demo3.local', true, NOW(), NOW()) ON CONFLICT (id) DO NOTHING;"
+docker-compose -f docker-compose.local.yml exec postgres psql -U postgres -d event_site_manager_db -c "INSERT INTO tenant_organization (id, tenant_id, organization_name, domain_name, is_active, created_at, updated_at) VALUES (1, 'tenant_demo_001', 'Demo Organization 1', 'demo1.local', true, NOW(), NOW()), (2, 'tenant_demo_002', 'Demo Organization 2', 'demo2.local', true, NOW(), NOW()), (3, 'tenant_demo_003', 'Demo Organization 3', 'demo3.local', true, NOW(), NOW()) ON CONFLICT (id) DO NOTHING;"
 
 echo %SUCCESS% Test data created
 goto :start_application
@@ -180,7 +180,7 @@ if errorlevel 1 (
 )
 
 REM Database connectivity
-docker-compose -f docker-compose.local.yml exec postgres pg_isready -U postgres -d malayalees_us_site >nul 2>&1
+docker-compose -f docker-compose.local.yml exec postgres pg_isready -U postgres -d event_site_manager_db >nul 2>&1
 if errorlevel 1 (
     echo %ERROR% Database connectivity check failed
     exit /b 1

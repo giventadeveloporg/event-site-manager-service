@@ -4,7 +4,7 @@ services:
   postgresql:
     image: postgres:16.0
     # volumes:
-    #   - ~/volumes/jhipster/nextjs_template_boot/postgresql/:/var/lib/postgresql/data/
+    #   - ~/volumes/jhipster/event_site_manager_service/postgresql/:/var/lib/postgresql/data/
     volumes:
       - E:/postgres_docker:/var/lib/postgresql/data/
 
@@ -23,4 +23,3 @@ services:
     # remove the "127.0.0.1:" prefix
     ports:
       - 127.0.0.1:5432:5432
-

@@ -5,7 +5,7 @@ services:
     image: postgres:16.0
     restart: unless-stopped
     # volumes:
-    #   - ~/volumes/jhipster/nextjs_template_boot/postgresql/:/var/lib/postgresql/data/
+    #   - ~/volumes/jhipster/event_site_manager_service/postgresql/:/var/lib/postgresql/data/
     volumes:
       - F:/project_config/postgres_docker:/var/lib/postgresql/data/
       - ./postgresql.conf:/etc/postgresql/postgresql.conf:ro

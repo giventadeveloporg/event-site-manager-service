@@ -15,7 +15,7 @@
  * Options:
  *   --env=<name>         Environment profile for picking .properties file (default: dev)
  *   --file=<path>        Path to .properties file (overrides --env for file location)
- *   --repo=<owner/repo>  GitHub repo (default: giventadeveloporg/malayalees-us-site-boot)
+ *   --repo=<owner/repo>  GitHub repo (default: giventadeveloporg/event-site-manager-service)
  *   --environment=<name>  GitHub Environment name (default: same as --env, e.g. dev)
  *
  * Requires: .env with GIT_PAT_TOKEN (or set GIT_PAT_TOKEN in shell).
@@ -49,7 +49,7 @@ loadEnv();
 const { readEnvProps } = require('./read-env-props.js');
 
 const GITHUB_API = 'api.github.com';
-const DEFAULT_REPO = 'giventadeveloporg/malayalees-us-site-boot';
+const DEFAULT_REPO = 'giventadeveloporg/event-site-manager-service';
 
 function parseSyncArgs(argv) {
   let env = 'dev';
@@ -83,7 +83,7 @@ function httpsRequest(options, body) {
         path: options.path,
         method: options.method || 'GET',
         headers: {
-          'User-Agent': 'malayalees-us-site-boot-sync',
+          'User-Agent': 'event-site-manager-service-sync',
           Accept: 'application/vnd.github+json',
           'X-GitHub-Api-Version': '2022-11-28',
           Authorization: authHeader(options.token),
@@ -150,7 +150,7 @@ async function main() {
   const { env, file, repo, environment } = parseSyncArgs(argv);
   const [owner, repoName] = repo.split('/');
   if (!owner || !repoName) {
-    console.error('--repo must be owner/repo (e.g. giventadeveloporg/malayalees-us-site-boot)');
+    console.error('--repo must be owner/repo (e.g. giventadeveloporg/event-site-manager-service)');
     process.exit(1);
   }
 

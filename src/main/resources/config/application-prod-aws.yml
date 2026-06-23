@@ -16,7 +16,7 @@ logging:
   level:
     ROOT: INFO
     tech.jhipster: INFO
-    com.nextjstemplate: INFO
+    com.eventsitemanager: INFO
     org.springframework.web: WARN
     org.hibernate.SQL: WARN
     org.hibernate.type.descriptor.sql.BasicBinder: WARN

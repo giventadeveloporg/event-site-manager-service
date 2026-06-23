@@ -1,4 +1,4 @@
-# Deploy Malayalees Backend (Nextjs Template Boot) to AWS ECS Fargate — Production
+# Deploy Event Site Manager Service to AWS ECS Fargate — Production
 # Trigger manually (workflow_dispatch) or by push/merge to release/v1.0.0 only.
 # See documentation/DEPLOYMENT_AUTOMATION_GIT_ACTIONS/ for setup and troubleshooting.
 # CONTAINER_NAME must match the container "name" in your ECS task definition in AWS.
@@ -27,10 +27,10 @@ env:
   # S3/SES runtime region injected into the container (matches application.yml default)
   AWS_S3_REGION: ${{ vars.AWS_REGION || 'us-east-2' }}
   # Set ECR_REPOSITORY_PROD in GitHub environment variables to override the default repo name
-  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY_PROD || 'malayalees-backend-prod' }}
-  ECS_CLUSTER: malayalees-backend-prod-cluster
-  ECS_SERVICE: malayalees-backend-prod-service
-  ECS_TASK_DEFINITION: malayalees-backend-prod
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY_PROD || 'event-site-manager-prod' }}
+  ECS_CLUSTER: event-site-manager-prod-cluster
+  ECS_SERVICE: event-site-manager-prod-backend-service
+  ECS_TASK_DEFINITION: event-site-manager-prod-backend
   CONTAINER_NAME: spring-boot-backend
 
 jobs:

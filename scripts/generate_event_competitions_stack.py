@@ -3,8 +3,8 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-JAVA = ROOT / "src/main/java/com/nextjstemplate"
-TEST = ROOT / "src/test/java/com/nextjstemplate"
+JAVA = ROOT / "src/main/java/com/eventsitemanager"
+TEST = ROOT / "src/test/java/com/eventsitemanager"
 LIQ = ROOT / "src/main/resources/config/liquibase/changelog"
 
 ENUMS = {
@@ -29,7 +29,7 @@ def gen_enums():
         body = ",\n    ".join(values)
         write(
             JAVA / "domain/enumeration" / f"{name}.java",
-            f"""package com.nextjstemplate.domain.enumeration;
+            f"""package com.eventsitemanager.domain.enumeration;
 
 /**
  * The {name} enumeration.
@@ -282,8 +282,8 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-JAVA = ROOT / "src/main/java/com/nextjstemplate"
-TEST = ROOT / "src/test/java/com/nextjstemplate"
+JAVA = ROOT / "src/main/java/com/eventsitemanager"
+TEST = ROOT / "src/test/java/com/eventsitemanager"
 
 WRITTEN: list[str] = []
 
@@ -498,7 +498,7 @@ STACK += [
         ],
         "custom_repo": [
             "boolean existsByCompetitionIdAndParticipantProfileIdAndIdNot(Long competitionId, Long participantProfileId, Long id);",
-            "long countByCompetitionIdAndRegistrationStatusNotIn(Long competitionId, java.util.Collection<com.nextjstemplate.domain.enumeration.CompetitionRegistrationStatus> statuses);",
+            "long countByCompetitionIdAndRegistrationStatusNotIn(Long competitionId, java.util.Collection<com.eventsitemanager.domain.enumeration.CompetitionRegistrationStatus> statuses);",
             "long countByGroupLeaderRegistrationId(Long groupLeaderRegistrationId);",
         ],
         "special_service_impl": "registration",
@@ -575,9 +575,9 @@ def gen_entity(cfg: dict) -> None:
     if any(f["type"] == "BigDecimal" for f in cfg["fields"]):
         imports.append("import java.math.BigDecimal;")
     if any(f["type"] == "enum" for f in cfg["fields"]):
-        imports.append("import com.nextjstemplate.domain.enumeration.*;")
+        imports.append("import com.eventsitemanager.domain.enumeration.*;")
     for rel in cfg.get("relations", []):
-        imports.append(f"import com.nextjstemplate.domain.{rel['entity']};")
+        imports.append(f"import com.eventsitemanager.domain.{rel['entity']};")
     imports += [
         "import org.hibernate.annotations.Cache;",
         "import org.hibernate.annotations.CacheConcurrencyStrategy;",
@@ -697,13 +697,13 @@ def gen_dto(cfg: dict) -> None:
     if any(f["type"] == "BigDecimal" for f in cfg["fields"]):
         imports.append("import java.math.BigDecimal;")
     if any(f["type"] == "enum" for f in cfg["fields"]):
-        imports.append("import com.nextjstemplate.domain.enumeration.*;")
+        imports.append("import com.eventsitemanager.domain.enumeration.*;")
     for rel in cfg.get("relations", []):
-        imports.append(f"import com.nextjstemplate.service.dto.{rel['dto']};")
+        imports.append(f"import com.eventsitemanager.service.dto.{rel['dto']};")
     lines = imports + [
         "",
         "/**",
-        f" * A DTO for the {{@link com.nextjstemplate.domain.{cls}}} entity.",
+        f" * A DTO for the {{@link com.eventsitemanager.domain.{cls}}} entity.",
         " */",
         '@SuppressWarnings("common-java:DuplicatedBlocks")',
         f"public class {dto} implements Serializable {{",
@@ -786,9 +786,9 @@ def gen_repository(cfg: dict) -> None:
         imports_opt = "import java.util.Collection;\n"
     else:
         imports_opt = ""
-    content = f"""package com.nextjstemplate.repository;
+    content = f"""package com.eventsitemanager.repository;
 
-import com.nextjstemplate.domain.{cls};
+import com.eventsitemanager.domain.{cls};
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -811,7 +811,7 @@ def gen_mapper(cfg: dict) -> None:
             f'    @Named("{r["named"]}")',
             "    @BeanMapping(ignoreByDefault = true)",
             '    @Mapping(target = "id", source = "id")',
-            f"    {r['dto']} toDto{r['named'].replace('Id','').replace('eventDetails','EventDetails').replace('userProfile','UserProfile')}(com.nextjstemplate.domain.{r['entity']} entity);",
+            f"    {r['dto']} toDto{r['named'].replace('Id','').replace('eventDetails','EventDetails').replace('userProfile','UserProfile')}(com.eventsitemanager.domain.{r['entity']} entity);",
         ]
     # fix named method names - use simple pattern
     named = []
@@ -821,14 +821,14 @@ def gen_mapper(cfg: dict) -> None:
             f'    @Named("{r["named"]}")',
             "    @BeanMapping(ignoreByDefault = true)",
             '    @Mapping(target = "id", source = "id")',
-            f"    {r['dto']} {method}(com.nextjstemplate.domain.{r['entity']} entity);",
+            f"    {r['dto']} {method}(com.eventsitemanager.domain.{r['entity']} entity);",
         ]
-    imports = ["import com.nextjstemplate.domain." + cls + ";", "import com.nextjstemplate.service.dto." + dto + ";"]
+    imports = ["import com.eventsitemanager.domain." + cls + ";", "import com.eventsitemanager.service.dto." + dto + ";"]
     for r in cfg.get("relations", []):
-        imports.append(f"import com.nextjstemplate.domain.{r['entity']};")
-        imports.append(f"import com.nextjstemplate.service.dto.{r['dto']};")
+        imports.append(f"import com.eventsitemanager.domain.{r['entity']};")
+        imports.append(f"import com.eventsitemanager.service.dto.{r['dto']};")
     content = (
-        "package com.nextjstemplate.service.mapper;\n\n"
+        "package com.eventsitemanager.service.mapper;\n\n"
         + "\n".join(imports)
         + "\nimport org.mapstruct.*;\n\n"
         + "/**\n * Mapper for the entity {@link "
@@ -856,15 +856,15 @@ def gen_mapper(cfg: dict) -> None:
 
 def gen_service_interface(cfg: dict) -> None:
     cls, dto = cfg["class"], cfg["class"] + "DTO"
-    content = f"""package com.nextjstemplate.service;
+    content = f"""package com.eventsitemanager.service;
 
-import {JAVA.as_posix() if False else 'com.nextjstemplate.service.dto.' + dto};
+import {JAVA.as_posix() if False else 'com.eventsitemanager.service.dto.' + dto};
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 /**
- * Service Interface for managing {{@link com.nextjstemplate.domain.{cls}}}.
+ * Service Interface for managing {{@link com.eventsitemanager.domain.{cls}}}.
  */
 public interface {cls}Service {{
     {dto} save({dto} {camel(cls)}DTO);
@@ -881,20 +881,20 @@ public interface {cls}Service {{
 }}
 """
     # fix import path
-    content = content.replace(f"{JAVA.as_posix() if False else 'com.nextjstemplate.service.dto.' + dto}", f"com.nextjstemplate.service.dto.{dto}")
+    content = content.replace(f"{JAVA.as_posix() if False else 'com.eventsitemanager.service.dto.' + dto}", f"com.eventsitemanager.service.dto.{dto}")
     write(JAVA / "service" / f"{cls}Service.java", content)
 
 
 
 def gen_service_impl_default(cfg: dict) -> None:
     cls, dto, var = cfg["class"], cfg["class"] + "DTO", camel(cfg["class"])
-    content = f"""package com.nextjstemplate.service.impl;
+    content = f"""package com.eventsitemanager.service.impl;
 
-import com.nextjstemplate.domain.{cls};
-import com.nextjstemplate.repository.{cls}Repository;
-import com.nextjstemplate.service.{cls}Service;
-import com.nextjstemplate.service.dto.{dto};
-import com.nextjstemplate.service.mapper.{cls}Mapper;
+import com.eventsitemanager.domain.{cls};
+import com.eventsitemanager.repository.{cls}Repository;
+import com.eventsitemanager.service.{cls}Service;
+import com.eventsitemanager.service.dto.{dto};
+import com.eventsitemanager.service.mapper.{cls}Mapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -992,11 +992,11 @@ def gen_criteria(cfg: dict) -> None:
     cls = cfg["class"]
     fields = [{"name": "id", "type": "Long"}] + cfg["fields"]
     lines = [
-        "package com.nextjstemplate.service.criteria;",
+        "package com.eventsitemanager.service.criteria;",
         "",
     ]
     if any(f["type"] == "enum" for f in cfg["fields"]):
-        lines.append("import com.nextjstemplate.domain.enumeration.*;")
+        lines.append("import com.eventsitemanager.domain.enumeration.*;")
     lines += [
         "import java.io.Serializable;",
         "import java.util.Objects;",
@@ -1005,7 +1005,7 @@ def gen_criteria(cfg: dict) -> None:
         "import tech.jhipster.service.filter.*;",
         "",
         "/**",
-        f" * Criteria class for the {{@link com.nextjstemplate.domain.{cls}}} entity.",
+        f" * Criteria class for the {{@link com.eventsitemanager.domain.{cls}}} entity.",
         " */",
         "@ParameterObject",
         '@SuppressWarnings("common-java:DuplicatedBlocks")',
@@ -1103,14 +1103,14 @@ def gen_query_service(cfg: dict) -> None:
     cls = cfg["class"]
     metamodel = cls + "_"
     lines = [
-        "package com.nextjstemplate.service;",
+        "package com.eventsitemanager.service;",
         "",
-        "import com.nextjstemplate.domain.*;",
-        f"import com.nextjstemplate.domain.{cls};",
-        f"import com.nextjstemplate.repository.{cls}Repository;",
-        f"import com.nextjstemplate.service.criteria.{cls}Criteria;",
-        f"import com.nextjstemplate.service.dto.{cls}DTO;",
-        f"import com.nextjstemplate.service.mapper.{cls}Mapper;",
+        "import com.eventsitemanager.domain.*;",
+        f"import com.eventsitemanager.domain.{cls};",
+        f"import com.eventsitemanager.repository.{cls}Repository;",
+        f"import com.eventsitemanager.service.criteria.{cls}Criteria;",
+        f"import com.eventsitemanager.service.dto.{cls}DTO;",
+        f"import com.eventsitemanager.service.mapper.{cls}Mapper;",
         "import jakarta.persistence.criteria.JoinType;",
         "import java.util.List;",
         "import org.slf4j.Logger;",
@@ -1205,14 +1205,14 @@ def gen_resource(cfg: dict) -> None:
     cls, dto, en = cfg["class"], cfg["class"] + "DTO", cfg["entity_name"]
     api = cfg["api"]
     var = camel(cls)
-    content = f"""package com.nextjstemplate.web.rest;
+    content = f"""package com.eventsitemanager.web.rest;
 
-import com.nextjstemplate.errors.BadRequestAlertException;
-import com.nextjstemplate.repository.{cls}Repository;
-import com.nextjstemplate.service.{cls}QueryService;
-import com.nextjstemplate.service.{cls}Service;
-import com.nextjstemplate.service.criteria.{cls}Criteria;
-import com.nextjstemplate.service.dto.{dto};
+import com.eventsitemanager.errors.BadRequestAlertException;
+import com.eventsitemanager.repository.{cls}Repository;
+import com.eventsitemanager.service.{cls}QueryService;
+import com.eventsitemanager.service.{cls}Service;
+import com.eventsitemanager.service.criteria.{cls}Criteria;
+import com.eventsitemanager.service.dto.{dto};
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -1326,25 +1326,25 @@ public class {cls}Resource {{
 
 
 
-REGISTRATION_SERVICE_IMPL = r'''package com.nextjstemplate.service.impl;
+REGISTRATION_SERVICE_IMPL = r'''package com.eventsitemanager.service.impl;
 
-import com.nextjstemplate.domain.EventCompetition;
-import com.nextjstemplate.domain.EventCompetitionParticipant;
-import com.nextjstemplate.domain.EventCompetitionRegistration;
-import com.nextjstemplate.domain.EventCompetitionSettings;
-import com.nextjstemplate.domain.enumeration.CompetitionAudienceMode;
-import com.nextjstemplate.domain.enumeration.CompetitionEligibleAudience;
-import com.nextjstemplate.domain.enumeration.CompetitionParticipantType;
-import com.nextjstemplate.domain.enumeration.CompetitionRegistrationStatus;
-import com.nextjstemplate.domain.enumeration.CompetitionType;
-import com.nextjstemplate.errors.BadRequestAlertException;
-import com.nextjstemplate.errors.ConflictException;
-import com.nextjstemplate.repository.EventCompetitionRegistrationRepository;
-import com.nextjstemplate.repository.EventCompetitionRepository;
-import com.nextjstemplate.repository.EventCompetitionSettingsRepository;
-import com.nextjstemplate.service.EventCompetitionRegistrationService;
-import com.nextjstemplate.service.dto.EventCompetitionRegistrationDTO;
-import com.nextjstemplate.service.mapper.EventCompetitionRegistrationMapper;
+import com.eventsitemanager.domain.EventCompetition;
+import com.eventsitemanager.domain.EventCompetitionParticipant;
+import com.eventsitemanager.domain.EventCompetitionRegistration;
+import com.eventsitemanager.domain.EventCompetitionSettings;
+import com.eventsitemanager.domain.enumeration.CompetitionAudienceMode;
+import com.eventsitemanager.domain.enumeration.CompetitionEligibleAudience;
+import com.eventsitemanager.domain.enumeration.CompetitionParticipantType;
+import com.eventsitemanager.domain.enumeration.CompetitionRegistrationStatus;
+import com.eventsitemanager.domain.enumeration.CompetitionType;
+import com.eventsitemanager.errors.BadRequestAlertException;
+import com.eventsitemanager.errors.ConflictException;
+import com.eventsitemanager.repository.EventCompetitionRegistrationRepository;
+import com.eventsitemanager.repository.EventCompetitionRepository;
+import com.eventsitemanager.repository.EventCompetitionSettingsRepository;
+import com.eventsitemanager.service.EventCompetitionRegistrationService;
+import com.eventsitemanager.service.dto.EventCompetitionRegistrationDTO;
+import com.eventsitemanager.service.mapper.EventCompetitionRegistrationMapper;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Optional;
@@ -1513,16 +1513,16 @@ public class EventCompetitionRegistrationServiceImpl implements EventCompetition
 '''
 
 
-RESULT_SERVICE_IMPL = r'''package com.nextjstemplate.service.impl;
+RESULT_SERVICE_IMPL = r'''package com.eventsitemanager.service.impl;
 
-import com.nextjstemplate.domain.EventCompetitionResult;
-import com.nextjstemplate.domain.EventMedia;
-import com.nextjstemplate.errors.BadRequestAlertException;
-import com.nextjstemplate.repository.EventCompetitionResultRepository;
-import com.nextjstemplate.repository.EventMediaRepository;
-import com.nextjstemplate.service.EventCompetitionResultService;
-import com.nextjstemplate.service.dto.EventCompetitionResultDTO;
-import com.nextjstemplate.service.mapper.EventCompetitionResultMapper;
+import com.eventsitemanager.domain.EventCompetitionResult;
+import com.eventsitemanager.domain.EventMedia;
+import com.eventsitemanager.errors.BadRequestAlertException;
+import com.eventsitemanager.repository.EventCompetitionResultRepository;
+import com.eventsitemanager.repository.EventMediaRepository;
+import com.eventsitemanager.service.EventCompetitionResultService;
+import com.eventsitemanager.service.dto.EventCompetitionResultDTO;
+import com.eventsitemanager.service.mapper.EventCompetitionResultMapper;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -1701,7 +1701,7 @@ def patch_event_details() -> None:
 def gen_registration_tests() -> None:
     write(
         TEST / "domain/EventCompetitionRegistrationTestSamples.java",
-        """package com.nextjstemplate.domain;
+        """package com.eventsitemanager.domain;
 
 import java.util.Random;
 import java.util.UUID;
@@ -1729,16 +1729,16 @@ public class EventCompetitionRegistrationTestSamples {
     # Resource IT - simplified create test
     write(
         TEST / "web/rest/EventCompetitionRegistrationResourceIT.java",
-        """package com.nextjstemplate.web.rest;
+        """package com.eventsitemanager.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.nextjstemplate.IntegrationTest;
-import com.nextjstemplate.domain.EventCompetitionRegistration;
-import com.nextjstemplate.repository.EventCompetitionRegistrationRepository;
-import com.nextjstemplate.service.mapper.EventCompetitionRegistrationMapper;
+import com.eventsitemanager.IntegrationTest;
+import com.eventsitemanager.domain.EventCompetitionRegistration;
+import com.eventsitemanager.repository.EventCompetitionRegistrationRepository;
+import com.eventsitemanager.service.mapper.EventCompetitionRegistrationMapper;
 import jakarta.persistence.EntityManager;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;

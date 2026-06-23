@@ -37,7 +37,7 @@ Then in IntelliJ:
 3. Open terminal in IntelliJ or command prompt
 4. Run:
    ```powershell
-   cd E:\project_workspace\malayalees-us-site-boot
+   cd E:\project_workspace\event-site-manager-service
    mvn dependency:resolve -Dmaven.repo.local=E:\maven_repo\.m2\repository
    ```
 5. In IntelliJ, right-click `pom.xml` → **Maven** → **Reload Project**

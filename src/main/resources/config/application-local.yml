@@ -12,7 +12,7 @@ logging:
   level:
     ROOT: INFO
     tech.jhipster: INFO
-    com.nextjstemplate: DEBUG
+    com.eventsitemanager: DEBUG
     org.springframework.web: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
@@ -209,9 +209,6 @@ jhipster:
     hazelcast:
       time-to-live-seconds: 3600
       backup-count: 1
-      eviction:
-        max-size-policy: PER_NODE
-        size: 100
   mail:
     from: ${JHIPSTER_MAIL_FROM:event-site-manager@local.com}
     base-url: ${JHIPSTER_MAIL_BASE_URL:http://localhost:8080}

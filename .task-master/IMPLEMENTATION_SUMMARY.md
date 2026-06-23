@@ -1,7 +1,7 @@
 # Implementation Summary: QR Scanner & Enhanced Reporting Features
 
 **Date:** January 2026
-**Backend Project:** E:\project_workspace\malayalees-us-site-boot
+**Backend Project:** E:\project_workspace\event-site-manager-service
 **Frontend Project:** E:\project_workspace\mosc-temp
 **PRD Source:** `.task-master/backend_implementation_prd.html`
 
@@ -39,7 +39,7 @@ All required tasks from the `.task-master` folder have been successfully impleme
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/service/EventTicketTransactionQueryService.java`
+- `src/main/java/com/eventsitemanager/service/EventTicketTransactionQueryService.java`
   - Added checkInStatus filter (line 260-262)
   - Added checkInTime filter (line 263-265)
   - Added numberOfGuestsCheckedIn filter (line 266-269)
@@ -59,7 +59,7 @@ All required tasks from the `.task-master` folder have been successfully impleme
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java`
+- `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java`
   - Updated `partialUpdate` method with check-in logic (line 189-246)
 
 **Status:** ✅ **VERIFIED AND IMPLEMENTED**
@@ -76,11 +76,11 @@ All required tasks from the `.task-master` folder have been successfully impleme
 
 **Files Created:**
 
-- `src/main/java/com/nextjstemplate/web/rest/errors/ConflictException.java`
+- `src/main/java/com/eventsitemanager/web/rest/errors/ConflictException.java`
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java`
+- `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java`
   - Added duplicate check-in validation (line 214-222)
 
 **Status:** ✅ **IMPLEMENTED**
@@ -98,11 +98,11 @@ All required tasks from the `.task-master` folder have been successfully impleme
 
 **Files Created:**
 
-- `src/main/java/com/nextjstemplate/web/rest/errors/UnprocessableEntityException.java`
+- `src/main/java/com/eventsitemanager/web/rest/errors/UnprocessableEntityException.java`
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java`
+- `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java`
   - Added transaction status validation (line 205-213)
 
 **Status:** ✅ **IMPLEMENTED**
@@ -121,7 +121,7 @@ All required tasks from the `.task-master` folder have been successfully impleme
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java`
+- `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java`
 
   - Added tenant validation to GET endpoint (line 238-252)
   - Added tenant validation to GET by ID endpoint (line 275-283)
@@ -129,7 +129,7 @@ All required tasks from the `.task-master` folder have been successfully impleme
   - Added tenant validation to statistics endpoint (line 395-404)
   - Added tenant validation to analytics endpoints (line 412-422, 433-443)
 
-- `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java`
+- `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java`
   - Added tenant filtering to `getCheckInAnalytics` (line 295-303)
   - Added tenant filtering to `getSalesAnalytics` (line 490-498)
   - Added tenant filtering to `getEventStatistics` (line 302-310)
@@ -150,13 +150,13 @@ All required tasks from the `.task-master` folder have been successfully impleme
 
 **Files Created:**
 
-- `src/main/java/com/nextjstemplate/service/dto/CheckInAnalyticsDTO.java`
+- `src/main/java/com/eventsitemanager/service/dto/CheckInAnalyticsDTO.java`
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/service/EventTicketTransactionService.java` (new method)
-- `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java` (implementation)
-- `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java` (GET endpoint)
+- `src/main/java/com/eventsitemanager/service/EventTicketTransactionService.java` (new method)
+- `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java` (implementation)
+- `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java` (GET endpoint)
 
 **Status:** ✅ **IMPLEMENTED**
 
@@ -175,13 +175,13 @@ All required tasks from the `.task-master` folder have been successfully impleme
 
 **Files Created:**
 
-- `src/main/java/com/nextjstemplate/service/dto/SalesAnalyticsDTO.java`
+- `src/main/java/com/eventsitemanager/service/dto/SalesAnalyticsDTO.java`
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/service/EventTicketTransactionService.java` (new method)
-- `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java` (implementation)
-- `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java` (GET endpoint)
+- `src/main/java/com/eventsitemanager/service/EventTicketTransactionService.java` (new method)
+- `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java` (implementation)
+- `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java` (GET endpoint)
 
 **Status:** ✅ **IMPLEMENTED**
 
@@ -199,19 +199,19 @@ All required tasks from the `.task-master` folder have been successfully impleme
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/service/dto/EventTicketTransactionStatisticsDTO.java`
+- `src/main/java/com/eventsitemanager/service/dto/EventTicketTransactionStatisticsDTO.java`
 
   - Added startDate and endDate fields (line 17-18, 65-75)
 
-- `src/main/java/com/nextjstemplate/service/EventTicketTransactionService.java`
+- `src/main/java/com/eventsitemanager/service/EventTicketTransactionService.java`
 
   - Added overloaded method with date range parameters (line 69-79)
 
-- `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java`
+- `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java`
 
   - Implemented date range filtering (line 287-388)
 
-- `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java`
+- `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java`
   - Added query parameters to statistics endpoint (line 391-406)
 
 **Status:** ✅ **IMPLEMENTED**
@@ -279,7 +279,7 @@ psql -h localhost -U postgres -d event_site_manager_db -f src/main/resources/sql
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java`
+- `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java`
   - Added JavaDoc comments to all new endpoints
 
 **Note:** Full Swagger documentation should be verified after application startup at `/swagger-ui/index.html`
@@ -339,9 +339,9 @@ psql -h localhost -U postgres -d event_site_manager_db -f src/main/resources/sql
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/service/EventTicketTransactionQueryService.java`
+- `src/main/java/com/eventsitemanager/service/EventTicketTransactionQueryService.java`
   - Added serviceFee filter handling (line 158-160)
-- `src/main/java/com/nextjstemplate/service/criteria/EventTicketTransactionCriteria.java`
+- `src/main/java/com/eventsitemanager/service/criteria/EventTicketTransactionCriteria.java`
   - Added serviceFee getters/setters (line 384-399)
 
 **Status:** ✅ **FIXED**
@@ -356,7 +356,7 @@ psql -h localhost -U postgres -d event_site_manager_db -f src/main/resources/sql
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java`
+- `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java`
   - Added ENTITY_NAME constant (line 44)
 
 **Status:** ✅ **FIXED**
@@ -367,13 +367,13 @@ psql -h localhost -U postgres -d event_site_manager_db -f src/main/resources/sql
 
 ### New DTOs
 
-1. `src/main/java/com/nextjstemplate/service/dto/CheckInAnalyticsDTO.java`
-2. `src/main/java/com/nextjstemplate/service/dto/SalesAnalyticsDTO.java`
+1. `src/main/java/com/eventsitemanager/service/dto/CheckInAnalyticsDTO.java`
+2. `src/main/java/com/eventsitemanager/service/dto/SalesAnalyticsDTO.java`
 
 ### New Exception Classes
 
-3. `src/main/java/com/nextjstemplate/web/rest/errors/ConflictException.java`
-4. `src/main/java/com/nextjstemplate/web/rest/errors/UnprocessableEntityException.java`
+3. `src/main/java/com/eventsitemanager/web/rest/errors/ConflictException.java`
+4. `src/main/java/com/eventsitemanager/web/rest/errors/UnprocessableEntityException.java`
 
 ### Database Migration
 
@@ -390,13 +390,13 @@ psql -h localhost -U postgres -d event_site_manager_db -f src/main/resources/sql
 
 ### Service Layer
 
-- `src/main/java/com/nextjstemplate/service/EventTicketTransactionService.java`
+- `src/main/java/com/eventsitemanager/service/EventTicketTransactionService.java`
 
   - Added `getCheckInAnalytics` method
   - Added `getSalesAnalytics` method
   - Added overloaded `getEventStatistics` method with date range
 
-- `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java`
+- `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java`
 
   - Added check-in validations (duplicate, status)
   - Added check-in analytics implementation
@@ -405,7 +405,7 @@ psql -h localhost -U postgres -d event_site_manager_db -f src/main/resources/sql
   - Added tenant filtering to all analytics methods
   - Added ENTITY_NAME constant
 
-- `src/main/java/com/nextjstemplate/service/EventTicketTransactionQueryService.java`
+- `src/main/java/com/eventsitemanager/service/EventTicketTransactionQueryService.java`
   - Added checkInStatus filter
   - Added checkInTime filter
   - Added numberOfGuestsCheckedIn filter
@@ -414,7 +414,7 @@ psql -h localhost -U postgres -d event_site_manager_db -f src/main/resources/sql
 
 ### Controller Layer
 
-- `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java`
+- `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java`
   - Added tenant validation to all endpoints
   - Added statistics endpoint date range support
   - Added check-in analytics endpoint
@@ -422,12 +422,12 @@ psql -h localhost -U postgres -d event_site_manager_db -f src/main/resources/sql
 
 ### DTOs
 
-- `src/main/java/com/nextjstemplate/service/dto/EventTicketTransactionStatisticsDTO.java`
+- `src/main/java/com/eventsitemanager/service/dto/EventTicketTransactionStatisticsDTO.java`
   - Added startDate and endDate fields
 
 ### Criteria
 
-- `src/main/java/com/nextjstemplate/service/criteria/EventTicketTransactionCriteria.java`
+- `src/main/java/com/eventsitemanager/service/criteria/EventTicketTransactionCriteria.java`
   - Added serviceFee getters/setters
 
 ---
@@ -528,5 +528,5 @@ The backend is ready for frontend integration. All endpoints are functional, val
 ---
 
 **Generated:** January 2026
-**Backend Project:** E:\project_workspace\malayalees-us-site-boot
+**Backend Project:** E:\project_workspace\event-site-manager-service
 **PRD Source:** `.task-master/backend_implementation_prd.html`

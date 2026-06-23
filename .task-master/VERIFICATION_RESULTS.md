@@ -1,7 +1,7 @@
 # Verification Results for QR Scanner & Enhanced Reporting Features
 
 **Date:** January 2026
-**Backend Project:** E:\project_workspace\malayalees-us-site-boot
+**Backend Project:** E:\project_workspace\event-site-manager-service
 **Frontend Project:** E:\project_workspace\mosc-temp
 **Source PRD:** `.task-master/backend_implementation_prd.html`
 
@@ -63,9 +63,9 @@ GET /api/event-ticket-transactions?eventId.equals=456&checkInStatus.equals=CHECK
 
 **Implementation Location:**
 
-- Criteria: `src/main/java/com/nextjstemplate/service/criteria/EventTicketTransactionCriteria.java` (line 97)
-- QueryService: `src/main/java/com/nextjstemplate/service/EventTicketTransactionQueryService.java` (line 260-262)
-- Entity: `src/main/java/com/nextjstemplate/domain/EventTicketTransaction.java` (line 167-168)
+- Criteria: `src/main/java/com/eventsitemanager/service/criteria/EventTicketTransactionCriteria.java` (line 97)
+- QueryService: `src/main/java/com/eventsitemanager/service/EventTicketTransactionQueryService.java` (line 260-262)
+- Entity: `src/main/java/com/eventsitemanager/domain/EventTicketTransaction.java` (line 167-168)
 
 ---
 
@@ -115,9 +115,9 @@ GET /api/event-ticket-transactions?eventId.equals=456&checkInTime.greaterThanOrE
 
 **Implementation Location:**
 
-- Criteria: `src/main/java/com/nextjstemplate/service/criteria/EventTicketTransactionCriteria.java` (line 101)
-- QueryService: `src/main/java/com/nextjstemplate/service/EventTicketTransactionQueryService.java` (line 263-265)
-- Entity: `src/main/java/com/nextjstemplate/domain/EventTicketTransaction.java` (line 173-174)
+- Criteria: `src/main/java/com/eventsitemanager/service/criteria/EventTicketTransactionCriteria.java` (line 101)
+- QueryService: `src/main/java/com/eventsitemanager/service/EventTicketTransactionQueryService.java` (line 263-265)
+- Entity: `src/main/java/com/eventsitemanager/domain/EventTicketTransaction.java` (line 173-174)
 
 ---
 
@@ -227,10 +227,10 @@ GET /api/event-ticket-transactions/statistics/456?startDate=2026-01-01&endDate=2
 
 **Implementation Location:**
 
-- DTO: `src/main/java/com/nextjstemplate/service/dto/EventTicketTransactionStatisticsDTO.java` (added startDate/endDate fields)
-- Service Interface: `src/main/java/com/nextjstemplate/service/EventTicketTransactionService.java` (overloaded method)
-- Service Implementation: `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java` (date range filtering)
-- Controller: `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java` (query parameters added)
+- DTO: `src/main/java/com/eventsitemanager/service/dto/EventTicketTransactionStatisticsDTO.java` (added startDate/endDate fields)
+- Service Interface: `src/main/java/com/eventsitemanager/service/EventTicketTransactionService.java` (overloaded method)
+- Service Implementation: `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java` (date range filtering)
+- Controller: `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java` (query parameters added)
 
 ---
 
@@ -286,8 +286,8 @@ Content-Type: application/merge-patch+json
 
 **Implementation Location:**
 
-- Service Implementation: `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java` (partialUpdate method)
-- Controller: `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java` (PATCH endpoint)
+- Service Implementation: `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java` (partialUpdate method)
+- Controller: `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java` (PATCH endpoint)
 
 ---
 
@@ -337,8 +337,8 @@ Content-Type: application/merge-patch+json
 
 **Implementation Location:**
 
-- Exception: `src/main/java/com/nextjstemplate/web/rest/errors/ConflictException.java` (new class)
-- Service Implementation: `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java` (validation logic)
+- Exception: `src/main/java/com/eventsitemanager/web/rest/errors/ConflictException.java` (new class)
+- Service Implementation: `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java` (validation logic)
 
 ---
 
@@ -389,8 +389,8 @@ Content-Type: application/merge-patch+json
 
 **Implementation Location:**
 
-- Exception: `src/main/java/com/nextjstemplate/web/rest/errors/UnprocessableEntityException.java` (new class)
-- Service Implementation: `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java` (validation logic)
+- Exception: `src/main/java/com/eventsitemanager/web/rest/errors/UnprocessableEntityException.java` (new class)
+- Service Implementation: `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java` (validation logic)
 
 ---
 
@@ -418,10 +418,10 @@ Content-Type: application/merge-patch+json
 
 **Implementation Location:**
 
-- Controller: `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java` (tenant validation added)
-- Service Implementation: `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java` (tenant filtering in analytics methods)
-- Tenant Context: `src/main/java/com/nextjstemplate/security/TenantContext.java`
-- Tenant Filter: `src/main/java/com/nextjstemplate/security/TenantContextFilter.java`
+- Controller: `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java` (tenant validation added)
+- Service Implementation: `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java` (tenant filtering in analytics methods)
+- Tenant Context: `src/main/java/com/eventsitemanager/security/TenantContext.java`
+- Tenant Filter: `src/main/java/com/eventsitemanager/security/TenantContextFilter.java`
 
 ---
 
@@ -467,10 +467,10 @@ Content-Type: application/merge-patch+json
 
 **Implementation Location:**
 
-- DTO: `src/main/java/com/nextjstemplate/service/dto/CheckInAnalyticsDTO.java` (new class)
-- Service Interface: `src/main/java/com/nextjstemplate/service/EventTicketTransactionService.java` (new method)
-- Service Implementation: `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java` (implementation)
-- Controller: `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java` (GET endpoint)
+- DTO: `src/main/java/com/eventsitemanager/service/dto/CheckInAnalyticsDTO.java` (new class)
+- Service Interface: `src/main/java/com/eventsitemanager/service/EventTicketTransactionService.java` (new method)
+- Service Implementation: `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java` (implementation)
+- Controller: `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java` (GET endpoint)
 
 ---
 
@@ -533,10 +533,10 @@ Content-Type: application/merge-patch+json
 
 **Implementation Location:**
 
-- DTO: `src/main/java/com/nextjstemplate/service/dto/SalesAnalyticsDTO.java` (new class)
-- Service Interface: `src/main/java/com/nextjstemplate/service/EventTicketTransactionService.java` (new method)
-- Service Implementation: `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java` (implementation)
-- Controller: `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java` (GET endpoint)
+- DTO: `src/main/java/com/eventsitemanager/service/dto/SalesAnalyticsDTO.java` (new class)
+- Service Interface: `src/main/java/com/eventsitemanager/service/EventTicketTransactionService.java` (new method)
+- Service Implementation: `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java` (implementation)
+- Controller: `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java` (GET endpoint)
 
 ---
 
@@ -668,21 +668,21 @@ This document (VERIFICATION_RESULTS.md) serves as the comprehensive documentatio
 
 **Files Created:**
 
-- `src/main/java/com/nextjstemplate/service/dto/CheckInAnalyticsDTO.java`
-- `src/main/java/com/nextjstemplate/service/dto/SalesAnalyticsDTO.java`
-- `src/main/java/com/nextjstemplate/web/rest/errors/ConflictException.java`
-- `src/main/java/com/nextjstemplate/web/rest/errors/UnprocessableEntityException.java`
+- `src/main/java/com/eventsitemanager/service/dto/CheckInAnalyticsDTO.java`
+- `src/main/java/com/eventsitemanager/service/dto/SalesAnalyticsDTO.java`
+- `src/main/java/com/eventsitemanager/web/rest/errors/ConflictException.java`
+- `src/main/java/com/eventsitemanager/web/rest/errors/UnprocessableEntityException.java`
 - `src/main/resources/sqls/migrations/add_check_in_sales_analytics_indexes.sql`
 - `.task-master/VERIFICATION_RESULTS.md`
 
 **Files Modified:**
 
-- `src/main/java/com/nextjstemplate/service/EventTicketTransactionQueryService.java` (added check-in filters)
-- `src/main/java/com/nextjstemplate/service/impl/EventTicketTransactionServiceImpl.java` (validations, analytics)
-- `src/main/java/com/nextjstemplate/web/rest/EventTicketTransactionResource.java` (tenant validation, new endpoints)
-- `src/main/java/com/nextjstemplate/service/dto/EventTicketTransactionStatisticsDTO.java` (date range support)
-- `src/main/java/com/nextjstemplate/service/criteria/EventTicketTransactionCriteria.java` (serviceFee getters/setters)
-- `src/main/java/com/nextjstemplate/service/EventTicketTransactionService.java` (new methods)
+- `src/main/java/com/eventsitemanager/service/EventTicketTransactionQueryService.java` (added check-in filters)
+- `src/main/java/com/eventsitemanager/service/impl/EventTicketTransactionServiceImpl.java` (validations, analytics)
+- `src/main/java/com/eventsitemanager/web/rest/EventTicketTransactionResource.java` (tenant validation, new endpoints)
+- `src/main/java/com/eventsitemanager/service/dto/EventTicketTransactionStatisticsDTO.java` (date range support)
+- `src/main/java/com/eventsitemanager/service/criteria/EventTicketTransactionCriteria.java` (serviceFee getters/setters)
+- `src/main/java/com/eventsitemanager/service/EventTicketTransactionService.java` (new methods)
 
 ---
 

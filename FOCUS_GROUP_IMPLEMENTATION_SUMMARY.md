@@ -2,25 +2,25 @@
 
 ## Overview
 
-Successfully implemented a complete Focus Group backend system for the malayalees-us-site-boot Spring Boot application following JHipster 8.0.0 patterns and conventions.
+Successfully implemented a complete Focus Group backend system for the event-site-manager-service Spring Boot application following JHipster 8.0.0 patterns and conventions.
 
 ## Components Created
 
 ### 1. JPA Entities (3 files)
 
-- **FocusGroup** (`src/main/java/com/nextjstemplate/domain/FocusGroup.java`)
+- **FocusGroup** (`src/main/java/com/eventsitemanager/domain/FocusGroup.java`)
 
   - Fields: id, tenantId, name, slug, description, coverImageUrl, isActive, createdAt, updatedAt
   - Unique constraints: (tenantId, slug), (tenantId, name)
   - Auto-populated timestamps via @PrePersist/@PreUpdate
 
-- **FocusGroupMember** (`src/main/java/com/nextjstemplate/domain/FocusGroupMember.java`)
+- **FocusGroupMember** (`src/main/java/com/eventsitemanager/domain/FocusGroupMember.java`)
 
   - Fields: id, tenantId, focusGroup (ManyToOne), userProfileId, role, status, createdAt, updatedAt
   - Unique constraint: (tenantId, focusGroup_id, userProfileId)
   - ManyToOne relationship to FocusGroup
 
-- **EventFocusGroup** (`src/main/java/com/nextjstemplate/domain/EventFocusGroup.java`)
+- **EventFocusGroup** (`src/main/java/com/eventsitemanager/domain/EventFocusGroup.java`)
   - Fields: id, tenantId, eventId, focusGroup (ManyToOne), createdAt, updatedAt
   - Unique constraint: (tenantId, eventId, focusGroup_id)
   - ManyToOne relationship to FocusGroup

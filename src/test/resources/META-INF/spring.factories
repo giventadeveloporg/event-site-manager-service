@@ -1,2 +1,2 @@
-org.springframework.test.context.ContextCustomizerFactory = com.nextjstemplate.\
+org.springframework.test.context.ContextCustomizerFactory = com.eventsitemanager.\
     config.SqlTestContainersSpringContextCustomizerFactory
