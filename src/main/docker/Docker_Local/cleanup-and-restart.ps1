@@ -3,7 +3,7 @@
 Write-Host "Stopping and removing old containers..." -ForegroundColor Yellow
 
 # Stop and remove the current container
-docker-compose -f docker-compose.local.yml down
+docker compose --env-file .env -f docker-compose.local.yml down
 
 # Try to find and remove the old recursing_poitras container if it exists
 $oldContainers = docker ps -a --format "{{.Names}}" | Select-String -Pattern "recursing|poitras"
@@ -26,7 +26,7 @@ docker container prune -f
 # docker image prune -f
 
 Write-Host "`nRebuilding and starting with new project name 'event-mgmnt-site'..." -ForegroundColor Green
-docker-compose -f docker-compose.local.yml up -d --build
+docker compose --env-file .env -f docker-compose.local.yml up -d --build
 
 Write-Host "`nDone! The container should now appear as 'event-mgmnt-site' in Docker Desktop." -ForegroundColor Green
 Write-Host "Check status with: docker ps" -ForegroundColor Cyan
