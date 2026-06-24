@@ -204,3 +204,10 @@ documentation/INSERT_STRIPE_PAYMENT_DETAILS_TO_DB/*-config*.properties
 # Accidental file created when Maven error output is redirected
 /[Help
 /[Help*
+
+# Root-level duplicates (secrets or copies of tracked wiki/scripts files) — keep out of git
+/run-app.sh
+/check-status.sh
+/fix-git-history.ps1
+/BATCH_JOB_ADMIN_INTEGRATION.md
+/scripts/fix-stripe-secrets.sh
