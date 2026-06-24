@@ -25,6 +25,10 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: deploy-dev-environment
+  cancel-in-progress: true
+
 env:
   # Aligned with infrastructure_deployment/deployment-scripts/production-vpc/deploy-docker-image-to-ecs.ps1 (Environment=dev)
   # ECS/ECR deploy region (override via vars.AWS_DEPLOY_REGION if needed)
