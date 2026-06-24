@@ -1,0 +1,63 @@
+entity UserProfile {
+  userId String required unique,
+  firstName String,
+  lastName String,
+  email String,
+  phone String,
+  addressLine1 String,
+  addressLine2 String,
+  city String,
+  state String,
+  zipCode String,
+  country String,
+  notes String,
+  createdAt ZonedDateTime required,
+  updatedAt ZonedDateTime required
+}
+
+entity UserSubscription {
+  stripeCustomerId String unique,
+  stripeSubscriptionId String unique,
+  stripePriceId String,
+  stripeCurrentPeriodEnd ZonedDateTime,
+  status String required
+}
+
+entity UserTask {
+  title String required,
+  description String,
+  status String required,
+  priority String required,
+  dueDate ZonedDateTime,
+  completed Boolean required,
+  userId String required,
+  createdAt ZonedDateTime required,
+  updatedAt ZonedDateTime required
+}
+
+entity ProcessedStripeEvent {
+  eventId String required unique,
+  type String required,
+  processedAt ZonedDateTime required
+}
+
+entity TicketTransaction {
+  email String required,
+  ticketType String required,
+  quantity Integer required,
+  pricePerUnit BigDecimal required,
+  totalAmount BigDecimal required,
+  status String required,
+  purchaseDate ZonedDateTime required,
+  eventId String required,
+  userId String
+}
+
+relationship OneToOne {
+  UserSubscription{userProfile(id)} to UserProfile{userSubscription}
+}
+
+dto * with mapstruct
+service * with serviceImpl
+paginate * with pagination
+filter *

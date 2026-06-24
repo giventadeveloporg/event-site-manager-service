@@ -4,6 +4,8 @@
 
 ## Pages
 
+- [Batch Job Admin Integration](pages/batch-job-admin-integration.md) — Admin proxy APIs for batch job execution monitoring
+
 <!-- LLM: Add entries here as wiki pages are created -->
 <!-- Format: - [Page Title](pages/page-slug.md) — One-line summary -->
 
