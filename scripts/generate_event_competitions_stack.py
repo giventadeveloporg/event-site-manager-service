@@ -595,7 +595,7 @@ def gen_entity(cfg: dict) -> None:
         "",
         "    @Id",
         '    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")',
-        '    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")',
+        '    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator", allocationSize = 1)',
         '    @Column(name = "id")',
         "    private Long id;",
         "",

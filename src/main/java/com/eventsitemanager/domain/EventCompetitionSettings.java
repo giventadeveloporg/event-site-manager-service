@@ -23,7 +23,7 @@ public class EventCompetitionSettings implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 
