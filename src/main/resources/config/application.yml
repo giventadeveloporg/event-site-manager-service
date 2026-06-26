@@ -232,6 +232,17 @@ application:
     # Default: false (disabled) - tickets should be created via frontend API calls
     ticket-generation:
       enabled: ${WEBHOOK_TICKET_GENERATION_ENABLED:false}
+  # Inbound webhook listeners (payment providers, Clerk) — default off when no integration
+  webhooks:
+    payment-inbound:
+      enabled: ${WEBHOOKS_PAYMENT_INBOUND_ENABLED:false}
+    clerk-inbound:
+      enabled: ${WEBHOOKS_CLERK_INBOUND_ENABLED:false}
+    clerk-scheduled-tasks:
+      enabled: ${WEBHOOKS_CLERK_SCHEDULED_ENABLED:false}
+  batch-jobs:
+    payment-cron:
+      enabled: ${BATCH_JOBS_PAYMENT_CRON_ENABLED:false}
 
 # ===================================================================
 # AWS S3 Configuration

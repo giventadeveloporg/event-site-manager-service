@@ -20,8 +20,8 @@ public class EventScoreCard implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "eventScoreCardSeq")
+    @SequenceGenerator(name = "eventScoreCardSeq", sequenceName = "public.event_score_card_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

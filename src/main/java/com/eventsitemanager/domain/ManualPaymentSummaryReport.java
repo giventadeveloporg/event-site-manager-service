@@ -28,8 +28,12 @@ public class ManualPaymentSummaryReport implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "manualPaymentSummaryReportSeq")
+    @SequenceGenerator(
+        name = "manualPaymentSummaryReportSeq",
+        sequenceName = "public.manual_payment_summary_report_id_seq",
+        allocationSize = 1
+    )
     @Column(name = "id")
     private Long id;
 

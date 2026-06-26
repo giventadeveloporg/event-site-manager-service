@@ -22,8 +22,8 @@ public class EventCompetitionSettings implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "eventCompetitionSettingsSeq")
+    @SequenceGenerator(name = "eventCompetitionSettingsSeq", sequenceName = "public.event_competition_settings_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

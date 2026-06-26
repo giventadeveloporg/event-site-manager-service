@@ -11,6 +11,7 @@ import com.eventsitemanager.service.dto.StripeFeesTaxUpdateRequest;
 import com.eventsitemanager.service.dto.StripeFeesTaxUpdateResponse;
 import com.eventsitemanager.service.dto.StripeTicketBatchRefundRequest;
 import com.eventsitemanager.service.dto.StripeTicketBatchRefundResponse;
+import com.eventsitemanager.service.webhook.InboundWebhookGuard;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +37,14 @@ public class BatchJobResource {
     private static final int DEFAULT_MAX_SUBSCRIPTIONS = 10000;
 
     private final BatchJobService batchJobService;
+    private final InboundWebhookGuard inboundWebhookGuard;
 
     @Value("${cron.secret:}")
     private String cronSecret;
 
-    public BatchJobResource(BatchJobService batchJobService) {
+    public BatchJobResource(BatchJobService batchJobService, InboundWebhookGuard inboundWebhookGuard) {
         this.batchJobService = batchJobService;
+        this.inboundWebhookGuard = inboundWebhookGuard;
     }
 
     /**
@@ -53,12 +56,17 @@ public class BatchJobResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the batch job response
      */
     @PostMapping("/subscription-renewal")
-    public ResponseEntity<BatchJobResponse> triggerSubscriptionRenewal(
+    public ResponseEntity<?> triggerSubscriptionRenewal(
         @RequestBody(required = false) BatchJobRequest request,
         @RequestHeader(value = "Authorization", required = false) String authHeader,
         @RequestHeader(value = "X-Tenant-Id", required = false) String tenantIdHeader
     ) {
         log.debug("REST request to trigger subscription renewal batch job: {}", request);
+
+        if (!inboundWebhookGuard.isPaymentCronEnabled()) {
+            log.info("Payment batch cron is disabled; rejecting subscription-renewal");
+            return inboundWebhookGuard.paymentCronDisabledResponse();
+        }
 
         // 1. Authenticate request (JWT or cron secret)
         authenticateRequest(authHeader);
@@ -157,12 +165,17 @@ public class BatchJobResource {
      * @return the {@link ResponseEntity} with status {@code 202 (Accepted)} and the batch job response
      */
     @PostMapping("/stripe-fees-tax-update")
-    public ResponseEntity<StripeFeesTaxUpdateResponse> triggerStripeFeesTaxUpdate(
+    public ResponseEntity<?> triggerStripeFeesTaxUpdate(
         @RequestBody(required = false) StripeFeesTaxUpdateRequest request,
         @RequestHeader(value = "Authorization", required = false) String authHeader,
         @RequestHeader(value = "X-Tenant-Id", required = false) String tenantIdHeader
     ) {
         log.debug("REST request to trigger Stripe fees and tax update batch job: {}", request);
+
+        if (!inboundWebhookGuard.isPaymentCronEnabled()) {
+            log.info("Payment batch cron is disabled; rejecting stripe-fees-tax-update");
+            return inboundWebhookGuard.paymentCronDisabledResponse();
+        }
 
         try {
             // 1. Authenticate request (JWT or cron secret)
@@ -241,12 +254,17 @@ public class BatchJobResource {
      * Optional filters: tenantId, eventId, snapshotDate (yyyy-MM-dd).
      */
     @PostMapping("/manual-payment-summary")
-    public ResponseEntity<ManualPaymentSummaryJobResponse> triggerManualPaymentSummary(
+    public ResponseEntity<?> triggerManualPaymentSummary(
         @RequestBody(required = false) ManualPaymentSummaryJobRequest request,
         @RequestHeader(value = "Authorization", required = false) String authHeader,
         @RequestHeader(value = "X-Tenant-Id", required = false) String tenantIdHeader
     ) {
         log.debug("REST request to trigger manual payment summary batch job: {}", request);
+
+        if (!inboundWebhookGuard.isPaymentCronEnabled()) {
+            log.info("Payment batch cron is disabled; rejecting manual-payment-summary");
+            return inboundWebhookGuard.paymentCronDisabledResponse();
+        }
 
         try {
             authenticateRequest(authHeader);
@@ -285,12 +303,17 @@ public class BatchJobResource {
      * @return the {@link ResponseEntity} with status {@code 202 (Accepted)} and the batch job response
      */
     @PostMapping("/stripe-ticket-batch-refund")
-    public ResponseEntity<StripeTicketBatchRefundResponse> triggerStripeTicketBatchRefund(
+    public ResponseEntity<?> triggerStripeTicketBatchRefund(
         @Valid @RequestBody StripeTicketBatchRefundRequest request,
         @RequestHeader(value = "Authorization", required = false) String authHeader,
         @RequestHeader(value = "X-Tenant-Id", required = false) String tenantIdHeader
     ) {
         log.debug("REST request to trigger Stripe ticket batch refund job: {}", request);
+
+        if (!inboundWebhookGuard.isPaymentCronEnabled()) {
+            log.info("Payment batch cron is disabled; rejecting stripe-ticket-batch-refund");
+            return inboundWebhookGuard.paymentCronDisabledResponse();
+        }
 
         try {
             // 1. Authenticate request (JWT or cron secret)

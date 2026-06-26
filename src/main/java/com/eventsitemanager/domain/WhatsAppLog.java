@@ -12,7 +12,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  * A WhatsAppLog.
  */
 @Entity
-@Table(name = "whats_app_log")
+@Table(name = "whatsapp_log")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class WhatsAppLog implements Serializable {
@@ -20,8 +20,8 @@ public class WhatsAppLog implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "whatsappLogSeq")
+    @SequenceGenerator(name = "whatsappLogSeq", sequenceName = "public.user_payment_transaction_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

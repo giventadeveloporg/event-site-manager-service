@@ -18,8 +18,9 @@
     <property name="uuidType" value="uuid" dbms="h2"/>
     <property name="datetimeType" value="timestamp" dbms="h2"/>
 
-    <!-- Shared id sequence (must run before entity tables that use sequence_generator) -->
+    <!-- Per-table id sequences (replaces shared sequence_generator); see 20260625120000_per_table_id_sequences.xml -->
     <include file="config/liquibase/changelog/20250422000000_create_sequence_generator.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260625120000_per_table_id_sequences.xml" relativeToChangelogFile="false"/>
 
     <!-- Entity changelogs -->
     <include file="config/liquibase/changelog/20250422195856_added_entity_UserProfile.xml" relativeToChangelogFile="false"/>

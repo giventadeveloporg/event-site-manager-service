@@ -1,0 +1,60 @@
+---
+description: Per-table {table}_id_seq alignment — allocationSize=1, sync after import, links to SQL pipeline
+globs: src/main/java/**/domain/*.java, src/main/java/**/SequenceSynchronization*.java, src/main/resources/sqls/**/*.sql
+alwaysApply: false
+---
+
+# Per-Table Sequence Alignment (event-site-manager-service)
+
+This service is the **active REST API**. Each application table uses `public.{table_name}_id_seq` (shared `sequence_generator` removed).
+
+## Required entity pattern
+
+```java
+@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "executiveCommitteeTeamMembersSeq")
+@SequenceGenerator(
+    name = "executiveCommitteeTeamMembersSeq",
+    sequenceName = "public.executive_committee_team_members_id_seq",
+    allocationSize = 1
+)
+```
+
+- **Unique** `name` per entity class; `sequenceName` matches the table sequence.
+- All entities under `src/main/java/com/eventsitemanager/domain/` use **`allocationSize = 1`**.
+
+## Runtime components (this repo)
+
+| File | Role |
+|------|------|
+| `service/SequenceSynchronizationService.java` | Dynamic per-table `setval` via `pg_sequences` discovery |
+| `aop/sequence/SequenceSynchronizationAspect.java` | Duplicate PK → sync **that table's** sequence + retry |
+| `web/rest/AdminController.java` | `POST /api/admin/sync-sequence` returns `sequences` map |
+| `.cursor/rules/duplicate-key-prevention.mdc` | Clear `entity.setId(null)` on create |
+
+## When adding a table
+
+Run `mosc-temp/.../generate_per_table_sequences.cjs` and update:
+
+1. `Latest_Schema_Post__Blob_Claude_12.sql` — `CREATE SEQUENCE` + column default
+2. `sync_all_table_sequences.sql` table list
+3. Java entity `@SequenceGenerator`
+4. Liquibase `20260625120000_per_table_id_sequences.xml` / `create_per_table_id_sequences.sql` if needed
+
+## Post-import (every environment)
+
+After manual INSERT seed on a database, run on **that DB**:
+
+1. `mosc-temp/code_html_template/SQLS/Current_Sqls/sync_all_table_sequences.sql`
+2. `sync_spring_batch_sequences.sql` if Spring Batch rows exist
+
+Import alone does not update per-table sequences.
+
+## Canonical documentation
+
+- **mosc-temp:** `.cursor/rules/sequence_id_alignment_and_import.mdc`
+- **HTML:** `mosc-temp/documentation/database_export_import/SEQUENCE_ID_ALIGNMENT_GUIDE.html`
+- **Import workflow:** `mosc-temp/documentation/database_export_import/DATABASE_EXPORT_IMPORT_GUIDE.html`
+
+## Spring Batch (separate)
+
+Framework sequences (`batch_job_seq`, etc.) are **not** application `{table}_id_seq`. Sync only via `sync_spring_batch_sequences.sql`.

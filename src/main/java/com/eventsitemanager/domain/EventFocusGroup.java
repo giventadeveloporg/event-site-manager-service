@@ -23,8 +23,8 @@ public class EventFocusGroup implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "eventFocusGroupsSeq")
+    @SequenceGenerator(name = "eventFocusGroupsSeq", sequenceName = "public.focus_group_members_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

@@ -23,8 +23,8 @@ public class PaymentProviderConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "paymentProviderConfigSeq")
+    @SequenceGenerator(name = "paymentProviderConfigSeq", sequenceName = "public.payment_provider_config_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

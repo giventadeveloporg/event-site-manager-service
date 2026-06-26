@@ -20,8 +20,8 @@ public class EventContacts implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "eventContactsSeq")
+    @SequenceGenerator(name = "eventContactsSeq", sequenceName = "public.event_contacts_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

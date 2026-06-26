@@ -20,8 +20,8 @@ public class BulkOperationLog implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "bulkOperationLogSeq")
+    @SequenceGenerator(name = "bulkOperationLogSeq", sequenceName = "public.bulk_operation_log_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

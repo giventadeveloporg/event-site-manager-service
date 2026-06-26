@@ -12,8 +12,8 @@ public class DateTimeWrapper implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "jhiDateTimeWrapperSeq")
+    @SequenceGenerator(name = "jhiDateTimeWrapperSeq", sequenceName = "public.jhi_date_time_wrapper_id_seq", allocationSize = 1)
     private Long id;
 
     @Column(name = "instant")

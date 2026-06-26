@@ -28,8 +28,8 @@ public class FocusGroupMember implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "focusGroupMembersSeq")
+    @SequenceGenerator(name = "focusGroupMembersSeq", sequenceName = "public.focus_group_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

@@ -4,18 +4,26 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <!-- Shared BIGINT id sequence used by JPA @SequenceGenerator(sequenceName = "public.sequence_generator") -->
+    <!-- DEPRECATED: shared sequence_generator replaced by per-table {table}_id_seq sequences.
+         Fresh installs should use Latest_Schema_Post__Blob_Claude_12.sql or 20260625120000_per_table_id_sequences.xml.
+         This changeset is retained for changelog history only and will not create sequence_generator on new databases. -->
     <changeSet id="20250422000000-1" author="jhipster">
         <preConditions onFail="MARK_RAN">
-            <not>
-                <sequenceExists sequenceName="sequence_generator" schemaName="public"/>
-            </not>
+            <and>
+                <not>
+                    <sequenceExists sequenceName="sequence_generator" schemaName="public"/>
+                </not>
+                <sqlCheck expectedResult="0">
+                    SELECT COUNT(*) FROM pg_sequences WHERE schemaname = 'public' AND sequencename LIKE '%_id_seq'
+                </sqlCheck>
+            </and>
         </preConditions>
+        <comment>Legacy sequence_generator — superseded by per-table id sequences (20260625120000)</comment>
         <createSequence
             sequenceName="sequence_generator"
             schemaName="public"
             startValue="1050"
-            incrementBy="50"
+            incrementBy="1"
             minValue="1"
             cycle="false"/>
     </changeSet>

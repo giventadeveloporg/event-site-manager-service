@@ -200,41 +200,36 @@ public class AdminController {
     }
 
     /**
-     * POST /api/admin/sync-sequence : Synchronize sequence_generator with maximum IDs (admin only)
-     *
-     * This endpoint manually synchronizes the sequence_generator sequence to prevent
-     * duplicate key constraint violations when the sequence gets out of sync with
-     * manually inserted data.
-     *
-     * @return the ResponseEntity with status 200 (OK) and the new sequence value
+     * POST /api/admin/sync-sequence : Synchronize per-table id sequences with MAX(id) (admin only)
      */
     @PostMapping("/sync-sequence")
     @Operation(
-        summary = "Synchronize sequence generator",
-        description = "Manually synchronize sequence_generator with maximum IDs across all tables (admin only)"
+        summary = "Synchronize per-table id sequences",
+        description = "Manually synchronize all application {table}_id_seq sequences with MAX(id) per table (admin only)"
     )
     @ApiResponses(
         value = {
-            @ApiResponse(responseCode = "200", description = "Sequence synchronized successfully"),
+            @ApiResponse(responseCode = "200", description = "Sequences synchronized successfully"),
             @ApiResponse(responseCode = "403", description = "Access denied - admin privileges required"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "500", description = "Internal server error"),
         }
     )
     public ResponseEntity<java.util.Map<String, Object>> synchronizeSequence() {
-        log.info("Admin request to synchronize sequence_generator");
+        log.info("Admin request to synchronize per-table id sequences");
 
         try {
-            // Get admin's Clerk user ID from security context (validates authentication)
             extractClerkUserIdFromContext();
 
-            // Synchronize the sequence
-            Long newSequenceValue = sequenceSynchronizationService.synchronizeSequence();
+            java.util.Map<String, Long> perTable = sequenceSynchronizationService.synchronizeAllTableSequences();
+            Long maxValue = perTable.isEmpty() ? null : perTable.values().stream().max(Long::compareTo).orElse(null);
 
             java.util.Map<String, Object> response = new java.util.HashMap<>();
             response.put("success", true);
-            response.put("message", "Sequence synchronized successfully");
-            response.put("newSequenceValue", newSequenceValue);
+            response.put("message", "Per-table sequences synchronized successfully");
+            response.put("newSequenceValue", maxValue);
+            response.put("sequences", perTable);
+            response.put("tableCount", perTable.size());
 
             return ResponseEntity.ok(response);
         } catch (AccessDeniedException e) {

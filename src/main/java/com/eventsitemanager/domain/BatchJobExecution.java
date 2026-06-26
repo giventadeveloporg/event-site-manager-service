@@ -13,7 +13,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  * Tracks batch job execution history and statistics.
  */
 @Entity
-@Table(name = "batch_job_execution")
+@Table(name = "batch_job_execution_log")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class BatchJobExecution implements Serializable {
@@ -21,8 +21,8 @@ public class BatchJobExecution implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "batchJobExecutionLogSeq")
+    @SequenceGenerator(name = "batchJobExecutionLogSeq", sequenceName = "public.batch_job_execution_log_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

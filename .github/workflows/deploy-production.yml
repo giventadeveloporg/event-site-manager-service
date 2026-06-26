@@ -37,7 +37,7 @@ jobs:
   deploy:
     name: Deploy to Production Environment
     runs-on: ubuntu-latest
-    environment: production
+    environment: prod
 
     steps:
       - name: Checkout code
@@ -167,6 +167,41 @@ jobs:
              ' task-definition.json > task-definition-synced.json
           mv task-definition-synced.json task-definition.json
           echo "Synced AWS credentials into container '$CONTAINER_NAME' (values are masked in logs)."
+
+      # Sync batch-jobs client config from GitHub Environment variables (canonical set in Sync-GithubEnvironments-Canonical.ps1).
+      - name: Sync batch jobs config into ECS task definition
+        env:
+          BATCH_JOBS_SERVICE_URL: ${{ vars.BATCH_JOBS_SERVICE_URL }}
+          BATCH_JOBS_SERVICE_ENABLED: ${{ vars.BATCH_JOBS_SERVICE_ENABLED }}
+          BATCH_JOBS_SERVICE_TIMEOUT: ${{ vars.BATCH_JOBS_SERVICE_TIMEOUT }}
+          CONTAINER_NAME: ${{ env.CONTAINER_NAME }}
+        run: |
+          jq --arg container "$CONTAINER_NAME" \
+             --arg url "${BATCH_JOBS_SERVICE_URL:-}" \
+             --arg enabled "${BATCH_JOBS_SERVICE_ENABLED:-false}" \
+             --arg timeout "${BATCH_JOBS_SERVICE_TIMEOUT:-30000}" \
+             '
+             .containerDefinitions = [
+               .containerDefinitions[] |
+               if .name == $container then
+                 .environment = (
+                   ((.environment // []) | map(select(
+                     .name != "BATCH_JOBS_SERVICE_URL" and
+                     .name != "BATCH_JOBS_SERVICE_ENABLED" and
+                     .name != "BATCH_JOBS_SERVICE_TIMEOUT"
+                   ))) +
+                   [
+                     {"name": "BATCH_JOBS_SERVICE_ENABLED", "value": $enabled},
+                     {"name": "BATCH_JOBS_SERVICE_TIMEOUT", "value": $timeout}
+                   ] +
+                   (if ($url | length) > 0 then [{"name": "BATCH_JOBS_SERVICE_URL", "value": $url}] else [] end)
+                 )
+               else .
+               end
+             ]
+             ' task-definition.json > task-definition-batch.json
+          mv task-definition-batch.json task-definition.json
+          echo "Synced BATCH_JOBS_* from GitHub environment variables into container '$CONTAINER_NAME'."
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def

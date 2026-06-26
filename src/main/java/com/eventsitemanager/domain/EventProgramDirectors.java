@@ -20,8 +20,8 @@ public class EventProgramDirectors implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "eventProgramDirectorsSeq")
+    @SequenceGenerator(name = "eventProgramDirectorsSeq", sequenceName = "public.event_program_directors_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

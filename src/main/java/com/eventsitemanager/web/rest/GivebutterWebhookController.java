@@ -9,6 +9,7 @@ import com.eventsitemanager.service.payment.PaymentException;
 import com.eventsitemanager.service.payment.encryption.PaymentCredentialEncryptionService;
 import com.eventsitemanager.service.payment.orchestration.PaymentOrchestrationService;
 import com.eventsitemanager.service.payment.webhook.GivebutterWebhookRateLimitService;
+import com.eventsitemanager.service.webhook.InboundWebhookGuard;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +39,7 @@ public class GivebutterWebhookController {
     private final GivebutterWebhookEventRepository webhookEventRepository;
     private final GivebutterWebhookRateLimitService rateLimitService;
     private final ObjectMapper objectMapper;
+    private final InboundWebhookGuard inboundWebhookGuard;
 
     public GivebutterWebhookController(
         PaymentProviderConfigRepository configRepository,
@@ -45,7 +47,8 @@ public class GivebutterWebhookController {
         PaymentOrchestrationService orchestrationService,
         GivebutterWebhookEventRepository webhookEventRepository,
         GivebutterWebhookRateLimitService rateLimitService,
-        ObjectMapper objectMapper
+        ObjectMapper objectMapper,
+        InboundWebhookGuard inboundWebhookGuard
     ) {
         this.configRepository = configRepository;
         this.encryptionService = encryptionService;
@@ -53,6 +56,7 @@ public class GivebutterWebhookController {
         this.webhookEventRepository = webhookEventRepository;
         this.rateLimitService = rateLimitService;
         this.objectMapper = objectMapper;
+        this.inboundWebhookGuard = inboundWebhookGuard;
     }
 
     /**
@@ -69,6 +73,11 @@ public class GivebutterWebhookController {
         @RequestBody String payload,
         HttpServletRequest request
     ) {
+        if (!inboundWebhookGuard.isPaymentInboundEnabled()) {
+            log.info("Payment inbound webhooks are disabled; rejecting Givebutter webhook");
+            return inboundWebhookGuard.paymentInboundDisabledResponse();
+        }
+
         log.info("Received Givebutter webhook");
 
         // Rate limiting check
