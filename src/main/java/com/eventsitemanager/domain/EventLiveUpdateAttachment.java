@@ -20,8 +20,12 @@ public class EventLiveUpdateAttachment implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", sequenceName = "public.sequence_generator", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "eventLiveUpdateAttachmentSeq")
+    @SequenceGenerator(
+        name = "eventLiveUpdateAttachmentSeq",
+        sequenceName = "public.event_live_update_attachment_id_seq",
+        allocationSize = 1
+    )
     @Column(name = "id")
     private Long id;
 

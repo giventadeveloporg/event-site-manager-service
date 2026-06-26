@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Per-table {table}_id_seq sequences for application tables (replaces sequence_generator). -->
+    <changeSet id="20260625120000-1" author="migration">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM pg_sequences WHERE schemaname = 'public' AND sequencename = 'user_profile_id_seq'
+            </sqlCheck>
+        </preConditions>
+        <sqlFile
+            path="config/liquibase/sql/create_per_table_id_sequences.sql"
+            relativeToChangelogFile="false"
+            splitStatements="true"
+            stripComments="false"/>
+    </changeSet>
+
+    <!-- Drop legacy shared sequence after per-table sequences exist (safe no-op if already removed). -->
+    <changeSet id="20260625120000-2" author="migration">
+        <preConditions onFail="MARK_RAN">
+            <sequenceExists sequenceName="sequence_generator" schemaName="public"/>
+        </preConditions>
+        <sql>DROP SEQUENCE IF EXISTS public.sequence_generator CASCADE;</sql>
+    </changeSet>
+
+</databaseChangeLog>

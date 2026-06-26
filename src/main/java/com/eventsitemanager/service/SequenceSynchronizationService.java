@@ -2,121 +2,158 @@ package com.eventsitemanager.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service for synchronizing the sequence_generator sequence with the maximum IDs
- * across all tables that use it. This prevents duplicate key constraint violations
- * when the sequence gets out of sync with manually inserted data.
+ * Synchronizes per-table PostgreSQL id sequences ({table}_id_seq) with MAX(id) after manual imports.
+ * Spring Batch framework sequences are handled separately (sync_spring_batch_sequences.sql).
  */
 @Service
 public class SequenceSynchronizationService {
 
     private static final Logger log = LoggerFactory.getLogger(SequenceSynchronizationService.class);
 
+    /** Spring Batch + Liquibase meta — not application {table}_id_seq tables. */
+    private static final List<String> EXCLUDED_SEQUENCES = List.of(
+        "batch_job_seq",
+        "batch_job_execution_seq",
+        "batch_step_execution_seq",
+        "batch_job_execution_log_id_seq"
+    );
+
     @PersistenceContext
     private EntityManager entityManager;
 
     /**
-     * Synchronizes the sequence_generator sequence to be at least as high as
-     * the maximum ID across all tables that use it.
-     * This is a runtime fix for when the sequence gets out of sync.
+     * Sync all application per-table id sequences discovered in pg_sequences.
      *
-     * @return the new sequence value that was set
+     * @return map of sequence name to new last_value
+     */
+    @Transactional
+    public Map<String, Long> synchronizeAllTableSequences() {
+        log.info("Synchronizing per-table id sequences...");
+        Map<String, Long> results = new LinkedHashMap<>();
+
+        @SuppressWarnings("unchecked")
+        List<String> sequences = entityManager
+            .createNativeQuery(
+                """
+                SELECT sequencename
+                FROM pg_sequences
+                WHERE schemaname = 'public'
+                  AND sequencename LIKE '%\\_id_seq' ESCAPE '\\'
+                ORDER BY sequencename
+                """
+            )
+            .getResultList();
+
+        for (String seqName : sequences) {
+            if (EXCLUDED_SEQUENCES.contains(seqName)) {
+                continue;
+            }
+            String tableName = resolveTableName(seqName);
+            if (tableName == null) {
+                log.debug("Skipping sequence {} — no matching public table", seqName);
+                continue;
+            }
+            Long newValue = synchronizeTableSequence(tableName, seqName);
+            if (newValue != null) {
+                results.put(seqName, newValue);
+            }
+        }
+
+        log.info("Synchronized {} per-table sequences", results.size());
+        return results;
+    }
+
+    /**
+     * @deprecated Use {@link #synchronizeAllTableSequences()}. Kept for admin API compatibility.
      */
     @Transactional
     public Long synchronizeSequence() {
-        log.info("Synchronizing sequence_generator with maximum IDs across all tables...");
+        Map<String, Long> results = synchronizeAllTableSequences();
+        return results.isEmpty() ? null : results.values().stream().max(Long::compareTo).orElse(null);
+    }
 
-        // Build the SQL query to find the maximum ID across all tables using sequence_generator
-        // This matches the logic in Latest_Schema_Post__Blob_Claude_12.sql
-        String sql =
-            """
-            SELECT pg_catalog.setval(
-                'public.sequence_generator',
-                GREATEST(
-                    COALESCE((SELECT MAX(id) FROM public.user_profile), 0),
-                    COALESCE((SELECT MAX(id) FROM public.bulk_operation_log), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_type_details), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_details), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_recurrence_series), 0),
-                    COALESCE((SELECT MAX(id) FROM public.focus_group), 0),
-                    COALESCE((SELECT MAX(id) FROM public.focus_group_members), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_focus_groups), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_guest_pricing), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_admin), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_admin_audit_log), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_attendee), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_attendee_guest), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_calendar_entry), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_sponsors), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_sponsors_join), 0),
-                    COALESCE((SELECT MAX(id) FROM public.gallery_album), 0),
-                    COALESCE((SELECT MAX(id) FROM public.gallery_category), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_media), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_organizer), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_poll), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_poll_option), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_poll_response), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_ticket_transaction), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_ticket_type), 0),
-                    COALESCE((SELECT MAX(id) FROM public.qr_code_usage), 0),
-                    COALESCE((SELECT MAX(id) FROM public.tenant_organization), 0),
-                    COALESCE((SELECT MAX(id) FROM public.tenant_settings), 0),
-                    COALESCE((SELECT MAX(id) FROM public.tenant_email_addresses), 0),
-                    COALESCE((SELECT MAX(id) FROM public.user_payment_transaction), 0),
-                    COALESCE((SELECT MAX(id) FROM public.user_subscription), 0),
-                    COALESCE((SELECT MAX(id) FROM public.user_task), 0),
-                    COALESCE((SELECT MAX(id) FROM public.executive_committee_team_members), 0),
-                    COALESCE((SELECT MAX(id) FROM public.communication_campaign), 0),
-                    COALESCE((SELECT MAX(id) FROM public.email_log), 0),
-                    COALESCE((SELECT MAX(id) FROM public.whatsapp_log), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_featured_performers), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_contacts), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_emails), 0),
-                    COALESCE((SELECT MAX(id) FROM public.event_program_directors), 0),
-                    COALESCE((SELECT MAX(id) FROM public.payment_provider_config), 0),
-                    COALESCE((SELECT MAX(id) FROM public.manual_payment_request), 0),
-                    COALESCE((SELECT MAX(id) FROM public.manual_payment_summary_report), 0),
-                    COALESCE((SELECT MAX(id) FROM public.platform_settlement), 0),
-                    COALESCE((SELECT MAX(id) FROM public.platform_invoice), 0),
-                    COALESCE((SELECT MAX(id) FROM public.membership_plan), 0),
-                    COALESCE((SELECT MAX(id) FROM public.membership_subscription), 0),
-                    COALESCE((SELECT MAX(id) FROM public.membership_subscription_reconciliation_log), 0),
-                    COALESCE((SELECT MAX(id) FROM public.promotion_email_template), 0),
-                    COALESCE((SELECT MAX(id) FROM public.promotion_email_sent_log), 0),
-                    COALESCE((SELECT MAX(id) FROM public.clerk_user_tenant), 0),
-                    COALESCE((SELECT MAX(id) FROM public.clerk_organization_role), 0),
-                    COALESCE((SELECT MAX(id) FROM public.clerk_webhook_event), 0),
-                    COALESCE((SELECT MAX(id) FROM public.clerk_session), 0),
-                    1
-                ),
-                true
-            )
-            """;
+    /**
+     * Sync a single table's sequence (used after duplicate-key recovery).
+     */
+    @Transactional
+    public Long synchronizeTableSequence(String tableName) {
+        return synchronizeTableSequence(tableName, tableName + "_id_seq");
+    }
+
+    @Transactional
+    public Long synchronizeTableSequence(String tableName, String sequenceName) {
+        String qualifiedSeq = "public." + sequenceName;
+
+        if (!tableExists(tableName)) {
+            log.warn("Table public.{} not found — skipping sequence sync", tableName);
+            return null;
+        }
+
+        if (!sequenceExists(sequenceName)) {
+            log.warn("Sequence {} not found — skipping", qualifiedSeq);
+            return null;
+        }
+
+        String sql = String.format(
+            "SELECT pg_catalog.setval('%s', GREATEST(COALESCE((SELECT MAX(id) FROM public.%s), 0), 1), true)",
+            qualifiedSeq.replace("'", "''"),
+            tableName.replace("\"", "\"\"")
+        );
 
         try {
-            Query query = entityManager.createNativeQuery(sql);
-            Object result = query.getSingleResult();
-            Long newSequenceValue = result != null ? ((Number) result).longValue() : null;
-
-            log.info("Sequence synchronized successfully. New sequence value: {}", newSequenceValue);
-
-            // Verify the synchronization
-            Query verifyQuery = entityManager.createNativeQuery("SELECT last_value FROM public.sequence_generator");
-            Object verifyResult = verifyQuery.getSingleResult();
-            Long actualSequenceValue = verifyResult != null ? ((Number) verifyResult).longValue() : null;
-
-            log.info("Verified sequence value: {}", actualSequenceValue);
-
-            return actualSequenceValue;
+            Object result = entityManager.createNativeQuery(sql).getSingleResult();
+            Long newValue = result != null ? ((Number) result).longValue() : null;
+            log.info("Synced {} -> {} (table {})", qualifiedSeq, newValue, tableName);
+            return newValue;
         } catch (Exception e) {
-            log.error("Failed to synchronize sequence_generator", e);
-            throw new RuntimeException("Failed to synchronize sequence_generator: " + e.getMessage(), e);
+            log.error("Failed to sync sequence {} for table {}", qualifiedSeq, tableName, e);
+            throw new RuntimeException("Failed to sync sequence " + qualifiedSeq + ": " + e.getMessage(), e);
         }
+    }
+
+    private String resolveTableName(String sequenceName) {
+        if (!sequenceName.endsWith("_id_seq")) {
+            return null;
+        }
+        String base = sequenceName.substring(0, sequenceName.length() - "_id_seq".length());
+        if (tableExists(base)) {
+            return base;
+        }
+        return null;
+    }
+
+    private boolean tableExists(String tableName) {
+        Number count = (Number) entityManager
+            .createNativeQuery(
+                """
+                SELECT COUNT(*) FROM information_schema.tables
+                WHERE table_schema = 'public' AND table_name = :tableName
+                """
+            )
+            .setParameter("tableName", tableName)
+            .getSingleResult();
+        return count != null && count.longValue() > 0;
+    }
+
+    private boolean sequenceExists(String sequenceName) {
+        Number count = (Number) entityManager
+            .createNativeQuery(
+                """
+                SELECT COUNT(*) FROM pg_sequences
+                WHERE schemaname = 'public' AND sequencename = :seqName
+                """
+            )
+            .setParameter("seqName", sequenceName)
+            .getSingleResult();
+        return count != null && count.longValue() > 0;
     }
 }
