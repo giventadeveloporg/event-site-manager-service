@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Batch Jobs Integration Analysis — event-site-manager-service</title>
+    <style>
+      :root {
+        --code-bg: #e8f4f8;
+        --code-text: #0d3b66;
+        --code-border: #b8d4e3;
+        --page-bg: #f5f1e8;
+        --text: #2d2a26;
+        --muted: #5c5348;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        line-height: 1.6;
+        color: var(--text);
+        background: var(--page-bg);
+        margin: 0;
+        padding: 0;
+      }
+      header.doc-header {
+        background: linear-gradient(135deg, #0d3b66 0%, #1a5f8a 100%);
+        color: #fff;
+        padding: 2rem 1.5rem;
+      }
+      header.doc-header h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.75rem;
+      }
+      header.doc-header p {
+        margin: 0;
+        opacity: 0.92;
+        max-width: 52rem;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1.5rem;
+      }
+      h2 {
+        color: #0d3b66;
+        border-bottom: 2px solid var(--code-border);
+        padding-bottom: 0.35rem;
+        margin-top: 2rem;
+      }
+      h3 {
+        color: #1a5f8a;
+        margin-top: 1.5rem;
+      }
+      p,
+      li {
+        color: var(--text);
+      }
+      .meta {
+        font-size: 0.9rem;
+        color: var(--muted);
+        margin-bottom: 1rem;
+      }
+      code,
+      pre {
+        background: var(--code-bg);
+        color: var(--code-text);
+        border: 1px solid var(--code-border);
+        border-radius: 4px;
+      }
+      code {
+        padding: 0.15em 0.4em;
+        font-size: 0.9em;
+      }
+      pre {
+        padding: 1rem;
+        overflow-x: auto;
+        font-size: 0.85rem;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      code.script-name {
+        background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+        color: #4a148c;
+        border-color: #ce93d8;
+        font-weight: 600;
+      }
+      code.code-highlight {
+        background: var(--code-bg);
+        color: var(--code-text);
+        border: 1px solid var(--code-border);
+      }
+      .section-container {
+        border-radius: 8px;
+        padding: 1.25rem 1.5rem;
+        margin: 1.25rem 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+      .section-container.usage {
+        background: linear-gradient(135deg, #f0e6ff 0%, #e6ccff 100%);
+        border-left: 4px solid #9c27b0;
+      }
+      .section-container.parameters {
+        background: linear-gradient(135deg, #fff5e6 0%, #ffe6cc 100%);
+        border-left: 4px solid #ff9800;
+      }
+      .section-container.output {
+        background: linear-gradient(135deg, #e6ffe6 0%, #ccffcc 100%);
+        border-left: 4px solid #28a745;
+      }
+      .section-container.info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border-left: 4px solid #2196f3;
+      }
+      .section-container.warning {
+        background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+        border-left: 4px solid #ffc107;
+      }
+      .section-header {
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin-bottom: 0.75rem;
+        color: #0d3b66;
+      }
+      .section-intro {
+        background: linear-gradient(135deg, #e8f4fc 0%, #d6ebf5 100%);
+        border-left: 4px solid #2196f3;
+        padding: 1rem 1.25rem;
+        border-radius: 6px;
+        margin: 1rem 0;
+      }
+      table.doc-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      }
+      table.doc-table th {
+        background: linear-gradient(135deg, #0d3b66 0%, #1a5f8a 100%);
+        color: #fff;
+        text-align: left;
+        padding: 0.65rem 0.75rem;
+        font-weight: 600;
+      }
+      table.doc-table td {
+        padding: 0.55rem 0.75rem;
+        border-bottom: 1px solid #e0e8ef;
+        vertical-align: top;
+      }
+      table.doc-table tr:hover td {
+        background: #f0f7ff;
+      }
+      table.doc-table tr:last-child td {
+        border-bottom: none;
+      }
+      .badge-yes {
+        color: #1b5e20;
+        font-weight: 700;
+      }
+      .badge-no {
+        color: #b71c1c;
+        font-weight: 700;
+      }
+      .badge-partial {
+        color: #e65100;
+        font-weight: 700;
+      }
+      .copy-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .copy-button {
+        background: #0d3b66;
+        color: #fff;
+        border: none;
+        padding: 0.35rem 0.65rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+      }
+      .copy-button:hover {
+        background: #1a5f8a;
+      }
+      .copy-button.copied {
+        background: #28a745;
+      }
+      ul.tight {
+        margin: 0.5rem 0;
+        padding-left: 1.25rem;
+      }
+      footer {
+        margin-top: 3rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--code-border);
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="doc-header">
+      <h1>Batch Jobs Integration Analysis</h1>
+      <p>
+        How <strong>event-site-manager-service</strong> (main backend, port 8080) integrates with
+        <strong>event-site-manager-batch-jobs</strong> (batch microservice, port 8081, context path <code>/batch-jobs</code>). Generated
+        from source analysis of both repositories.
+      </p>
+    </header>
+
+    <main>
+      <p class="meta">
+        Repositories:
+        <code class="code-highlight">F:\project_workspace\event-site-manager-service</code> ·
+        <code class="code-highlight">F:\project_workspace\event-site-manager-batch-jobs</code> · Last reviewed: June 2026
+      </p>
+
+      <div class="section-intro">
+        <strong>Executive summary:</strong> Integration is <strong>HTTP REST only</strong> via Spring <code>WebClient</code>. There is
+        <strong>no Maven dependency</strong> between the projects and <strong>no AWS Batch SDK usage</strong> in production paths (the
+        <code>software.amazon.awssdk:batch</code> artifact in the main <code>pom.xml</code> is legacy/unused). Both services share the same
+        PostgreSQL database; batch-jobs runs Spring Batch jobs and <code>@Async</code> tasks, then may call back into the main API with a
+        service JWT.
+      </div>
+
+      <h2>1. Architecture</h2>
+
+      <div class="section-container info">
+        <div class="section-header">Integration model</div>
+        <ul class="tight">
+          <li><strong>Transport:</strong> Synchronous HTTP from main → batch-jobs; batch work runs asynchronously inside batch-jobs.</li>
+          <li>
+            <strong>Client:</strong> <code class="script-name">BatchJobsWebClientConfiguration.java</code> → <code>WebClient</code> bean
+            <code>batchJobsWebClient</code>.
+          </li>
+          <li><strong>Base URL:</strong> <code>batch-jobs.service.url</code> (default <code>http://localhost:8081/batch-jobs</code>).</li>
+          <li>
+            <strong>Outbound auth (triggers):</strong> Service JWT from
+            <code class="script-name">BatchJobServiceAuthTokenProvider.java</code> via
+            <code>POST {BATCH_JOBS_AUTH_BASE_URL}/api/authenticate</code>.
+          </li>
+          <li><strong>Admin monitoring auth:</strong> Caller’s <code>Authorization</code> header is forwarded unchanged to batch-jobs.</li>
+          <li><strong>Cron triggers:</strong> <code>/api/cron/**</code> accepts cron secret Bearer or normal JWT.</li>
+          <li>
+            <strong>Inbound to batch-jobs:</strong> REST under <code>/api/batch-jobs/*</code> (see batch-jobs security configuration for
+            production hardening).
+          </li>
+          <li>
+            <strong>Callbacks batch → main:</strong> <code>BackendApiService</code> in batch-jobs uses JWT to PATCH/GET main API resources
+            (e.g. ticket transactions).
+          </li>
+        </ul>
+      </div>
+
+      <pre>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  event-site-manager-service (:8080)                                         │
+│  ┌──────────────────┐   ┌─────────────────────┐   ┌──────────────────────┐  │
+│  │ REST controllers │ → │ BatchJob* services  │ → │ WebClient (JWT)      │  │
+│  │ /api/cron        │   │ Promotion/Manual/   │   │ batchJobsWebClient   │  │
+│  │ /api/admin/...   │   │ Contact email svcs  │   └──────────┬───────────┘  │
+│  └──────────────────┘   └─────────────────────┘              │ HTTP POST/GET │
+└──────────────────────────────────────────────────────────────│──────────────┘
+                                                               ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  event-site-manager-batch-jobs (:8081, context /batch-jobs)                 │
+│  BatchJobController + BatchJobMonitoringController  →  Spring Batch / @Async │
+│  AWS SES · S3 · Stripe · shared PostgreSQL (batch_job_execution_log, …)     │
+│  BackendApiService ──JWT──► main service (:8080) for PATCH/GET callbacks    │
+└─────────────────────────────────────────────────────────────────────────────┘
+    </pre
+      >
+
+      <h2>2. Features wired from main service</h2>
+
+      <div class="section-container usage">
+        <div class="section-header">End-to-end: user/admin/cron → main API → batch-jobs</div>
+        <p>
+          Eleven batch-jobs trigger endpoints are called from Java in the main service. Donation and some competition jobs exist only in
+          batch-jobs (typically frontend-direct).
+        </p>
+      </div>
+
+      <h3>2.1 Job triggers (POST)</h3>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Main service entry point</th>
+            <th>Service class</th>
+            <th>Batch-jobs endpoint</th>
+            <th>Wired?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Subscription renewal</td>
+            <td><code>POST /api/cron/subscription-renewal</code></td>
+            <td><code>BatchJobService.submitSubscriptionRenewalJob</code></td>
+            <td><code>POST /api/batch-jobs/subscription-renewal</code></td>
+            <td class="badge-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Promotion bulk email</td>
+            <td><code>POST /api/promotion-email-templates/{id}/send-bulk</code>, <code>.../send-to-subscribed</code></td>
+            <td><code>BatchJobEmailServiceImpl</code> ← <code>PromotionEmailServiceImpl</code></td>
+            <td><code>POST /api/batch-jobs/email</code></td>
+            <td class="badge-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Promotion test email</td>
+            <td><code>POST /api/promotion-email-templates/{id}/send-test</code></td>
+            <td><code>PromotionTestEmailBatchJobServiceImpl</code></td>
+            <td><code>POST /api/batch-jobs/promotion-test-email</code></td>
+            <td class="badge-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Contact form email</td>
+            <td><code>POST /api/contact-form-email/send</code></td>
+            <td><code>ContactFormBatchJobServiceImpl</code> ← <code>ContactFormServiceImpl</code></td>
+            <td><code>POST /api/batch-jobs/contact-form-email</code></td>
+            <td class="badge-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Manual payment confirmation email</td>
+            <td><code>POST /api/manual-payments/{id}/send-confirmation-email</code></td>
+            <td><code>ManualPaymentBatchJobServiceImpl</code></td>
+            <td><code>POST /api/batch-jobs/manual-payment-confirmation-email</code></td>
+            <td class="badge-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Manual payment ticket + QR email</td>
+            <td>Admin marks payment <code>RECEIVED</code> → <code>ManualPaymentRequestServiceImpl</code></td>
+            <td><code>ManualPaymentBatchJobServiceImpl.triggerTicketEmailJob</code></td>
+            <td><code>POST /api/batch-jobs/manual-payment-ticket-email</code></td>
+            <td class="badge-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Stripe fees &amp; tax backfill</td>
+            <td><code>POST /api/cron/stripe-fees-tax-update</code></td>
+            <td><code>BatchJobService.triggerStripeFeesTaxUpdate</code></td>
+            <td><code>POST /api/batch-jobs/stripe-fees-tax-update</code></td>
+            <td class="badge-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Manual payment summary aggregation</td>
+            <td><code>POST /api/cron/manual-payment-summary</code></td>
+            <td><code>BatchJobService.triggerManualPaymentSummary</code></td>
+            <td><code>POST /api/batch-jobs/manual-payment-summary</code></td>
+            <td class="badge-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Stripe ticket batch refund</td>
+            <td><code>POST /api/cron/stripe-ticket-batch-refund</code></td>
+            <td><code>BatchJobService.triggerStripeTicketBatchRefund</code></td>
+            <td><code>POST /api/batch-jobs/stripe-ticket-batch-refund</code></td>
+            <td class="badge-yes">Yes</td>
+          </tr>
+          <tr>
+            <td>Donation confirmation email</td>
+            <td>— (no main-service Java caller)</td>
+            <td>—</td>
+            <td><code>POST /api/batch-jobs/donation-email</code></td>
+            <td class="badge-no">Batch-jobs only</td>
+          </tr>
+          <tr>
+            <td>Donation QR code generation</td>
+            <td>—</td>
+            <td>—</td>
+            <td><code>POST /api/batch-jobs/donation-qrcode</code></td>
+            <td class="badge-no">Batch-jobs only</td>
+          </tr>
+          <tr>
+            <td>Event competition emails / summary</td>
+            <td>—</td>
+            <td>Services exist in batch-jobs; no REST controller</td>
+            <td>—</td>
+            <td class="badge-partial">Not exposed</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>2.2 Admin monitoring (GET, proxied)</h3>
+      <p>Frontend calls main service; main forwards <code>Authorization</code> to batch-jobs.</p>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Main service (<code>BatchJobAdminResource</code>)</th>
+            <th>Batch-jobs (<code>BatchJobMonitoringController</code>)</th>
+            <th><code>BatchJobService</code> method</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>GET /api/admin/batch-jobs/executions</code></td>
+            <td><code>GET /api/batch-jobs/executions</code></td>
+            <td><code>getExecutions</code></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/admin/batch-jobs/executions/{id}</code></td>
+            <td><code>GET /api/batch-jobs/executions/{id}</code></td>
+            <td><code>getExecution</code></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/admin/batch-jobs/executions/failed</code></td>
+            <td><code>GET /api/batch-jobs/executions/failed</code></td>
+            <td><code>getFailedExecutions</code></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/admin/batch-jobs/executions/running</code></td>
+            <td><code>GET /api/batch-jobs/executions/running</code></td>
+            <td><code>getRunningExecutions</code></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/admin/batch-jobs/summary</code></td>
+            <td><code>GET /api/batch-jobs/summary</code></td>
+            <td><code>getSummary</code></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/admin/batch-jobs/configured-jobs</code></td>
+            <td><code>GET /api/batch-jobs/configured-jobs</code></td>
+            <td><code>getConfiguredJobs</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>See also: <code class="script-name">wiki/pages/batch-job-admin-integration.md</code></p>
+
+      <h2>3. Data flows by feature</h2>
+
+      <div class="section-container output">
+        <div class="section-header">Promotion emails</div>
+        <pre>
+Admin / frontend
+  → POST /api/promotion-email-templates/{id}/send-test | send-bulk | send-to-subscribed
+  → PromotionEmailServiceImpl
+  → PromotionTestEmailBatchJobService OR BatchJobEmailService
+  → POST batch-jobs /promotion-test-email OR /email
+  → SES send, promotion_email_sent_log, batch_job_execution_log</pre
+        >
+      </div>
+
+      <div class="section-container output">
+        <div class="section-header">Contact form</div>
+        <pre>
+POST /api/contact-form-email/send
+  → ContactFormServiceImpl → ContactFormBatchJobServiceImpl
+  → POST /api/batch-jobs/contact-form-email
+  → ContactFormEmailJobService (@Async), tenant FROM/COPY-TO, SES</pre
+        >
+      </div>
+
+      <div class="section-container output">
+        <div class="section-header">Manual payments</div>
+        <pre>
+POST /api/manual-payments/{id}/send-confirmation-email
+  → ManualPaymentBatchJobService → POST /manual-payment-confirmation-email
+
+Admin sets status RECEIVED → QR generated in main service
+  → ManualPaymentRequestServiceImpl.triggerTicketEmailJob
+  → POST /manual-payment-ticket-email</pre
+        >
+      </div>
+
+      <div class="section-container output">
+        <div class="section-header">Cron / scheduled operations</div>
+        <pre>
+EventBridge / external scheduler OR batch-jobs internal BatchJobScheduler
+  → POST /api/cron/* (optional Bearer cron.secret)
+  → BatchJobService → corresponding POST /api/batch-jobs/*
+
+Stripe fees job may PATCH ticket transactions on main via batch-jobs BackendApiService.</pre
+        >
+      </div>
+
+      <h2>4. Main service source map</h2>
+
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>File</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Config</td>
+            <td><code>config/BatchJobsWebClientConfiguration.java</code></td>
+            <td>WebClient base URL + Bearer filter</td>
+          </tr>
+          <tr>
+            <td>Config</td>
+            <td><code>config/BatchConfig.java</code></td>
+            <td>Deprecated stub (former AWS Batch client)</td>
+          </tr>
+          <tr>
+            <td>Properties</td>
+            <td><code>properties/BatchJobProperties.java</code></td>
+            <td><code>batch-jobs.service.*</code> binding</td>
+          </tr>
+          <tr>
+            <td>Auth</td>
+            <td><code>service/BatchJobServiceAuthTokenProvider.java</code></td>
+            <td>Service JWT for outbound batch calls</td>
+          </tr>
+          <tr>
+            <td>Core client</td>
+            <td><code>service/BatchJobService.java</code></td>
+            <td>Cron jobs + monitoring proxy</td>
+          </tr>
+          <tr>
+            <td>Email jobs</td>
+            <td><code>service/impl/BatchJobEmailServiceImpl.java</code></td>
+            <td>Promotion bulk → <code>/email</code></td>
+          </tr>
+          <tr>
+            <td>Email jobs</td>
+            <td><code>service/impl/PromotionTestEmailBatchJobServiceImpl.java</code></td>
+            <td>Test promotion → <code>/promotion-test-email</code></td>
+          </tr>
+          <tr>
+            <td>Email jobs</td>
+            <td><code>service/impl/ContactFormBatchJobServiceImpl.java</code></td>
+            <td>Contact form → <code>/contact-form-email</code></td>
+          </tr>
+          <tr>
+            <td>Email jobs</td>
+            <td><code>service/impl/ManualPaymentBatchJobServiceImpl.java</code></td>
+            <td>Manual payment emails</td>
+          </tr>
+          <tr>
+            <td>Business</td>
+            <td><code>service/impl/PromotionEmailServiceImpl.java</code></td>
+            <td>Orchestrates promotion batch triggers</td>
+          </tr>
+          <tr>
+            <td>Business</td>
+            <td><code>service/impl/ContactFormServiceImpl.java</code></td>
+            <td>Triggers contact form batch</td>
+          </tr>
+          <tr>
+            <td>Business</td>
+            <td><code>service/impl/ManualPaymentRequestServiceImpl.java</code></td>
+            <td>Confirmation + ticket emails on payment flow</td>
+          </tr>
+          <tr>
+            <td>REST</td>
+            <td><code>web/rest/BatchJobResource.java</code></td>
+            <td><code>/api/cron/*</code></td>
+          </tr>
+          <tr>
+            <td>REST</td>
+            <td><code>web/rest/BatchJobAdminResource.java</code></td>
+            <td><code>/api/admin/batch-jobs/*</code></td>
+          </tr>
+          <tr>
+            <td>REST</td>
+            <td><code>web/rest/PromotionEmailTemplateResource.java</code></td>
+            <td>Promotion send endpoints</td>
+          </tr>
+          <tr>
+            <td>REST</td>
+            <td><code>web/rest/ContactFormResource.java</code></td>
+            <td>Contact form send</td>
+          </tr>
+          <tr>
+            <td>REST</td>
+            <td><code>web/rest/ManualPaymentRequestResource.java</code></td>
+            <td>Send confirmation email</td>
+          </tr>
+          <tr>
+            <td>DTOs</td>
+            <td>
+              <code>service/dto/BatchJob*.java</code>, <code>ManualPaymentSummary*</code>, <code>StripeFees*</code>,
+              <code>StripeTicket*</code>
+            </td>
+            <td>Request/response payloads for batch HTTP calls</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="section-container warning">
+        <div class="section-header">Legacy / unused in main service</div>
+        <ul class="tight">
+          <li><code>domain/BatchJobExecution.java</code> + repository/mapper — not used for monitoring (proxied to batch-jobs).</li>
+          <li><code>web/rest/QRCodeResource.java</code> — injects <code>BatchJobEmailService</code> but does not call it.</li>
+          <li><code>pom.xml</code> — <code>software.amazon.awssdk:batch</code> has no Java imports.</li>
+        </ul>
+      </div>
+
+      <h2>5. Batch-jobs project (called side)</h2>
+
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Path in batch-jobs repo</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>REST triggers</td>
+            <td><code>controller/BatchJobController.java</code></td>
+            <td>All <code>POST /api/batch-jobs/*</code> job triggers + <code>GET /health</code></td>
+          </tr>
+          <tr>
+            <td>REST monitoring</td>
+            <td><code>controller/BatchJobMonitoringController.java</code></td>
+            <td>Execution history, summary, configured jobs</td>
+          </tr>
+          <tr>
+            <td>Orchestration</td>
+            <td><code>service/BatchJobOrchestrationService.java</code></td>
+            <td>Subscription renewal, promotion email Spring Batch</td>
+          </tr>
+          <tr>
+            <td>Scheduler</td>
+            <td><code>scheduler/BatchJobScheduler.java</code> (if present)</td>
+            <td>Internal cron for renewal, stripe fees, payment summary</td>
+          </tr>
+          <tr>
+            <td>Callbacks</td>
+            <td><code>service/BackendApiService.java</code></td>
+            <td>JWT calls back to main service API</td>
+          </tr>
+          <tr>
+            <td>Execution log</td>
+            <td><code>service/BatchJobExecutionService.java</code></td>
+            <td><code>batch_job_execution_log</code> persistence</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Package root: <code>com.eventmanager.batch</code>. Deployed as separate ECS service (not AWS Batch job definitions).</p>
+
+      <h2>6. Configuration</h2>
+
+      <div class="section-container parameters">
+        <div class="section-header">Main service — <code>application.yml</code> → <code>batch-jobs.service</code></div>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Property / env</th>
+              <th>Default</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>BATCH_JOBS_SERVICE_URL</code></td>
+              <td><code>http://localhost:8081/batch-jobs</code></td>
+              <td>WebClient base URL</td>
+            </tr>
+            <tr>
+              <td><code>BATCH_JOBS_SERVICE_TIMEOUT</code></td>
+              <td><code>30000</code></td>
+              <td>HTTP timeout (ms)</td>
+            </tr>
+            <tr>
+              <td><code>BATCH_JOBS_SERVICE_ENABLED</code></td>
+              <td><code>true</code></td>
+              <td>Kill switch for all outbound batch calls</td>
+            </tr>
+            <tr>
+              <td><code>BATCH_JOBS_AUTH_USER</code> / <code>BATCH_JOBS_AUTH_PASS</code></td>
+              <td>falls back to <code>API_JWT_*</code></td>
+              <td>Service account for JWT</td>
+            </tr>
+            <tr>
+              <td><code>BATCH_JOBS_AUTH_BASE_URL</code></td>
+              <td><code>http://localhost:8080</code></td>
+              <td>Where to <code>POST /api/authenticate</code></td>
+            </tr>
+            <tr>
+              <td><code>cron.secret</code></td>
+              <td>(empty)</td>
+              <td>Optional Bearer for <code>/api/cron/**</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-container parameters">
+        <div class="section-header">Local Docker</div>
+        <p><code class="script-name">src/main/docker/Docker_Local/docker-compose.local.yml</code> sets:</p>
+        <pre><code>BATCH_JOBS_SERVICE_URL=http://batch-jobs:8081/batch-jobs</code></pre>
+        <p>Main app joins external network <code>event-site-manager-batch-jobs_batch-jobs-network</code>.</p>
+      </div>
+
+      <h2>7. Dependencies</h2>
+
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Dependency</th>
+            <th>Used for integration?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>event-site-manager-service</td>
+            <td><code>spring-boot-starter-webflux</code></td>
+            <td class="badge-yes">Yes — WebClient</td>
+          </tr>
+          <tr>
+            <td>event-site-manager-service</td>
+            <td><code>software.amazon.awssdk:batch</code></td>
+            <td class="badge-no">No — legacy</td>
+          </tr>
+          <tr>
+            <td>event-site-manager-batch-jobs</td>
+            <td><code>spring-boot-starter-batch</code>, web, PostgreSQL, AWS SES/S3, Stripe</td>
+            <td class="badge-yes">Yes — job runtime</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>There is <strong>no Maven module dependency</strong> between the two repositories.</p>
+
+      <h2>8. Health checks &amp; smoke tests</h2>
+
+      <div class="copy-row">
+        <pre id="cmd-health-batch">curl -s http://localhost:8081/batch-jobs/api/batch-jobs/health</pre>
+        <button class="copy-button" type="button" onclick="copyText('cmd-health-batch', this)">Copy</button>
+      </div>
+      <div class="copy-row" style="margin-top: 0.75rem">
+        <pre id="cmd-summary-admin">curl -s -H "Authorization: Bearer YOUR_JWT" http://localhost:8080/api/admin/batch-jobs/summary</pre>
+        <button class="copy-button" type="button" onclick="copyText('cmd-summary-admin', this)">Copy</button>
+      </div>
+
+      <h2>9. Summary checklist</h2>
+      <ul>
+        <li>Main service is an <strong>orchestration and admin proxy</strong>; batch-jobs is the <strong>worker microservice</strong>.</li>
+        <li>
+          <strong>11 of 14</strong> batch trigger REST paths are used from main-service Java; donation endpoints are batch-jobs/frontend
+          only.
+        </li>
+        <li>Shared <strong>PostgreSQL</strong>; execution history lives in batch-jobs DB tables.</li>
+        <li>Ensure <strong>same JWT secret</strong> across services when enabling auth on batch-jobs monitoring.</li>
+        <li>Set <code>BATCH_JOBS_SERVICE_ENABLED=false</code> to disable outbound calls without removing code paths.</li>
+      </ul>
+
+      <footer>
+        Related: <code>wiki/pages/batch-job-admin-integration.md</code> · Main config:
+        <code>src/main/resources/config/application.yml</code> (batch-jobs.service) · Batch controller:
+        <code>event-site-manager-batch-jobs/.../BatchJobController.java</code>
+      </footer>
+    </main>
+
+    <script>
+      function copyText(elementId, button) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        const text = el.textContent.trim();
+        const done = function () {
+          button.classList.add('copied');
+          button.textContent = 'Copied';
+          setTimeout(function () {
+            button.classList.remove('copied');
+            button.textContent = 'Copy';
+          }, 2000);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(text)
+            .then(done)
+            .catch(function () {
+              fallbackCopy(text, done);
+            });
+        } else {
+          fallbackCopy(text, done);
+        }
+      }
+      function fallbackCopy(text, done) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          done();
+        } catch (e) {
+          console.error(e);
+        }
+        document.body.removeChild(ta);
+      }
+    </script>
+  </body>
+</html>

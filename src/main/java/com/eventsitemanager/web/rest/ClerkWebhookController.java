@@ -1,5 +1,6 @@
 package com.eventsitemanager.web.rest;
 
+import com.eventsitemanager.config.InboundWebhookGuard;
 import com.eventsitemanager.domain.ClerkUserTenant;
 import com.eventsitemanager.domain.UserProfile;
 import com.eventsitemanager.repository.UserProfileRepository;
@@ -39,19 +40,22 @@ public class ClerkWebhookController {
     private final UserProfileRepository userProfileRepository;
     private final ClerkUserTenantService clerkUserTenantService;
     private final ObjectMapper objectMapper;
+    private final InboundWebhookGuard inboundWebhookGuard;
 
     public ClerkWebhookController(
         WebhookSignatureService webhookSignatureService,
         WebhookEventHandlerService webhookEventHandlerService,
         UserProfileRepository userProfileRepository,
         ClerkUserTenantService clerkUserTenantService,
-        ObjectMapper objectMapper
+        ObjectMapper objectMapper,
+        InboundWebhookGuard inboundWebhookGuard
     ) {
         this.webhookSignatureService = webhookSignatureService;
         this.webhookEventHandlerService = webhookEventHandlerService;
         this.userProfileRepository = userProfileRepository;
         this.clerkUserTenantService = clerkUserTenantService;
         this.objectMapper = objectMapper;
+        this.inboundWebhookGuard = inboundWebhookGuard;
     }
 
     /**
@@ -78,6 +82,14 @@ public class ClerkWebhookController {
         @RequestBody String payload,
         @RequestHeader(value = "X-Clerk-Signature", required = false) String signature
     ) {
+        if (!inboundWebhookGuard.isClerkInboundEnabled()) {
+            log.info("Clerk inbound webhooks are disabled; rejecting request");
+            WebhookResponse disabledResponse = new WebhookResponse();
+            disabledResponse.setSuccess(false);
+            disabledResponse.setMessage("Clerk inbound webhooks are disabled");
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(disabledResponse);
+        }
+
         long startTime = System.currentTimeMillis();
         log.info("Received Clerk webhook");
 

@@ -1,5 +1,6 @@
 package com.eventsitemanager.service.impl;
 
+import com.eventsitemanager.config.InboundWebhookGuard;
 import com.eventsitemanager.domain.ClerkWebhookEvent;
 import com.eventsitemanager.repository.ClerkWebhookEventRepository;
 import com.eventsitemanager.service.WebhookAuditService;
@@ -25,9 +26,11 @@ public class WebhookAuditServiceImpl implements WebhookAuditService {
     private static final int DEFAULT_CLEANUP_DAYS = 30;
 
     private final ClerkWebhookEventRepository webhookEventRepository;
+    private final InboundWebhookGuard inboundWebhookGuard;
 
-    public WebhookAuditServiceImpl(ClerkWebhookEventRepository webhookEventRepository) {
+    public WebhookAuditServiceImpl(ClerkWebhookEventRepository webhookEventRepository, InboundWebhookGuard inboundWebhookGuard) {
         this.webhookEventRepository = webhookEventRepository;
+        this.inboundWebhookGuard = inboundWebhookGuard;
     }
 
     @Override
@@ -155,6 +158,10 @@ public class WebhookAuditServiceImpl implements WebhookAuditService {
      */
     @Scheduled(cron = "0 0 2 * * *")
     public void scheduledCleanup() {
+        if (!inboundWebhookGuard.isClerkScheduledTasksEnabled()) {
+            return;
+        }
+
         log.info("Running scheduled webhook event cleanup");
         try {
             int deletedCount = cleanupOldEvents(DEFAULT_CLEANUP_DAYS);
@@ -170,6 +177,10 @@ public class WebhookAuditServiceImpl implements WebhookAuditService {
      */
     @Scheduled(cron = "0 */15 * * * *")
     public void retryFailedEvents() {
+        if (!inboundWebhookGuard.isClerkScheduledTasksEnabled()) {
+            return;
+        }
+
         log.debug("Checking for failed webhook events to retry");
 
         try {

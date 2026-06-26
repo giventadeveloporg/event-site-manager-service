@@ -1,5 +1,6 @@
 package com.eventsitemanager.web.rest;
 
+import com.eventsitemanager.config.InboundWebhookGuard;
 import com.eventsitemanager.domain.enumeration.PaymentProvider;
 import com.eventsitemanager.service.payment.PaymentException;
 import com.eventsitemanager.service.payment.dto.PaymentSessionRequest;
@@ -27,9 +28,11 @@ public class PaymentResource {
     private static final Logger log = LoggerFactory.getLogger(PaymentResource.class);
 
     private final PaymentOrchestrationService paymentOrchestrationService;
+    private final InboundWebhookGuard inboundWebhookGuard;
 
-    public PaymentResource(PaymentOrchestrationService paymentOrchestrationService) {
+    public PaymentResource(PaymentOrchestrationService paymentOrchestrationService, InboundWebhookGuard inboundWebhookGuard) {
         this.paymentOrchestrationService = paymentOrchestrationService;
+        this.inboundWebhookGuard = inboundWebhookGuard;
     }
 
     /**
@@ -229,6 +232,11 @@ public class PaymentResource {
         @RequestHeader(value = "X-Tenant-Id", required = false) String tenantId,
         @RequestParam(value = "tenantId", required = false) String tenantIdParam
     ) {
+        if (!inboundWebhookGuard.isPaymentInboundEnabled()) {
+            log.info("[PaymentResource] Payment inbound webhooks are disabled; rejecting provider: {}", provider);
+            return inboundWebhookGuard.paymentInboundDisabledResponse();
+        }
+
         log.info("[PaymentResource] Received webhook for provider: {}", provider);
         String effectiveTenantId = tenantId != null ? tenantId : tenantIdParam;
         if (effectiveTenantId == null) {

@@ -17,6 +17,8 @@ public class ApplicationProperties {
     private final Urls urls = new Urls();
     private final Payment payment = new Payment();
     private final Webhook webhook = new Webhook();
+    private final Webhooks webhooks = new Webhooks();
+    private final BatchJobs batchJobs = new BatchJobs();
 
     public Cors getCors() {
         return cors;
@@ -40,6 +42,14 @@ public class ApplicationProperties {
 
     public Webhook getWebhook() {
         return webhook;
+    }
+
+    public Webhooks getWebhooks() {
+        return webhooks;
+    }
+
+    public BatchJobs getBatchJobs() {
+        return batchJobs;
     }
 
     public static class Cors {
@@ -213,6 +223,86 @@ public class ApplicationProperties {
              * Tickets will only be created via frontend API calls or polling.
              * Default: false (disabled)
              */
+            private boolean enabled = false;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+        }
+    }
+
+    public static class Webhooks {
+
+        private final PaymentInbound paymentInbound = new PaymentInbound();
+        private final ClerkInbound clerkInbound = new ClerkInbound();
+        private final ClerkScheduledTasks clerkScheduledTasks = new ClerkScheduledTasks();
+
+        public PaymentInbound getPaymentInbound() {
+            return paymentInbound;
+        }
+
+        public ClerkInbound getClerkInbound() {
+            return clerkInbound;
+        }
+
+        public ClerkScheduledTasks getClerkScheduledTasks() {
+            return clerkScheduledTasks;
+        }
+
+        public static class PaymentInbound {
+
+            private boolean enabled = false;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+        }
+
+        public static class ClerkInbound {
+
+            private boolean enabled = false;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+        }
+
+        public static class ClerkScheduledTasks {
+
+            private boolean enabled = false;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+        }
+    }
+
+    public static class BatchJobs {
+
+        private final PaymentCron paymentCron = new PaymentCron();
+
+        public PaymentCron getPaymentCron() {
+            return paymentCron;
+        }
+
+        public static class PaymentCron {
+
             private boolean enabled = false;
 
             public boolean isEnabled() {
