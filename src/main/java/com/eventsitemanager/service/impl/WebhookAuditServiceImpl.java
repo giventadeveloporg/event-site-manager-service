@@ -1,9 +1,9 @@
 package com.eventsitemanager.service.impl;
 
-import com.eventsitemanager.config.InboundWebhookGuard;
 import com.eventsitemanager.domain.ClerkWebhookEvent;
 import com.eventsitemanager.repository.ClerkWebhookEventRepository;
 import com.eventsitemanager.service.WebhookAuditService;
+import com.eventsitemanager.service.webhook.InboundWebhookGuard;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;

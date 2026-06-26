@@ -1,7 +1,8 @@
-package com.eventsitemanager.config;
+package com.eventsitemanager.service.webhook;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.eventsitemanager.config.ApplicationProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 

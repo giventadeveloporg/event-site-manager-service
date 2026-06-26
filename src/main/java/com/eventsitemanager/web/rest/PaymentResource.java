@@ -1,6 +1,5 @@
 package com.eventsitemanager.web.rest;
 
-import com.eventsitemanager.config.InboundWebhookGuard;
 import com.eventsitemanager.domain.enumeration.PaymentProvider;
 import com.eventsitemanager.service.payment.PaymentException;
 import com.eventsitemanager.service.payment.dto.PaymentSessionRequest;
@@ -8,6 +7,7 @@ import com.eventsitemanager.service.payment.dto.PaymentSessionResponse;
 import com.eventsitemanager.service.payment.dto.RefundRequest;
 import com.eventsitemanager.service.payment.dto.RefundResponse;
 import com.eventsitemanager.service.payment.orchestration.PaymentOrchestrationService;
+import com.eventsitemanager.service.webhook.InboundWebhookGuard;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;

@@ -1,6 +1,5 @@
 package com.eventsitemanager.web.rest;
 
-import com.eventsitemanager.config.InboundWebhookGuard;
 import com.eventsitemanager.errors.BadRequestAlertException;
 import com.eventsitemanager.errors.BatchJobException;
 import com.eventsitemanager.service.BatchJobService;
@@ -12,6 +11,7 @@ import com.eventsitemanager.service.dto.StripeFeesTaxUpdateRequest;
 import com.eventsitemanager.service.dto.StripeFeesTaxUpdateResponse;
 import com.eventsitemanager.service.dto.StripeTicketBatchRefundRequest;
 import com.eventsitemanager.service.dto.StripeTicketBatchRefundResponse;
+import com.eventsitemanager.service.webhook.InboundWebhookGuard;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

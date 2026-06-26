@@ -1,6 +1,5 @@
 package com.eventsitemanager.web.rest;
 
-import com.eventsitemanager.config.InboundWebhookGuard;
 import com.eventsitemanager.domain.ClerkUserTenant;
 import com.eventsitemanager.domain.UserProfile;
 import com.eventsitemanager.repository.UserProfileRepository;
@@ -9,6 +8,7 @@ import com.eventsitemanager.service.WebhookEventHandlerService;
 import com.eventsitemanager.service.WebhookSignatureService;
 import com.eventsitemanager.service.dto.ClerkWebhookRequest;
 import com.eventsitemanager.service.dto.WebhookResponse;
+import com.eventsitemanager.service.webhook.InboundWebhookGuard;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

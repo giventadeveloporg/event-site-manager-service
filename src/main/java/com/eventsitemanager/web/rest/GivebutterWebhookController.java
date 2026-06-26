@@ -1,6 +1,5 @@
 package com.eventsitemanager.web.rest;
 
-import com.eventsitemanager.config.InboundWebhookGuard;
 import com.eventsitemanager.domain.GivebutterWebhookEvent;
 import com.eventsitemanager.domain.PaymentProviderConfig;
 import com.eventsitemanager.domain.enumeration.PaymentProvider;
@@ -10,6 +9,7 @@ import com.eventsitemanager.service.payment.PaymentException;
 import com.eventsitemanager.service.payment.encryption.PaymentCredentialEncryptionService;
 import com.eventsitemanager.service.payment.orchestration.PaymentOrchestrationService;
 import com.eventsitemanager.service.payment.webhook.GivebutterWebhookRateLimitService;
+import com.eventsitemanager.service.webhook.InboundWebhookGuard;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
