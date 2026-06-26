@@ -1,0 +1,58 @@
+---
+description: sequence_generator alignment — allocationSize=1, sync after import, links to SQL pipeline and batch-jobs
+globs: src/main/java/**/domain/*.java, src/main/java/**/SequenceSynchronization*.java, src/main/resources/sqls/**/*.sql
+alwaysApply: false
+---
+
+# Sequence Generator Alignment (event-site-manager-service)
+
+This service is the **active REST API**. Align with PostgreSQL `public.sequence_generator` and the SQL import pipeline in **mosc-temp**.
+
+## Required entity pattern
+
+```java
+@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+@SequenceGenerator(
+    name = "sequenceGenerator",
+    sequenceName = "public.sequence_generator",
+    allocationSize = 1
+)
+```
+
+All entities under `src/main/java/com/eventsitemanager/domain/` must use **`allocationSize = 1`**. Do not omit it (Hibernate default = 50).
+
+## Runtime components (this repo)
+
+| File | Role |
+|------|------|
+| `service/SequenceSynchronizationService.java` | `setval` via static GREATEST list |
+| `aop/sequence/SequenceSynchronizationAspect.java` | Duplicate PK → sync + retry |
+| `web/rest/AdminController.java` | `POST /api/admin/sync-sequence` |
+| `.cursor/rules/duplicate-key-prevention.mdc` | Clear `entity.setId(null)` on create |
+
+## When adding a table
+
+Update **together**:
+
+1. `mosc-temp/.../Latest_Schema_Post__Blob_Claude_12.sql` end-of-file setval block
+2. `mosc-temp/.../Current_Sqls/sync_sequence_after_inserts.sql`
+3. `SequenceSynchronizationService.java` GREATEST list
+
+## Post-import (every environment)
+
+After manual INSERT seed on a database, run on **that DB**:
+
+1. `mosc-temp/code_html_template/SQLS/Current_Sqls/sync_sequence_after_inserts.sql`
+2. `sync_spring_batch_sequences.sql` if Spring Batch rows exist
+
+Import alone does not update `sequence_generator`.
+
+## Canonical documentation
+
+- **mosc-temp:** `.cursor/rules/sequence_id_alignment_and_import.mdc`
+- **HTML:** `mosc-temp/documentation/database_export_import/SEQUENCE_ID_ALIGNMENT_GUIDE.html`
+- **Import workflow:** `mosc-temp/documentation/database_export_import/DATABASE_EXPORT_IMPORT_GUIDE.html`
+
+## Legacy note
+
+`src/main/resources/sqls/sync_sequence_after_inserts.sql` in this repo may be outdated. Prefer **mosc-temp `Current_Sqls/`** copy. Liquibase `20250422000000_create_sequence_generator.xml` may still say `incrementBy="50"` — fresh installs use canonical SQL schema.
