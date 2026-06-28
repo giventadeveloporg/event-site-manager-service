@@ -183,6 +183,22 @@ public class TenantSettingsDTO implements Serializable {
     @Schema(description = "Maximum number of tenant default hero slides to show on the homepage; null means no limit", example = "5")
     private Integer defaultHeroMaxDisplayCount;
 
+    @Schema(description = "When true, render Google AdSense regions configured for this tenant", example = "false")
+    private Boolean enableGoogleAdsense;
+
+    @Schema(
+        description = "AdSense publisher ID (ca-pub-...); required when enableGoogleAdsense is true",
+        example = "ca-pub-1234567890123456"
+    )
+    @Size(max = 32)
+    private String googleAdsensePublisherId;
+
+    @Schema(
+        description = "JSON map of layout region id to AdSense ad slot id",
+        example = "{\"sidebar\":\"1234567890\",\"between_sections\":\"0987654321\",\"footer_strip\":\"1122334455\"}"
+    )
+    private String googleAdsensePlacementsJson;
+
     @Schema(
         description = "Parsed default hero image URLs (GET only; computed from defaultHeroImageUrlsJson)",
         accessMode = Schema.AccessMode.READ_ONLY
@@ -624,6 +640,30 @@ public class TenantSettingsDTO implements Serializable {
         this.defaultHeroMaxDisplayCount = defaultHeroMaxDisplayCount;
     }
 
+    public Boolean getEnableGoogleAdsense() {
+        return enableGoogleAdsense;
+    }
+
+    public void setEnableGoogleAdsense(Boolean enableGoogleAdsense) {
+        this.enableGoogleAdsense = enableGoogleAdsense;
+    }
+
+    public String getGoogleAdsensePublisherId() {
+        return googleAdsensePublisherId;
+    }
+
+    public void setGoogleAdsensePublisherId(String googleAdsensePublisherId) {
+        this.googleAdsensePublisherId = googleAdsensePublisherId;
+    }
+
+    public String getGoogleAdsensePlacementsJson() {
+        return googleAdsensePlacementsJson;
+    }
+
+    public void setGoogleAdsensePlacementsJson(String googleAdsensePlacementsJson) {
+        this.googleAdsensePlacementsJson = googleAdsensePlacementsJson;
+    }
+
     public List<String> getDefaultHeroImageUrls() {
         return defaultHeroImageUrls;
     }
@@ -729,6 +769,9 @@ public class TenantSettingsDTO implements Serializable {
                 ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +
                 ", defaultHeroIncludeWithEvents='" + getDefaultHeroIncludeWithEvents() + "'" +
                 ", defaultHeroMaxDisplayCount=" + getDefaultHeroMaxDisplayCount() +
+                ", enableGoogleAdsense='" + getEnableGoogleAdsense() + "'" +
+                ", googleAdsensePublisherId='" + getGoogleAdsensePublisherId() + "'" +
+                ", googleAdsensePlacementsJson='" + getGoogleAdsensePlacementsJson() + "'" +
                 ", defaultHeroImageUrls=" + getDefaultHeroImageUrls() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +

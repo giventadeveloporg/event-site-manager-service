@@ -7,6 +7,7 @@ import com.eventsitemanager.service.TenantSettingsService;
 import com.eventsitemanager.service.cache.TenantSettingsCacheInvalidation;
 import com.eventsitemanager.service.dto.TenantSettingsDTO;
 import com.eventsitemanager.service.mapper.TenantSettingsMapper;
+import com.eventsitemanager.service.validation.TenantSettingsAdsenseFieldsValidator;
 import com.eventsitemanager.service.validation.TenantSettingsHeroFieldsValidator;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.ZonedDateTime;
@@ -51,6 +52,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     public TenantSettingsDTO save(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to save TenantSettings : {}", tenantSettingsDTO);
         TenantSettingsHeroFieldsValidator.applyCreateDefaultsAndValidate(tenantSettingsDTO);
+        TenantSettingsAdsenseFieldsValidator.applyCreateDefaultsAndValidate(tenantSettingsDTO);
         TenantSettings tenantSettings = tenantSettingsMapper.toEntity(tenantSettingsDTO);
         tenantSettings = tenantSettingsRepository.save(tenantSettings);
         tenantSettingsCacheInvalidation.evictForTenantSettingsId(tenantSettings.getId());
@@ -61,6 +63,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     public TenantSettingsDTO update(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to update TenantSettings : {}", tenantSettingsDTO);
         TenantSettingsHeroFieldsValidator.validatePresentFields(tenantSettingsDTO);
+        TenantSettingsAdsenseFieldsValidator.validatePresentFields(tenantSettingsDTO);
         // Use merge semantics like PATCH: clients often omit server-managed fields (e.g. homepageCacheVersion).
         // Full toEntity() would map null onto @NotNull fields and fail Bean Validation on commit.
         TenantSettings tenantSettings = tenantSettingsRepository
@@ -76,6 +79,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
     public Optional<TenantSettingsDTO> partialUpdate(TenantSettingsDTO tenantSettingsDTO) {
         LOG.debug("Request to partially update TenantSettings : {}", tenantSettingsDTO);
         TenantSettingsHeroFieldsValidator.validatePresentFields(tenantSettingsDTO);
+        TenantSettingsAdsenseFieldsValidator.validatePresentFields(tenantSettingsDTO);
 
         Optional<TenantSettingsDTO> result = tenantSettingsRepository
             .findById(tenantSettingsDTO.getId())
