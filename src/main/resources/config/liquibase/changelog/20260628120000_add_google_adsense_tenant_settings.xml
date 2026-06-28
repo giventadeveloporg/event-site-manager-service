@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Google AdSense — tenant_settings columns (per-tenant on/off + publisher + placements) -->
+    <changeSet id="20260628120000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="enable_google_adsense"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="enable_google_adsense" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260628120000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="google_adsense_publisher_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="google_adsense_publisher_id" type="varchar(32)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260628120000-3" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="google_adsense_placements_json"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="google_adsense_placements_json" type="${clobType}"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

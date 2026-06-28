@@ -199,6 +199,17 @@ public class TenantSettings implements Serializable {
     private Integer defaultHeroMaxDisplayCount;
 
     @NotNull
+    @Column(name = "enable_google_adsense", nullable = false)
+    private Boolean enableGoogleAdsense;
+
+    @Size(max = 32)
+    @Column(name = "google_adsense_publisher_id", length = 32)
+    private String googleAdsensePublisherId;
+
+    @Column(name = "google_adsense_placements_json", columnDefinition = "text")
+    private String googleAdsensePlacementsJson;
+
+    @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
 
@@ -876,6 +887,45 @@ public class TenantSettings implements Serializable {
         this.defaultHeroMaxDisplayCount = defaultHeroMaxDisplayCount;
     }
 
+    public Boolean getEnableGoogleAdsense() {
+        return this.enableGoogleAdsense;
+    }
+
+    public TenantSettings enableGoogleAdsense(Boolean enableGoogleAdsense) {
+        this.setEnableGoogleAdsense(enableGoogleAdsense);
+        return this;
+    }
+
+    public void setEnableGoogleAdsense(Boolean enableGoogleAdsense) {
+        this.enableGoogleAdsense = enableGoogleAdsense;
+    }
+
+    public String getGoogleAdsensePublisherId() {
+        return this.googleAdsensePublisherId;
+    }
+
+    public TenantSettings googleAdsensePublisherId(String googleAdsensePublisherId) {
+        this.setGoogleAdsensePublisherId(googleAdsensePublisherId);
+        return this;
+    }
+
+    public void setGoogleAdsensePublisherId(String googleAdsensePublisherId) {
+        this.googleAdsensePublisherId = googleAdsensePublisherId;
+    }
+
+    public String getGoogleAdsensePlacementsJson() {
+        return this.googleAdsensePlacementsJson;
+    }
+
+    public TenantSettings googleAdsensePlacementsJson(String googleAdsensePlacementsJson) {
+        this.setGoogleAdsensePlacementsJson(googleAdsensePlacementsJson);
+        return this;
+    }
+
+    public void setGoogleAdsensePlacementsJson(String googleAdsensePlacementsJson) {
+        this.googleAdsensePlacementsJson = googleAdsensePlacementsJson;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
     // setters here
 
@@ -949,6 +999,9 @@ public class TenantSettings implements Serializable {
                 ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +
                 ", defaultHeroIncludeWithEvents='" + getDefaultHeroIncludeWithEvents() + "'" +
                 ", defaultHeroMaxDisplayCount=" + getDefaultHeroMaxDisplayCount() +
+                ", enableGoogleAdsense='" + getEnableGoogleAdsense() + "'" +
+                ", googleAdsensePublisherId='" + getGoogleAdsensePublisherId() + "'" +
+                ", googleAdsensePlacementsJson='" + getGoogleAdsensePlacementsJson() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";
