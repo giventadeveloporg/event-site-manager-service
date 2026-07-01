@@ -1277,6 +1277,33 @@ class TenantSettingsResourceIT {
 
     @Test
     @Transactional
+    void patchEnrichedDefaultHeroImageUrlsJsonWithLegacyNullAdsenseField() throws Exception {
+        tenantSettings.defaultHeroDisplayMode("slideshow");
+        tenantSettings.setEnableGoogleAdsense(null);
+        tenantSettingsRepository.saveAndFlush(tenantSettings);
+
+        String enrichedJson =
+            "[{\"url\":\"https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/tenants/x/hero-defaults/slide-01.webp\",\"active\":false,\"fileName\":\"slide-01.webp\"}]";
+        TenantSettingsDTO patchDto = new TenantSettingsDTO();
+        patchDto.setId(tenantSettings.getId());
+        patchDto.setDefaultHeroImageUrlsJson(enrichedJson);
+        patchDto.setDefaultHeroMaxDisplayCount(6);
+
+        restTenantSettingsMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, tenantSettings.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(patchDto))
+            )
+            .andExpect(status().isOk());
+
+        TenantSettings updated = tenantSettingsRepository.findById(tenantSettings.getId()).orElseThrow();
+        assertThat(updated.getDefaultHeroImageUrlsJson()).isEqualTo(enrichedJson);
+        assertThat(updated.getEnableGoogleAdsense()).isFalse();
+    }
+
+    @Test
+    @Transactional
     void patchMalformedDefaultHeroImageUrlsJsonReturnsBadRequest() throws Exception {
         tenantSettingsRepository.saveAndFlush(tenantSettings);
 

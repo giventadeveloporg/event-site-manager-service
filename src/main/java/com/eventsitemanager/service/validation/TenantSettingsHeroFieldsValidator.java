@@ -2,8 +2,9 @@ package com.eventsitemanager.service.validation;
 
 import com.eventsitemanager.errors.BadRequestAlertException;
 import com.eventsitemanager.service.dto.TenantSettingsDTO;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,9 @@ public final class TenantSettingsHeroFieldsValidator {
 
     /** Aligns with frontend {@code MAX_TENANT_HERO_SLIDES} in defaultHeroImages.ts */
     private static final int MAX_HERO_DISPLAY_COUNT = 20;
+
+    /** Max slides stored in {@code defaultHeroImageUrlsJson} (same as frontend library cap). */
+    private static final int MAX_HERO_SLIDES = 20;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -80,8 +84,18 @@ public final class TenantSettingsHeroFieldsValidator {
             return Collections.emptyList();
         }
         try {
-            List<String> urls = OBJECT_MAPPER.readValue(json, new TypeReference<List<String>>() {});
-            return urls != null ? urls : Collections.emptyList();
+            JsonNode root = OBJECT_MAPPER.readTree(json);
+            if (!root.isArray()) {
+                return Collections.emptyList();
+            }
+            List<String> urls = new ArrayList<>();
+            for (JsonNode item : root) {
+                String url = extractHttpsUrl(item);
+                if (StringUtils.hasText(url)) {
+                    urls.add(url);
+                }
+            }
+            return urls;
         } catch (Exception e) {
             return Collections.emptyList();
         }
@@ -92,29 +106,102 @@ public final class TenantSettingsHeroFieldsValidator {
             throw badRequest("defaultHeroImageUrlsJson must not exceed 16KB", "defaultHeroImageUrlsJsonTooLong");
         }
         try {
-            List<String> urls = OBJECT_MAPPER.readValue(json, new TypeReference<List<String>>() {});
-            if (urls == null) {
+            JsonNode root = OBJECT_MAPPER.readTree(json);
+            if (!root.isArray()) {
                 throw badRequest("defaultHeroImageUrlsJson must be a JSON array", "invalidDefaultHeroImageUrlsJson");
             }
-            for (int i = 0; i < urls.size(); i++) {
-                String url = urls.get(i);
-                if (!StringUtils.hasText(url)) {
-                    throw badRequest(
-                        "defaultHeroImageUrlsJson array element at index " + i + " must be a non-empty string",
-                        "invalidDefaultHeroImageUrlsJson"
-                    );
-                }
-                if (!url.startsWith("https://")) {
-                    throw badRequest(
-                        "defaultHeroImageUrlsJson array element at index " + i + " must start with https://",
-                        "invalidDefaultHeroImageUrlsJson"
-                    );
-                }
+            if (root.size() > MAX_HERO_SLIDES) {
+                throw badRequest(
+                    "defaultHeroImageUrlsJson must not contain more than " + MAX_HERO_SLIDES + " slides",
+                    "invalidDefaultHeroImageUrlsJson"
+                );
+            }
+            for (int i = 0; i < root.size(); i++) {
+                validateSlideElement(root.get(i), i);
             }
         } catch (BadRequestAlertException e) {
             throw e;
         } catch (Exception e) {
-            throw badRequest("defaultHeroImageUrlsJson must be valid JSON array of HTTPS URLs", "invalidDefaultHeroImageUrlsJson");
+            throw badRequest(
+                "defaultHeroImageUrlsJson must be a valid JSON array of HTTPS URLs or slide objects",
+                "invalidDefaultHeroImageUrlsJson"
+            );
+        }
+    }
+
+    /**
+     * Legacy plain URL string, or enriched slide {@code { url, active?, fileName? }} from the admin UI.
+     */
+    private static void validateSlideElement(JsonNode item, int index) {
+        if (item == null || item.isNull()) {
+            throw badRequest(
+                "defaultHeroImageUrlsJson array element at index " + index + " must be a URL string or slide object",
+                "invalidDefaultHeroImageUrlsJson"
+            );
+        }
+        if (item.isTextual()) {
+            validateHttpsUrl(item.asText(), index);
+            return;
+        }
+        if (item.isObject()) {
+            JsonNode urlNode = item.get("url");
+            if (urlNode == null || !urlNode.isTextual()) {
+                throw badRequest(
+                    "defaultHeroImageUrlsJson slide at index " + index + " must include a string url field",
+                    "invalidDefaultHeroImageUrlsJson"
+                );
+            }
+            validateHttpsUrl(urlNode.asText(), index);
+            JsonNode activeNode = item.get("active");
+            if (activeNode != null && !activeNode.isBoolean()) {
+                throw badRequest(
+                    "defaultHeroImageUrlsJson slide at index " + index + " active must be a boolean when set",
+                    "invalidDefaultHeroImageUrlsJson"
+                );
+            }
+            JsonNode fileNameNode = item.get("fileName");
+            if (fileNameNode != null && !fileNameNode.isTextual()) {
+                throw badRequest(
+                    "defaultHeroImageUrlsJson slide at index " + index + " fileName must be a string when set",
+                    "invalidDefaultHeroImageUrlsJson"
+                );
+            }
+            return;
+        }
+        throw badRequest(
+            "defaultHeroImageUrlsJson array element at index " + index + " must be a URL string or slide object",
+            "invalidDefaultHeroImageUrlsJson"
+        );
+    }
+
+    private static String extractHttpsUrl(JsonNode item) {
+        if (item == null || item.isNull()) {
+            return null;
+        }
+        if (item.isTextual()) {
+            return item.asText().trim();
+        }
+        if (item.isObject()) {
+            JsonNode urlNode = item.get("url");
+            if (urlNode != null && urlNode.isTextual()) {
+                return urlNode.asText().trim();
+            }
+        }
+        return null;
+    }
+
+    private static void validateHttpsUrl(String url, int index) {
+        if (!StringUtils.hasText(url)) {
+            throw badRequest(
+                "defaultHeroImageUrlsJson array element at index " + index + " must be a non-empty string",
+                "invalidDefaultHeroImageUrlsJson"
+            );
+        }
+        if (!url.trim().startsWith("https://")) {
+            throw badRequest(
+                "defaultHeroImageUrlsJson array element at index " + index + " must start with https://",
+                "invalidDefaultHeroImageUrlsJson"
+            );
         }
     }
 

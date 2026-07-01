@@ -131,6 +131,7 @@
     <include file="config/liquibase/changelog/20260620120000_tenant_org_address_description.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260620120001_align_tenant_settings_profile_columns.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260628120000_add_google_adsense_tenant_settings.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260701120000_backfill_tenant_settings_not_null_defaults.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->

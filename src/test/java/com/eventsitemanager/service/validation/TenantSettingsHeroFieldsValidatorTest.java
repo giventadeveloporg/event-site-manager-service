@@ -55,6 +55,25 @@ class TenantSettingsHeroFieldsValidatorTest {
     }
 
     @Test
+    void validateImageUrlsJson_acceptsEnrichedSlideObjects() {
+        String json = "[{\"url\":\"" + VALID_URL + "\",\"active\":false,\"fileName\":\"hero.jpeg\"}]";
+        TenantSettingsHeroFieldsValidator.validateImageUrlsJson(json);
+    }
+
+    @Test
+    void parseUrlList_returnsUrlsFromEnrichedSlideObjects() {
+        String json = "[{\"url\":\"" + VALID_URL + "\",\"active\":true}]";
+        assertThat(TenantSettingsHeroFieldsValidator.parseUrlList(json)).containsExactly(VALID_URL);
+    }
+
+    @Test
+    void validateImageUrlsJson_rejectsSlideWithoutUrl() {
+        assertThatThrownBy(() -> TenantSettingsHeroFieldsValidator.validateImageUrlsJson("[{\"active\":true}]"))
+            .isInstanceOf(BadRequestAlertException.class)
+            .hasMessageContaining("url");
+    }
+
+    @Test
     void validateMaxDisplayCount_acceptsNullViaValidatePresentFields() {
         TenantSettingsDTO dto = new TenantSettingsDTO();
         dto.setDefaultHeroMaxDisplayCount(null);

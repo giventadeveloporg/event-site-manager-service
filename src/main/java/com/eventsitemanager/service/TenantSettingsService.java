@@ -73,4 +73,14 @@ public interface TenantSettingsService {
      * @return the updated tenant settings DTO
      */
     TenantSettingsDTO uploadEmailHeaderImage(String tenantId, MultipartFile file);
+
+    /**
+     * Upload a default homepage hero image to S3 for the tenant.
+     * Does not update {@code defaultHeroImageUrlsJson}; the admin UI appends the returned URL on save.
+     *
+     * @param tenantId the tenant ID
+     * @param file the image file to upload
+     * @return the public HTTPS URL of the uploaded image
+     */
+    String uploadDefaultHeroImage(String tenantId, MultipartFile file);
 }

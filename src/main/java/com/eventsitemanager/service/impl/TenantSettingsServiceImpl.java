@@ -70,6 +70,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
             .findById(tenantSettingsDTO.getId())
             .orElseThrow(() -> new EntityNotFoundException("TenantSettings not found with id " + tenantSettingsDTO.getId()));
         tenantSettingsMapper.partialUpdate(tenantSettings, tenantSettingsDTO);
+        normalizeRequiredFieldsBeforePersist(tenantSettings);
         tenantSettings = tenantSettingsRepository.save(tenantSettings);
         tenantSettingsCacheInvalidation.evictForTenantSettingsId(tenantSettings.getId());
         return tenantSettingsMapper.toDto(tenantSettings);
@@ -85,7 +86,7 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
             .findById(tenantSettingsDTO.getId())
             .map(existingTenantSettings -> {
                 tenantSettingsMapper.partialUpdate(existingTenantSettings, tenantSettingsDTO);
-
+                normalizeRequiredFieldsBeforePersist(existingTenantSettings);
                 return existingTenantSettings;
             })
             .map(tenantSettingsRepository::save)
@@ -309,6 +310,61 @@ public class TenantSettingsServiceImpl implements TenantSettingsService {
                 );
                 throw new RuntimeException("Failed to update tenant settings with email header image URL", fallbackException);
             }
+        }
+    }
+
+    @Override
+    public String uploadDefaultHeroImage(String tenantId, MultipartFile file) {
+        LOG.debug("Request to upload default hero image for tenant: {}", tenantId);
+
+        tenantSettingsRepository
+            .findByTenantId(tenantId)
+            .orElseThrow(() -> new EntityNotFoundException("Tenant settings not found for tenant: " + tenantId));
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("File must be an image");
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename != null) {
+            String lowerFilename = filename.toLowerCase();
+            boolean isValidImageType =
+                lowerFilename.endsWith(".png") ||
+                lowerFilename.endsWith(".jpg") ||
+                lowerFilename.endsWith(".jpeg") ||
+                lowerFilename.endsWith(".gif") ||
+                lowerFilename.endsWith(".webp");
+            if (!isValidImageType) {
+                throw new IllegalArgumentException("File must be an image (PNG, JPG, JPEG, GIF, or WEBP)");
+            }
+        }
+
+        // Align with frontend MAX_FILE_BYTES (10 MB) in TenantDefaultHeroManager
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("File size must be less than 10MB");
+        }
+
+        String s3Path = s3Service.generateTenantDefaultHeroImagePath(tenantId, file.getOriginalFilename());
+        String s3Url = s3Service.uploadFile(s3Path, file);
+        LOG.debug("Uploaded default hero image to S3: {}", s3Url);
+        return s3Url;
+    }
+
+    /**
+     * Backfill {@code @NotNull} fields that may be null on entities loaded from rows created before
+     * a column was added (DB default does not hydrate into the persistence context).
+     */
+    private static void normalizeRequiredFieldsBeforePersist(TenantSettings entity) {
+        if (entity.getHomepageCacheVersion() == null) {
+            entity.setHomepageCacheVersion(0L);
+        }
+        if (entity.getEnableGoogleAdsense() == null) {
+            entity.setEnableGoogleAdsense(Boolean.FALSE);
         }
     }
 }

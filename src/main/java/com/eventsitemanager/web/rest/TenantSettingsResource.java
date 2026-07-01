@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -352,6 +353,51 @@ public class TenantSettingsResource {
         } catch (Exception e) {
             LOG.error("Failed to upload email header image", e);
             throw new BadRequestAlertException("Failed to upload email header image: " + e.getMessage(), ENTITY_NAME, "uploadFailed");
+        }
+    }
+
+    /**
+     * {@code POST  /tenant-settings/upload/default-hero-image} : Upload a default homepage hero slide image.
+     * Returns the S3 URL only; the admin UI appends it to {@code defaultHeroImageUrlsJson} on save.
+     *
+     * @param file the image file to upload.
+     * @param tenantId the tenant ID (optional, will be retrieved from context if not provided).
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and JSON body {@code { url, defaultHeroImageUrl }}.
+     */
+    @PostMapping(value = "/upload/default-hero-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> uploadDefaultHeroImage(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam(value = "tenantId", required = false) String tenantId,
+        Authentication authentication
+    ) {
+        LOG.debug("REST request to upload default hero image");
+
+        String finalTenantId = tenantId;
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            try {
+                finalTenantId = com.eventsitemanager.security.TenantContext.getCurrentTenant();
+                LOG.debug("Tenant ID from context: {}", finalTenantId);
+            } catch (Exception e) {
+                LOG.warn("Could not get tenant ID from context: {}", e.getMessage());
+            }
+        }
+
+        if (finalTenantId == null || finalTenantId.isEmpty()) {
+            throw new BadRequestAlertException("Tenant ID is required", ENTITY_NAME, "tenantIdRequired");
+        }
+
+        try {
+            String imageUrl = tenantSettingsService.uploadDefaultHeroImage(finalTenantId, file);
+            return ResponseEntity.ok(Map.of("url", imageUrl, "defaultHeroImageUrl", imageUrl, "imageUrl", imageUrl));
+        } catch (EntityNotFoundException e) {
+            LOG.error("Tenant settings not found: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "tenantSettingsNotFound");
+        } catch (IllegalArgumentException e) {
+            LOG.error("Invalid request: {}", e.getMessage());
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "invalidRequest");
+        } catch (Exception e) {
+            LOG.error("Failed to upload default hero image", e);
+            throw new BadRequestAlertException("Failed to upload default hero image: " + e.getMessage(), ENTITY_NAME, "uploadFailed");
         }
     }
 }

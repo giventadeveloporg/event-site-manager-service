@@ -238,6 +238,16 @@ public interface S3Service {
     String generateTenantEmailHeaderImagePath(String tenantId, String originalFilename);
 
     /**
+     * Generate S3 path for tenant default homepage hero images.
+     * Path format: {profile}/media/tenantId/{tenantId}/default_hero_image/{filename}_{timestamp}_{uuid}.{ext}
+     *
+     * @param tenantId Tenant ID
+     * @param originalFilename Original filename from upload
+     * @return S3 path string
+     */
+    String generateTenantDefaultHeroImagePath(String tenantId, String originalFilename);
+
+    /**
      * Generate S3 path for focus group cover images.
      * Path format: {profile}/media/tenantId/{tenantId}/focus-groups/focus-group-id/{focusGroupId}/cover_image_{timestamp}_{uuid}.{ext}
      *

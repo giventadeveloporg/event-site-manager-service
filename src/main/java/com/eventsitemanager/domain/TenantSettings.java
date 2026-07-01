@@ -200,7 +200,7 @@ public class TenantSettings implements Serializable {
 
     @NotNull
     @Column(name = "enable_google_adsense", nullable = false)
-    private Boolean enableGoogleAdsense;
+    private Boolean enableGoogleAdsense = Boolean.FALSE;
 
     @Size(max = 32)
     @Column(name = "google_adsense_publisher_id", length = 32)

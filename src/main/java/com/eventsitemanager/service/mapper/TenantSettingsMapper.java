@@ -26,6 +26,7 @@ public interface TenantSettingsMapper extends EntityMapper<TenantSettingsDTO, Te
     TenantSettings toEntity(TenantSettingsDTO dto);
 
     @Override
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "addressLine1", ignore = true)
     @Mapping(target = "addressLine2", ignore = true)
     @Mapping(target = "description", ignore = true)
