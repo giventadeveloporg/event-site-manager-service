@@ -62,4 +62,22 @@ class TenantSettingsAdsenseFieldsValidatorTest {
 
         assertThat(dto.getEnableGoogleAdsense()).isTrue();
     }
+
+    @Test
+    void validatePresentFields_allowsDisabledWithEmptyPublisherAndPlacements() {
+        TenantSettingsDTO dto = new TenantSettingsDTO();
+        dto.setEnableGoogleAdsense(false);
+        dto.setGoogleAdsensePublisherId("");
+        dto.setGoogleAdsensePlacementsJson("");
+
+        TenantSettingsAdsenseFieldsValidator.validatePresentFields(dto);
+    }
+
+    @Test
+    void validatePresentFields_allowsDisabledWithNullPublisherAndPlacements() {
+        TenantSettingsDTO dto = new TenantSettingsDTO();
+        dto.setEnableGoogleAdsense(false);
+
+        TenantSettingsAdsenseFieldsValidator.validatePresentFields(dto);
+    }
 }

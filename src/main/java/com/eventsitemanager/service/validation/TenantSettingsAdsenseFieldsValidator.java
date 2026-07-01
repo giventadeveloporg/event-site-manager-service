@@ -42,10 +42,10 @@ public final class TenantSettingsAdsenseFieldsValidator {
         if (dto == null) {
             return;
         }
-        if (dto.getGoogleAdsensePublisherId() != null) {
+        if (StringUtils.hasText(dto.getGoogleAdsensePublisherId())) {
             validatePublisherId(dto.getGoogleAdsensePublisherId());
         }
-        if (dto.getGoogleAdsensePlacementsJson() != null) {
+        if (StringUtils.hasText(dto.getGoogleAdsensePlacementsJson())) {
             validatePlacementsJson(dto.getGoogleAdsensePlacementsJson());
         }
         if (Boolean.TRUE.equals(dto.getEnableGoogleAdsense())) {
