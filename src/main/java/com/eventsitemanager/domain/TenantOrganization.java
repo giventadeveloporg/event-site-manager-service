@@ -1,5 +1,6 @@
 package com.eventsitemanager.domain;
 
+import com.eventsitemanager.domain.enumeration.SiteType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -116,6 +117,10 @@ public class TenantOrganization implements Serializable {
     @Column(name = "stripe_customer_id", length = 255)
     private String stripeCustomerId;
 
+    @Size(max = 255)
+    @Column(name = "stripe_subscription_id", length = 255)
+    private String stripeSubscriptionId;
+
     @Column(name = "is_active")
     private Boolean isActive;
 
@@ -130,6 +135,15 @@ public class TenantOrganization implements Serializable {
     @JsonIgnoreProperties(value = { "tenantOrganization" }, allowSetters = true)
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "tenantOrganization")
     private TenantSettings tenantSettings;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "site_type", length = 32, nullable = false)
+    private SiteType siteType = SiteType.EVENT_ORG;
+
+    @Size(max = 32)
+    @Column(name = "site_template_version", length = 32)
+    private String siteTemplateVersion;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -432,6 +446,19 @@ public class TenantOrganization implements Serializable {
         this.stripeCustomerId = stripeCustomerId;
     }
 
+    public String getStripeSubscriptionId() {
+        return this.stripeSubscriptionId;
+    }
+
+    public TenantOrganization stripeSubscriptionId(String stripeSubscriptionId) {
+        this.setStripeSubscriptionId(stripeSubscriptionId);
+        return this;
+    }
+
+    public void setStripeSubscriptionId(String stripeSubscriptionId) {
+        this.stripeSubscriptionId = stripeSubscriptionId;
+    }
+
     public Boolean getIsActive() {
         return this.isActive;
     }
@@ -469,6 +496,32 @@ public class TenantOrganization implements Serializable {
 
     public void setUpdatedAt(ZonedDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public SiteType getSiteType() {
+        return this.siteType;
+    }
+
+    public TenantOrganization siteType(SiteType siteType) {
+        this.setSiteType(siteType);
+        return this;
+    }
+
+    public void setSiteType(SiteType siteType) {
+        this.siteType = siteType;
+    }
+
+    public String getSiteTemplateVersion() {
+        return this.siteTemplateVersion;
+    }
+
+    public TenantOrganization siteTemplateVersion(String siteTemplateVersion) {
+        this.setSiteTemplateVersion(siteTemplateVersion);
+        return this;
+    }
+
+    public void setSiteTemplateVersion(String siteTemplateVersion) {
+        this.siteTemplateVersion = siteTemplateVersion;
     }
 
     public TenantSettings getTenantSettings() {

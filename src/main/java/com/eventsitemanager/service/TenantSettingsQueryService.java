@@ -221,6 +221,42 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
                 specification =
                     specification.and(buildRangeSpecification(criteria.getHomepageCacheVersion(), TenantSettings_.homepageCacheVersion));
             }
+            if (criteria.getShowPublicProfileHeroSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowPublicProfileHeroSection(), TenantSettings_.showPublicProfileHeroSection)
+                    );
+            }
+            if (criteria.getShowProfileWritingsSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileWritingsSection(), TenantSettings_.showProfileWritingsSection)
+                    );
+            }
+            if (criteria.getShowProfileAchievementsSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileAchievementsSection(), TenantSettings_.showProfileAchievementsSection)
+                    );
+            }
+            if (criteria.getShowProfileAffiliationsSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileAffiliationsSection(), TenantSettings_.showProfileAffiliationsSection)
+                    );
+            }
+            if (criteria.getShowProfileMediaDownloadsSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileMediaDownloadsSection(), TenantSettings_.showProfileMediaDownloadsSection)
+                    );
+            }
+            if (criteria.getShowProfileContactSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileContactSection(), TenantSettings_.showProfileContactSection)
+                    );
+            }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt));
             }

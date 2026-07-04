@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Gas station subscription billing: one Stripe subscription per tenant;
+         quantity = COUNT of stations WHERE is_active AND included_in_subscription. -->
+
+    <changeSet id="20260704120000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_organization"/>
+            <not>
+                <columnExists tableName="tenant_organization" columnName="stripe_subscription_id"/>
+            </not>
+        </preConditions>
+        <sql><![CDATA[
+            ALTER TABLE public.tenant_organization
+                ADD COLUMN IF NOT EXISTS stripe_subscription_id character varying(255);
+            COMMENT ON COLUMN public.tenant_organization.stripe_subscription_id IS 'Stripe subscription id for the tenant platform subscription (gas station per-location billing). Customer id lives in stripe_customer_id.';
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20260704120000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="gas_station_location"/>
+            <not>
+                <columnExists tableName="gas_station_location" columnName="included_in_subscription"/>
+            </not>
+        </preConditions>
+        <sql><![CDATA[
+            ALTER TABLE public.gas_station_location
+                ADD COLUMN IF NOT EXISTS included_in_subscription boolean DEFAULT true NOT NULL;
+            COMMENT ON COLUMN public.gas_station_location.included_in_subscription IS 'Owner opt-in: when true and is_active, this location counts toward the Stripe subscription quantity (graduated per-location pricing).';
+        ]]></sql>
+    </changeSet>
+
+</databaseChangeLog>

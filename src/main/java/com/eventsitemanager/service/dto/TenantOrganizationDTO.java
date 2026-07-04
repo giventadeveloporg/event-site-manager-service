@@ -1,5 +1,6 @@
 package com.eventsitemanager.service.dto;
 
+import com.eventsitemanager.domain.enumeration.SiteType;
 import com.eventsitemanager.service.validation.TenantOrganizationProfileValidator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -109,6 +110,8 @@ public class TenantOrganizationDTO implements Serializable {
     @Size(max = 255)
     private String stripeCustomerId;
 
+    private String stripeSubscriptionId;
+
     private Boolean isActive;
 
     @NotNull
@@ -116,6 +119,12 @@ public class TenantOrganizationDTO implements Serializable {
 
     @NotNull
     private ZonedDateTime updatedAt;
+
+    @NotNull
+    private SiteType siteType;
+
+    @Size(max = 32)
+    private String siteTemplateVersion;
 
     public Long getId() {
         return id;
@@ -349,6 +358,14 @@ public class TenantOrganizationDTO implements Serializable {
         this.stripeCustomerId = stripeCustomerId;
     }
 
+    public String getStripeSubscriptionId() {
+        return stripeSubscriptionId;
+    }
+
+    public void setStripeSubscriptionId(String stripeSubscriptionId) {
+        this.stripeSubscriptionId = stripeSubscriptionId;
+    }
+
     public Boolean getIsActive() {
         return isActive;
     }
@@ -371,6 +388,22 @@ public class TenantOrganizationDTO implements Serializable {
 
     public void setUpdatedAt(ZonedDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public SiteType getSiteType() {
+        return siteType;
+    }
+
+    public void setSiteType(SiteType siteType) {
+        this.siteType = siteType;
+    }
+
+    public String getSiteTemplateVersion() {
+        return siteTemplateVersion;
+    }
+
+    public void setSiteTemplateVersion(String siteTemplateVersion) {
+        this.siteTemplateVersion = siteTemplateVersion;
     }
 
     @Override

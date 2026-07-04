@@ -95,6 +95,18 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private LongFilter homepageCacheVersion;
 
+    private BooleanFilter showPublicProfileHeroSection;
+
+    private BooleanFilter showProfileWritingsSection;
+
+    private BooleanFilter showProfileAchievementsSection;
+
+    private BooleanFilter showProfileAffiliationsSection;
+
+    private BooleanFilter showProfileMediaDownloadsSection;
+
+    private BooleanFilter showProfileContactSection;
+
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -141,6 +153,12 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.youtubeUrl = other.optionalYoutubeUrl().map(StringFilter::copy).orElse(null);
         this.tiktokUrl = other.optionalTiktokUrl().map(StringFilter::copy).orElse(null);
         this.homepageCacheVersion = other.optionalHomepageCacheVersion().map(LongFilter::copy).orElse(null);
+        this.showPublicProfileHeroSection = other.optionalShowPublicProfileHeroSection().map(BooleanFilter::copy).orElse(null);
+        this.showProfileWritingsSection = other.optionalShowProfileWritingsSection().map(BooleanFilter::copy).orElse(null);
+        this.showProfileAchievementsSection = other.optionalShowProfileAchievementsSection().map(BooleanFilter::copy).orElse(null);
+        this.showProfileAffiliationsSection = other.optionalShowProfileAffiliationsSection().map(BooleanFilter::copy).orElse(null);
+        this.showProfileMediaDownloadsSection = other.optionalShowProfileMediaDownloadsSection().map(BooleanFilter::copy).orElse(null);
+        this.showProfileContactSection = other.optionalShowProfileContactSection().map(BooleanFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.tenantOrganizationId = other.optionalTenantOrganizationId().map(LongFilter::copy).orElse(null);
@@ -817,6 +835,120 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.homepageCacheVersion = homepageCacheVersion;
     }
 
+    public BooleanFilter getShowPublicProfileHeroSection() {
+        return showPublicProfileHeroSection;
+    }
+
+    public Optional<BooleanFilter> optionalShowPublicProfileHeroSection() {
+        return Optional.ofNullable(showPublicProfileHeroSection);
+    }
+
+    public BooleanFilter showPublicProfileHeroSection() {
+        if (showPublicProfileHeroSection == null) {
+            setShowPublicProfileHeroSection(new BooleanFilter());
+        }
+        return showPublicProfileHeroSection;
+    }
+
+    public void setShowPublicProfileHeroSection(BooleanFilter showPublicProfileHeroSection) {
+        this.showPublicProfileHeroSection = showPublicProfileHeroSection;
+    }
+
+    public BooleanFilter getShowProfileWritingsSection() {
+        return showProfileWritingsSection;
+    }
+
+    public Optional<BooleanFilter> optionalShowProfileWritingsSection() {
+        return Optional.ofNullable(showProfileWritingsSection);
+    }
+
+    public BooleanFilter showProfileWritingsSection() {
+        if (showProfileWritingsSection == null) {
+            setShowProfileWritingsSection(new BooleanFilter());
+        }
+        return showProfileWritingsSection;
+    }
+
+    public void setShowProfileWritingsSection(BooleanFilter showProfileWritingsSection) {
+        this.showProfileWritingsSection = showProfileWritingsSection;
+    }
+
+    public BooleanFilter getShowProfileAchievementsSection() {
+        return showProfileAchievementsSection;
+    }
+
+    public Optional<BooleanFilter> optionalShowProfileAchievementsSection() {
+        return Optional.ofNullable(showProfileAchievementsSection);
+    }
+
+    public BooleanFilter showProfileAchievementsSection() {
+        if (showProfileAchievementsSection == null) {
+            setShowProfileAchievementsSection(new BooleanFilter());
+        }
+        return showProfileAchievementsSection;
+    }
+
+    public void setShowProfileAchievementsSection(BooleanFilter showProfileAchievementsSection) {
+        this.showProfileAchievementsSection = showProfileAchievementsSection;
+    }
+
+    public BooleanFilter getShowProfileAffiliationsSection() {
+        return showProfileAffiliationsSection;
+    }
+
+    public Optional<BooleanFilter> optionalShowProfileAffiliationsSection() {
+        return Optional.ofNullable(showProfileAffiliationsSection);
+    }
+
+    public BooleanFilter showProfileAffiliationsSection() {
+        if (showProfileAffiliationsSection == null) {
+            setShowProfileAffiliationsSection(new BooleanFilter());
+        }
+        return showProfileAffiliationsSection;
+    }
+
+    public void setShowProfileAffiliationsSection(BooleanFilter showProfileAffiliationsSection) {
+        this.showProfileAffiliationsSection = showProfileAffiliationsSection;
+    }
+
+    public BooleanFilter getShowProfileMediaDownloadsSection() {
+        return showProfileMediaDownloadsSection;
+    }
+
+    public Optional<BooleanFilter> optionalShowProfileMediaDownloadsSection() {
+        return Optional.ofNullable(showProfileMediaDownloadsSection);
+    }
+
+    public BooleanFilter showProfileMediaDownloadsSection() {
+        if (showProfileMediaDownloadsSection == null) {
+            setShowProfileMediaDownloadsSection(new BooleanFilter());
+        }
+        return showProfileMediaDownloadsSection;
+    }
+
+    public void setShowProfileMediaDownloadsSection(BooleanFilter showProfileMediaDownloadsSection) {
+        this.showProfileMediaDownloadsSection = showProfileMediaDownloadsSection;
+    }
+
+    public BooleanFilter getShowProfileContactSection() {
+        return showProfileContactSection;
+    }
+
+    public Optional<BooleanFilter> optionalShowProfileContactSection() {
+        return Optional.ofNullable(showProfileContactSection);
+    }
+
+    public BooleanFilter showProfileContactSection() {
+        if (showProfileContactSection == null) {
+            setShowProfileContactSection(new BooleanFilter());
+        }
+        return showProfileContactSection;
+    }
+
+    public void setShowProfileContactSection(BooleanFilter showProfileContactSection) {
+        this.showProfileContactSection = showProfileContactSection;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -938,6 +1070,12 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(youtubeUrl, that.youtubeUrl) &&
             Objects.equals(tiktokUrl, that.tiktokUrl) &&
             Objects.equals(homepageCacheVersion, that.homepageCacheVersion) &&
+            Objects.equals(showPublicProfileHeroSection, that.showPublicProfileHeroSection) &&
+            Objects.equals(showProfileWritingsSection, that.showProfileWritingsSection) &&
+            Objects.equals(showProfileAchievementsSection, that.showProfileAchievementsSection) &&
+            Objects.equals(showProfileAffiliationsSection, that.showProfileAffiliationsSection) &&
+            Objects.equals(showProfileMediaDownloadsSection, that.showProfileMediaDownloadsSection) &&
+            Objects.equals(showProfileContactSection, that.showProfileContactSection) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
@@ -983,6 +1121,12 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             youtubeUrl,
             tiktokUrl,
             homepageCacheVersion,
+            showPublicProfileHeroSection,
+            showProfileWritingsSection,
+            showProfileAchievementsSection,
+            showProfileAffiliationsSection,
+            showProfileMediaDownloadsSection,
+            showProfileContactSection,
             createdAt,
             updatedAt,
             tenantOrganizationId,
@@ -1032,6 +1176,12 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalYoutubeUrl().map(f -> "youtubeUrl=" + f + ", ").orElse("") +
                 optionalTiktokUrl().map(f -> "tiktokUrl=" + f + ", ").orElse("") +
                 optionalHomepageCacheVersion().map(f -> "homepageCacheVersion=" + f + ", ").orElse("") +
+                optionalShowPublicProfileHeroSection().map(f -> "showPublicProfileHeroSection=" + f + ", ").orElse("") +
+                optionalShowProfileWritingsSection().map(f -> "showProfileWritingsSection=" + f + ", ").orElse("") +
+                optionalShowProfileAchievementsSection().map(f -> "showProfileAchievementsSection=" + f + ", ").orElse("") +
+                optionalShowProfileAffiliationsSection().map(f -> "showProfileAffiliationsSection=" + f + ", ").orElse("") +
+                optionalShowProfileMediaDownloadsSection().map(f -> "showProfileMediaDownloadsSection=" + f + ", ").orElse("") +
+                optionalShowProfileContactSection().map(f -> "showProfileContactSection=" + f + ", ").orElse("") +
                 optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
                 optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
                 optionalTenantOrganizationId().map(f -> "tenantOrganizationId=" + f + ", ").orElse("") +

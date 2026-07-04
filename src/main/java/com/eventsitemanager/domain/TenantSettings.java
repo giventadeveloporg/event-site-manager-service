@@ -209,6 +209,42 @@ public class TenantSettings implements Serializable {
     @Column(name = "google_adsense_placements_json", columnDefinition = "text")
     private String googleAdsensePlacementsJson;
 
+    @Column(name = "show_public_profile_hero_section")
+    private Boolean showPublicProfileHeroSection;
+
+    @Column(name = "show_profile_writings_section")
+    private Boolean showProfileWritingsSection;
+
+    @Column(name = "show_profile_achievements_section")
+    private Boolean showProfileAchievementsSection;
+
+    @Column(name = "show_profile_affiliations_section")
+    private Boolean showProfileAffiliationsSection;
+
+    @Column(name = "show_profile_media_downloads_section")
+    private Boolean showProfileMediaDownloadsSection;
+
+    @Column(name = "show_profile_contact_section")
+    private Boolean showProfileContactSection;
+
+    @Column(name = "enable_gas_station_module")
+    private Boolean enableGasStationModule;
+
+    @Size(max = 1024)
+    @Column(name = "gas_ai_engine_base_url", length = 1024)
+    private String gasAiEngineBaseUrl;
+
+    @Size(max = 512)
+    @Column(name = "gas_ai_engine_api_key_ref", length = 512)
+    private String gasAiEngineApiKeyRef;
+
+    @Size(max = 1048)
+    @Column(name = "gas_ai_engine_webhook_token", length = 1048)
+    private String gasAiEngineWebhookToken;
+
+    @Column(name = "gas_daily_brief_hour_local")
+    private Integer gasDailyBriefHourLocal;
+
     @NotNull
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
@@ -482,6 +518,149 @@ public class TenantSettings implements Serializable {
 
     public void setShowSponsorsSectionInHomePage(Boolean showSponsorsSectionInHomePage) {
         this.showSponsorsSectionInHomePage = showSponsorsSectionInHomePage;
+    }
+
+    public Boolean getShowPublicProfileHeroSection() {
+        return this.showPublicProfileHeroSection;
+    }
+
+    public TenantSettings showPublicProfileHeroSection(Boolean showPublicProfileHeroSection) {
+        this.setShowPublicProfileHeroSection(showPublicProfileHeroSection);
+        return this;
+    }
+
+    public void setShowPublicProfileHeroSection(Boolean showPublicProfileHeroSection) {
+        this.showPublicProfileHeroSection = showPublicProfileHeroSection;
+    }
+
+    public Boolean getShowProfileWritingsSection() {
+        return this.showProfileWritingsSection;
+    }
+
+    public TenantSettings showProfileWritingsSection(Boolean showProfileWritingsSection) {
+        this.setShowProfileWritingsSection(showProfileWritingsSection);
+        return this;
+    }
+
+    public void setShowProfileWritingsSection(Boolean showProfileWritingsSection) {
+        this.showProfileWritingsSection = showProfileWritingsSection;
+    }
+
+    public Boolean getShowProfileAchievementsSection() {
+        return this.showProfileAchievementsSection;
+    }
+
+    public TenantSettings showProfileAchievementsSection(Boolean showProfileAchievementsSection) {
+        this.setShowProfileAchievementsSection(showProfileAchievementsSection);
+        return this;
+    }
+
+    public void setShowProfileAchievementsSection(Boolean showProfileAchievementsSection) {
+        this.showProfileAchievementsSection = showProfileAchievementsSection;
+    }
+
+    public Boolean getShowProfileAffiliationsSection() {
+        return this.showProfileAffiliationsSection;
+    }
+
+    public TenantSettings showProfileAffiliationsSection(Boolean showProfileAffiliationsSection) {
+        this.setShowProfileAffiliationsSection(showProfileAffiliationsSection);
+        return this;
+    }
+
+    public void setShowProfileAffiliationsSection(Boolean showProfileAffiliationsSection) {
+        this.showProfileAffiliationsSection = showProfileAffiliationsSection;
+    }
+
+    public Boolean getShowProfileMediaDownloadsSection() {
+        return this.showProfileMediaDownloadsSection;
+    }
+
+    public TenantSettings showProfileMediaDownloadsSection(Boolean showProfileMediaDownloadsSection) {
+        this.setShowProfileMediaDownloadsSection(showProfileMediaDownloadsSection);
+        return this;
+    }
+
+    public void setShowProfileMediaDownloadsSection(Boolean showProfileMediaDownloadsSection) {
+        this.showProfileMediaDownloadsSection = showProfileMediaDownloadsSection;
+    }
+
+    public Boolean getShowProfileContactSection() {
+        return this.showProfileContactSection;
+    }
+
+    public TenantSettings showProfileContactSection(Boolean showProfileContactSection) {
+        this.setShowProfileContactSection(showProfileContactSection);
+        return this;
+    }
+
+    public void setShowProfileContactSection(Boolean showProfileContactSection) {
+        this.showProfileContactSection = showProfileContactSection;
+    }
+
+    public Boolean getEnableGasStationModule() {
+        return this.enableGasStationModule;
+    }
+
+    public TenantSettings enableGasStationModule(Boolean enableGasStationModule) {
+        this.setEnableGasStationModule(enableGasStationModule);
+        return this;
+    }
+
+    public void setEnableGasStationModule(Boolean enableGasStationModule) {
+        this.enableGasStationModule = enableGasStationModule;
+    }
+
+    public String getGasAiEngineBaseUrl() {
+        return this.gasAiEngineBaseUrl;
+    }
+
+    public TenantSettings gasAiEngineBaseUrl(String gasAiEngineBaseUrl) {
+        this.setGasAiEngineBaseUrl(gasAiEngineBaseUrl);
+        return this;
+    }
+
+    public void setGasAiEngineBaseUrl(String gasAiEngineBaseUrl) {
+        this.gasAiEngineBaseUrl = gasAiEngineBaseUrl;
+    }
+
+    public String getGasAiEngineApiKeyRef() {
+        return this.gasAiEngineApiKeyRef;
+    }
+
+    public TenantSettings gasAiEngineApiKeyRef(String gasAiEngineApiKeyRef) {
+        this.setGasAiEngineApiKeyRef(gasAiEngineApiKeyRef);
+        return this;
+    }
+
+    public void setGasAiEngineApiKeyRef(String gasAiEngineApiKeyRef) {
+        this.gasAiEngineApiKeyRef = gasAiEngineApiKeyRef;
+    }
+
+    public String getGasAiEngineWebhookToken() {
+        return this.gasAiEngineWebhookToken;
+    }
+
+    public TenantSettings gasAiEngineWebhookToken(String gasAiEngineWebhookToken) {
+        this.setGasAiEngineWebhookToken(gasAiEngineWebhookToken);
+        return this;
+    }
+
+    public void setGasAiEngineWebhookToken(String gasAiEngineWebhookToken) {
+        this.gasAiEngineWebhookToken = gasAiEngineWebhookToken;
+    }
+
+    public Integer getGasDailyBriefHourLocal() {
+        return this.gasDailyBriefHourLocal;
+    }
+
+    public TenantSettings gasDailyBriefHourLocal(Integer gasDailyBriefHourLocal) {
+        this.setGasDailyBriefHourLocal(gasDailyBriefHourLocal);
+        return this;
+    }
+
+    public void setGasDailyBriefHourLocal(Integer gasDailyBriefHourLocal) {
+        this.gasDailyBriefHourLocal = gasDailyBriefHourLocal;
     }
 
     public ZonedDateTime getCreatedAt() {

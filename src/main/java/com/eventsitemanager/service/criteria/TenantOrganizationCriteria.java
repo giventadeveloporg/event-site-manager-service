@@ -1,5 +1,6 @@
 package com.eventsitemanager.service.criteria;
 
+import com.eventsitemanager.domain.enumeration.SiteType;
 import java.io.Serializable;
 import java.util.Objects;
 import org.springdoc.core.annotations.ParameterObject;
@@ -59,6 +60,10 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
 
     private LongFilter tenantSettingsId;
 
+    private SiteTypeFilter siteType;
+
+    private StringFilter siteTemplateVersion;
+
     private Boolean distinct;
 
     public TenantOrganizationCriteria() {}
@@ -83,6 +88,8 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.tenantSettingsId = other.tenantSettingsId == null ? null : other.tenantSettingsId.copy();
+        this.siteType = other.siteType == null ? null : other.siteType.copy();
+        this.siteTemplateVersion = other.siteTemplateVersion == null ? null : other.siteTemplateVersion.copy();
         this.distinct = other.distinct;
     }
 
@@ -376,6 +383,36 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
         this.tenantSettingsId = tenantSettingsId;
     }
 
+    public SiteTypeFilter getSiteType() {
+        return siteType;
+    }
+
+    public SiteTypeFilter siteType() {
+        if (siteType == null) {
+            siteType = new SiteTypeFilter();
+        }
+        return siteType;
+    }
+
+    public void setSiteType(SiteTypeFilter siteType) {
+        this.siteType = siteType;
+    }
+
+    public StringFilter getSiteTemplateVersion() {
+        return siteTemplateVersion;
+    }
+
+    public StringFilter siteTemplateVersion() {
+        if (siteTemplateVersion == null) {
+            siteTemplateVersion = new StringFilter();
+        }
+        return siteTemplateVersion;
+    }
+
+    public void setSiteTemplateVersion(StringFilter siteTemplateVersion) {
+        this.siteTemplateVersion = siteTemplateVersion;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -413,6 +450,8 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(tenantSettingsId, that.tenantSettingsId) &&
+            Objects.equals(siteType, that.siteType) &&
+            Objects.equals(siteTemplateVersion, that.siteTemplateVersion) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -439,6 +478,8 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
             createdAt,
             updatedAt,
             tenantSettingsId,
+            siteType,
+            siteTemplateVersion,
             distinct
         );
     }
@@ -466,7 +507,23 @@ public class TenantOrganizationCriteria implements Serializable, Criteria {
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
             (tenantSettingsId != null ? "tenantSettingsId=" + tenantSettingsId + ", " : "") +
+            (siteType != null ? "siteType=" + siteType + ", " : "") +
+            (siteTemplateVersion != null ? "siteTemplateVersion=" + siteTemplateVersion + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}";
+    }
+
+    public static class SiteTypeFilter extends Filter<SiteType> {
+
+        public SiteTypeFilter() {}
+
+        public SiteTypeFilter(SiteTypeFilter filter) {
+            super(filter);
+        }
+
+        @Override
+        public SiteTypeFilter copy() {
+            return new SiteTypeFilter(this);
+        }
     }
 }

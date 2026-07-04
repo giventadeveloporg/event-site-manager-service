@@ -70,6 +70,7 @@ public class TenantOrganizationResource {
         if (tenantOrganizationDTO.getId() != null) {
             throw new BadRequestAlertException("A new tenantOrganization cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        validateSiteType(tenantOrganizationDTO, true);
         TenantOrganizationDTO result = tenantOrganizationService.save(tenantOrganizationDTO);
         return ResponseEntity
             .created(new URI("/api/tenant-organizations/" + result.getId()))
@@ -103,6 +104,7 @@ public class TenantOrganizationResource {
         if (!tenantOrganizationRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
+        validateSiteType(tenantOrganizationDTO, true);
 
         TenantOrganizationDTO result = tenantOrganizationService.update(tenantOrganizationDTO);
         return ResponseEntity
@@ -138,6 +140,7 @@ public class TenantOrganizationResource {
         if (!tenantOrganizationRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
+        validateSiteType(tenantOrganizationDTO, false);
 
         Optional<TenantOrganizationDTO> result = tenantOrganizationService.partialUpdate(tenantOrganizationDTO);
 
@@ -189,6 +192,12 @@ public class TenantOrganizationResource {
         log.debug("REST request to get TenantOrganization : {}", id);
         Optional<TenantOrganizationDTO> tenantOrganizationDTO = tenantOrganizationService.findOne(id);
         return ResponseUtil.wrapOrNotFound(tenantOrganizationDTO);
+    }
+
+    private void validateSiteType(TenantOrganizationDTO tenantOrganizationDTO, boolean required) {
+        if (required && tenantOrganizationDTO.getSiteType() == null) {
+            throw new BadRequestAlertException("siteType is required", ENTITY_NAME, "sitetyperequired");
+        }
     }
 
     /**

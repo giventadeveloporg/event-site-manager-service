@@ -199,6 +199,31 @@ public class TenantSettingsDTO implements Serializable {
     )
     private String googleAdsensePlacementsJson;
 
+    private Boolean showPublicProfileHeroSection;
+
+    private Boolean showProfileWritingsSection;
+
+    private Boolean showProfileAchievementsSection;
+
+    private Boolean showProfileAffiliationsSection;
+
+    private Boolean showProfileMediaDownloadsSection;
+
+    private Boolean showProfileContactSection;
+
+    private Boolean enableGasStationModule;
+
+    @Size(max = 1024)
+    private String gasAiEngineBaseUrl;
+
+    @Size(max = 512)
+    private String gasAiEngineApiKeyRef;
+
+    @Size(max = 1048)
+    private String gasAiEngineWebhookToken;
+
+    private Integer gasDailyBriefHourLocal;
+
     @Schema(
         description = "Parsed default hero image URLs (GET only; computed from defaultHeroImageUrlsJson)",
         accessMode = Schema.AccessMode.READ_ONLY
@@ -662,6 +687,94 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setGoogleAdsensePlacementsJson(String googleAdsensePlacementsJson) {
         this.googleAdsensePlacementsJson = googleAdsensePlacementsJson;
+    }
+
+    public Boolean getShowPublicProfileHeroSection() {
+        return showPublicProfileHeroSection;
+    }
+
+    public void setShowPublicProfileHeroSection(Boolean showPublicProfileHeroSection) {
+        this.showPublicProfileHeroSection = showPublicProfileHeroSection;
+    }
+
+    public Boolean getShowProfileWritingsSection() {
+        return showProfileWritingsSection;
+    }
+
+    public void setShowProfileWritingsSection(Boolean showProfileWritingsSection) {
+        this.showProfileWritingsSection = showProfileWritingsSection;
+    }
+
+    public Boolean getShowProfileAchievementsSection() {
+        return showProfileAchievementsSection;
+    }
+
+    public void setShowProfileAchievementsSection(Boolean showProfileAchievementsSection) {
+        this.showProfileAchievementsSection = showProfileAchievementsSection;
+    }
+
+    public Boolean getShowProfileAffiliationsSection() {
+        return showProfileAffiliationsSection;
+    }
+
+    public void setShowProfileAffiliationsSection(Boolean showProfileAffiliationsSection) {
+        this.showProfileAffiliationsSection = showProfileAffiliationsSection;
+    }
+
+    public Boolean getShowProfileMediaDownloadsSection() {
+        return showProfileMediaDownloadsSection;
+    }
+
+    public void setShowProfileMediaDownloadsSection(Boolean showProfileMediaDownloadsSection) {
+        this.showProfileMediaDownloadsSection = showProfileMediaDownloadsSection;
+    }
+
+    public Boolean getShowProfileContactSection() {
+        return showProfileContactSection;
+    }
+
+    public void setShowProfileContactSection(Boolean showProfileContactSection) {
+        this.showProfileContactSection = showProfileContactSection;
+    }
+
+    public Boolean getEnableGasStationModule() {
+        return enableGasStationModule;
+    }
+
+    public void setEnableGasStationModule(Boolean enableGasStationModule) {
+        this.enableGasStationModule = enableGasStationModule;
+    }
+
+    public String getGasAiEngineBaseUrl() {
+        return gasAiEngineBaseUrl;
+    }
+
+    public void setGasAiEngineBaseUrl(String gasAiEngineBaseUrl) {
+        this.gasAiEngineBaseUrl = gasAiEngineBaseUrl;
+    }
+
+    public String getGasAiEngineApiKeyRef() {
+        return gasAiEngineApiKeyRef;
+    }
+
+    public void setGasAiEngineApiKeyRef(String gasAiEngineApiKeyRef) {
+        this.gasAiEngineApiKeyRef = gasAiEngineApiKeyRef;
+    }
+
+    public String getGasAiEngineWebhookToken() {
+        return gasAiEngineWebhookToken;
+    }
+
+    public void setGasAiEngineWebhookToken(String gasAiEngineWebhookToken) {
+        this.gasAiEngineWebhookToken = gasAiEngineWebhookToken;
+    }
+
+    public Integer getGasDailyBriefHourLocal() {
+        return gasDailyBriefHourLocal;
+    }
+
+    public void setGasDailyBriefHourLocal(Integer gasDailyBriefHourLocal) {
+        this.gasDailyBriefHourLocal = gasDailyBriefHourLocal;
     }
 
     public List<String> getDefaultHeroImageUrls() {
