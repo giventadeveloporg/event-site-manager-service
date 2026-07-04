@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,10 @@ public class SequenceSynchronizationService {
 
     private static final Logger log = LoggerFactory.getLogger(SequenceSynchronizationService.class);
 
-    /** Spring Batch + Liquibase meta — not application {table}_id_seq tables. */
+    /**
+     * Sequences excluded from bulk application sync — Spring Batch framework, Liquibase, and audit tables
+     * synced by dedicated scripts or methods.
+     */
     private static final List<String> EXCLUDED_SEQUENCES = List.of(
         "batch_job_seq",
         "batch_job_execution_seq",
@@ -54,12 +58,17 @@ public class SequenceSynchronizationService {
             .getResultList();
 
         for (String seqName : sequences) {
-            if (EXCLUDED_SEQUENCES.contains(seqName)) {
+            if (shouldSkipSequenceSync(seqName, null)) {
+                log.debug("Skipping sequence {} — excluded from application sync", seqName);
                 continue;
             }
             String tableName = resolveTableName(seqName);
             if (tableName == null) {
                 log.debug("Skipping sequence {} — no matching public table", seqName);
+                continue;
+            }
+            if (shouldSkipSequenceSync(seqName, tableName)) {
+                log.debug("Skipping sequence {} / table {} — not a user id table", seqName, tableName);
                 continue;
             }
             Long newValue = synchronizeTableSequence(tableName, seqName);
@@ -91,6 +100,11 @@ public class SequenceSynchronizationService {
 
     @Transactional
     public Long synchronizeTableSequence(String tableName, String sequenceName) {
+        if (shouldSkipSequenceSync(sequenceName, tableName)) {
+            log.debug("Skipping sequence sync for {} / {} — excluded from application sync", sequenceName, tableName);
+            return null;
+        }
+
         String qualifiedSeq = "public." + sequenceName;
 
         if (!tableExists(tableName)) {
@@ -100,6 +114,11 @@ public class SequenceSynchronizationService {
 
         if (!sequenceExists(sequenceName)) {
             log.warn("Sequence {} not found — skipping", qualifiedSeq);
+            return null;
+        }
+
+        if (!hasIdColumn(tableName)) {
+            log.warn("Table public.{} has no id column — skipping sequence {}", tableName, qualifiedSeq);
             return null;
         }
 
@@ -115,9 +134,49 @@ public class SequenceSynchronizationService {
             log.info("Synced {} -> {} (table {})", qualifiedSeq, newValue, tableName);
             return newValue;
         } catch (Exception e) {
+            if (isBenignSyncFailure(e)) {
+                log.warn("Skipping sequence {} for table {} — {}", qualifiedSeq, tableName, e.getMessage());
+                return null;
+            }
             log.error("Failed to sync sequence {} for table {}", qualifiedSeq, tableName, e);
             throw new RuntimeException("Failed to sync sequence " + qualifiedSeq + ": " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Returns true when a sequence/table must not participate in application MAX(id) sync.
+     * Spring Batch / Spring Integration framework objects and JHipster join tables are excluded.
+     */
+    boolean shouldSkipSequenceSync(String sequenceName, String tableName) {
+        if (sequenceName == null) {
+            return true;
+        }
+        String seq = sequenceName.toLowerCase(Locale.ROOT);
+        if (EXCLUDED_SEQUENCES.contains(seq)) {
+            return true;
+        }
+        if (seq.startsWith("rel_")) {
+            return true;
+        }
+        if (seq.startsWith("batch_")) {
+            return true;
+        }
+        if (seq.startsWith("int_") || seq.contains("integration")) {
+            return true;
+        }
+        if (seq.startsWith("databasechangelog")) {
+            return true;
+        }
+        if (tableName != null) {
+            String tbl = tableName.toLowerCase(Locale.ROOT);
+            if (tbl.startsWith("rel_")) {
+                return true;
+            }
+            if (tbl.startsWith("batch_") && !tbl.equals("batch_job_execution_log")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String resolveTableName(String sequenceName) {
@@ -155,5 +214,37 @@ public class SequenceSynchronizationService {
             .setParameter("seqName", sequenceName)
             .getSingleResult();
         return count != null && count.longValue() > 0;
+    }
+
+    private boolean hasIdColumn(String tableName) {
+        Number count = (Number) entityManager
+            .createNativeQuery(
+                """
+                SELECT COUNT(*) FROM information_schema.columns
+                WHERE table_schema = 'public' AND table_name = :tableName AND column_name = 'id'
+                """
+            )
+            .setParameter("tableName", tableName)
+            .getSingleResult();
+        return count != null && count.longValue() > 0;
+    }
+
+    private boolean isBenignSyncFailure(Exception e) {
+        String message = buildMessageChain(e);
+        return (
+            message.contains("column \"id\" does not exist") || message.contains("permission denied") || message.contains("does not exist")
+        );
+    }
+
+    private String buildMessageChain(Exception e) {
+        StringBuilder sb = new StringBuilder();
+        Throwable t = e;
+        while (t != null) {
+            if (t.getMessage() != null) {
+                sb.append(t.getMessage()).append(' ');
+            }
+            t = t.getCause();
+        }
+        return sb.toString().toLowerCase(Locale.ROOT);
     }
 }

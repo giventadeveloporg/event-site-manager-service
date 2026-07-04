@@ -26,10 +26,11 @@ This service is the **active REST API**. Each application table uses `public.{ta
 
 | File | Role |
 |------|------|
-| `service/SequenceSynchronizationService.java` | Dynamic per-table `setval` via `pg_sequences` discovery |
+| `service/SequenceSynchronizationService.java` | Application `*_id_seq` sync; skips `rel_*`, `batch_*` framework, tables without `id` |
 | `aop/sequence/SequenceSynchronizationAspect.java` | Duplicate PK → sync **that table's** sequence + retry |
 | `web/rest/AdminController.java` | `POST /api/admin/sync-sequence` returns `sequences` map |
 | `.cursor/rules/duplicate-key-prevention.mdc` | Clear `entity.setId(null)` on create |
+| `sqls/drop_orphan_join_table_sequences.sql` | One-time legacy cleanup (canonical schema omits `rel_*_id_seq`) |
 
 ## When adding a table
 
@@ -46,6 +47,7 @@ After manual INSERT seed on a database, run on **that DB**:
 
 1. `mosc-temp/code_html_template/SQLS/Current_Sqls/sync_all_table_sequences.sql`
 2. `sync_spring_batch_sequences.sql` if Spring Batch rows exist
+3. `drop_orphan_join_table_sequences.sql` only if the DB predates canonical schema fix (optional; canonical rebuild drops orphan automatically)
 
 Import alone does not update per-table sequences.
 

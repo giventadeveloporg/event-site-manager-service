@@ -213,12 +213,7 @@ CREATE SEQUENCE IF NOT EXISTS public.qr_code_usage_id_seq
     START WITH 1
     CACHE 1;
 
-CREATE SEQUENCE IF NOT EXISTS public.rel_event_details__discount_codes_id_seq
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    START WITH 1
-    CACHE 1;
+-- rel_event_details__discount_codes is a JHipster join table (no id column) — do not create *_id_seq for it.
 
 CREATE SEQUENCE IF NOT EXISTS public.tenant_organization_id_seq
     INCREMENT BY 1
