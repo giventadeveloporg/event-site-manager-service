@@ -74,6 +74,9 @@ public final class TenantSettingsHeroFieldsValidator {
         if (dto.getDefaultHeroIncludeWithEvents() == null) {
             dto.setDefaultHeroIncludeWithEvents(Boolean.TRUE);
         }
+        if (dto.getDisplayEventHeroImages() == null) {
+            dto.setDisplayEventHeroImages(Boolean.TRUE);
+        }
         if (dto.getHomepageCacheVersion() == null) {
             dto.setHomepageCacheVersion(0L);
         }

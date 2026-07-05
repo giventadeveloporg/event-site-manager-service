@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- event_details text field length limits (protects pg_restore/import) -->
+    <changeSet id="20260705120000-1" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+        </preConditions>
+        <sql>
+            UPDATE event_details
+            SET description = LEFT(description, 900),
+                updated_at = NOW()
+            WHERE description IS NOT NULL AND char_length(description) &gt; 900;
+
+            UPDATE event_details
+            SET directions_to_venue = LEFT(directions_to_venue, 600),
+                updated_at = NOW()
+            WHERE directions_to_venue IS NOT NULL AND char_length(directions_to_venue) &gt; 600;
+
+            UPDATE event_details
+            SET caption = LEFT(caption, 255),
+                updated_at = NOW()
+            WHERE caption IS NOT NULL AND char_length(caption) &gt; 255;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260705120000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+        </preConditions>
+        <modifyDataType tableName="event_details" columnName="description" newDataType="varchar(900)"/>
+        <modifyDataType tableName="event_details" columnName="directions_to_venue" newDataType="varchar(600)"/>
+        <modifyDataType tableName="event_details" columnName="caption" newDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet id="20260705120000-3" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'event_details'
+                  AND constraint_name = 'event_details_description_len_chk'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE event_details
+                ADD CONSTRAINT event_details_description_len_chk
+                CHECK (description IS NULL OR char_length(description) &lt;= 900);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260705120000-4" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'event_details'
+                  AND constraint_name = 'event_details_directions_len_chk'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE event_details
+                ADD CONSTRAINT event_details_directions_len_chk
+                CHECK (directions_to_venue IS NULL OR char_length(directions_to_venue) &lt;= 600);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260705120000-5" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_schema = current_schema()
+                  AND table_name = 'event_details'
+                  AND constraint_name = 'event_details_caption_len_chk'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            ALTER TABLE event_details
+                ADD CONSTRAINT event_details_caption_len_chk
+                CHECK (caption IS NULL OR char_length(caption) &lt;= 255);
+        </sql>
+    </changeSet>
+
+    <!-- tenant_settings: show event hero images on homepage -->
+    <changeSet id="20260705120000-6" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="display_event_hero_images"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="tenant_settings">
+            <column name="display_event_hero_images" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

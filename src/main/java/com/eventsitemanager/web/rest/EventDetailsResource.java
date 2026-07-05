@@ -138,7 +138,7 @@ public class EventDetailsResource {
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<EventDetailsDTO> partialUpdateEventDetails(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody EventDetailsDTO eventDetailsDTO
+        @NotNull @Valid @RequestBody EventDetailsDTO eventDetailsDTO
     ) throws URISyntaxException {
         log.debug("REST request to partial update EventDetails partially : {}, {}", id, eventDetailsDTO);
         if (eventDetailsDTO.getId() == null) {

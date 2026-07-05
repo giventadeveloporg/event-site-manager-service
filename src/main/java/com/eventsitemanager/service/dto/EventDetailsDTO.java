@@ -30,7 +30,7 @@ public class EventDetailsDTO implements Serializable {
     @Size(max = 255)
     private String caption;
 
-    @Size(max = 1000)
+    @Size(max = 900)
     private String description;
 
     @NotNull

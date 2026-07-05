@@ -10,6 +10,7 @@ import com.eventsitemanager.service.EventDetailsService;
 import com.eventsitemanager.service.RecurringEventGenerationService;
 import com.eventsitemanager.service.dto.EventDetailsDTO;
 import com.eventsitemanager.service.mapper.EventDetailsMapper;
+import com.eventsitemanager.service.validation.EventDetailsTextSanitizer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -84,6 +85,8 @@ public class EventDetailsServiceImpl implements EventDetailsService {
             buildAndSetRecurrenceMetadata(eventDetails);
         }
 
+        EventDetailsTextSanitizer.applyToEntity(eventDetails);
+
         // Save operation - duplicate key violations are handled automatically by SequenceSynchronizationAspect
         eventDetails = eventDetailsRepository.save(eventDetails);
 
@@ -108,7 +111,7 @@ public class EventDetailsServiceImpl implements EventDetailsService {
             }
         }
 
-        return eventDetailsMapper.toDto(eventDetails);
+        return toSanitizedDto(eventDetails);
     }
 
     @Override
@@ -208,6 +211,8 @@ public class EventDetailsServiceImpl implements EventDetailsService {
         if (Boolean.TRUE.equals(eventDetails.getIsRecurring())) {
             buildAndSetRecurrenceMetadata(eventDetails);
         }
+
+        EventDetailsTextSanitizer.applyToEntity(eventDetails);
 
         eventDetails = eventDetailsRepository.save(eventDetails);
 
@@ -310,7 +315,7 @@ public class EventDetailsServiceImpl implements EventDetailsService {
             );
         }
 
-        return eventDetailsMapper.toDto(eventDetails);
+        return toSanitizedDto(eventDetails);
     }
 
     @Override
@@ -393,6 +398,8 @@ public class EventDetailsServiceImpl implements EventDetailsService {
                     buildAndSetRecurrenceMetadata(existingEventDetails);
                 }
 
+                EventDetailsTextSanitizer.applyToEntity(existingEventDetails);
+
                 return existingEventDetails;
             })
             .map(eventDetailsRepository::save)
@@ -458,18 +465,18 @@ public class EventDetailsServiceImpl implements EventDetailsService {
 
                 return eventDetails;
             })
-            .map(eventDetailsMapper::toDto);
+            .map(this::toSanitizedDto);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<EventDetailsDTO> findAll(Pageable pageable) {
         log.debug("Request to get all EventDetails");
-        return eventDetailsRepository.findAll(pageable).map(eventDetailsMapper::toDto);
+        return eventDetailsRepository.findAll(pageable).map(this::toSanitizedDto);
     }
 
     public Page<EventDetailsDTO> findAllWithEagerRelationships(Pageable pageable) {
-        return eventDetailsRepository.findAllWithEagerRelationships(pageable).map(eventDetailsMapper::toDto);
+        return eventDetailsRepository.findAllWithEagerRelationships(pageable).map(this::toSanitizedDto);
     }
 
     @Override
@@ -477,7 +484,7 @@ public class EventDetailsServiceImpl implements EventDetailsService {
     @Cacheable(value = "eventDetails", key = "#id", unless = "#result == null")
     public Optional<EventDetailsDTO> findOne(Long id) {
         log.debug("Request to get EventDetails : {}", id);
-        return eventDetailsRepository.findOneWithEagerRelationships(id).map(eventDetailsMapper::toDto);
+        return eventDetailsRepository.findOneWithEagerRelationships(id).map(this::toSanitizedDto);
     }
 
     @Override
@@ -1167,5 +1174,11 @@ public class EventDetailsServiceImpl implements EventDetailsService {
             log.error("Failed to create/update recurrence series for event: {}", eventDetails.getId(), e);
             // Don't throw exception - allow event to be saved without series record
         }
+    }
+
+    private EventDetailsDTO toSanitizedDto(EventDetails eventDetails) {
+        EventDetailsDTO dto = eventDetailsMapper.toDto(eventDetails);
+        EventDetailsTextSanitizer.applyToDto(dto);
+        return dto;
     }
 }

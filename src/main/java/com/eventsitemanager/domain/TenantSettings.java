@@ -199,6 +199,10 @@ public class TenantSettings implements Serializable {
     private Integer defaultHeroMaxDisplayCount;
 
     @NotNull
+    @Column(name = "display_event_hero_images", nullable = false)
+    private Boolean displayEventHeroImages = Boolean.TRUE;
+
+    @NotNull
     @Column(name = "enable_google_adsense", nullable = false)
     private Boolean enableGoogleAdsense = Boolean.FALSE;
 
@@ -1066,6 +1070,19 @@ public class TenantSettings implements Serializable {
         this.defaultHeroMaxDisplayCount = defaultHeroMaxDisplayCount;
     }
 
+    public Boolean getDisplayEventHeroImages() {
+        return this.displayEventHeroImages;
+    }
+
+    public TenantSettings displayEventHeroImages(Boolean displayEventHeroImages) {
+        this.setDisplayEventHeroImages(displayEventHeroImages);
+        return this;
+    }
+
+    public void setDisplayEventHeroImages(Boolean displayEventHeroImages) {
+        this.displayEventHeroImages = displayEventHeroImages;
+    }
+
     public Boolean getEnableGoogleAdsense() {
         return this.enableGoogleAdsense;
     }
@@ -1178,6 +1195,7 @@ public class TenantSettings implements Serializable {
                 ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +
                 ", defaultHeroIncludeWithEvents='" + getDefaultHeroIncludeWithEvents() + "'" +
                 ", defaultHeroMaxDisplayCount=" + getDefaultHeroMaxDisplayCount() +
+                ", displayEventHeroImages='" + getDisplayEventHeroImages() + "'" +
                 ", enableGoogleAdsense='" + getEnableGoogleAdsense() + "'" +
                 ", googleAdsensePublisherId='" + getGoogleAdsensePublisherId() + "'" +
                 ", googleAdsensePlacementsJson='" + getGoogleAdsensePlacementsJson() + "'" +

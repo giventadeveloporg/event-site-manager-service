@@ -183,6 +183,9 @@ public class TenantSettingsDTO implements Serializable {
     @Schema(description = "Maximum number of tenant default hero slides to show on the homepage; null means no limit", example = "5")
     private Integer defaultHeroMaxDisplayCount;
 
+    @Schema(description = "When true, show event hero images on the homepage hero section", example = "true")
+    private Boolean displayEventHeroImages;
+
     @Schema(description = "When true, render Google AdSense regions configured for this tenant", example = "false")
     private Boolean enableGoogleAdsense;
 
@@ -665,6 +668,14 @@ public class TenantSettingsDTO implements Serializable {
         this.defaultHeroMaxDisplayCount = defaultHeroMaxDisplayCount;
     }
 
+    public Boolean getDisplayEventHeroImages() {
+        return displayEventHeroImages;
+    }
+
+    public void setDisplayEventHeroImages(Boolean displayEventHeroImages) {
+        this.displayEventHeroImages = displayEventHeroImages;
+    }
+
     public Boolean getEnableGoogleAdsense() {
         return enableGoogleAdsense;
     }
@@ -882,6 +893,7 @@ public class TenantSettingsDTO implements Serializable {
                 ", defaultHeroDisplayMode='" + getDefaultHeroDisplayMode() + "'" +
                 ", defaultHeroIncludeWithEvents='" + getDefaultHeroIncludeWithEvents() + "'" +
                 ", defaultHeroMaxDisplayCount=" + getDefaultHeroMaxDisplayCount() +
+                ", displayEventHeroImages='" + getDisplayEventHeroImages() + "'" +
                 ", enableGoogleAdsense='" + getEnableGoogleAdsense() + "'" +
                 ", googleAdsensePublisherId='" + getGoogleAdsensePublisherId() + "'" +
                 ", googleAdsensePlacementsJson='" + getGoogleAdsensePlacementsJson() + "'" +
