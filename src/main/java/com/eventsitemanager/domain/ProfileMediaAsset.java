@@ -34,6 +34,10 @@ public class ProfileMediaAsset implements Serializable {
     @Column(name = "description", length = 2000)
     private String description;
 
+    @Size(max = 1024)
+    @Column(name = "cover_image_url", length = 1024)
+    private String coverImageUrl;
+
     @NotNull
     @Size(max = 1024)
     @Column(name = "file_url", length = 1024, nullable = false)
@@ -97,6 +101,14 @@ public class ProfileMediaAsset implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getCoverImageUrl() {
+        return coverImageUrl;
+    }
+
+    public void setCoverImageUrl(String coverImageUrl) {
+        this.coverImageUrl = coverImageUrl;
     }
 
     public String getFileUrl() {

@@ -51,6 +51,10 @@ public class ProfileAchievement implements Serializable {
     @Column(name = "url", length = 500)
     private String url;
 
+    @Size(max = 1024)
+    @Column(name = "image_url", length = 1024)
+    private String imageUrl;
+
     @Column(name = "display_order")
     private Integer displayOrder;
 
@@ -130,6 +134,14 @@ public class ProfileAchievement implements Serializable {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public Integer getDisplayOrder() {

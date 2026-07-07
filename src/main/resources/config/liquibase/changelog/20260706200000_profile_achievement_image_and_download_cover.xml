@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260706200000-1" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="profile_achievement"/>
+            <not>
+                <columnExists tableName="profile_achievement" columnName="image_url"/>
+            </not>
+        </preConditions>
+        <sql>
+            ALTER TABLE profile_achievement
+                ADD COLUMN image_url character varying(1024);
+
+            COMMENT ON COLUMN profile_achievement.image_url IS
+                'Optional badge, certificate, or photo URL for the achievement.';
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260706200000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="profile_media_asset"/>
+            <not>
+                <columnExists tableName="profile_media_asset" columnName="cover_image_url"/>
+            </not>
+        </preConditions>
+        <sql>
+            ALTER TABLE profile_media_asset
+                ADD COLUMN cover_image_url character varying(1024);
+
+            COMMENT ON COLUMN profile_media_asset.cover_image_url IS
+                'Optional cover/preview image for download listing and detail pages.';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

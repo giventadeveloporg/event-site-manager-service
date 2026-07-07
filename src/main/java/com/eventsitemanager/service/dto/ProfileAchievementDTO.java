@@ -34,6 +34,9 @@ public class ProfileAchievementDTO implements Serializable {
     @Size(max = 500)
     private String url;
 
+    @Size(max = 1024)
+    private String imageUrl;
+
     private Integer displayOrder;
 
     private Boolean isFeatured;
@@ -106,6 +109,14 @@ public class ProfileAchievementDTO implements Serializable {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public Integer getDisplayOrder() {

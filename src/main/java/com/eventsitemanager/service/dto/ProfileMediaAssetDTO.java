@@ -22,6 +22,9 @@ public class ProfileMediaAssetDTO implements Serializable {
     @Size(max = 2000)
     private String description;
 
+    @Size(max = 1024)
+    private String coverImageUrl;
+
     @NotNull
     @Size(max = 1024)
     private String fileUrl;
@@ -75,6 +78,14 @@ public class ProfileMediaAssetDTO implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getCoverImageUrl() {
+        return coverImageUrl;
+    }
+
+    public void setCoverImageUrl(String coverImageUrl) {
+        this.coverImageUrl = coverImageUrl;
     }
 
     public String getFileUrl() {
