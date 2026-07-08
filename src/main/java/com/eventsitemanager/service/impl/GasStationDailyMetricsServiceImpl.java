@@ -2,6 +2,7 @@ package com.eventsitemanager.service.impl;
 
 import com.eventsitemanager.domain.GasStationDailyMetrics;
 import com.eventsitemanager.repository.GasStationDailyMetricsRepository;
+import com.eventsitemanager.service.GasStationAccessService;
 import com.eventsitemanager.service.GasStationDailyMetricsService;
 import com.eventsitemanager.service.dto.GasStationDailyMetricsDTO;
 import com.eventsitemanager.service.mapper.GasStationDailyMetricsMapper;
@@ -19,18 +20,22 @@ public class GasStationDailyMetricsServiceImpl implements GasStationDailyMetrics
 
     private final GasStationDailyMetricsRepository gasStationDailyMetricsRepository;
     private final GasStationDailyMetricsMapper gasStationDailyMetricsMapper;
+    private final GasStationAccessService gasStationAccessService;
 
     public GasStationDailyMetricsServiceImpl(
         GasStationDailyMetricsRepository gasStationDailyMetricsRepository,
-        GasStationDailyMetricsMapper gasStationDailyMetricsMapper
+        GasStationDailyMetricsMapper gasStationDailyMetricsMapper,
+        GasStationAccessService gasStationAccessService
     ) {
         this.gasStationDailyMetricsRepository = gasStationDailyMetricsRepository;
         this.gasStationDailyMetricsMapper = gasStationDailyMetricsMapper;
+        this.gasStationAccessService = gasStationAccessService;
     }
 
     @Override
     public GasStationDailyMetricsDTO save(GasStationDailyMetricsDTO gasStationDailyMetricsDTO) {
         LOG.debug("Request to save GasStationDailyMetrics : {}", gasStationDailyMetricsDTO);
+        gasStationAccessService.assertAllLocationsScope();
         GasStationDailyMetrics gasStationDailyMetrics = gasStationDailyMetricsMapper.toEntity(gasStationDailyMetricsDTO);
         if (gasStationDailyMetrics.getId() != null) {
             LOG.warn(
@@ -47,6 +52,7 @@ public class GasStationDailyMetricsServiceImpl implements GasStationDailyMetrics
     @Override
     public GasStationDailyMetricsDTO update(GasStationDailyMetricsDTO gasStationDailyMetricsDTO) {
         LOG.debug("Request to update GasStationDailyMetrics : {}", gasStationDailyMetricsDTO);
+        gasStationAccessService.assertAllLocationsScope();
         GasStationDailyMetrics gasStationDailyMetrics = gasStationDailyMetricsMapper.toEntity(gasStationDailyMetricsDTO);
 
         gasStationDailyMetrics = gasStationDailyMetricsRepository.save(gasStationDailyMetrics);
@@ -56,6 +62,7 @@ public class GasStationDailyMetricsServiceImpl implements GasStationDailyMetrics
     @Override
     public Optional<GasStationDailyMetricsDTO> partialUpdate(GasStationDailyMetricsDTO gasStationDailyMetricsDTO) {
         LOG.debug("Request to partially update GasStationDailyMetrics : {}", gasStationDailyMetricsDTO);
+        gasStationAccessService.assertAllLocationsScope();
 
         return gasStationDailyMetricsRepository
             .findById(gasStationDailyMetricsDTO.getId())
@@ -72,12 +79,20 @@ public class GasStationDailyMetricsServiceImpl implements GasStationDailyMetrics
     @Transactional(readOnly = true)
     public Optional<GasStationDailyMetricsDTO> findOne(Long id) {
         LOG.debug("Request to get GasStationDailyMetrics : {}", id);
-        return gasStationDailyMetricsRepository.findById(id).map(gasStationDailyMetricsMapper::toDto);
+        gasStationAccessService.assertGasModuleAccess();
+        return gasStationDailyMetricsRepository
+            .findById(id)
+            .map(gasStationDailyMetricsMapper::toDto)
+            .map(dto -> {
+                gasStationAccessService.assertStationIdAllowed(dto.getStationId());
+                return dto;
+            });
     }
 
     @Override
     public void delete(Long id) {
         LOG.debug("Request to delete GasStationDailyMetrics : {}", id);
+        gasStationAccessService.assertAllLocationsScope();
         gasStationDailyMetricsRepository.deleteById(id);
     }
 }

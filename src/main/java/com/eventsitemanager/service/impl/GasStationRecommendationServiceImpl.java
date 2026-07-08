@@ -2,6 +2,7 @@ package com.eventsitemanager.service.impl;
 
 import com.eventsitemanager.domain.GasStationRecommendation;
 import com.eventsitemanager.repository.GasStationRecommendationRepository;
+import com.eventsitemanager.service.GasStationAccessService;
 import com.eventsitemanager.service.GasStationRecommendationService;
 import com.eventsitemanager.service.dto.GasStationRecommendationDTO;
 import com.eventsitemanager.service.mapper.GasStationRecommendationMapper;
@@ -19,18 +20,22 @@ public class GasStationRecommendationServiceImpl implements GasStationRecommenda
 
     private final GasStationRecommendationRepository gasStationRecommendationRepository;
     private final GasStationRecommendationMapper gasStationRecommendationMapper;
+    private final GasStationAccessService gasStationAccessService;
 
     public GasStationRecommendationServiceImpl(
         GasStationRecommendationRepository gasStationRecommendationRepository,
-        GasStationRecommendationMapper gasStationRecommendationMapper
+        GasStationRecommendationMapper gasStationRecommendationMapper,
+        GasStationAccessService gasStationAccessService
     ) {
         this.gasStationRecommendationRepository = gasStationRecommendationRepository;
         this.gasStationRecommendationMapper = gasStationRecommendationMapper;
+        this.gasStationAccessService = gasStationAccessService;
     }
 
     @Override
     public GasStationRecommendationDTO save(GasStationRecommendationDTO gasStationRecommendationDTO) {
         LOG.debug("Request to save GasStationRecommendation : {}", gasStationRecommendationDTO);
+        gasStationAccessService.assertAllLocationsScope();
         GasStationRecommendation gasStationRecommendation = gasStationRecommendationMapper.toEntity(gasStationRecommendationDTO);
         if (gasStationRecommendation.getId() != null) {
             LOG.warn(
@@ -47,6 +52,7 @@ public class GasStationRecommendationServiceImpl implements GasStationRecommenda
     @Override
     public GasStationRecommendationDTO update(GasStationRecommendationDTO gasStationRecommendationDTO) {
         LOG.debug("Request to update GasStationRecommendation : {}", gasStationRecommendationDTO);
+        gasStationAccessService.assertAllLocationsScope();
         GasStationRecommendation gasStationRecommendation = gasStationRecommendationMapper.toEntity(gasStationRecommendationDTO);
 
         gasStationRecommendation = gasStationRecommendationRepository.save(gasStationRecommendation);
@@ -60,8 +66,8 @@ public class GasStationRecommendationServiceImpl implements GasStationRecommenda
         return gasStationRecommendationRepository
             .findById(gasStationRecommendationDTO.getId())
             .map(existing -> {
+                gasStationAccessService.assertRecommendationAccess(existing.getStationId());
                 gasStationRecommendationMapper.partialUpdate(existing, gasStationRecommendationDTO);
-
                 return existing;
             })
             .map(gasStationRecommendationRepository::save)
@@ -72,12 +78,20 @@ public class GasStationRecommendationServiceImpl implements GasStationRecommenda
     @Transactional(readOnly = true)
     public Optional<GasStationRecommendationDTO> findOne(Long id) {
         LOG.debug("Request to get GasStationRecommendation : {}", id);
-        return gasStationRecommendationRepository.findById(id).map(gasStationRecommendationMapper::toDto);
+        gasStationAccessService.assertGasModuleAccess();
+        return gasStationRecommendationRepository
+            .findById(id)
+            .map(gasStationRecommendationMapper::toDto)
+            .map(dto -> {
+                gasStationAccessService.assertRecommendationAccess(dto.getStationId());
+                return dto;
+            });
     }
 
     @Override
     public void delete(Long id) {
         LOG.debug("Request to delete GasStationRecommendation : {}", id);
+        gasStationAccessService.assertAllLocationsScope();
         gasStationRecommendationRepository.deleteById(id);
     }
 }

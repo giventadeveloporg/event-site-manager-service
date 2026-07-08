@@ -23,24 +23,31 @@ public class GasStationRecommendationQueryService extends QueryService<GasStatio
 
     private final GasStationRecommendationRepository gasStationRecommendationRepository;
     private final GasStationRecommendationMapper gasStationRecommendationMapper;
+    private final GasStationAccessService gasStationAccessService;
 
     public GasStationRecommendationQueryService(
         GasStationRecommendationRepository gasStationRecommendationRepository,
-        GasStationRecommendationMapper gasStationRecommendationMapper
+        GasStationRecommendationMapper gasStationRecommendationMapper,
+        GasStationAccessService gasStationAccessService
     ) {
         this.gasStationRecommendationRepository = gasStationRecommendationRepository;
         this.gasStationRecommendationMapper = gasStationRecommendationMapper;
+        this.gasStationAccessService = gasStationAccessService;
     }
 
     public Page<GasStationRecommendationDTO> findByCriteria(GasStationRecommendationCriteria criteria, Pageable page) {
         LOG.debug("find by criteria : {}, page: {}", criteria, page);
-        final Specification<GasStationRecommendation> specification = createSpecification(criteria);
+        gasStationAccessService.assertGasModuleAccess();
+        Specification<GasStationRecommendation> specification = createSpecification(criteria)
+            .and(gasStationAccessService.recommendationAccessSpecification());
         return gasStationRecommendationRepository.findAll(specification, page).map(gasStationRecommendationMapper::toDto);
     }
 
     public long countByCriteria(GasStationRecommendationCriteria criteria) {
         LOG.debug("count by criteria : {}", criteria);
-        final Specification<GasStationRecommendation> specification = createSpecification(criteria);
+        gasStationAccessService.assertGasModuleAccess();
+        Specification<GasStationRecommendation> specification = createSpecification(criteria)
+            .and(gasStationAccessService.recommendationAccessSpecification());
         return gasStationRecommendationRepository.count(specification);
     }
 

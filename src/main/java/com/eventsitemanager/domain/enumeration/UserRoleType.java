@@ -9,4 +9,6 @@ public enum UserRoleType {
     SUPER_ADMIN,
     ORGANIZER,
     VOLUNTEER,
+    GAS_STATION_ADMIN,
+    GAS_STATION_MANAGER,
 }

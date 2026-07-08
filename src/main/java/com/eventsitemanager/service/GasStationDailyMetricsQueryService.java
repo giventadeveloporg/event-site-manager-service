@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.service.QueryService;
+import tech.jhipster.service.filter.LongFilter;
 
 @Service
 @Transactional(readOnly = true)
@@ -23,23 +24,53 @@ public class GasStationDailyMetricsQueryService extends QueryService<GasStationD
 
     private final GasStationDailyMetricsRepository gasStationDailyMetricsRepository;
     private final GasStationDailyMetricsMapper gasStationDailyMetricsMapper;
+    private final GasStationAccessService gasStationAccessService;
 
     public GasStationDailyMetricsQueryService(
         GasStationDailyMetricsRepository gasStationDailyMetricsRepository,
-        GasStationDailyMetricsMapper gasStationDailyMetricsMapper
+        GasStationDailyMetricsMapper gasStationDailyMetricsMapper,
+        GasStationAccessService gasStationAccessService
     ) {
         this.gasStationDailyMetricsRepository = gasStationDailyMetricsRepository;
         this.gasStationDailyMetricsMapper = gasStationDailyMetricsMapper;
+        this.gasStationAccessService = gasStationAccessService;
+    }
+
+    private void applyAccessFilter(GasStationDailyMetricsCriteria criteria) {
+        if (criteria == null) {
+            return;
+        }
+        gasStationAccessService.assertGasModuleAccess();
+        if (gasStationAccessService.isUnrestrictedServiceAccess()) {
+            return;
+        }
+        if (gasStationAccessService.getAllowedStationIdsOrNull() == null) {
+            return;
+        }
+        LongFilter stationFilter = criteria.getStationId();
+        if (stationFilter == null) {
+            stationFilter = new LongFilter();
+            criteria.setStationId(stationFilter);
+        }
+        gasStationAccessService.applyStationIdCriteriaFilter(stationFilter);
     }
 
     public Page<GasStationDailyMetricsDTO> findByCriteria(GasStationDailyMetricsCriteria criteria, Pageable page) {
         LOG.debug("find by criteria : {}, page: {}", criteria, page);
+        if (criteria == null) {
+            criteria = new GasStationDailyMetricsCriteria();
+        }
+        applyAccessFilter(criteria);
         final Specification<GasStationDailyMetrics> specification = createSpecification(criteria);
         return gasStationDailyMetricsRepository.findAll(specification, page).map(gasStationDailyMetricsMapper::toDto);
     }
 
     public long countByCriteria(GasStationDailyMetricsCriteria criteria) {
         LOG.debug("count by criteria : {}", criteria);
+        if (criteria == null) {
+            criteria = new GasStationDailyMetricsCriteria();
+        }
+        applyAccessFilter(criteria);
         final Specification<GasStationDailyMetrics> specification = createSpecification(criteria);
         return gasStationDailyMetricsRepository.count(specification);
     }

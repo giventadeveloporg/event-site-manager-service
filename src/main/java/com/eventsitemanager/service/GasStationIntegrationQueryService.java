@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.service.QueryService;
+import tech.jhipster.service.filter.LongFilter;
 
 @Service
 @Transactional(readOnly = true)
@@ -23,23 +24,53 @@ public class GasStationIntegrationQueryService extends QueryService<GasStationIn
 
     private final GasStationIntegrationRepository gasStationIntegrationRepository;
     private final GasStationIntegrationMapper gasStationIntegrationMapper;
+    private final GasStationAccessService gasStationAccessService;
 
     public GasStationIntegrationQueryService(
         GasStationIntegrationRepository gasStationIntegrationRepository,
-        GasStationIntegrationMapper gasStationIntegrationMapper
+        GasStationIntegrationMapper gasStationIntegrationMapper,
+        GasStationAccessService gasStationAccessService
     ) {
         this.gasStationIntegrationRepository = gasStationIntegrationRepository;
         this.gasStationIntegrationMapper = gasStationIntegrationMapper;
+        this.gasStationAccessService = gasStationAccessService;
+    }
+
+    private void applyAccessFilter(GasStationIntegrationCriteria criteria) {
+        if (criteria == null) {
+            return;
+        }
+        gasStationAccessService.assertGasModuleAccess();
+        if (gasStationAccessService.isUnrestrictedServiceAccess()) {
+            return;
+        }
+        if (gasStationAccessService.getAllowedStationIdsOrNull() == null) {
+            return;
+        }
+        LongFilter stationFilter = criteria.getStationId();
+        if (stationFilter == null) {
+            stationFilter = new LongFilter();
+            criteria.setStationId(stationFilter);
+        }
+        gasStationAccessService.applyStationIdCriteriaFilter(stationFilter);
     }
 
     public Page<GasStationIntegrationDTO> findByCriteria(GasStationIntegrationCriteria criteria, Pageable page) {
         LOG.debug("find by criteria : {}, page: {}", criteria, page);
+        if (criteria == null) {
+            criteria = new GasStationIntegrationCriteria();
+        }
+        applyAccessFilter(criteria);
         final Specification<GasStationIntegration> specification = createSpecification(criteria);
         return gasStationIntegrationRepository.findAll(specification, page).map(gasStationIntegrationMapper::toDto);
     }
 
     public long countByCriteria(GasStationIntegrationCriteria criteria) {
         LOG.debug("count by criteria : {}", criteria);
+        if (criteria == null) {
+            criteria = new GasStationIntegrationCriteria();
+        }
+        applyAccessFilter(criteria);
         final Specification<GasStationIntegration> specification = createSpecification(criteria);
         return gasStationIntegrationRepository.count(specification);
     }

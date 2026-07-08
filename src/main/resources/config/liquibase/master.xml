@@ -137,6 +137,7 @@
     <include file="config/liquibase/changelog/20260703120000_personal_profile_site.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260703130000_gas_station_module.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260704120000_gas_station_billing.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260707120000_gas_station_location_rbac.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260705120000_event_details_text_limits_and_display_event_hero_images.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260706200000_profile_achievement_image_and_download_cover.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->

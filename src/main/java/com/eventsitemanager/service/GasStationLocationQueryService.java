@@ -23,23 +23,34 @@ public class GasStationLocationQueryService extends QueryService<GasStationLocat
 
     private final GasStationLocationRepository gasStationLocationRepository;
     private final GasStationLocationMapper gasStationLocationMapper;
+    private final GasStationAccessService gasStationAccessService;
 
     public GasStationLocationQueryService(
         GasStationLocationRepository gasStationLocationRepository,
-        GasStationLocationMapper gasStationLocationMapper
+        GasStationLocationMapper gasStationLocationMapper,
+        GasStationAccessService gasStationAccessService
     ) {
         this.gasStationLocationRepository = gasStationLocationRepository;
         this.gasStationLocationMapper = gasStationLocationMapper;
+        this.gasStationAccessService = gasStationAccessService;
     }
 
     public Page<GasStationLocationDTO> findByCriteria(GasStationLocationCriteria criteria, Pageable page) {
         LOG.debug("find by criteria : {}, page: {}", criteria, page);
+        if (criteria == null) {
+            criteria = new GasStationLocationCriteria();
+        }
+        gasStationAccessService.applyLocationCriteriaFilter(criteria);
         final Specification<GasStationLocation> specification = createSpecification(criteria);
         return gasStationLocationRepository.findAll(specification, page).map(gasStationLocationMapper::toDto);
     }
 
     public long countByCriteria(GasStationLocationCriteria criteria) {
         LOG.debug("count by criteria : {}", criteria);
+        if (criteria == null) {
+            criteria = new GasStationLocationCriteria();
+        }
+        gasStationAccessService.applyLocationCriteriaFilter(criteria);
         final Specification<GasStationLocation> specification = createSpecification(criteria);
         return gasStationLocationRepository.count(specification);
     }
