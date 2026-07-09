@@ -114,7 +114,7 @@ public class ProfileAudienceContactServiceImpl implements ProfileAudienceContact
 
             Optional<ProfileAudienceContact> existing = profileAudienceContactRepository.findByTenantIdAndEmail(tenantId, email);
             if (existing.isPresent()) {
-                ProfileAudienceContact contact = existing.get();
+                ProfileAudienceContact contact = existing.orElseThrow();
                 if (row.getFirstName() != null) contact.setFirstName(row.getFirstName());
                 if (row.getLastName() != null) contact.setLastName(row.getLastName());
                 if (row.getNotes() != null) contact.setNotes(row.getNotes());
@@ -162,7 +162,7 @@ public class ProfileAudienceContactServiceImpl implements ProfileAudienceContact
 
         Optional<ProfileAudienceContact> existing = profileAudienceContactRepository.findByTenantIdAndEmail(tenantId, email);
         if (existing.isPresent()) {
-            ProfileAudienceContact contact = existing.get();
+            ProfileAudienceContact contact = existing.orElseThrow();
             if (request.getFirstName() != null && !request.getFirstName().isBlank()) {
                 contact.setFirstName(request.getFirstName());
             }
@@ -217,7 +217,7 @@ public class ProfileAudienceContactServiceImpl implements ProfileAudienceContact
             return response;
         }
 
-        ProfileAudienceContact contact = contactOpt.get();
+        ProfileAudienceContact contact = contactOpt.orElseThrow();
         if (contact.getOptInStatus() == ProfileAudienceContactOptInStatus.OPTED_OUT) {
             response.put("success", true);
             response.put("message", "You have already unsubscribed.");
