@@ -315,6 +315,20 @@ public class PromotionEmailTemplateResource {
     }
 
     /**
+     * {@code POST  /promotion-email-templates/:id/send-to-profile-audience} : Send bulk emails to profile audience contacts.
+     */
+    @PostMapping("/{id}/send-to-profile-audience")
+    public ResponseEntity<Map<String, Object>> sendBulkEmailToProfileAudience(@PathVariable Long id, Authentication authentication) {
+        log.debug("REST request to send bulk email to profile audience for template: {}", id);
+
+        String tenantId = getTenantId();
+        Long userId = null;
+
+        Map<String, Object> result = promotionEmailService.sendBulkEmailToProfileAudience(id, tenantId, userId);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
      * Get tenant ID from context.
      */
     private String getTenantId() {

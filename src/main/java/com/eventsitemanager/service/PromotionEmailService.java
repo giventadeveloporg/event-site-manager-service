@@ -40,6 +40,11 @@ public interface PromotionEmailService {
     Map<String, Object> sendBulkEmailToSubscribedMembers(Long templateId, String tenantId, Long userId);
 
     /**
+     * Send bulk emails to profile audience contacts (opted-in) for the tenant.
+     */
+    Map<String, Object> sendBulkEmailToProfileAudience(Long templateId, String tenantId, Long userId);
+
+    /**
      * Build final email content from template with optional overrides.
      *
      * @param templateId the template ID

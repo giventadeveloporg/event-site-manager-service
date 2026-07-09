@@ -5,7 +5,9 @@ import com.eventsitemanager.domain.PromotionEmailSentLog;
 import com.eventsitemanager.domain.PromotionEmailTemplate;
 import com.eventsitemanager.domain.TenantSettings;
 import com.eventsitemanager.domain.enumeration.EmailStatus;
+import com.eventsitemanager.domain.enumeration.ProfileAudienceContactOptInStatus;
 import com.eventsitemanager.repository.EventAttendeeRepository;
+import com.eventsitemanager.repository.ProfileAudienceContactRepository;
 import com.eventsitemanager.repository.PromotionEmailSentLogRepository;
 import com.eventsitemanager.repository.PromotionEmailTemplateRepository;
 import com.eventsitemanager.repository.TenantSettingsRepository;
@@ -61,6 +63,8 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
 
     private final UserProfileRepository userProfileRepository;
 
+    private final ProfileAudienceContactRepository profileAudienceContactRepository;
+
     // Cache for tenant footer HTML (per tenant, expires after 1 hour)
     private final Cache<String, String> footerHtmlCache = CacheBuilder
         .newBuilder()
@@ -78,7 +82,8 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
         EventAttendeeRepository eventAttendeeRepository,
         TenantSettingsRepository tenantSettingsRepository,
         S3Service s3Service,
-        UserProfileRepository userProfileRepository
+        UserProfileRepository userProfileRepository,
+        ProfileAudienceContactRepository profileAudienceContactRepository
     ) {
         this.promotionEmailTemplateRepository = promotionEmailTemplateRepository;
         this.promotionEmailSentLogRepository = promotionEmailSentLogRepository;
@@ -90,6 +95,7 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
         this.tenantSettingsRepository = tenantSettingsRepository;
         this.s3Service = s3Service;
         this.userProfileRepository = userProfileRepository;
+        this.profileAudienceContactRepository = profileAudienceContactRepository;
     }
 
     @Override
@@ -323,6 +329,69 @@ public class PromotionEmailServiceImpl implements PromotionEmailService {
             result.put("error", response != null ? response.getMessage() : "Unknown error");
         }
 
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> sendBulkEmailToProfileAudience(Long templateId, String tenantId, Long userId) {
+        log.debug("Request to send bulk email to profile audience: templateId={}, tenantId={}", templateId, tenantId);
+
+        PromotionEmailTemplate template = promotionEmailTemplateRepository
+            .findById(templateId)
+            .orElseThrow(() -> new IllegalArgumentException("Template not found: " + templateId));
+
+        if (!tenantId.equals(template.getTenantId())) {
+            throw new IllegalArgumentException("Template does not belong to tenant: " + tenantId);
+        }
+
+        List<String> audienceEmails = profileAudienceContactRepository.findEmailsByTenantIdAndOptInStatus(
+            tenantId,
+            ProfileAudienceContactOptInStatus.OPTED_IN
+        );
+
+        if (audienceEmails == null || audienceEmails.isEmpty()) {
+            log.warn("No opted-in profile audience contacts found for tenant: {}", tenantId);
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("sentCount", 0);
+            result.put("failedCount", 0);
+            result.put("totalCount", 0);
+            result.put("message", "No opted-in profile audience contacts found for this tenant");
+            return result;
+        }
+
+        log.info(
+            "Triggering batch email job for template {} and tenant {} with {} profile audience contacts",
+            templateId,
+            tenantId,
+            audienceEmails.size()
+        );
+
+        BatchJobEmailResponse response = batchJobEmailService.triggerEmailBatch(
+            tenantId,
+            templateId,
+            null,
+            userId,
+            RecipientType.PROFILE_AUDIENCE
+        );
+
+        Map<String, Object> result = new HashMap<>();
+        if (response != null && Boolean.TRUE.equals(response.getSuccess())) {
+            result.put("success", true);
+            result.put("sentCount", response.getSuccessCount() != null ? response.getSuccessCount().intValue() : 0);
+            result.put("failedCount", response.getFailedCount() != null ? response.getFailedCount().intValue() : 0);
+            result.put(
+                "totalCount",
+                response.getProcessedCount() != null ? response.getProcessedCount().intValue() : audienceEmails.size()
+            );
+            result.put("jobExecutionId", response.getJobExecutionId());
+        } else {
+            result.put("success", false);
+            result.put("sentCount", 0);
+            result.put("failedCount", audienceEmails.size());
+            result.put("totalCount", audienceEmails.size());
+            result.put("error", response != null ? response.getMessage() : "Unknown error");
+        }
         return result;
     }
 

@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PublicProfileRepository extends JpaRepository<PublicProfile, Long>, JpaSpecificationExecutor<PublicProfile> {
     boolean existsByTenantId(String tenantId);
+
+    java.util.Optional<PublicProfile> findFirstByTenantId(String tenantId);
 }

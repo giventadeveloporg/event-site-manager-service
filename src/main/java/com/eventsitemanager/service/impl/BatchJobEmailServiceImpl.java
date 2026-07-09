@@ -63,7 +63,9 @@ public class BatchJobEmailServiceImpl implements BatchJobEmailService {
 
         if (recipientType == null || recipientType.isEmpty()) {
             log.error("RecipientType is required for batch email job");
-            return createErrorResponse("RecipientType is required. Use RecipientType.EVENT_ATTENDEES or RecipientType.SUBSCRIBED_MEMBERS");
+            return createErrorResponse(
+                "RecipientType is required. Use RecipientType.EVENT_ATTENDEES, RecipientType.SUBSCRIBED_MEMBERS, or RecipientType.PROFILE_AUDIENCE"
+            );
         }
 
         BatchJobEmailRequest request = new BatchJobEmailRequest(

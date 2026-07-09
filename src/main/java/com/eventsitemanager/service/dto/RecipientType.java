@@ -17,6 +17,12 @@ public final class RecipientType {
      */
     public static final String SUBSCRIBED_MEMBERS = "SUBSCRIBED_MEMBERS";
 
+    /**
+     * Recipient type for personal profile audience contacts.
+     * Source: profile_audience_contact with opt_in_status = OPTED_IN
+     */
+    public static final String PROFILE_AUDIENCE = "PROFILE_AUDIENCE";
+
     private RecipientType() {
         // Utility class - prevent instantiation
     }

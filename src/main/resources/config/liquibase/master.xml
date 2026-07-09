@@ -135,6 +135,7 @@
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <include file="config/liquibase/changelog/20260703120000_personal_profile_site.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260709120000_profile_audience_contact.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260703130000_gas_station_module.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260704120000_gas_station_billing.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260707120000_gas_station_location_rbac.xml" relativeToChangelogFile="false"/>
