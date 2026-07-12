@@ -1543,9 +1543,88 @@ public class EventMediaServiceImpl implements EventMediaService {
         Integer officialDocumentYear,
         Pageable pageable
     ) {
+        // Use column projection (no preSignedUrl / thumbnailPreSignedUrl / featuredVideoUrl)
+        // so large download listings do not OOM the JVM or Postgres result buffer.
         return eventMediaRepository
-            .findPublicOfficialDocumentsForDownloads(tenantId, officialDocumentCategoryId, officialDocumentYear, pageable)
-            .map(eventMediaMapper::toDto);
+            .findPublicOfficialDocumentsForDownloadsLite(tenantId, officialDocumentCategoryId, officialDocumentYear, pageable)
+            .map(this::convertPublicOfficialDocumentLiteToDto);
+    }
+
+    /**
+     * Map lightweight downloads projection rows to EventMediaDTO.
+     * Presigned URL fields are intentionally left null; the downloads UI uses
+     * same-origin proxy download by id and thumbnail_url / thumbnail proxy.
+     */
+    private EventMediaDTO convertPublicOfficialDocumentLiteToDto(Object[] raw) {
+        EventMediaDTO dto = new EventMediaDTO();
+        if (raw == null || raw.length == 0) {
+            return dto;
+        }
+
+        dto.setId(toLong(raw[0]));
+        dto.setTenantId(raw.length > 1 ? (String) raw[1] : null);
+        dto.setTitle(raw.length > 2 ? (String) raw[2] : null);
+        dto.setDescription(raw.length > 3 ? (String) raw[3] : null);
+        dto.setFileUrl(raw.length > 4 ? (String) raw[4] : null);
+        dto.setContentType(raw.length > 5 ? (String) raw[5] : null);
+        dto.setOfficialDocumentCategoryId(raw.length > 6 ? toLong(raw[6]) : null);
+        dto.setOfficialDocumentYear(raw.length > 7 ? toInteger(raw[7]) : null);
+        dto.setHierarchyPath(raw.length > 8 ? (String) raw[8] : null);
+        dto.setHierarchyCategoryLabel(raw.length > 9 ? (String) raw[9] : null);
+        dto.setDisplayPriority(raw.length > 10 ? toInteger(raw[10]) : null);
+        dto.setPriorityRanking(raw.length > 11 && raw[11] != null ? toInteger(raw[11]) : 0);
+        dto.setThumbnailUrl(raw.length > 12 ? (String) raw[12] : null);
+        if (raw.length > 13 && raw[13] != null) {
+            dto.setCreatedAt(toZonedDateTime(raw[13]));
+        }
+        if (raw.length > 14 && raw[14] != null) {
+            dto.setUpdatedAt(toZonedDateTime(raw[14]));
+        }
+        dto.setIsPublic(true);
+        dto.setIsEventManagementOfficialDocument(true);
+        return dto;
+    }
+
+    private static Long toLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Long) {
+            return (Long) value;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        return null;
+    }
+
+    private static Integer toInteger(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Integer) {
+            return (Integer) value;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return null;
+    }
+
+    private static ZonedDateTime toZonedDateTime(Object value) {
+        if (value instanceof ZonedDateTime) {
+            return (ZonedDateTime) value;
+        }
+        if (value instanceof java.sql.Timestamp) {
+            return ((java.sql.Timestamp) value).toInstant().atZone(java.time.ZoneId.systemDefault());
+        }
+        if (value instanceof java.time.Instant) {
+            return ((java.time.Instant) value).atZone(java.time.ZoneId.systemDefault());
+        }
+        if (value instanceof java.time.LocalDateTime) {
+            return ((java.time.LocalDateTime) value).atZone(java.time.ZoneId.systemDefault());
+        }
+        return null;
     }
 
     @Override

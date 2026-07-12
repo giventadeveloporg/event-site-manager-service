@@ -106,8 +106,22 @@ public interface EventMediaRepository extends JpaRepository<EventMedia, Long>, J
     )
     List<Object[]> findAllWithoutLobFieldsRaw();
 
+    /**
+     * Lightweight projection for the public downloads page.
+     * Omits heavy URL fields (pre_signed_url, thumbnail_pre_signed_url, featured_video_url)
+     * that previously caused JVM / Postgres OOM when loading full EventMedia entities
+     * in large pages. Also truncates hierarchy_path — corrupted rows can be tens of MB
+     * and alone OOM a 512MB heap. Frontend resolves downloads via proxy-by-id and
+     * thumbnails via storage thumbnail_url / thumbnail proxy.
+     */
     @Query(
-        value = "SELECT e FROM EventMedia e " +
+        value = "SELECT e.id, e.tenantId, e.title, e.description, e.fileUrl, e.contentType, " +
+        "e.officialDocumentCategoryId, e.officialDocumentYear, " +
+        "SUBSTRING(e.hierarchyPath, 1, 2048), " +
+        "SUBSTRING(e.hierarchyCategoryLabel, 1, 512), " +
+        "e.displayPriority, e.priorityRanking, " +
+        "e.thumbnailUrl, e.createdAt, e.updatedAt " +
+        "FROM EventMedia e " +
         "WHERE e.tenantId = :tenantId " +
         "AND e.isEventManagementOfficialDocument = true " +
         "AND e.isPublic = true " +
@@ -115,7 +129,7 @@ public interface EventMediaRepository extends JpaRepository<EventMedia, Long>, J
         "AND (:officialDocumentYear IS NULL OR e.officialDocumentYear = :officialDocumentYear) " +
         "ORDER BY COALESCE(e.displayPriority, e.priorityRanking, 999999) ASC, e.createdAt DESC"
     )
-    Page<EventMedia> findPublicOfficialDocumentsForDownloads(
+    Page<Object[]> findPublicOfficialDocumentsForDownloadsLite(
         @Param("tenantId") String tenantId,
         @Param("officialDocumentCategoryId") Long officialDocumentCategoryId,
         @Param("officialDocumentYear") Integer officialDocumentYear,
