@@ -127,7 +127,9 @@ public interface EventMediaRepository extends JpaRepository<EventMedia, Long>, J
         "AND e.isPublic = true " +
         "AND (:officialDocumentCategoryId IS NULL OR e.officialDocumentCategoryId = :officialDocumentCategoryId) " +
         "AND (:officialDocumentYear IS NULL OR e.officialDocumentYear = :officialDocumentYear) " +
-        "ORDER BY COALESCE(e.displayPriority, e.priorityRanking, 999999) ASC, e.createdAt DESC"
+        // Newest document year first (downloads page contract: "Newest documents (by year) are
+        // shown first"), then admin priority within the year, then latest upload.
+        "ORDER BY COALESCE(e.officialDocumentYear, 0) DESC, COALESCE(e.displayPriority, e.priorityRanking, 999999) ASC, e.createdAt DESC"
     )
     Page<Object[]> findPublicOfficialDocumentsForDownloadsLite(
         @Param("tenantId") String tenantId,

@@ -10,4 +10,8 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface TenantOrganizationRepository
-    extends JpaRepository<TenantOrganization, Long>, JpaSpecificationExecutor<TenantOrganization> {}
+    extends JpaRepository<TenantOrganization, Long>, JpaSpecificationExecutor<TenantOrganization> {
+    /** All tenant IDs only — lets the frontend derive the next tenant sequence without paging whole rows. */
+    @Query("SELECT t.tenantId FROM TenantOrganization t")
+    java.util.List<String> findAllTenantIds();
+}

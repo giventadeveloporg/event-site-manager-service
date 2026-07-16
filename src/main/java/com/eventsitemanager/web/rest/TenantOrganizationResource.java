@@ -182,6 +182,17 @@ public class TenantOrganizationResource {
     }
 
     /**
+     * {@code GET  /tenant-organizations/tenant-ids} : all tenant IDs (strings only).
+     * Lightweight projection so clients can compute the next tenant sequence number
+     * without enumerating full organization rows page by page.
+     */
+    @GetMapping("/tenant-ids")
+    public ResponseEntity<List<String>> getAllTenantIds() {
+        log.debug("REST request to get all TenantOrganization tenant IDs");
+        return ResponseEntity.ok().body(tenantOrganizationRepository.findAllTenantIds());
+    }
+
+    /**
      * {@code GET  /tenant-organizations/:id} : get the "id" tenantOrganization.
      *
      * @param id the id of the tenantOrganizationDTO to retrieve.
