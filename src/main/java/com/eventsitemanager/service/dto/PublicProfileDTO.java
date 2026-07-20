@@ -67,6 +67,9 @@ public class PublicProfileDTO implements Serializable {
     @Size(max = 1024)
     private String cvDocumentUrl;
 
+    @Size(max = 1024)
+    private String bookingUrl;
+
     @Size(max = 255)
     private String metaTitle;
 
@@ -242,6 +245,14 @@ public class PublicProfileDTO implements Serializable {
 
     public void setCvDocumentUrl(String cvDocumentUrl) {
         this.cvDocumentUrl = cvDocumentUrl;
+    }
+
+    public String getBookingUrl() {
+        return bookingUrl;
+    }
+
+    public void setBookingUrl(String bookingUrl) {
+        this.bookingUrl = bookingUrl;
     }
 
     public String getMetaTitle() {

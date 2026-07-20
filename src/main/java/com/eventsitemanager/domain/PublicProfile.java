@@ -102,6 +102,10 @@ public class PublicProfile implements Serializable {
     @Column(name = "cv_document_url", length = 1024)
     private String cvDocumentUrl;
 
+    @Size(max = 1024)
+    @Column(name = "booking_url", length = 1024)
+    private String bookingUrl;
+
     @Size(max = 255)
     @Column(name = "meta_title", length = 255)
     private String metaTitle;
@@ -285,6 +289,14 @@ public class PublicProfile implements Serializable {
 
     public void setCvDocumentUrl(String cvDocumentUrl) {
         this.cvDocumentUrl = cvDocumentUrl;
+    }
+
+    public String getBookingUrl() {
+        return bookingUrl;
+    }
+
+    public void setBookingUrl(String bookingUrl) {
+        this.bookingUrl = bookingUrl;
     }
 
     public String getMetaTitle() {

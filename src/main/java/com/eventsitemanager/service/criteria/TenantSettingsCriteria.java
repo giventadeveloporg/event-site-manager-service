@@ -107,6 +107,8 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private BooleanFilter showProfileContactSection;
 
+    private BooleanFilter showProfileProjectsSection;
+
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -159,6 +161,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.showProfileAffiliationsSection = other.optionalShowProfileAffiliationsSection().map(BooleanFilter::copy).orElse(null);
         this.showProfileMediaDownloadsSection = other.optionalShowProfileMediaDownloadsSection().map(BooleanFilter::copy).orElse(null);
         this.showProfileContactSection = other.optionalShowProfileContactSection().map(BooleanFilter::copy).orElse(null);
+        this.showProfileProjectsSection = other.optionalShowProfileProjectsSection().map(BooleanFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.tenantOrganizationId = other.optionalTenantOrganizationId().map(LongFilter::copy).orElse(null);
@@ -949,6 +952,25 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.showProfileContactSection = showProfileContactSection;
     }
 
+    public BooleanFilter getShowProfileProjectsSection() {
+        return showProfileProjectsSection;
+    }
+
+    public Optional<BooleanFilter> optionalShowProfileProjectsSection() {
+        return Optional.ofNullable(showProfileProjectsSection);
+    }
+
+    public BooleanFilter showProfileProjectsSection() {
+        if (showProfileProjectsSection == null) {
+            setShowProfileProjectsSection(new BooleanFilter());
+        }
+        return showProfileProjectsSection;
+    }
+
+    public void setShowProfileProjectsSection(BooleanFilter showProfileProjectsSection) {
+        this.showProfileProjectsSection = showProfileProjectsSection;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -1076,6 +1098,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(showProfileAffiliationsSection, that.showProfileAffiliationsSection) &&
             Objects.equals(showProfileMediaDownloadsSection, that.showProfileMediaDownloadsSection) &&
             Objects.equals(showProfileContactSection, that.showProfileContactSection) &&
+            Objects.equals(showProfileProjectsSection, that.showProfileProjectsSection) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
@@ -1127,6 +1150,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             showProfileAffiliationsSection,
             showProfileMediaDownloadsSection,
             showProfileContactSection,
+            showProfileProjectsSection,
             createdAt,
             updatedAt,
             tenantOrganizationId,
@@ -1182,6 +1206,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalShowProfileAffiliationsSection().map(f -> "showProfileAffiliationsSection=" + f + ", ").orElse("") +
                 optionalShowProfileMediaDownloadsSection().map(f -> "showProfileMediaDownloadsSection=" + f + ", ").orElse("") +
                 optionalShowProfileContactSection().map(f -> "showProfileContactSection=" + f + ", ").orElse("") +
+                optionalShowProfileProjectsSection().map(f -> "showProfileProjectsSection=" + f + ", ").orElse("") +
                 optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
                 optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
                 optionalTenantOrganizationId().map(f -> "tenantOrganizationId=" + f + ", ").orElse("") +

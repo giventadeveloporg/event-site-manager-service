@@ -1,8 +1,8 @@
 package com.eventsitemanager.service.dto;
 
+import com.eventsitemanager.domain.enumeration.ProfileMediaKind;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -31,6 +31,9 @@ public class ProfileMediaAssetDTO implements Serializable {
 
     @Size(max = 64)
     private String fileType;
+
+    @NotNull
+    private ProfileMediaKind mediaKind;
 
     private Long fileSizeBytes;
 
@@ -102,6 +105,14 @@ public class ProfileMediaAssetDTO implements Serializable {
 
     public void setFileType(String fileType) {
         this.fileType = fileType;
+    }
+
+    public ProfileMediaKind getMediaKind() {
+        return mediaKind;
+    }
+
+    public void setMediaKind(ProfileMediaKind mediaKind) {
+        this.mediaKind = mediaKind;
     }
 
     public Long getFileSizeBytes() {

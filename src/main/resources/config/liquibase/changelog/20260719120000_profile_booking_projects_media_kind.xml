@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Personal profile Phase B: booking_url, media_kind, profile_project, projects section flag -->
+
+    <changeSet id="20260719120000-1" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="public_profile"/>
+            <not>
+                <columnExists tableName="public_profile" columnName="booking_url"/>
+            </not>
+        </preConditions>
+        <sql>
+            ALTER TABLE public_profile
+                ADD COLUMN booking_url character varying(1024);
+
+            COMMENT ON COLUMN public_profile.booking_url IS
+                'Calendly or external booking URL shown on contact / hero CTAs.';
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260719120000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="profile_media_asset"/>
+            <not>
+                <columnExists tableName="profile_media_asset" columnName="media_kind"/>
+            </not>
+        </preConditions>
+        <sql>
+            ALTER TABLE profile_media_asset
+                ADD COLUMN media_kind character varying(32) NOT NULL DEFAULT 'DOCUMENT';
+
+            ALTER TABLE profile_media_asset
+                ADD CONSTRAINT chk_profile_media_asset__media_kind CHECK (
+                    media_kind IN ('DOCUMENT', 'VIDEO', 'PODCAST', 'PRESS', 'OTHER')
+                );
+
+            CREATE INDEX IF NOT EXISTS idx_profile_media_asset_tenant_kind
+                ON profile_media_asset (tenant_id, media_kind);
+
+            COMMENT ON COLUMN profile_media_asset.media_kind IS
+                'Semantic kind for talks strip vs downloads: DOCUMENT, VIDEO, PODCAST, PRESS, OTHER.';
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260719120000-3" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="show_profile_projects_section"/>
+            </not>
+        </preConditions>
+        <sql>
+            ALTER TABLE tenant_settings
+                ADD COLUMN show_profile_projects_section boolean DEFAULT false NOT NULL;
+
+            COMMENT ON COLUMN tenant_settings.show_profile_projects_section IS
+                'When true, homepage shows profile project / case-study cards.';
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260719120000-4" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="profile_project_id_seq"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE SEQUENCE IF NOT EXISTS public.profile_project_id_seq
+                INCREMENT BY 1
+                NO MINVALUE
+                NO MAXVALUE
+                START WITH 1
+                CACHE 1;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260719120000-5" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="profile_project"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE TABLE IF NOT EXISTS public.profile_project (
+                id bigint DEFAULT nextval('public.profile_project_id_seq'::regclass) NOT NULL,
+                tenant_id character varying(255) NOT NULL,
+                title character varying(500) NOT NULL,
+                slug character varying(150),
+                summary character varying(2000),
+                cover_image_url character varying(1024),
+                role character varying(255),
+                outcome_metrics_json text,
+                project_url character varying(1024),
+                display_order integer,
+                is_featured boolean DEFAULT false NOT NULL,
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                CONSTRAINT profile_project_pkey PRIMARY KEY (id),
+                CONSTRAINT fk_profile_project__tenant_id FOREIGN KEY (tenant_id)
+                    REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_profile_project__tenant_slug
+                ON public.profile_project (tenant_id, slug) WHERE slug IS NOT NULL;
+            CREATE INDEX IF NOT EXISTS idx_profile_project_tenant
+                ON public.profile_project (tenant_id);
+
+            COMMENT ON TABLE public.profile_project IS
+                'Case-study / project cards for PERSONAL_PROFILE and HYBRID tenants.';
+            COMMENT ON COLUMN public.profile_project.outcome_metrics_json IS
+                'JSON array of {label,value} metrics shown on project cards.';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

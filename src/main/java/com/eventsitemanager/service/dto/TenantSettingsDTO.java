@@ -214,6 +214,8 @@ public class TenantSettingsDTO implements Serializable {
 
     private Boolean showProfileContactSection;
 
+    private Boolean showProfileProjectsSection;
+
     private Boolean enableGasStationModule;
 
     @Size(max = 1024)
@@ -746,6 +748,14 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setShowProfileContactSection(Boolean showProfileContactSection) {
         this.showProfileContactSection = showProfileContactSection;
+    }
+
+    public Boolean getShowProfileProjectsSection() {
+        return showProfileProjectsSection;
+    }
+
+    public void setShowProfileProjectsSection(Boolean showProfileProjectsSection) {
+        this.showProfileProjectsSection = showProfileProjectsSection;
     }
 
     public Boolean getEnableGasStationModule() {

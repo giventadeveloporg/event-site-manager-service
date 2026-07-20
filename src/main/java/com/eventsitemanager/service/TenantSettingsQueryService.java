@@ -257,6 +257,12 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
                         buildSpecification(criteria.getShowProfileContactSection(), TenantSettings_.showProfileContactSection)
                     );
             }
+            if (criteria.getShowProfileProjectsSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileProjectsSection(), TenantSettings_.showProfileProjectsSection)
+                    );
+            }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt));
             }

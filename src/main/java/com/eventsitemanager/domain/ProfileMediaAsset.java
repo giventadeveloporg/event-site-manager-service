@@ -1,9 +1,9 @@
 package com.eventsitemanager.domain;
 
+import com.eventsitemanager.domain.enumeration.ProfileMediaKind;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -47,6 +47,11 @@ public class ProfileMediaAsset implements Serializable {
     @Column(name = "file_type", length = 64)
     private String fileType;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "media_kind", length = 32, nullable = false)
+    private ProfileMediaKind mediaKind = ProfileMediaKind.DOCUMENT;
+
     @Column(name = "file_size_bytes")
     private Long fileSizeBytes;
 
@@ -68,8 +73,6 @@ public class ProfileMediaAsset implements Serializable {
     @NotNull
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
-
-    // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return id;
@@ -125,6 +128,14 @@ public class ProfileMediaAsset implements Serializable {
 
     public void setFileType(String fileType) {
         this.fileType = fileType;
+    }
+
+    public ProfileMediaKind getMediaKind() {
+        return mediaKind;
+    }
+
+    public void setMediaKind(ProfileMediaKind mediaKind) {
+        this.mediaKind = mediaKind;
     }
 
     public Long getFileSizeBytes() {

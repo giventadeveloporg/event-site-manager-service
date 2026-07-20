@@ -1,6 +1,7 @@
 package com.eventsitemanager.service.impl;
 
 import com.eventsitemanager.domain.ProfileMediaAsset;
+import com.eventsitemanager.domain.enumeration.ProfileMediaKind;
 import com.eventsitemanager.repository.ProfileMediaAssetRepository;
 import com.eventsitemanager.service.ProfileMediaAssetService;
 import com.eventsitemanager.service.dto.ProfileMediaAssetDTO;
@@ -38,6 +39,9 @@ public class ProfileMediaAssetServiceImpl implements ProfileMediaAssetService {
                 profileMediaAsset.getId()
             );
             profileMediaAsset.setId(null);
+        }
+        if (profileMediaAsset.getMediaKind() == null) {
+            profileMediaAsset.setMediaKind(ProfileMediaKind.DOCUMENT);
         }
 
         profileMediaAsset = profileMediaAssetRepository.save(profileMediaAsset);

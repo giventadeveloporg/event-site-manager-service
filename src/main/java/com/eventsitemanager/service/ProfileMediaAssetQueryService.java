@@ -54,6 +54,7 @@ public class ProfileMediaAssetQueryService extends QueryService<ProfileMediaAsse
                     criteria.getTenantId() != null ? buildStringSpecification(criteria.getTenantId(), ProfileMediaAsset_.tenantId) : null,
                     criteria.getTitle() != null ? buildStringSpecification(criteria.getTitle(), ProfileMediaAsset_.title) : null,
                     criteria.getFileType() != null ? buildStringSpecification(criteria.getFileType(), ProfileMediaAsset_.fileType) : null,
+                    criteria.getMediaKind() != null ? buildSpecification(criteria.getMediaKind(), ProfileMediaAsset_.mediaKind) : null,
                     criteria.getDisplayOrder() != null
                         ? buildRangeSpecification(criteria.getDisplayOrder(), ProfileMediaAsset_.displayOrder)
                         : null,

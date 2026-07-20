@@ -231,6 +231,9 @@ public class TenantSettings implements Serializable {
     @Column(name = "show_profile_contact_section")
     private Boolean showProfileContactSection;
 
+    @Column(name = "show_profile_projects_section")
+    private Boolean showProfileProjectsSection;
+
     @Column(name = "enable_gas_station_module")
     private Boolean enableGasStationModule;
 
@@ -600,6 +603,19 @@ public class TenantSettings implements Serializable {
 
     public void setShowProfileContactSection(Boolean showProfileContactSection) {
         this.showProfileContactSection = showProfileContactSection;
+    }
+
+    public Boolean getShowProfileProjectsSection() {
+        return this.showProfileProjectsSection;
+    }
+
+    public TenantSettings showProfileProjectsSection(Boolean showProfileProjectsSection) {
+        this.setShowProfileProjectsSection(showProfileProjectsSection);
+        return this;
+    }
+
+    public void setShowProfileProjectsSection(Boolean showProfileProjectsSection) {
+        this.showProfileProjectsSection = showProfileProjectsSection;
     }
 
     public Boolean getEnableGasStationModule() {

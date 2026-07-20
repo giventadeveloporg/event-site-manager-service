@@ -1,6 +1,5 @@
 package com.eventsitemanager.service.criteria;
 
-import com.eventsitemanager.domain.enumeration.ProfileMediaKind;
 import java.io.Serializable;
 import java.util.Objects;
 import org.springdoc.core.annotations.ParameterObject;
@@ -9,40 +8,36 @@ import tech.jhipster.service.filter.*;
 
 @ParameterObject
 @SuppressWarnings("common-java:DuplicatedBlocks")
-public class ProfileMediaAssetCriteria implements Serializable, Criteria {
+public class ProfileProjectCriteria implements Serializable, Criteria {
 
     private LongFilter id;
     private StringFilter tenantId;
     private StringFilter title;
-    private StringFilter fileType;
-    private ProfileMediaKindFilter mediaKind;
+    private StringFilter slug;
     private IntegerFilter displayOrder;
-    private BooleanFilter isDownloadable;
-    private BooleanFilter requiresEmail;
+    private BooleanFilter isFeatured;
     private ZonedDateTimeFilter createdAt;
     private ZonedDateTimeFilter updatedAt;
 
     private Boolean distinct;
 
-    public ProfileMediaAssetCriteria() {}
+    public ProfileProjectCriteria() {}
 
-    public ProfileMediaAssetCriteria(ProfileMediaAssetCriteria other) {
+    public ProfileProjectCriteria(ProfileProjectCriteria other) {
         this.id = other.id == null ? null : other.id.copy();
         this.tenantId = other.tenantId == null ? null : other.tenantId.copy();
         this.title = other.title == null ? null : other.title.copy();
-        this.fileType = other.fileType == null ? null : other.fileType.copy();
-        this.mediaKind = other.mediaKind == null ? null : other.mediaKind.copy();
+        this.slug = other.slug == null ? null : other.slug.copy();
         this.displayOrder = other.displayOrder == null ? null : other.displayOrder.copy();
-        this.isDownloadable = other.isDownloadable == null ? null : other.isDownloadable.copy();
-        this.requiresEmail = other.requiresEmail == null ? null : other.requiresEmail.copy();
+        this.isFeatured = other.isFeatured == null ? null : other.isFeatured.copy();
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.distinct = other.distinct;
     }
 
     @Override
-    public ProfileMediaAssetCriteria copy() {
-        return new ProfileMediaAssetCriteria(this);
+    public ProfileProjectCriteria copy() {
+        return new ProfileProjectCriteria(this);
     }
 
     public LongFilter getId() {
@@ -69,20 +64,12 @@ public class ProfileMediaAssetCriteria implements Serializable, Criteria {
         this.title = title;
     }
 
-    public StringFilter getFileType() {
-        return fileType;
+    public StringFilter getSlug() {
+        return slug;
     }
 
-    public void setFileType(StringFilter fileType) {
-        this.fileType = fileType;
-    }
-
-    public ProfileMediaKindFilter getMediaKind() {
-        return mediaKind;
-    }
-
-    public void setMediaKind(ProfileMediaKindFilter mediaKind) {
-        this.mediaKind = mediaKind;
+    public void setSlug(StringFilter slug) {
+        this.slug = slug;
     }
 
     public IntegerFilter getDisplayOrder() {
@@ -93,20 +80,12 @@ public class ProfileMediaAssetCriteria implements Serializable, Criteria {
         this.displayOrder = displayOrder;
     }
 
-    public BooleanFilter getIsDownloadable() {
-        return isDownloadable;
+    public BooleanFilter getIsFeatured() {
+        return isFeatured;
     }
 
-    public void setIsDownloadable(BooleanFilter isDownloadable) {
-        this.isDownloadable = isDownloadable;
-    }
-
-    public BooleanFilter getRequiresEmail() {
-        return requiresEmail;
-    }
-
-    public void setRequiresEmail(BooleanFilter requiresEmail) {
-        this.requiresEmail = requiresEmail;
+    public void setIsFeatured(BooleanFilter isFeatured) {
+        this.isFeatured = isFeatured;
     }
 
     public ZonedDateTimeFilter getCreatedAt() {
@@ -137,26 +116,12 @@ public class ProfileMediaAssetCriteria implements Serializable, Criteria {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ProfileMediaAssetCriteria that = (ProfileMediaAssetCriteria) o;
+        ProfileProjectCriteria that = (ProfileProjectCriteria) o;
         return Objects.equals(distinct, that.distinct);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(distinct);
-    }
-
-    public static class ProfileMediaKindFilter extends Filter<ProfileMediaKind> {
-
-        public ProfileMediaKindFilter() {}
-
-        public ProfileMediaKindFilter(ProfileMediaKindFilter filter) {
-            super(filter);
-        }
-
-        @Override
-        public ProfileMediaKindFilter copy() {
-            return new ProfileMediaKindFilter(this);
-        }
     }
 }
