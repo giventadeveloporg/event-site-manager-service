@@ -234,6 +234,40 @@ public class TenantSettings implements Serializable {
     @Column(name = "show_profile_projects_section")
     private Boolean showProfileProjectsSection;
 
+    /** Header menu visibility (null = app default: ON for legacy items) */
+    @Column(name = "show_header_home")
+    private Boolean showHeaderHome;
+
+    @Column(name = "show_header_about")
+    private Boolean showHeaderAbout;
+
+    @Column(name = "show_header_events")
+    private Boolean showHeaderEvents;
+
+    @Column(name = "show_header_features")
+    private Boolean showHeaderFeatures;
+
+    @Column(name = "show_header_calendar")
+    private Boolean showHeaderCalendar;
+
+    @Column(name = "show_header_gallery")
+    private Boolean showHeaderGallery;
+
+    @Column(name = "show_header_contact")
+    private Boolean showHeaderContact;
+
+    /** Header menu: News / Perspectives (null = OFF) */
+    @Column(name = "show_header_news")
+    private Boolean showHeaderNews;
+
+    /** Header menu: Downloads (null = OFF) */
+    @Column(name = "show_header_downloads")
+    private Boolean showHeaderDownloads;
+
+    /** Header menu: Links (null = OFF) */
+    @Column(name = "show_header_links")
+    private Boolean showHeaderLinks;
+
     @Column(name = "enable_gas_station_module")
     private Boolean enableGasStationModule;
 
@@ -616,6 +650,136 @@ public class TenantSettings implements Serializable {
 
     public void setShowProfileProjectsSection(Boolean showProfileProjectsSection) {
         this.showProfileProjectsSection = showProfileProjectsSection;
+    }
+
+    public Boolean getShowHeaderHome() {
+        return this.showHeaderHome;
+    }
+
+    public TenantSettings showHeaderHome(Boolean showHeaderHome) {
+        this.setShowHeaderHome(showHeaderHome);
+        return this;
+    }
+
+    public void setShowHeaderHome(Boolean showHeaderHome) {
+        this.showHeaderHome = showHeaderHome;
+    }
+
+    public Boolean getShowHeaderAbout() {
+        return this.showHeaderAbout;
+    }
+
+    public TenantSettings showHeaderAbout(Boolean showHeaderAbout) {
+        this.setShowHeaderAbout(showHeaderAbout);
+        return this;
+    }
+
+    public void setShowHeaderAbout(Boolean showHeaderAbout) {
+        this.showHeaderAbout = showHeaderAbout;
+    }
+
+    public Boolean getShowHeaderEvents() {
+        return this.showHeaderEvents;
+    }
+
+    public TenantSettings showHeaderEvents(Boolean showHeaderEvents) {
+        this.setShowHeaderEvents(showHeaderEvents);
+        return this;
+    }
+
+    public void setShowHeaderEvents(Boolean showHeaderEvents) {
+        this.showHeaderEvents = showHeaderEvents;
+    }
+
+    public Boolean getShowHeaderFeatures() {
+        return this.showHeaderFeatures;
+    }
+
+    public TenantSettings showHeaderFeatures(Boolean showHeaderFeatures) {
+        this.setShowHeaderFeatures(showHeaderFeatures);
+        return this;
+    }
+
+    public void setShowHeaderFeatures(Boolean showHeaderFeatures) {
+        this.showHeaderFeatures = showHeaderFeatures;
+    }
+
+    public Boolean getShowHeaderCalendar() {
+        return this.showHeaderCalendar;
+    }
+
+    public TenantSettings showHeaderCalendar(Boolean showHeaderCalendar) {
+        this.setShowHeaderCalendar(showHeaderCalendar);
+        return this;
+    }
+
+    public void setShowHeaderCalendar(Boolean showHeaderCalendar) {
+        this.showHeaderCalendar = showHeaderCalendar;
+    }
+
+    public Boolean getShowHeaderGallery() {
+        return this.showHeaderGallery;
+    }
+
+    public TenantSettings showHeaderGallery(Boolean showHeaderGallery) {
+        this.setShowHeaderGallery(showHeaderGallery);
+        return this;
+    }
+
+    public void setShowHeaderGallery(Boolean showHeaderGallery) {
+        this.showHeaderGallery = showHeaderGallery;
+    }
+
+    public Boolean getShowHeaderContact() {
+        return this.showHeaderContact;
+    }
+
+    public TenantSettings showHeaderContact(Boolean showHeaderContact) {
+        this.setShowHeaderContact(showHeaderContact);
+        return this;
+    }
+
+    public void setShowHeaderContact(Boolean showHeaderContact) {
+        this.showHeaderContact = showHeaderContact;
+    }
+
+    public Boolean getShowHeaderNews() {
+        return this.showHeaderNews;
+    }
+
+    public TenantSettings showHeaderNews(Boolean showHeaderNews) {
+        this.setShowHeaderNews(showHeaderNews);
+        return this;
+    }
+
+    public void setShowHeaderNews(Boolean showHeaderNews) {
+        this.showHeaderNews = showHeaderNews;
+    }
+
+    public Boolean getShowHeaderDownloads() {
+        return this.showHeaderDownloads;
+    }
+
+    public TenantSettings showHeaderDownloads(Boolean showHeaderDownloads) {
+        this.setShowHeaderDownloads(showHeaderDownloads);
+        return this;
+    }
+
+    public void setShowHeaderDownloads(Boolean showHeaderDownloads) {
+        this.showHeaderDownloads = showHeaderDownloads;
+    }
+
+    public Boolean getShowHeaderLinks() {
+        return this.showHeaderLinks;
+    }
+
+    public TenantSettings showHeaderLinks(Boolean showHeaderLinks) {
+        this.setShowHeaderLinks(showHeaderLinks);
+        return this;
+    }
+
+    public void setShowHeaderLinks(Boolean showHeaderLinks) {
+        this.showHeaderLinks = showHeaderLinks;
     }
 
     public Boolean getEnableGasStationModule() {
@@ -1215,6 +1379,16 @@ public class TenantSettings implements Serializable {
                 ", enableGoogleAdsense='" + getEnableGoogleAdsense() + "'" +
                 ", googleAdsensePublisherId='" + getGoogleAdsensePublisherId() + "'" +
                 ", googleAdsensePlacementsJson='" + getGoogleAdsensePlacementsJson() + "'" +
+                ", showHeaderHome='" + getShowHeaderHome() + "'" +
+                ", showHeaderAbout='" + getShowHeaderAbout() + "'" +
+                ", showHeaderEvents='" + getShowHeaderEvents() + "'" +
+                ", showHeaderFeatures='" + getShowHeaderFeatures() + "'" +
+                ", showHeaderCalendar='" + getShowHeaderCalendar() + "'" +
+                ", showHeaderGallery='" + getShowHeaderGallery() + "'" +
+                ", showHeaderContact='" + getShowHeaderContact() + "'" +
+                ", showHeaderNews='" + getShowHeaderNews() + "'" +
+                ", showHeaderDownloads='" + getShowHeaderDownloads() + "'" +
+                ", showHeaderLinks='" + getShowHeaderLinks() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";

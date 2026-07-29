@@ -263,6 +263,37 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
                         buildSpecification(criteria.getShowProfileProjectsSection(), TenantSettings_.showProfileProjectsSection)
                     );
             }
+            if (criteria.getShowHeaderHome() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderHome(), TenantSettings_.showHeaderHome));
+            }
+            if (criteria.getShowHeaderAbout() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderAbout(), TenantSettings_.showHeaderAbout));
+            }
+            if (criteria.getShowHeaderEvents() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderEvents(), TenantSettings_.showHeaderEvents));
+            }
+            if (criteria.getShowHeaderFeatures() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderFeatures(), TenantSettings_.showHeaderFeatures));
+            }
+            if (criteria.getShowHeaderCalendar() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderCalendar(), TenantSettings_.showHeaderCalendar));
+            }
+            if (criteria.getShowHeaderGallery() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderGallery(), TenantSettings_.showHeaderGallery));
+            }
+            if (criteria.getShowHeaderContact() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderContact(), TenantSettings_.showHeaderContact));
+            }
+            if (criteria.getShowHeaderNews() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderNews(), TenantSettings_.showHeaderNews));
+            }
+            if (criteria.getShowHeaderDownloads() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getShowHeaderDownloads(), TenantSettings_.showHeaderDownloads));
+            }
+            if (criteria.getShowHeaderLinks() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderLinks(), TenantSettings_.showHeaderLinks));
+            }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt));
             }

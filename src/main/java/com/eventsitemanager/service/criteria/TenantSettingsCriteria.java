@@ -109,6 +109,26 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private BooleanFilter showProfileProjectsSection;
 
+    private BooleanFilter showHeaderHome;
+
+    private BooleanFilter showHeaderAbout;
+
+    private BooleanFilter showHeaderEvents;
+
+    private BooleanFilter showHeaderFeatures;
+
+    private BooleanFilter showHeaderCalendar;
+
+    private BooleanFilter showHeaderGallery;
+
+    private BooleanFilter showHeaderContact;
+
+    private BooleanFilter showHeaderNews;
+
+    private BooleanFilter showHeaderDownloads;
+
+    private BooleanFilter showHeaderLinks;
+
     private ZonedDateTimeFilter createdAt;
 
     private ZonedDateTimeFilter updatedAt;
@@ -162,6 +182,16 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.showProfileMediaDownloadsSection = other.optionalShowProfileMediaDownloadsSection().map(BooleanFilter::copy).orElse(null);
         this.showProfileContactSection = other.optionalShowProfileContactSection().map(BooleanFilter::copy).orElse(null);
         this.showProfileProjectsSection = other.optionalShowProfileProjectsSection().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderHome = other.optionalShowHeaderHome().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderAbout = other.optionalShowHeaderAbout().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderEvents = other.optionalShowHeaderEvents().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderFeatures = other.optionalShowHeaderFeatures().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderCalendar = other.optionalShowHeaderCalendar().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderGallery = other.optionalShowHeaderGallery().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderContact = other.optionalShowHeaderContact().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderNews = other.optionalShowHeaderNews().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderDownloads = other.optionalShowHeaderDownloads().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderLinks = other.optionalShowHeaderLinks().map(BooleanFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.tenantOrganizationId = other.optionalTenantOrganizationId().map(LongFilter::copy).orElse(null);
@@ -971,6 +1001,196 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.showProfileProjectsSection = showProfileProjectsSection;
     }
 
+    public BooleanFilter getShowHeaderHome() {
+        return showHeaderHome;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderHome() {
+        return Optional.ofNullable(showHeaderHome);
+    }
+
+    public BooleanFilter showHeaderHome() {
+        if (showHeaderHome == null) {
+            setShowHeaderHome(new BooleanFilter());
+        }
+        return showHeaderHome;
+    }
+
+    public void setShowHeaderHome(BooleanFilter showHeaderHome) {
+        this.showHeaderHome = showHeaderHome;
+    }
+
+    public BooleanFilter getShowHeaderAbout() {
+        return showHeaderAbout;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderAbout() {
+        return Optional.ofNullable(showHeaderAbout);
+    }
+
+    public BooleanFilter showHeaderAbout() {
+        if (showHeaderAbout == null) {
+            setShowHeaderAbout(new BooleanFilter());
+        }
+        return showHeaderAbout;
+    }
+
+    public void setShowHeaderAbout(BooleanFilter showHeaderAbout) {
+        this.showHeaderAbout = showHeaderAbout;
+    }
+
+    public BooleanFilter getShowHeaderEvents() {
+        return showHeaderEvents;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderEvents() {
+        return Optional.ofNullable(showHeaderEvents);
+    }
+
+    public BooleanFilter showHeaderEvents() {
+        if (showHeaderEvents == null) {
+            setShowHeaderEvents(new BooleanFilter());
+        }
+        return showHeaderEvents;
+    }
+
+    public void setShowHeaderEvents(BooleanFilter showHeaderEvents) {
+        this.showHeaderEvents = showHeaderEvents;
+    }
+
+    public BooleanFilter getShowHeaderFeatures() {
+        return showHeaderFeatures;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderFeatures() {
+        return Optional.ofNullable(showHeaderFeatures);
+    }
+
+    public BooleanFilter showHeaderFeatures() {
+        if (showHeaderFeatures == null) {
+            setShowHeaderFeatures(new BooleanFilter());
+        }
+        return showHeaderFeatures;
+    }
+
+    public void setShowHeaderFeatures(BooleanFilter showHeaderFeatures) {
+        this.showHeaderFeatures = showHeaderFeatures;
+    }
+
+    public BooleanFilter getShowHeaderCalendar() {
+        return showHeaderCalendar;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderCalendar() {
+        return Optional.ofNullable(showHeaderCalendar);
+    }
+
+    public BooleanFilter showHeaderCalendar() {
+        if (showHeaderCalendar == null) {
+            setShowHeaderCalendar(new BooleanFilter());
+        }
+        return showHeaderCalendar;
+    }
+
+    public void setShowHeaderCalendar(BooleanFilter showHeaderCalendar) {
+        this.showHeaderCalendar = showHeaderCalendar;
+    }
+
+    public BooleanFilter getShowHeaderGallery() {
+        return showHeaderGallery;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderGallery() {
+        return Optional.ofNullable(showHeaderGallery);
+    }
+
+    public BooleanFilter showHeaderGallery() {
+        if (showHeaderGallery == null) {
+            setShowHeaderGallery(new BooleanFilter());
+        }
+        return showHeaderGallery;
+    }
+
+    public void setShowHeaderGallery(BooleanFilter showHeaderGallery) {
+        this.showHeaderGallery = showHeaderGallery;
+    }
+
+    public BooleanFilter getShowHeaderContact() {
+        return showHeaderContact;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderContact() {
+        return Optional.ofNullable(showHeaderContact);
+    }
+
+    public BooleanFilter showHeaderContact() {
+        if (showHeaderContact == null) {
+            setShowHeaderContact(new BooleanFilter());
+        }
+        return showHeaderContact;
+    }
+
+    public void setShowHeaderContact(BooleanFilter showHeaderContact) {
+        this.showHeaderContact = showHeaderContact;
+    }
+
+    public BooleanFilter getShowHeaderNews() {
+        return showHeaderNews;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderNews() {
+        return Optional.ofNullable(showHeaderNews);
+    }
+
+    public BooleanFilter showHeaderNews() {
+        if (showHeaderNews == null) {
+            setShowHeaderNews(new BooleanFilter());
+        }
+        return showHeaderNews;
+    }
+
+    public void setShowHeaderNews(BooleanFilter showHeaderNews) {
+        this.showHeaderNews = showHeaderNews;
+    }
+
+    public BooleanFilter getShowHeaderDownloads() {
+        return showHeaderDownloads;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderDownloads() {
+        return Optional.ofNullable(showHeaderDownloads);
+    }
+
+    public BooleanFilter showHeaderDownloads() {
+        if (showHeaderDownloads == null) {
+            setShowHeaderDownloads(new BooleanFilter());
+        }
+        return showHeaderDownloads;
+    }
+
+    public void setShowHeaderDownloads(BooleanFilter showHeaderDownloads) {
+        this.showHeaderDownloads = showHeaderDownloads;
+    }
+
+    public BooleanFilter getShowHeaderLinks() {
+        return showHeaderLinks;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderLinks() {
+        return Optional.ofNullable(showHeaderLinks);
+    }
+
+    public BooleanFilter showHeaderLinks() {
+        if (showHeaderLinks == null) {
+            setShowHeaderLinks(new BooleanFilter());
+        }
+        return showHeaderLinks;
+    }
+
+    public void setShowHeaderLinks(BooleanFilter showHeaderLinks) {
+        this.showHeaderLinks = showHeaderLinks;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -1099,6 +1319,16 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(showProfileMediaDownloadsSection, that.showProfileMediaDownloadsSection) &&
             Objects.equals(showProfileContactSection, that.showProfileContactSection) &&
             Objects.equals(showProfileProjectsSection, that.showProfileProjectsSection) &&
+            Objects.equals(showHeaderHome, that.showHeaderHome) &&
+            Objects.equals(showHeaderAbout, that.showHeaderAbout) &&
+            Objects.equals(showHeaderEvents, that.showHeaderEvents) &&
+            Objects.equals(showHeaderFeatures, that.showHeaderFeatures) &&
+            Objects.equals(showHeaderCalendar, that.showHeaderCalendar) &&
+            Objects.equals(showHeaderGallery, that.showHeaderGallery) &&
+            Objects.equals(showHeaderContact, that.showHeaderContact) &&
+            Objects.equals(showHeaderNews, that.showHeaderNews) &&
+            Objects.equals(showHeaderDownloads, that.showHeaderDownloads) &&
+            Objects.equals(showHeaderLinks, that.showHeaderLinks) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
@@ -1151,6 +1381,16 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             showProfileMediaDownloadsSection,
             showProfileContactSection,
             showProfileProjectsSection,
+            showHeaderHome,
+            showHeaderAbout,
+            showHeaderEvents,
+            showHeaderFeatures,
+            showHeaderCalendar,
+            showHeaderGallery,
+            showHeaderContact,
+            showHeaderNews,
+            showHeaderDownloads,
+            showHeaderLinks,
             createdAt,
             updatedAt,
             tenantOrganizationId,
@@ -1207,6 +1447,16 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalShowProfileMediaDownloadsSection().map(f -> "showProfileMediaDownloadsSection=" + f + ", ").orElse("") +
                 optionalShowProfileContactSection().map(f -> "showProfileContactSection=" + f + ", ").orElse("") +
                 optionalShowProfileProjectsSection().map(f -> "showProfileProjectsSection=" + f + ", ").orElse("") +
+                optionalShowHeaderHome().map(f -> "showHeaderHome=" + f + ", ").orElse("") +
+                optionalShowHeaderAbout().map(f -> "showHeaderAbout=" + f + ", ").orElse("") +
+                optionalShowHeaderEvents().map(f -> "showHeaderEvents=" + f + ", ").orElse("") +
+                optionalShowHeaderFeatures().map(f -> "showHeaderFeatures=" + f + ", ").orElse("") +
+                optionalShowHeaderCalendar().map(f -> "showHeaderCalendar=" + f + ", ").orElse("") +
+                optionalShowHeaderGallery().map(f -> "showHeaderGallery=" + f + ", ").orElse("") +
+                optionalShowHeaderContact().map(f -> "showHeaderContact=" + f + ", ").orElse("") +
+                optionalShowHeaderNews().map(f -> "showHeaderNews=" + f + ", ").orElse("") +
+                optionalShowHeaderDownloads().map(f -> "showHeaderDownloads=" + f + ", ").orElse("") +
+                optionalShowHeaderLinks().map(f -> "showHeaderLinks=" + f + ", ").orElse("") +
                 optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
                 optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
                 optionalTenantOrganizationId().map(f -> "tenantOrganizationId=" + f + ", ").orElse("") +

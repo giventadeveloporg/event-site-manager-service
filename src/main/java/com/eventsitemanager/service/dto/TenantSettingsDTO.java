@@ -216,6 +216,30 @@ public class TenantSettingsDTO implements Serializable {
 
     private Boolean showProfileProjectsSection;
 
+    /** Header menu visibility (null = app default: ON for legacy items) */
+    private Boolean showHeaderHome;
+
+    private Boolean showHeaderAbout;
+
+    private Boolean showHeaderEvents;
+
+    private Boolean showHeaderFeatures;
+
+    private Boolean showHeaderCalendar;
+
+    private Boolean showHeaderGallery;
+
+    private Boolean showHeaderContact;
+
+    /** Header menu: News / Perspectives (null = OFF) */
+    private Boolean showHeaderNews;
+
+    /** Header menu: Downloads (null = OFF) */
+    private Boolean showHeaderDownloads;
+
+    /** Header menu: Links (null = OFF) */
+    private Boolean showHeaderLinks;
+
     private Boolean enableGasStationModule;
 
     @Size(max = 1024)
@@ -758,6 +782,86 @@ public class TenantSettingsDTO implements Serializable {
         this.showProfileProjectsSection = showProfileProjectsSection;
     }
 
+    public Boolean getShowHeaderHome() {
+        return showHeaderHome;
+    }
+
+    public void setShowHeaderHome(Boolean showHeaderHome) {
+        this.showHeaderHome = showHeaderHome;
+    }
+
+    public Boolean getShowHeaderAbout() {
+        return showHeaderAbout;
+    }
+
+    public void setShowHeaderAbout(Boolean showHeaderAbout) {
+        this.showHeaderAbout = showHeaderAbout;
+    }
+
+    public Boolean getShowHeaderEvents() {
+        return showHeaderEvents;
+    }
+
+    public void setShowHeaderEvents(Boolean showHeaderEvents) {
+        this.showHeaderEvents = showHeaderEvents;
+    }
+
+    public Boolean getShowHeaderFeatures() {
+        return showHeaderFeatures;
+    }
+
+    public void setShowHeaderFeatures(Boolean showHeaderFeatures) {
+        this.showHeaderFeatures = showHeaderFeatures;
+    }
+
+    public Boolean getShowHeaderCalendar() {
+        return showHeaderCalendar;
+    }
+
+    public void setShowHeaderCalendar(Boolean showHeaderCalendar) {
+        this.showHeaderCalendar = showHeaderCalendar;
+    }
+
+    public Boolean getShowHeaderGallery() {
+        return showHeaderGallery;
+    }
+
+    public void setShowHeaderGallery(Boolean showHeaderGallery) {
+        this.showHeaderGallery = showHeaderGallery;
+    }
+
+    public Boolean getShowHeaderContact() {
+        return showHeaderContact;
+    }
+
+    public void setShowHeaderContact(Boolean showHeaderContact) {
+        this.showHeaderContact = showHeaderContact;
+    }
+
+    public Boolean getShowHeaderNews() {
+        return showHeaderNews;
+    }
+
+    public void setShowHeaderNews(Boolean showHeaderNews) {
+        this.showHeaderNews = showHeaderNews;
+    }
+
+    public Boolean getShowHeaderDownloads() {
+        return showHeaderDownloads;
+    }
+
+    public void setShowHeaderDownloads(Boolean showHeaderDownloads) {
+        this.showHeaderDownloads = showHeaderDownloads;
+    }
+
+    public Boolean getShowHeaderLinks() {
+        return showHeaderLinks;
+    }
+
+    public void setShowHeaderLinks(Boolean showHeaderLinks) {
+        this.showHeaderLinks = showHeaderLinks;
+    }
+
     public Boolean getEnableGasStationModule() {
         return enableGasStationModule;
     }
@@ -907,6 +1011,16 @@ public class TenantSettingsDTO implements Serializable {
                 ", enableGoogleAdsense='" + getEnableGoogleAdsense() + "'" +
                 ", googleAdsensePublisherId='" + getGoogleAdsensePublisherId() + "'" +
                 ", googleAdsensePlacementsJson='" + getGoogleAdsensePlacementsJson() + "'" +
+                ", showHeaderHome='" + getShowHeaderHome() + "'" +
+                ", showHeaderAbout='" + getShowHeaderAbout() + "'" +
+                ", showHeaderEvents='" + getShowHeaderEvents() + "'" +
+                ", showHeaderFeatures='" + getShowHeaderFeatures() + "'" +
+                ", showHeaderCalendar='" + getShowHeaderCalendar() + "'" +
+                ", showHeaderGallery='" + getShowHeaderGallery() + "'" +
+                ", showHeaderContact='" + getShowHeaderContact() + "'" +
+                ", showHeaderNews='" + getShowHeaderNews() + "'" +
+                ", showHeaderDownloads='" + getShowHeaderDownloads() + "'" +
+                ", showHeaderLinks='" + getShowHeaderLinks() + "'" +
                 ", defaultHeroImageUrls=" + getDefaultHeroImageUrls() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
