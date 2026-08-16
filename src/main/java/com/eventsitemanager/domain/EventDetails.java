@@ -164,6 +164,10 @@ public class EventDetails implements Serializable {
     @Column(name = "eventcube_embed_url", length = 1024)
     private String eventcubeEmbedUrl;
 
+    @Size(max = 1024)
+    @Column(name = "external_ticket_url", length = 1024)
+    private String externalTicketUrl;
+
     @NotNull
     @Size(max = 255)
     @Column(name = "from_email", length = 255, nullable = false)
@@ -715,6 +719,19 @@ public class EventDetails implements Serializable {
         this.eventcubeEmbedUrl = eventcubeEmbedUrl;
     }
 
+    public String getExternalTicketUrl() {
+        return this.externalTicketUrl;
+    }
+
+    public EventDetails externalTicketUrl(String externalTicketUrl) {
+        this.setExternalTicketUrl(externalTicketUrl);
+        return this;
+    }
+
+    public void setExternalTicketUrl(String externalTicketUrl) {
+        this.externalTicketUrl = externalTicketUrl;
+    }
+
     public String getFromEmail() {
         return this.fromEmail;
     }
@@ -1212,6 +1229,7 @@ public class EventDetails implements Serializable {
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 ", eventcubeEmbedUrl='" + getEventcubeEmbedUrl() + "'" +
+                ", externalTicketUrl='" + getExternalTicketUrl() + "'" +
                 "}";
     }
 }

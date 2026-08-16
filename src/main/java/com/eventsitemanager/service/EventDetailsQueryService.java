@@ -188,6 +188,10 @@ public class EventDetailsQueryService extends QueryService<EventDetails> {
                 specification =
                     specification.and(buildStringSpecification(criteria.getEventcubeEmbedUrl(), EventDetails_.eventcubeEmbedUrl));
             }
+            if (criteria.getExternalTicketUrl() != null) {
+                specification =
+                    specification.and(buildStringSpecification(criteria.getExternalTicketUrl(), EventDetails_.externalTicketUrl));
+            }
             if (criteria.getCreatedById() != null) {
                 specification =
                     specification.and(

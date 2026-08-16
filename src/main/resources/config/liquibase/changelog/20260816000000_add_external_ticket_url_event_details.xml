@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Add external_ticket_url to event_details for vendor Buy Tickets redirects (Zeffy, etc.).
+        Schema: varchar(1024) NULL. Only add if column does not exist.
+    -->
+    <changeSet id="20260816000000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_details"/>
+            <not>
+                <columnExists tableName="event_details" columnName="external_ticket_url"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="event_details">
+            <column name="external_ticket_url" type="varchar(1024)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

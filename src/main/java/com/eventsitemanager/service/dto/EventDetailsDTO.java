@@ -111,6 +111,9 @@ public class EventDetailsDTO implements Serializable {
     @Size(max = 1024)
     private String eventcubeEmbedUrl;
 
+    @Size(max = 1024)
+    private String externalTicketUrl;
+
     @NotNull
     @Size(max = 255)
     private String fromEmail;
@@ -426,6 +429,14 @@ public class EventDetailsDTO implements Serializable {
         this.eventcubeEmbedUrl = eventcubeEmbedUrl;
     }
 
+    public String getExternalTicketUrl() {
+        return externalTicketUrl;
+    }
+
+    public void setExternalTicketUrl(String externalTicketUrl) {
+        this.externalTicketUrl = externalTicketUrl;
+    }
+
     public String getFromEmail() {
         return fromEmail;
     }
@@ -609,6 +620,7 @@ public class EventDetailsDTO implements Serializable {
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", eventcubeEmbedUrl='" + getEventcubeEmbedUrl() + "'" +
+            ", externalTicketUrl='" + getExternalTicketUrl() + "'" +
             ", createdBy=" + getCreatedBy() +
             ", eventType=" + getEventType() +
             ", discountCodes=" + getDiscountCodes() +

@@ -82,6 +82,8 @@ public class EventDetailsCriteria implements Serializable, Criteria {
 
     private StringFilter eventcubeEmbedUrl;
 
+    private StringFilter externalTicketUrl;
+
     private LongFilter createdById;
 
     private LongFilter eventTypeId;
@@ -124,6 +126,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.eventcubeEmbedUrl = other.eventcubeEmbedUrl == null ? null : other.eventcubeEmbedUrl.copy();
+        this.externalTicketUrl = other.externalTicketUrl == null ? null : other.externalTicketUrl.copy();
         this.createdById = other.createdById == null ? null : other.createdById.copy();
         this.eventTypeId = other.eventTypeId == null ? null : other.eventTypeId.copy();
         this.discountCodesId = other.discountCodesId == null ? null : other.discountCodesId.copy();
@@ -612,6 +615,21 @@ public class EventDetailsCriteria implements Serializable, Criteria {
         this.eventcubeEmbedUrl = eventcubeEmbedUrl;
     }
 
+    public StringFilter getExternalTicketUrl() {
+        return externalTicketUrl;
+    }
+
+    public StringFilter externalTicketUrl() {
+        if (externalTicketUrl == null) {
+            externalTicketUrl = new StringFilter();
+        }
+        return externalTicketUrl;
+    }
+
+    public void setExternalTicketUrl(StringFilter externalTicketUrl) {
+        this.externalTicketUrl = externalTicketUrl;
+    }
+
     public LongFilter getCreatedById() {
         return createdById;
     }
@@ -705,6 +723,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(eventcubeEmbedUrl, that.eventcubeEmbedUrl) &&
+            Objects.equals(externalTicketUrl, that.externalTicketUrl) &&
             Objects.equals(createdById, that.createdById) &&
             Objects.equals(eventTypeId, that.eventTypeId) &&
             Objects.equals(discountCodesId, that.discountCodesId) &&
@@ -745,6 +764,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             createdAt,
             updatedAt,
             eventcubeEmbedUrl,
+            externalTicketUrl,
             createdById,
             eventTypeId,
             discountCodesId,
@@ -786,6 +806,7 @@ public class EventDetailsCriteria implements Serializable, Criteria {
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
             (eventcubeEmbedUrl != null ? "eventcubeEmbedUrl=" + eventcubeEmbedUrl + ", " : "") +
+            (externalTicketUrl != null ? "externalTicketUrl=" + externalTicketUrl + ", " : "") +
             (createdById != null ? "createdById=" + createdById + ", " : "") +
             (eventTypeId != null ? "eventTypeId=" + eventTypeId + ", " : "") +
             (discountCodesId != null ? "discountCodesId=" + discountCodesId + ", " : "") +
