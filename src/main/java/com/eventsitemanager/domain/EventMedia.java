@@ -66,6 +66,9 @@ public class EventMedia implements Serializable {
     @Column(name = "event_flyer")
     private Boolean eventFlyer;
 
+    @Column(name = "is_agenda_flyer", nullable = false)
+    private Boolean isAgendaFlyer = Boolean.FALSE;
+
     @Column(name = "is_event_management_official_document")
     private Boolean isEventManagementOfficialDocument;
 
@@ -348,6 +351,19 @@ public class EventMedia implements Serializable {
 
     public void setEventFlyer(Boolean eventFlyer) {
         this.eventFlyer = eventFlyer;
+    }
+
+    public Boolean getIsAgendaFlyer() {
+        return this.isAgendaFlyer;
+    }
+
+    public EventMedia isAgendaFlyer(Boolean isAgendaFlyer) {
+        this.setIsAgendaFlyer(isAgendaFlyer);
+        return this;
+    }
+
+    public void setIsAgendaFlyer(Boolean isAgendaFlyer) {
+        this.isAgendaFlyer = isAgendaFlyer != null ? isAgendaFlyer : Boolean.FALSE;
     }
 
     public Boolean getIsEventManagementOfficialDocument() {
@@ -844,6 +860,7 @@ public class EventMedia implements Serializable {
             ", fileSize=" + getFileSize() +
             ", isPublic='" + getIsPublic() + "'" +
             ", eventFlyer='" + getEventFlyer() + "'" +
+            ", isAgendaFlyer='" + getIsAgendaFlyer() + "'" +
             ", isEventManagementOfficialDocument='" + getIsEventManagementOfficialDocument() + "'" +
             ", preSignedUrl='" + getPreSignedUrl() + "'" +
             ", preSignedUrlExpiresAt='" + getPreSignedUrlExpiresAt() + "'" +

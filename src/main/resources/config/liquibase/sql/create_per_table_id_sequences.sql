@@ -551,6 +551,13 @@ CREATE SEQUENCE IF NOT EXISTS public.event_competition_group_member_id_seq
     START WITH 1
     CACHE 1;
 
+CREATE SEQUENCE IF NOT EXISTS public.event_agenda_item_id_seq
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    START WITH 1
+    CACHE 1;
+
 
 --
 -- TOC entry 230 (class 1259 OID 82796)

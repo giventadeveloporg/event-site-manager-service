@@ -145,5 +145,7 @@
     <include file="config/liquibase/changelog/20260729120000_tenant_settings_header_menu_flags.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260816000000_add_external_ticket_url_event_details.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260902010000_fix_event_competition_lob_text.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260902120000_added_entity_event_agenda_item.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260902180000_add_is_agenda_flyer_event_media.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

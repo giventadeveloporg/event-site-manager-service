@@ -260,6 +260,11 @@ public class EventDetails implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "event")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "event" }, allowSetters = true)
+    private Set<EventAgendaItem> eventAgendaItems = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "event")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "event" }, allowSetters = true)
     private Set<EventSponsorsJoin> eventSponsorsJoins = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
@@ -1139,6 +1144,37 @@ public class EventDetails implements Serializable {
     public EventDetails removeEventProgramDirectors(EventProgramDirectors eventProgramDirectors) {
         this.eventProgramDirectors.remove(eventProgramDirectors);
         eventProgramDirectors.setEvent(null);
+        return this;
+    }
+
+    public Set<EventAgendaItem> getEventAgendaItems() {
+        return this.eventAgendaItems;
+    }
+
+    public void setEventAgendaItems(Set<EventAgendaItem> eventAgendaItems) {
+        if (this.eventAgendaItems != null) {
+            this.eventAgendaItems.forEach(i -> i.setEvent(null));
+        }
+        if (eventAgendaItems != null) {
+            eventAgendaItems.forEach(i -> i.setEvent(this));
+        }
+        this.eventAgendaItems = eventAgendaItems;
+    }
+
+    public EventDetails eventAgendaItems(Set<EventAgendaItem> eventAgendaItems) {
+        this.setEventAgendaItems(eventAgendaItems);
+        return this;
+    }
+
+    public EventDetails addEventAgendaItem(EventAgendaItem eventAgendaItem) {
+        this.eventAgendaItems.add(eventAgendaItem);
+        eventAgendaItem.setEvent(this);
+        return this;
+    }
+
+    public EventDetails removeEventAgendaItem(EventAgendaItem eventAgendaItem) {
+        this.eventAgendaItems.remove(eventAgendaItem);
+        eventAgendaItem.setEvent(null);
         return this;
     }
 

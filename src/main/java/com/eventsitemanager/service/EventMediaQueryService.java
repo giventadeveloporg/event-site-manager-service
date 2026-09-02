@@ -185,6 +185,9 @@ public class EventMediaQueryService extends QueryService<EventMedia> {
             if (criteria.getEventFlyer() != null) {
                 specification = specification.and(buildSpecification(criteria.getEventFlyer(), EventMedia_.eventFlyer));
             }
+            if (criteria.getIsAgendaFlyer() != null) {
+                specification = specification.and(buildSpecification(criteria.getIsAgendaFlyer(), EventMedia_.isAgendaFlyer));
+            }
             if (criteria.getIsEventManagementOfficialDocument() != null) {
                 specification =
                     specification.and(

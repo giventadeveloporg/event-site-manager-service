@@ -205,6 +205,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         }
 
         eventMedia = eventMediaRepository.save(eventMedia);
+        enforceSingleAgendaFlyer(eventMedia);
 
         // CRITICAL: Replicate homepage hero image to child events if this is a parent event
         if (eventMedia.getIsHomePageHeroImage() != null && eventMedia.getIsHomePageHeroImage() && eventMedia.getEventId() != null) {
@@ -286,6 +287,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         }
 
         eventMedia = eventMediaRepository.save(eventMedia);
+        enforceSingleAgendaFlyer(eventMedia);
 
         // CRITICAL: Replicate homepage hero image to child events if this is a parent event and isHomePageHeroImage is true
         if (isHomePageHeroImageBeingSet && eventMedia.getEventId() != null) {
@@ -340,6 +342,7 @@ public class EventMediaServiceImpl implements EventMediaService {
                 })
                 .map(eventMediaRepository::save)
                 .map(savedEventMedia -> {
+                    enforceSingleAgendaFlyer(savedEventMedia);
                     // CRITICAL: Replicate homepage hero image to child events if this is a parent event and isHomePageHeroImage is true
                     if (isHomePageHeroImageBeingSet && savedEventMedia.getEventId() != null) {
                         try {
@@ -424,6 +427,16 @@ public class EventMediaServiceImpl implements EventMediaService {
         eventMediaRepository.deleteById(id);
     }
 
+    private void enforceSingleAgendaFlyer(EventMedia saved) {
+        if (saved == null || saved.getId() == null || saved.getEventId() == null) {
+            return;
+        }
+        if (!Boolean.TRUE.equals(saved.getIsAgendaFlyer())) {
+            return;
+        }
+        eventMediaRepository.clearOtherAgendaFlyers(saved.getEventId(), saved.getId());
+    }
+
     public EventMediaDTO uploadFile(
         MultipartFile file,
         Long eventId,
@@ -459,8 +472,10 @@ public class EventMediaServiceImpl implements EventMediaService {
         Long directorId,
         Long performerId,
         String eventMediaType,
-        String storageType
+        String storageType,
+        Boolean isAgendaFlyer
     ) {
+        boolean isAgendaFlyerValue = Boolean.TRUE.equals(isAgendaFlyer);
         // Handle EVENT_SPONSOR_POSTER type uploads (custom poster for event-sponsor combination)
         if (
             eventMediaType != null &&
@@ -505,6 +520,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setCreatedAt(ZonedDateTime.now());
             eventMedia.setUpdatedAt(ZonedDateTime.now());
             eventMedia.setEventFlyer(eventFlyer != null ? eventFlyer : false);
+            eventMedia.setIsAgendaFlyer(isAgendaFlyerValue);
             eventMedia.setIsEventManagementOfficialDocument(
                 isEventManagementOfficialDocument != null ? isEventManagementOfficialDocument : false
             );
@@ -570,6 +586,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setCreatedAt(ZonedDateTime.now());
             eventMedia.setUpdatedAt(ZonedDateTime.now());
             eventMedia.setEventFlyer(eventFlyer != null ? eventFlyer : false);
+            eventMedia.setIsAgendaFlyer(isAgendaFlyerValue);
             eventMedia.setIsEventManagementOfficialDocument(
                 isEventManagementOfficialDocument != null ? isEventManagementOfficialDocument : false
             );
@@ -640,6 +657,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setCreatedAt(ZonedDateTime.now());
             eventMedia.setUpdatedAt(ZonedDateTime.now());
             eventMedia.setEventFlyer(eventFlyer != null ? eventFlyer : false);
+            eventMedia.setIsAgendaFlyer(isAgendaFlyerValue);
             eventMedia.setIsEventManagementOfficialDocument(
                 isEventManagementOfficialDocument != null ? isEventManagementOfficialDocument : false
             );
@@ -788,6 +806,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setCreatedAt(ZonedDateTime.now());
             eventMedia.setUpdatedAt(ZonedDateTime.now());
             eventMedia.setEventFlyer(eventFlyer);
+            eventMedia.setIsAgendaFlyer(isAgendaFlyerValue);
             eventMedia.setIsEventManagementOfficialDocument(isEventManagementOfficialDocument);
             eventMedia.setIsHeroImage(isHeroImage);
             eventMedia.setIsActiveHeroImage(isActiveHeroImage);
@@ -891,6 +910,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setCreatedAt(ZonedDateTime.now());
             eventMedia.setUpdatedAt(ZonedDateTime.now());
             eventMedia.setEventFlyer(eventFlyer);
+            eventMedia.setIsAgendaFlyer(isAgendaFlyerValue);
             eventMedia.setIsEventManagementOfficialDocument(isEventManagementOfficialDocument);
             eventMedia.setIsHeroImage(isHeroImage);
             eventMedia.setIsActiveHeroImage(isActiveHeroImage);
@@ -970,6 +990,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setCreatedAt(ZonedDateTime.now());
             eventMedia.setUpdatedAt(ZonedDateTime.now());
             eventMedia.setEventFlyer(eventFlyer);
+            eventMedia.setIsAgendaFlyer(isAgendaFlyerValue);
             eventMedia.setIsEventManagementOfficialDocument(isEventManagementOfficialDocument);
             eventMedia.setIsHeroImage(isHeroImage);
             eventMedia.setIsActiveHeroImage(isActiveHeroImage);
@@ -1014,6 +1035,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setCreatedAt(ZonedDateTime.now());
             eventMedia.setUpdatedAt(ZonedDateTime.now());
             eventMedia.setEventFlyer(eventFlyer);
+            eventMedia.setIsAgendaFlyer(isAgendaFlyerValue);
             eventMedia.setIsEventManagementOfficialDocument(isEventManagementOfficialDocument);
             eventMedia.setIsHeroImage(isHeroImage);
             eventMedia.setIsActiveHeroImage(isActiveHeroImage);
@@ -1069,6 +1091,7 @@ public class EventMediaServiceImpl implements EventMediaService {
                             existingMedia.setFileSize(eventMedia.getFileSize());
                             existingMedia.setIsPublic(eventMedia.getIsPublic());
                             existingMedia.setEventFlyer(eventMedia.getEventFlyer());
+                            existingMedia.setIsAgendaFlyer(eventMedia.getIsAgendaFlyer());
                             existingMedia.setIsEventManagementOfficialDocument(eventMedia.getIsEventManagementOfficialDocument());
                             existingMedia.setAltText(eventMedia.getAltText());
                             existingMedia.setDisplayOrder(eventMedia.getDisplayOrder());
@@ -1087,6 +1110,7 @@ public class EventMediaServiceImpl implements EventMediaService {
                             existingMedia.setUpdatedAt(ZonedDateTime.now());
 
                             eventMedia = eventMediaRepository.save(existingMedia);
+                            enforceSingleAgendaFlyer(eventMedia);
                             return eventMediaMapper.toDto(eventMedia);
                         }
                     }
@@ -1097,6 +1121,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             }
 
             eventMedia = eventMediaRepository.save(eventMedia);
+            enforceSingleAgendaFlyer(eventMedia);
 
             // CRITICAL: Replicate homepage hero image to child events if this is a parent event
             if (isHomePageHeroImage && eventId != null && eventId > 0) {
@@ -1158,7 +1183,8 @@ public class EventMediaServiceImpl implements EventMediaService {
         boolean isHomePageHeroImage,
         boolean isFeaturedEventImage,
         boolean isLiveEventImage,
-        LocalDate startDisplayingFromDate
+        LocalDate startDisplayingFromDate,
+        Boolean isAgendaFlyer
     ) {
         List<EventMediaDTO> result = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
@@ -1200,7 +1226,8 @@ public class EventMediaServiceImpl implements EventMediaService {
                 null, // directorId
                 null, // performerId
                 null,
-                null
+                null,
+                isAgendaFlyer
             );
             // Only add non-null results to the list
             if (uploadResult != null) {
@@ -1267,6 +1294,7 @@ public class EventMediaServiceImpl implements EventMediaService {
         eventMedia.setIsPublic(isPublic);
 
         eventMedia.setEventFlyer(false);
+        eventMedia.setIsAgendaFlyer(false);
         eventMedia.setIsEventManagementOfficialDocument(true);
 
         // Non-event document defaults
@@ -1370,6 +1398,7 @@ public class EventMediaServiceImpl implements EventMediaService {
             eventMedia.setIsPublic(isPublic);
 
             eventMedia.setEventFlyer(false);
+            eventMedia.setIsAgendaFlyer(false);
             eventMedia.setIsEventManagementOfficialDocument(true);
 
             // Non-event document defaults
@@ -1795,6 +1824,9 @@ public class EventMediaServiceImpl implements EventMediaService {
             } else if (raw[36] instanceof Number) {
                 dto.setDisplayPriority(((Number) raw[36]).intValue());
             }
+        }
+        if (raw.length > 39 && raw[39] != null) {
+            dto.setIsAgendaFlyer((Boolean) raw[39]);
         }
 
         return dto;

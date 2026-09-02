@@ -82,6 +82,8 @@ public class CacheConfiguration {
             createCache(cm, com.eventsitemanager.domain.ExecutiveCommitteeTeamMember.class.getName());
             createCache(cm, com.eventsitemanager.domain.TeamGroup.class.getName());
             createCache(cm, com.eventsitemanager.domain.TeamMember.class.getName());
+            createCache(cm, com.eventsitemanager.domain.EventAgendaItem.class.getName());
+            createCache(cm, com.eventsitemanager.domain.EventDetails.class.getName() + ".eventAgendaItems");
             // jhipster-needle-ehcache-add-entry
         };
     }

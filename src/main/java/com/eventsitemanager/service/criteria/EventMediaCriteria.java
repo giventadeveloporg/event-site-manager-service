@@ -44,6 +44,8 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     private BooleanFilter eventFlyer;
 
+    private BooleanFilter isAgendaFlyer;
+
     private BooleanFilter isEventManagementOfficialDocument;
 
     private StringFilter preSignedUrl;
@@ -114,6 +116,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
         this.fileSize = other.fileSize == null ? null : other.fileSize.copy();
         this.isPublic = other.isPublic == null ? null : other.isPublic.copy();
         this.eventFlyer = other.eventFlyer == null ? null : other.eventFlyer.copy();
+        this.isAgendaFlyer = other.isAgendaFlyer == null ? null : other.isAgendaFlyer.copy();
         this.isEventManagementOfficialDocument =
             other.isEventManagementOfficialDocument == null ? null : other.isEventManagementOfficialDocument.copy();
         this.preSignedUrl = other.preSignedUrl == null ? null : other.preSignedUrl.copy();
@@ -315,6 +318,21 @@ public class EventMediaCriteria implements Serializable, Criteria {
 
     public void setEventFlyer(BooleanFilter eventFlyer) {
         this.eventFlyer = eventFlyer;
+    }
+
+    public BooleanFilter getIsAgendaFlyer() {
+        return isAgendaFlyer;
+    }
+
+    public BooleanFilter isAgendaFlyer() {
+        if (isAgendaFlyer == null) {
+            isAgendaFlyer = new BooleanFilter();
+        }
+        return isAgendaFlyer;
+    }
+
+    public void setIsAgendaFlyer(BooleanFilter isAgendaFlyer) {
+        this.isAgendaFlyer = isAgendaFlyer;
     }
 
     public BooleanFilter getIsEventManagementOfficialDocument() {
@@ -771,6 +789,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             Objects.equals(fileSize, that.fileSize) &&
             Objects.equals(isPublic, that.isPublic) &&
             Objects.equals(eventFlyer, that.eventFlyer) &&
+            Objects.equals(isAgendaFlyer, that.isAgendaFlyer) &&
             Objects.equals(isEventManagementOfficialDocument, that.isEventManagementOfficialDocument) &&
             Objects.equals(preSignedUrl, that.preSignedUrl) &&
             Objects.equals(preSignedUrlExpiresAt, that.preSignedUrlExpiresAt) &&
@@ -816,6 +835,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             fileSize,
             isPublic,
             eventFlyer,
+            isAgendaFlyer,
             isEventManagementOfficialDocument,
             preSignedUrl,
             preSignedUrlExpiresAt,
@@ -861,6 +881,7 @@ public class EventMediaCriteria implements Serializable, Criteria {
             (fileSize != null ? "fileSize=" + fileSize + ", " : "") +
             (isPublic != null ? "isPublic=" + isPublic + ", " : "") +
             (eventFlyer != null ? "eventFlyer=" + eventFlyer + ", " : "") +
+            (isAgendaFlyer != null ? "isAgendaFlyer=" + isAgendaFlyer + ", " : "") +
             (isEventManagementOfficialDocument != null ? "isEventManagementOfficialDocument=" + isEventManagementOfficialDocument + ", " : "") +
             (preSignedUrl != null ? "preSignedUrl=" + preSignedUrl + ", " : "") +
             (preSignedUrlExpiresAt != null ? "preSignedUrlExpiresAt=" + preSignedUrlExpiresAt + ", " : "") +

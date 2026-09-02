@@ -2431,6 +2431,7 @@ CREATE TABLE public.event_media (
                                     file_size int8 NULL,
                                     is_public bool DEFAULT true NULL,
                                     event_flyer bool DEFAULT false NULL,
+                                    is_agenda_flyer bool DEFAULT false NOT NULL,
                                     is_email_header_image bool DEFAULT false NULL,
                                     is_event_management_official_document bool DEFAULT false NULL,
                                     official_document_category_id bigint NULL,

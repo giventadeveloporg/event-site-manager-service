@@ -95,6 +95,7 @@ DECLARE
         'event_competition_result',
         'event_competition_content_block',
         'event_competition_group_member',
+        'event_agenda_item',
         'public_profile',
         'profile_writing',
         'profile_achievement',

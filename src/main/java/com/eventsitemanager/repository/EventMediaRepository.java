@@ -101,7 +101,7 @@ public interface EventMediaRepository extends JpaRepository<EventMedia, Long>, J
     // Custom query to fetch EventMedia without LOB fields to avoid LOB stream
     // issues
     @Query(
-        value = "SELECT id, tenant_id, title, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, is_home_page_hero_image, is_featured_event_image, is_live_event_image, created_at, updated_at, event_id, uploaded_by_id, start_displaying_from_date, sponsor_id, event_sponsors_join_id, performer_id, director_id, priority_ranking, official_document_category_id, official_document_year, hierarchy_path, hierarchy_category_label, display_priority FROM event_media",
+        value = "SELECT id, tenant_id, title, event_media_type, storage_type, file_url, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, pre_signed_url, pre_signed_url_expires_at, alt_text, display_order, download_count, is_featured_video, featured_video_url, is_hero_image, is_active_hero_image, is_home_page_hero_image, is_featured_event_image, is_live_event_image, created_at, updated_at, event_id, uploaded_by_id, start_displaying_from_date, sponsor_id, event_sponsors_join_id, performer_id, director_id, priority_ranking, official_document_category_id, official_document_year, hierarchy_path, hierarchy_category_label, display_priority, is_agenda_flyer FROM event_media",
         nativeQuery = true
     )
     List<Object[]> findAllWithoutLobFieldsRaw();
@@ -147,6 +147,11 @@ public interface EventMediaRepository extends JpaRepository<EventMedia, Long>, J
      */
     @Query("SELECT e FROM EventMedia e WHERE e.eventId = :eventId AND e.isHomePageHeroImage = true")
     List<EventMedia> findByEventIdAndIsHomePageHeroImageTrue(@Param("eventId") Long eventId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("UPDATE EventMedia e SET e.isAgendaFlyer = false WHERE e.eventId = :eventId AND e.isAgendaFlyer = true AND e.id <> :keepId")
+    int clearOtherAgendaFlyers(@Param("eventId") Long eventId, @Param("keepId") Long keepId);
     /**
      * Update null LOB fields to prevent stream access errors from orphaned LOB
      * references

@@ -45,6 +45,8 @@ public class EventMediaDTO implements Serializable {
 
     private Boolean eventFlyer;
 
+    private Boolean isAgendaFlyer;
+
     private Boolean isEventManagementOfficialDocument;
 
     private Long officialDocumentCategoryId;
@@ -224,6 +226,14 @@ public class EventMediaDTO implements Serializable {
 
     public void setEventFlyer(Boolean eventFlyer) {
         this.eventFlyer = eventFlyer;
+    }
+
+    public Boolean getIsAgendaFlyer() {
+        return isAgendaFlyer;
+    }
+
+    public void setIsAgendaFlyer(Boolean isAgendaFlyer) {
+        this.isAgendaFlyer = isAgendaFlyer;
     }
 
     public Boolean getIsEventManagementOfficialDocument() {
@@ -558,6 +568,7 @@ public class EventMediaDTO implements Serializable {
             ", fileSize=" + getFileSize() +
             ", isPublic='" + getIsPublic() + "'" +
             ", eventFlyer='" + getEventFlyer() + "'" +
+            ", isAgendaFlyer='" + getIsAgendaFlyer() + "'" +
             ", isEventManagementOfficialDocument='" + getIsEventManagementOfficialDocument() + "'" +
             ", officialDocumentCategoryId=" + getOfficialDocumentCategoryId() +
             ", officialDocumentYear=" + getOfficialDocumentYear() +

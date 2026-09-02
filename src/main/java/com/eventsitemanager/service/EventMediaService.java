@@ -97,7 +97,8 @@ public interface EventMediaService {
         Long directorId,
         Long performerId,
         String eventMediaType,
-        String storageType
+        String storageType,
+        Boolean isAgendaFlyer
     );
 
     /**
@@ -120,7 +121,8 @@ public interface EventMediaService {
         boolean isHomePageHeroImage,
         boolean isFeaturedEventImage,
         boolean isLiveEventImage,
-        LocalDate startDisplayingFromDate
+        LocalDate startDisplayingFromDate,
+        Boolean isAgendaFlyer
     );
 
     /**

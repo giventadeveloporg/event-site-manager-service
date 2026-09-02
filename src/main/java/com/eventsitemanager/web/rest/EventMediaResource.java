@@ -380,6 +380,7 @@ public class EventMediaResource {
         @RequestParam(value = "performerId", required = false) Long performerId,
         @RequestParam(value = "eventMediaType", required = false) String eventMediaType,
         @RequestParam(value = "storageType", required = false) String storageType,
+        @RequestParam(value = "isAgendaFlyer", required = false) Boolean isAgendaFlyer,
         Authentication authentication
     ) throws URISyntaxException {
         log.debug("REST request to upload EventMedia file: {} for event: {}", file.getOriginalFilename(), eventId);
@@ -444,7 +445,8 @@ public class EventMediaResource {
             directorId,
             performerId,
             eventMediaType,
-            storageType
+            storageType,
+            isAgendaFlyer
         );
 
         // For team member profile images, return OK status instead of CREATED since no
@@ -534,7 +536,8 @@ public class EventMediaResource {
             null, // directorId
             null, // performerId
             null, // eventMediaType
-            null // storageType
+            null, // storageType
+            false
         );
 
         // Update the EventFeaturedPerformers entity with the appropriate image URL
@@ -639,7 +642,8 @@ public class EventMediaResource {
             null, // directorId
             null, // performerId
             null, // eventMediaType
-            null // storageType
+            null, // storageType
+            false
         );
 
         // Update the EventSponsors entity with the appropriate image URL
@@ -1025,7 +1029,8 @@ public class EventMediaResource {
             null, // directorId
             null, // performerId
             null, // eventMediaType
-            null // storageType
+            null, // storageType
+            false
         );
 
         // Note: Photo is uploaded and stored as EventMedia, linked via entityId and
@@ -1092,7 +1097,8 @@ public class EventMediaResource {
             null, // directorId
             null, // performerId
             null, // eventMediaType
-            null // storageType
+            null, // storageType
+            false
         );
 
         // Update the EventProgramDirectors entity with the photo URL
@@ -1171,6 +1177,7 @@ public class EventMediaResource {
         @RequestParam(value = "isFeaturedEventImage", required = false) Boolean isFeaturedEventImage,
         @RequestParam(value = "isLiveEventImage", required = false) Boolean isLiveEventImage,
         @RequestParam(value = "startDisplayingFromDate", required = false) String startDisplayingFromDate,
+        @RequestParam(value = "isAgendaFlyer", required = false) Boolean isAgendaFlyer,
         Authentication authentication
     ) {
         log.debug("REST request to upload {} EventMedia files for event: {}", files.size(), eventId);
@@ -1238,7 +1245,8 @@ public class EventMediaResource {
             isHomePageHeroImageValue,
             isFeaturedEventImageValue,
             isLiveEventImageValue,
-            startDisplayingFromDateIn
+            startDisplayingFromDateIn,
+            isAgendaFlyer
         );
 
         /*
