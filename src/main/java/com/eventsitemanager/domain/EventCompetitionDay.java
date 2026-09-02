@@ -54,8 +54,7 @@ public class EventCompetitionDay implements Serializable {
     @Column(name = "sort_order")
     private Integer sortOrder;
 
-    @Lob
-    @Column(name = "notes")
+    @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
     @NotNull

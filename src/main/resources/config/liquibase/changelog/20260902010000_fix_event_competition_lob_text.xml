@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Same pattern as 20251207_fix_focus_group_description_lob.xml.
+        Hibernate @Lob on PostgreSQL stores pg_largeobject OIDs. Liquibase created
+        these columns as clob/text, so GET fails with "Unable to access lob stream"
+        when the large object is missing. Map them as ordinary TEXT instead.
+    -->
+
+    <changeSet id="20260902010000-1-event-competition-text" author="cursor">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_competition"/>
+            <columnExists tableName="event_competition" columnName="description"/>
+            <columnExists tableName="event_competition" columnName="judgment_criteria_json"/>
+        </preConditions>
+        <comment>event_competition description/judgment_criteria_json: TEXT instead of LOB/CLOB</comment>
+        <modifyDataType tableName="event_competition" columnName="description" newDataType="text"/>
+        <modifyDataType tableName="event_competition" columnName="judgment_criteria_json" newDataType="text"/>
+    </changeSet>
+
+    <changeSet id="20260902010000-2-event-competition-rules-markdown-text" author="cursor">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_competition"/>
+            <columnExists tableName="event_competition" columnName="rules_markdown"/>
+        </preConditions>
+        <comment>event_competition.rules_markdown: TEXT instead of LOB/CLOB</comment>
+        <modifyDataType tableName="event_competition" columnName="rules_markdown" newDataType="text"/>
+    </changeSet>
+
+    <changeSet id="20260902010000-3-event-competition-result-text" author="cursor">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_competition_result"/>
+            <columnExists tableName="event_competition_result" columnName="prize_details"/>
+            <columnExists tableName="event_competition_result" columnName="notes"/>
+        </preConditions>
+        <comment>event_competition_result prize_details/notes: TEXT instead of LOB/CLOB</comment>
+        <modifyDataType tableName="event_competition_result" columnName="prize_details" newDataType="text"/>
+        <modifyDataType tableName="event_competition_result" columnName="notes" newDataType="text"/>
+    </changeSet>
+
+    <changeSet id="20260902010000-4-event-competition-settings-text" author="cursor">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_competition_settings"/>
+            <columnExists tableName="event_competition_settings" columnName="eligibility_text"/>
+        </preConditions>
+        <comment>event_competition_settings.eligibility_text: TEXT instead of LOB/CLOB</comment>
+        <modifyDataType tableName="event_competition_settings" columnName="eligibility_text" newDataType="text"/>
+    </changeSet>
+
+    <changeSet id="20260902010000-5-event-competition-content-block-text" author="cursor">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_competition_content_block"/>
+            <columnExists tableName="event_competition_content_block" columnName="body_markdown"/>
+        </preConditions>
+        <comment>event_competition_content_block.body_markdown: TEXT instead of LOB/CLOB</comment>
+        <modifyDataType tableName="event_competition_content_block" columnName="body_markdown" newDataType="text"/>
+    </changeSet>
+
+    <changeSet id="20260902010000-6-event-competition-day-text" author="cursor">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_competition_day"/>
+            <columnExists tableName="event_competition_day" columnName="notes"/>
+        </preConditions>
+        <comment>event_competition_day.notes: TEXT instead of LOB/CLOB</comment>
+        <modifyDataType tableName="event_competition_day" columnName="notes" newDataType="text"/>
+    </changeSet>
+
+    <changeSet id="20260902010000-7-decode-leftover-pg-largeobject-oids" author="cursor" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="event_competition"/>
+        </preConditions>
+        <comment>
+            Cells that still store a numeric pg_largeobject OID (from the old @Lob mapping)
+            are replaced with the large-object bytes when present, otherwise NULL
+            (or '[]' for NOT NULL body_markdown).
+        </comment>
+        <sql splitStatements="false"><![CDATA[
+CREATE OR REPLACE FUNCTION tmp_decode_pg_loid_text(p_val text)
+RETURNS text
+LANGUAGE plpgsql
+AS $fn$
+BEGIN
+    IF p_val IS NULL OR btrim(p_val) = '' OR p_val !~ '^[0-9]+$' THEN
+        RETURN p_val;
+    END IF;
+    BEGIN
+        RETURN convert_from(lo_get(p_val::oid), 'UTF8');
+    EXCEPTION WHEN OTHERS THEN
+        RETURN NULL;
+    END;
+END;
+$fn$;
+
+UPDATE event_competition SET
+    description = tmp_decode_pg_loid_text(description),
+    judgment_criteria_json = tmp_decode_pg_loid_text(judgment_criteria_json),
+    rules_markdown = tmp_decode_pg_loid_text(rules_markdown)
+WHERE coalesce(description, '') ~ '^[0-9]+$'
+   OR coalesce(judgment_criteria_json, '') ~ '^[0-9]+$'
+   OR coalesce(rules_markdown, '') ~ '^[0-9]+$';
+
+UPDATE event_competition_result SET
+    prize_details = tmp_decode_pg_loid_text(prize_details),
+    notes = tmp_decode_pg_loid_text(notes)
+WHERE coalesce(prize_details, '') ~ '^[0-9]+$'
+   OR coalesce(notes, '') ~ '^[0-9]+$';
+
+UPDATE event_competition_settings SET
+    eligibility_text = tmp_decode_pg_loid_text(eligibility_text)
+WHERE coalesce(eligibility_text, '') ~ '^[0-9]+$';
+
+UPDATE event_competition_day SET
+    notes = tmp_decode_pg_loid_text(notes)
+WHERE coalesce(notes, '') ~ '^[0-9]+$';
+
+UPDATE event_competition_content_block SET
+    body_markdown = coalesce(tmp_decode_pg_loid_text(body_markdown), '[]')
+WHERE coalesce(body_markdown, '') ~ '^[0-9]+$';
+
+DROP FUNCTION tmp_decode_pg_loid_text(text);
+        ]]></sql>
+    </changeSet>
+
+</databaseChangeLog>

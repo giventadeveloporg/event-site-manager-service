@@ -44,9 +44,8 @@ public class EventCompetitionContentBlock implements Serializable {
     @Column(name = "title")
     private String title;
 
-    @Lob
     @NotNull
-    @Column(name = "body_markdown")
+    @Column(name = "body_markdown", columnDefinition = "TEXT", nullable = false)
     private String bodyMarkdown;
 
     @NotNull

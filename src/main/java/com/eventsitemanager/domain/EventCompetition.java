@@ -39,8 +39,7 @@ public class EventCompetition implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @Lob
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -85,8 +84,7 @@ public class EventCompetition implements Serializable {
     @Column(name = "requires_soundtrack")
     private Boolean requiresSoundtrack;
 
-    @Lob
-    @Column(name = "judgment_criteria_json")
+    @Column(name = "judgment_criteria_json", columnDefinition = "TEXT")
     private String judgmentCriteriaJson;
 
     @NotNull
@@ -98,7 +96,6 @@ public class EventCompetition implements Serializable {
     private Boolean isActive;
 
     @Enumerated(EnumType.STRING)
-    @Size(max = 32)
     @Column(name = "discipline_code", length = 32)
     private CompetitionDisciplineCode disciplineCode;
 
@@ -120,8 +117,7 @@ public class EventCompetition implements Serializable {
     @Column(name = "registration_deadline")
     private ZonedDateTime registrationDeadline;
 
-    @Lob
-    @Column(name = "rules_markdown")
+    @Column(name = "rules_markdown", columnDefinition = "TEXT")
     private String rulesMarkdown;
 
     @Column(name = "requires_team_name")

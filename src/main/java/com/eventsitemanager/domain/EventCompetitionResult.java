@@ -51,8 +51,7 @@ public class EventCompetitionResult implements Serializable {
     @Column(name = "prize_title")
     private String prizeTitle;
 
-    @Lob
-    @Column(name = "prize_details")
+    @Column(name = "prize_details", columnDefinition = "TEXT")
     private String prizeDetails;
 
     @NotNull
@@ -63,8 +62,7 @@ public class EventCompetitionResult implements Serializable {
     @Column(name = "winner_photo_url")
     private String winnerPhotoUrl;
 
-    @Lob
-    @Column(name = "notes")
+    @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
     @NotNull

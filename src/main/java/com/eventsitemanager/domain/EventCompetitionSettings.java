@@ -86,8 +86,7 @@ public class EventCompetitionSettings implements Serializable {
     @Column(name = "results_display_mode", length = 32)
     private CompetitionResultsDisplayMode resultsDisplayMode;
 
-    @Lob
-    @Column(name = "eligibility_text")
+    @Column(name = "eligibility_text", columnDefinition = "TEXT")
     private String eligibilityText;
 
     @Column(name = "winners_published_email_sent_at")
