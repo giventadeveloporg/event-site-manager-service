@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestController
 @RequestMapping("/api/exception-translator-test")
@@ -44,6 +45,11 @@ public class ExceptionTranslatorTestController {
     @GetMapping("/internal-server-error")
     public void internalServerError() {
         throw new RuntimeException();
+    }
+
+    @GetMapping("/max-upload-size-exceeded")
+    public void maxUploadSizeExceeded() {
+        throw new MaxUploadSizeExceededException(200L * 1024 * 1024);
     }
 
     public static class TestDTO {

@@ -32,7 +32,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import io.undertow.server.handlers.form.MultiPartParserDefinition.FileTooLargeException;
 import tech.jhipster.config.JHipsterConstants;
 import tech.jhipster.web.rest.errors.ProblemDetailWithCause;
 import tech.jhipster.web.rest.errors.ProblemDetailWithCause.ProblemDetailWithCauseBuilder;
@@ -178,6 +180,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     private URI getMappedType(Throwable err) {
         if (err instanceof MethodArgumentNotValidException) return ErrorConstants.CONSTRAINT_VIOLATION_TYPE;
         if (err instanceof ClerkAuthenticationException) return ClerkErrorConstants.CLERK_ERROR_TYPE;
+        if (isUploadSizeExceeded(err)) return ErrorConstants.FILE_TOO_LARGE_TYPE;
         return ErrorConstants.DEFAULT_TYPE;
     }
 
@@ -186,6 +189,8 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
             return ErrorConstants.ERR_VALIDATION;
         } else if (err instanceof ConcurrencyFailureException || err.getCause() instanceof ConcurrencyFailureException) {
             return ErrorConstants.ERR_CONCURRENCY_FAILURE;
+        } else if (isUploadSizeExceeded(err)) {
+            return ErrorConstants.ERR_FILE_TOO_LARGE;
         } else if (err instanceof ClerkAuthenticationException clerkEx) {
             return getClerkErrorMessageKey(clerkEx.getErrorCode());
         }
@@ -211,10 +216,14 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     private String getCustomizedTitle(Throwable err) {
         if (err instanceof MethodArgumentNotValidException) return "Method argument not valid";
         if (err instanceof ClerkAuthenticationException) return "Clerk Authentication Error";
+        if (isUploadSizeExceeded(err)) return "Payload Too Large";
         return null;
     }
 
     private String getCustomizedErrorDetails(Throwable err) {
+        if (isUploadSizeExceeded(err)) {
+            return "Uploaded file exceeds the maximum allowed size (200MB per file, 250MB per request).";
+        }
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
         if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {
             if (err instanceof HttpMessageConversionException) return "Unable to convert http message";
@@ -229,11 +238,28 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
         if (err instanceof AccessDeniedException) return HttpStatus.FORBIDDEN;
         if (err instanceof ConcurrencyFailureException) return HttpStatus.CONFLICT;
         if (err instanceof BadCredentialsException) return HttpStatus.UNAUTHORIZED;
+        // Spring Boot 3.1 / SF 6.0: MaxUploadSizeExceededException does not implement ErrorResponse → would be 500
+        if (isUploadSizeExceeded(err)) return HttpStatus.PAYLOAD_TOO_LARGE;
         // Clerk authentication exceptions
         if (err instanceof ClerkAuthenticationException clerkEx) {
             return HttpStatus.valueOf(clerkEx.getStatusCode().value());
         }
         return null;
+    }
+
+    /**
+     * Undertow FileTooLargeException (UT000054) and Spring MaxUploadSizeExceededException,
+     * including when nested as the cause of a wrapper exception.
+     */
+    private boolean isUploadSizeExceeded(Throwable err) {
+        Throwable current = err;
+        while (current != null) {
+            if (current instanceof MaxUploadSizeExceededException || current instanceof FileTooLargeException) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     private URI getPathValue(NativeWebRequest request) {

@@ -115,4 +115,18 @@ class ExceptionTranslatorIT {
             .andExpect(jsonPath("$.message").value("error.http.500"))
             .andExpect(jsonPath("$.title").value("Internal Server Error"));
     }
+
+    @Test
+    void testMaxUploadSizeExceeded() throws Exception {
+        mockMvc
+            .perform(get("/api/exception-translator-test/max-upload-size-exceeded"))
+            .andExpect(status().isPayloadTooLarge())
+            .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+            .andExpect(jsonPath("$.message").value(ErrorConstants.ERR_FILE_TOO_LARGE))
+            .andExpect(jsonPath("$.title").value("Payload Too Large"))
+            .andExpect(
+                jsonPath("$.detail")
+                    .value("Uploaded file exceeds the maximum allowed size (200MB per file, 250MB per request).")
+            );
+    }
 }

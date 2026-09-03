@@ -62,8 +62,11 @@ spring:
       console-available: true
   servlet:
     multipart:
-      max-file-size: 50MB
-      max-request-size: 50MB
+      # Per-file limit: supports large images (~20MB) and videos (~200MB)
+      max-file-size: 200MB
+      # Multi-file upload envelope (upload-multiple / several large files in one request)
+      max-request-size: 250MB
+      enabled: true
   cache:
     # Primary cache type - Caffeine for fast in-memory caching
     # This is the default for all profiles (can be overridden in profile-specific configs)
@@ -108,6 +111,9 @@ server:
     session:
       cookie:
         http-only: true
+  undertow:
+    # Must be at least spring.servlet.multipart.max-request-size (Undertow entity body cap)
+    max-http-post-size: 250MB
 
 management:
   endpoints:
