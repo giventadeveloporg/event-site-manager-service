@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260915140000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="last_matches_id_seq" schemaName="public"/>
+            </not>
+        </preConditions>
+        <createSequence
+            sequenceName="last_matches_id_seq"
+            schemaName="public"
+            startValue="1"
+            incrementBy="1"
+            minValue="1"
+            cycle="false"/>
+    </changeSet>
+
+    <changeSet id="20260915140000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="last_matches"/>
+            </not>
+        </preConditions>
+        <createTable tableName="last_matches">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="home_logo_url" type="varchar(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="away_logo_url" type="varchar(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="match_date_label" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="home_score" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="away_score" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="league_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority_order" type="integer"/>
+            <column name="is_active" type="boolean" defaultValueBoolean="true"/>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="last_matches"
+            baseColumnNames="tenant_id"
+            constraintName="fk_last_matches__tenant_id"
+            referencedTableName="tenant_organization"
+            referencedColumnNames="tenant_id"
+            onDelete="CASCADE"/>
+        <createIndex indexName="idx_last_matches_tenant_id" tableName="last_matches">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_last_matches_is_active" tableName="last_matches">
+            <column name="is_active"/>
+        </createIndex>
+        <createIndex indexName="idx_last_matches_priority_order" tableName="last_matches">
+            <column name="priority_order"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
