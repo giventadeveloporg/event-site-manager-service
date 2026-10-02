@@ -1,6 +1,7 @@
 package com.eventsitemanager.service.impl;
 
 import com.eventsitemanager.domain.TenantEmailAddress;
+import com.eventsitemanager.domain.enumeration.TenantEmailType;
 import com.eventsitemanager.repository.TenantEmailAddressRepository;
 import com.eventsitemanager.service.TenantEmailAddressService;
 import com.eventsitemanager.service.dto.TenantEmailAddressDTO;
@@ -56,15 +57,7 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
             tenantEmailAddressDTO.setIsDefault(false);
         }
 
-        // If setting as default, unset other defaults for the same tenant
-        if (Boolean.TRUE.equals(tenantEmailAddressDTO.getIsDefault())) {
-            tenantEmailAddressRepository
-                .findByTenantIdAndIsDefaultTrue(tenantEmailAddressDTO.getTenantId())
-                .ifPresent(existingDefault -> {
-                    existingDefault.setIsDefault(false);
-                    tenantEmailAddressRepository.save(existingDefault);
-                });
-        }
+        unsetOtherDefaultsForType(tenantEmailAddressDTO);
 
         TenantEmailAddress tenantEmailAddress = tenantEmailAddressMapper.toEntity(tenantEmailAddressDTO);
 
@@ -90,16 +83,7 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
 
         normalizeOptionalEmailAddresses(tenantEmailAddressDTO);
 
-        // If setting as default, unset other defaults for the same tenant
-        if (Boolean.TRUE.equals(tenantEmailAddressDTO.getIsDefault())) {
-            tenantEmailAddressRepository
-                .findByTenantIdAndIsDefaultTrue(tenantEmailAddressDTO.getTenantId())
-                .filter(existing -> !existing.getId().equals(tenantEmailAddressDTO.getId()))
-                .ifPresent(existingDefault -> {
-                    existingDefault.setIsDefault(false);
-                    tenantEmailAddressRepository.save(existingDefault);
-                });
-        }
+        unsetOtherDefaultsForType(tenantEmailAddressDTO);
 
         TenantEmailAddress tenantEmailAddress = tenantEmailAddressMapper.toEntity(tenantEmailAddressDTO);
 
@@ -125,16 +109,7 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
 
         normalizeOptionalEmailAddresses(tenantEmailAddressDTO);
 
-        // If setting as default, unset other defaults for the same tenant
-        if (Boolean.TRUE.equals(tenantEmailAddressDTO.getIsDefault())) {
-            tenantEmailAddressRepository
-                .findByTenantIdAndIsDefaultTrue(tenantEmailAddressDTO.getTenantId())
-                .filter(existing -> !existing.getId().equals(tenantEmailAddressDTO.getId()))
-                .ifPresent(existingDefault -> {
-                    existingDefault.setIsDefault(false);
-                    tenantEmailAddressRepository.save(existingDefault);
-                });
-        }
+        unsetOtherDefaultsForType(tenantEmailAddressDTO);
 
         return tenantEmailAddressRepository
             .findById(tenantEmailAddressDTO.getId())
@@ -200,6 +175,45 @@ public class TenantEmailAddressServiceImpl implements TenantEmailAddressService 
             .stream()
             .map(tenantEmailAddressMapper::toDto)
             .collect(Collectors.toList());
+    }
+
+    /**
+     * "Default for this type" is one default per tenant and email type.
+     * A list is required: Optional throws when more than one default already exists.
+     */
+    private void unsetOtherDefaultsForType(TenantEmailAddressDTO tenantEmailAddressDTO) {
+        if (tenantEmailAddressDTO == null || !Boolean.TRUE.equals(tenantEmailAddressDTO.getIsDefault())) {
+            return;
+        }
+        if (tenantEmailAddressDTO.getTenantId() == null) {
+            return;
+        }
+
+        TenantEmailType emailType = null;
+        String emailTypeValue = tenantEmailAddressDTO.getEmailType();
+        if (emailTypeValue != null && !emailTypeValue.isBlank()) {
+            emailType = TenantEmailType.valueOf(emailTypeValue.trim());
+        }
+        if (emailType == null && tenantEmailAddressDTO.getId() != null) {
+            emailType = tenantEmailAddressRepository
+                .findById(tenantEmailAddressDTO.getId())
+                .map(TenantEmailAddress::getEmailType)
+                .orElse(null);
+        }
+        if (emailType == null) {
+            return;
+        }
+
+        for (TenantEmailAddress existing : tenantEmailAddressRepository.findByTenantIdAndEmailTypeAndIsDefaultTrue(
+            tenantEmailAddressDTO.getTenantId(),
+            emailType
+        )) {
+            if (existing.getId() != null && existing.getId().equals(tenantEmailAddressDTO.getId())) {
+                continue;
+            }
+            existing.setIsDefault(false);
+            tenantEmailAddressRepository.save(existing);
+        }
     }
 
     /** Blank optional email fields are stored as null. */

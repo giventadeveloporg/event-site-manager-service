@@ -1,8 +1,8 @@
 package com.eventsitemanager.repository;
 
 import com.eventsitemanager.domain.TenantEmailAddress;
+import com.eventsitemanager.domain.enumeration.TenantEmailType;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -17,7 +17,7 @@ public interface TenantEmailAddressRepository
 
     List<TenantEmailAddress> findByTenantIdAndIsActive(String tenantId, Boolean isActive);
 
-    Optional<TenantEmailAddress> findByTenantIdAndIsDefaultTrue(String tenantId);
+    List<TenantEmailAddress> findByTenantIdAndEmailTypeAndIsDefaultTrue(String tenantId, TenantEmailType emailType);
 
-    List<TenantEmailAddress> findByTenantIdAndEmailType(String tenantId, com.eventsitemanager.domain.enumeration.TenantEmailType emailType);
+    List<TenantEmailAddress> findByTenantIdAndEmailType(String tenantId, TenantEmailType emailType);
 }
