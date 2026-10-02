@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260929160000-1" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="gallery_youtube_video_id_seq" schemaName="public"/>
+            </not>
+        </preConditions>
+        <createSequence
+            sequenceName="gallery_youtube_video_id_seq"
+            schemaName="public"
+            startValue="1"
+            incrementBy="1"
+            minValue="1"
+            cycle="false"/>
+    </changeSet>
+
+    <changeSet id="20260929160000-2" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="gallery_youtube_video"/>
+            </not>
+        </preConditions>
+        <createTable tableName="gallery_youtube_video">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="gallery_youtube_video_pkey"/>
+            </column>
+            <column name="tenant_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="youtube_url" type="varchar(1024)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(500)"/>
+            <column name="description" type="text"/>
+            <column name="display_order" type="integer" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_gallery_youtube_video_tenant_id" tableName="gallery_youtube_video">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_gallery_youtube_video_tenant_order" tableName="gallery_youtube_video">
+            <column name="tenant_id"/>
+            <column name="display_order"/>
+        </createIndex>
+        <createIndex indexName="idx_gallery_youtube_video_is_active" tableName="gallery_youtube_video">
+            <column name="tenant_id"/>
+            <column name="is_active"/>
+        </createIndex>
+        <sql dbms="postgresql">
+            CREATE TRIGGER trg_gallery_youtube_video_updated_at
+                BEFORE UPDATE ON public.gallery_youtube_video
+                FOR EACH ROW
+                EXECUTE FUNCTION public.update_updated_at_column();
+        </sql>
+    </changeSet>
+</databaseChangeLog>
