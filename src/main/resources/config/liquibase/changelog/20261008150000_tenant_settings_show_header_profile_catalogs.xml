@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Header menu: Achievements, Affiliations, Projects — independent of homepage section flags. -->
+    <changeSet id="20261008150000-1" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_settings"/>
+            <not>
+                <columnExists tableName="tenant_settings" columnName="show_header_achievements"/>
+            </not>
+        </preConditions>
+        <sql><![CDATA[
+            ALTER TABLE public.tenant_settings
+                ADD COLUMN IF NOT EXISTS show_header_achievements boolean,
+                ADD COLUMN IF NOT EXISTS show_header_affiliations boolean,
+                ADD COLUMN IF NOT EXISTS show_header_projects boolean;
+
+            COMMENT ON COLUMN public.tenant_settings.show_header_achievements IS
+                'When true, public header shows Achievements. Null uses app default OFF.';
+            COMMENT ON COLUMN public.tenant_settings.show_header_affiliations IS
+                'When true, public header shows Affiliations. Null uses app default OFF.';
+            COMMENT ON COLUMN public.tenant_settings.show_header_projects IS
+                'When true, public header shows Projects. Null uses app default OFF.';
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20261008150000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="tenant_settings" columnName="show_header_achievements"/>
+            <columnExists tableName="tenant_settings" columnName="show_profile_achievements_section"/>
+            <columnExists tableName="tenant_settings" columnName="show_header_affiliations"/>
+            <columnExists tableName="tenant_settings" columnName="show_profile_affiliations_section"/>
+            <columnExists tableName="tenant_settings" columnName="show_header_projects"/>
+            <columnExists tableName="tenant_settings" columnName="show_profile_projects_section"/>
+        </preConditions>
+        <sql><![CDATA[
+            UPDATE public.tenant_settings
+               SET show_header_achievements = show_profile_achievements_section
+             WHERE show_header_achievements IS NULL;
+
+            UPDATE public.tenant_settings
+               SET show_header_affiliations = show_profile_affiliations_section
+             WHERE show_header_affiliations IS NULL;
+
+            UPDATE public.tenant_settings
+               SET show_header_projects = show_profile_projects_section
+             WHERE show_header_projects IS NULL;
+        ]]></sql>
+    </changeSet>
+</databaseChangeLog>

@@ -263,6 +263,12 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
                         buildSpecification(criteria.getShowProfileProjectsSection(), TenantSettings_.showProfileProjectsSection)
                     );
             }
+            if (criteria.getShowProfileServicesSection() != null) {
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getShowProfileServicesSection(), TenantSettings_.showProfileServicesSection)
+                    );
+            }
             if (criteria.getShowHeaderHome() != null) {
                 specification = specification.and(buildSpecification(criteria.getShowHeaderHome(), TenantSettings_.showHeaderHome));
             }
@@ -293,6 +299,20 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
             }
             if (criteria.getShowHeaderLinks() != null) {
                 specification = specification.and(buildSpecification(criteria.getShowHeaderLinks(), TenantSettings_.showHeaderLinks));
+            }
+            if (criteria.getShowHeaderServices() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderServices(), TenantSettings_.showHeaderServices));
+            }
+            if (criteria.getShowHeaderAchievements() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getShowHeaderAchievements(), TenantSettings_.showHeaderAchievements));
+            }
+            if (criteria.getShowHeaderAffiliations() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getShowHeaderAffiliations(), TenantSettings_.showHeaderAffiliations));
+            }
+            if (criteria.getShowHeaderProjects() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderProjects(), TenantSettings_.showHeaderProjects));
             }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt));

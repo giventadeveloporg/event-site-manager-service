@@ -109,6 +109,8 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
 
     private BooleanFilter showProfileProjectsSection;
 
+    private BooleanFilter showProfileServicesSection;
+
     private BooleanFilter showHeaderHome;
 
     private BooleanFilter showHeaderAbout;
@@ -128,6 +130,14 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
     private BooleanFilter showHeaderDownloads;
 
     private BooleanFilter showHeaderLinks;
+
+    private BooleanFilter showHeaderServices;
+
+    private BooleanFilter showHeaderAchievements;
+
+    private BooleanFilter showHeaderAffiliations;
+
+    private BooleanFilter showHeaderProjects;
 
     private ZonedDateTimeFilter createdAt;
 
@@ -182,6 +192,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.showProfileMediaDownloadsSection = other.optionalShowProfileMediaDownloadsSection().map(BooleanFilter::copy).orElse(null);
         this.showProfileContactSection = other.optionalShowProfileContactSection().map(BooleanFilter::copy).orElse(null);
         this.showProfileProjectsSection = other.optionalShowProfileProjectsSection().map(BooleanFilter::copy).orElse(null);
+        this.showProfileServicesSection = other.optionalShowProfileServicesSection().map(BooleanFilter::copy).orElse(null);
         this.showHeaderHome = other.optionalShowHeaderHome().map(BooleanFilter::copy).orElse(null);
         this.showHeaderAbout = other.optionalShowHeaderAbout().map(BooleanFilter::copy).orElse(null);
         this.showHeaderEvents = other.optionalShowHeaderEvents().map(BooleanFilter::copy).orElse(null);
@@ -192,6 +203,10 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.showHeaderNews = other.optionalShowHeaderNews().map(BooleanFilter::copy).orElse(null);
         this.showHeaderDownloads = other.optionalShowHeaderDownloads().map(BooleanFilter::copy).orElse(null);
         this.showHeaderLinks = other.optionalShowHeaderLinks().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderServices = other.optionalShowHeaderServices().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderAchievements = other.optionalShowHeaderAchievements().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderAffiliations = other.optionalShowHeaderAffiliations().map(BooleanFilter::copy).orElse(null);
+        this.showHeaderProjects = other.optionalShowHeaderProjects().map(BooleanFilter::copy).orElse(null);
         this.createdAt = other.optionalCreatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.updatedAt = other.optionalUpdatedAt().map(ZonedDateTimeFilter::copy).orElse(null);
         this.tenantOrganizationId = other.optionalTenantOrganizationId().map(LongFilter::copy).orElse(null);
@@ -1001,6 +1016,25 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.showProfileProjectsSection = showProfileProjectsSection;
     }
 
+    public BooleanFilter getShowProfileServicesSection() {
+        return showProfileServicesSection;
+    }
+
+    public Optional<BooleanFilter> optionalShowProfileServicesSection() {
+        return Optional.ofNullable(showProfileServicesSection);
+    }
+
+    public BooleanFilter showProfileServicesSection() {
+        if (showProfileServicesSection == null) {
+            setShowProfileServicesSection(new BooleanFilter());
+        }
+        return showProfileServicesSection;
+    }
+
+    public void setShowProfileServicesSection(BooleanFilter showProfileServicesSection) {
+        this.showProfileServicesSection = showProfileServicesSection;
+    }
+
     public BooleanFilter getShowHeaderHome() {
         return showHeaderHome;
     }
@@ -1191,6 +1225,82 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
         this.showHeaderLinks = showHeaderLinks;
     }
 
+    public BooleanFilter getShowHeaderServices() {
+        return showHeaderServices;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderServices() {
+        return Optional.ofNullable(showHeaderServices);
+    }
+
+    public BooleanFilter showHeaderServices() {
+        if (showHeaderServices == null) {
+            setShowHeaderServices(new BooleanFilter());
+        }
+        return showHeaderServices;
+    }
+
+    public void setShowHeaderServices(BooleanFilter showHeaderServices) {
+        this.showHeaderServices = showHeaderServices;
+    }
+
+    public BooleanFilter getShowHeaderAchievements() {
+        return showHeaderAchievements;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderAchievements() {
+        return Optional.ofNullable(showHeaderAchievements);
+    }
+
+    public BooleanFilter showHeaderAchievements() {
+        if (showHeaderAchievements == null) {
+            setShowHeaderAchievements(new BooleanFilter());
+        }
+        return showHeaderAchievements;
+    }
+
+    public void setShowHeaderAchievements(BooleanFilter showHeaderAchievements) {
+        this.showHeaderAchievements = showHeaderAchievements;
+    }
+
+    public BooleanFilter getShowHeaderAffiliations() {
+        return showHeaderAffiliations;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderAffiliations() {
+        return Optional.ofNullable(showHeaderAffiliations);
+    }
+
+    public BooleanFilter showHeaderAffiliations() {
+        if (showHeaderAffiliations == null) {
+            setShowHeaderAffiliations(new BooleanFilter());
+        }
+        return showHeaderAffiliations;
+    }
+
+    public void setShowHeaderAffiliations(BooleanFilter showHeaderAffiliations) {
+        this.showHeaderAffiliations = showHeaderAffiliations;
+    }
+
+    public BooleanFilter getShowHeaderProjects() {
+        return showHeaderProjects;
+    }
+
+    public Optional<BooleanFilter> optionalShowHeaderProjects() {
+        return Optional.ofNullable(showHeaderProjects);
+    }
+
+    public BooleanFilter showHeaderProjects() {
+        if (showHeaderProjects == null) {
+            setShowHeaderProjects(new BooleanFilter());
+        }
+        return showHeaderProjects;
+    }
+
+    public void setShowHeaderProjects(BooleanFilter showHeaderProjects) {
+        this.showHeaderProjects = showHeaderProjects;
+    }
+
     public ZonedDateTimeFilter getCreatedAt() {
         return createdAt;
     }
@@ -1319,6 +1429,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(showProfileMediaDownloadsSection, that.showProfileMediaDownloadsSection) &&
             Objects.equals(showProfileContactSection, that.showProfileContactSection) &&
             Objects.equals(showProfileProjectsSection, that.showProfileProjectsSection) &&
+            Objects.equals(showProfileServicesSection, that.showProfileServicesSection) &&
             Objects.equals(showHeaderHome, that.showHeaderHome) &&
             Objects.equals(showHeaderAbout, that.showHeaderAbout) &&
             Objects.equals(showHeaderEvents, that.showHeaderEvents) &&
@@ -1329,6 +1440,10 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             Objects.equals(showHeaderNews, that.showHeaderNews) &&
             Objects.equals(showHeaderDownloads, that.showHeaderDownloads) &&
             Objects.equals(showHeaderLinks, that.showHeaderLinks) &&
+            Objects.equals(showHeaderServices, that.showHeaderServices) &&
+            Objects.equals(showHeaderAchievements, that.showHeaderAchievements) &&
+            Objects.equals(showHeaderAffiliations, that.showHeaderAffiliations) &&
+            Objects.equals(showHeaderProjects, that.showHeaderProjects) &&
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(tenantOrganizationId, that.tenantOrganizationId) &&
@@ -1381,6 +1496,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             showProfileMediaDownloadsSection,
             showProfileContactSection,
             showProfileProjectsSection,
+            showProfileServicesSection,
             showHeaderHome,
             showHeaderAbout,
             showHeaderEvents,
@@ -1391,6 +1507,10 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
             showHeaderNews,
             showHeaderDownloads,
             showHeaderLinks,
+            showHeaderServices,
+            showHeaderAchievements,
+            showHeaderAffiliations,
+            showHeaderProjects,
             createdAt,
             updatedAt,
             tenantOrganizationId,
@@ -1447,6 +1567,7 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalShowProfileMediaDownloadsSection().map(f -> "showProfileMediaDownloadsSection=" + f + ", ").orElse("") +
                 optionalShowProfileContactSection().map(f -> "showProfileContactSection=" + f + ", ").orElse("") +
                 optionalShowProfileProjectsSection().map(f -> "showProfileProjectsSection=" + f + ", ").orElse("") +
+                optionalShowProfileServicesSection().map(f -> "showProfileServicesSection=" + f + ", ").orElse("") +
                 optionalShowHeaderHome().map(f -> "showHeaderHome=" + f + ", ").orElse("") +
                 optionalShowHeaderAbout().map(f -> "showHeaderAbout=" + f + ", ").orElse("") +
                 optionalShowHeaderEvents().map(f -> "showHeaderEvents=" + f + ", ").orElse("") +
@@ -1457,6 +1578,10 @@ public class TenantSettingsCriteria implements Serializable, Criteria {
                 optionalShowHeaderNews().map(f -> "showHeaderNews=" + f + ", ").orElse("") +
                 optionalShowHeaderDownloads().map(f -> "showHeaderDownloads=" + f + ", ").orElse("") +
                 optionalShowHeaderLinks().map(f -> "showHeaderLinks=" + f + ", ").orElse("") +
+                optionalShowHeaderServices().map(f -> "showHeaderServices=" + f + ", ").orElse("") +
+                optionalShowHeaderAchievements().map(f -> "showHeaderAchievements=" + f + ", ").orElse("") +
+                optionalShowHeaderAffiliations().map(f -> "showHeaderAffiliations=" + f + ", ").orElse("") +
+                optionalShowHeaderProjects().map(f -> "showHeaderProjects=" + f + ", ").orElse("") +
                 optionalCreatedAt().map(f -> "createdAt=" + f + ", ").orElse("") +
                 optionalUpdatedAt().map(f -> "updatedAt=" + f + ", ").orElse("") +
                 optionalTenantOrganizationId().map(f -> "tenantOrganizationId=" + f + ", ").orElse("") +

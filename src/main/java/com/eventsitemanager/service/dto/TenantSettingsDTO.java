@@ -216,6 +216,8 @@ public class TenantSettingsDTO implements Serializable {
 
     private Boolean showProfileProjectsSection;
 
+    private Boolean showProfileServicesSection;
+
     /** Header menu visibility (null = app default: ON for legacy items) */
     private Boolean showHeaderHome;
 
@@ -239,6 +241,18 @@ public class TenantSettingsDTO implements Serializable {
 
     /** Header menu: Links (null = OFF) */
     private Boolean showHeaderLinks;
+
+    /** Header menu: Services (null = OFF) */
+    private Boolean showHeaderServices;
+
+    /** Header menu: Achievements (null = OFF) */
+    private Boolean showHeaderAchievements;
+
+    /** Header menu: Affiliations (null = OFF) */
+    private Boolean showHeaderAffiliations;
+
+    /** Header menu: Projects (null = OFF) */
+    private Boolean showHeaderProjects;
 
     private Boolean enableGasStationModule;
 
@@ -782,6 +796,14 @@ public class TenantSettingsDTO implements Serializable {
         this.showProfileProjectsSection = showProfileProjectsSection;
     }
 
+    public Boolean getShowProfileServicesSection() {
+        return showProfileServicesSection;
+    }
+
+    public void setShowProfileServicesSection(Boolean showProfileServicesSection) {
+        this.showProfileServicesSection = showProfileServicesSection;
+    }
+
     public Boolean getShowHeaderHome() {
         return showHeaderHome;
     }
@@ -860,6 +882,38 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setShowHeaderLinks(Boolean showHeaderLinks) {
         this.showHeaderLinks = showHeaderLinks;
+    }
+
+    public Boolean getShowHeaderServices() {
+        return showHeaderServices;
+    }
+
+    public void setShowHeaderServices(Boolean showHeaderServices) {
+        this.showHeaderServices = showHeaderServices;
+    }
+
+    public Boolean getShowHeaderAchievements() {
+        return showHeaderAchievements;
+    }
+
+    public void setShowHeaderAchievements(Boolean showHeaderAchievements) {
+        this.showHeaderAchievements = showHeaderAchievements;
+    }
+
+    public Boolean getShowHeaderAffiliations() {
+        return showHeaderAffiliations;
+    }
+
+    public void setShowHeaderAffiliations(Boolean showHeaderAffiliations) {
+        this.showHeaderAffiliations = showHeaderAffiliations;
+    }
+
+    public Boolean getShowHeaderProjects() {
+        return showHeaderProjects;
+    }
+
+    public void setShowHeaderProjects(Boolean showHeaderProjects) {
+        this.showHeaderProjects = showHeaderProjects;
     }
 
     public Boolean getEnableGasStationModule() {
@@ -1021,6 +1075,10 @@ public class TenantSettingsDTO implements Serializable {
                 ", showHeaderNews='" + getShowHeaderNews() + "'" +
                 ", showHeaderDownloads='" + getShowHeaderDownloads() + "'" +
                 ", showHeaderLinks='" + getShowHeaderLinks() + "'" +
+                ", showHeaderServices='" + getShowHeaderServices() + "'" +
+                ", showHeaderAchievements='" + getShowHeaderAchievements() + "'" +
+                ", showHeaderAffiliations='" + getShowHeaderAffiliations() + "'" +
+                ", showHeaderProjects='" + getShowHeaderProjects() + "'" +
                 ", defaultHeroImageUrls=" + getDefaultHeroImageUrls() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +

@@ -234,6 +234,9 @@ public class TenantSettings implements Serializable {
     @Column(name = "show_profile_projects_section")
     private Boolean showProfileProjectsSection;
 
+    @Column(name = "show_profile_services_section")
+    private Boolean showProfileServicesSection;
+
     /** Header menu visibility (null = app default: ON for legacy items) */
     @Column(name = "show_header_home")
     private Boolean showHeaderHome;
@@ -267,6 +270,22 @@ public class TenantSettings implements Serializable {
     /** Header menu: Links (null = OFF) */
     @Column(name = "show_header_links")
     private Boolean showHeaderLinks;
+
+    /** Header menu: Services (null = OFF) */
+    @Column(name = "show_header_services")
+    private Boolean showHeaderServices;
+
+    /** Header menu: Achievements (null = OFF) */
+    @Column(name = "show_header_achievements")
+    private Boolean showHeaderAchievements;
+
+    /** Header menu: Affiliations (null = OFF) */
+    @Column(name = "show_header_affiliations")
+    private Boolean showHeaderAffiliations;
+
+    /** Header menu: Projects (null = OFF) */
+    @Column(name = "show_header_projects")
+    private Boolean showHeaderProjects;
 
     @Column(name = "enable_gas_station_module")
     private Boolean enableGasStationModule;
@@ -652,6 +671,19 @@ public class TenantSettings implements Serializable {
         this.showProfileProjectsSection = showProfileProjectsSection;
     }
 
+    public Boolean getShowProfileServicesSection() {
+        return this.showProfileServicesSection;
+    }
+
+    public TenantSettings showProfileServicesSection(Boolean showProfileServicesSection) {
+        this.setShowProfileServicesSection(showProfileServicesSection);
+        return this;
+    }
+
+    public void setShowProfileServicesSection(Boolean showProfileServicesSection) {
+        this.showProfileServicesSection = showProfileServicesSection;
+    }
+
     public Boolean getShowHeaderHome() {
         return this.showHeaderHome;
     }
@@ -780,6 +812,58 @@ public class TenantSettings implements Serializable {
 
     public void setShowHeaderLinks(Boolean showHeaderLinks) {
         this.showHeaderLinks = showHeaderLinks;
+    }
+
+    public Boolean getShowHeaderServices() {
+        return this.showHeaderServices;
+    }
+
+    public TenantSettings showHeaderServices(Boolean showHeaderServices) {
+        this.setShowHeaderServices(showHeaderServices);
+        return this;
+    }
+
+    public void setShowHeaderServices(Boolean showHeaderServices) {
+        this.showHeaderServices = showHeaderServices;
+    }
+
+    public Boolean getShowHeaderAchievements() {
+        return this.showHeaderAchievements;
+    }
+
+    public TenantSettings showHeaderAchievements(Boolean showHeaderAchievements) {
+        this.setShowHeaderAchievements(showHeaderAchievements);
+        return this;
+    }
+
+    public void setShowHeaderAchievements(Boolean showHeaderAchievements) {
+        this.showHeaderAchievements = showHeaderAchievements;
+    }
+
+    public Boolean getShowHeaderAffiliations() {
+        return this.showHeaderAffiliations;
+    }
+
+    public TenantSettings showHeaderAffiliations(Boolean showHeaderAffiliations) {
+        this.setShowHeaderAffiliations(showHeaderAffiliations);
+        return this;
+    }
+
+    public void setShowHeaderAffiliations(Boolean showHeaderAffiliations) {
+        this.showHeaderAffiliations = showHeaderAffiliations;
+    }
+
+    public Boolean getShowHeaderProjects() {
+        return this.showHeaderProjects;
+    }
+
+    public TenantSettings showHeaderProjects(Boolean showHeaderProjects) {
+        this.setShowHeaderProjects(showHeaderProjects);
+        return this;
+    }
+
+    public void setShowHeaderProjects(Boolean showHeaderProjects) {
+        this.showHeaderProjects = showHeaderProjects;
     }
 
     public Boolean getEnableGasStationModule() {
@@ -1389,6 +1473,10 @@ public class TenantSettings implements Serializable {
                 ", showHeaderNews='" + getShowHeaderNews() + "'" +
                 ", showHeaderDownloads='" + getShowHeaderDownloads() + "'" +
                 ", showHeaderLinks='" + getShowHeaderLinks() + "'" +
+                ", showHeaderServices='" + getShowHeaderServices() + "'" +
+                ", showHeaderAchievements='" + getShowHeaderAchievements() + "'" +
+                ", showHeaderAffiliations='" + getShowHeaderAffiliations() + "'" +
+                ", showHeaderProjects='" + getShowHeaderProjects() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";
