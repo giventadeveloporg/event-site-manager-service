@@ -269,6 +269,10 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
                         buildSpecification(criteria.getShowProfileServicesSection(), TenantSettings_.showProfileServicesSection)
                     );
             }
+            if (criteria.getShowProfileFamilySection() != null) {
+                specification =
+                    specification.and(buildSpecification(criteria.getShowProfileFamilySection(), TenantSettings_.showProfileFamilySection));
+            }
             if (criteria.getShowHeaderHome() != null) {
                 specification = specification.and(buildSpecification(criteria.getShowHeaderHome(), TenantSettings_.showHeaderHome));
             }
@@ -313,6 +317,9 @@ public class TenantSettingsQueryService extends QueryService<TenantSettings> {
             }
             if (criteria.getShowHeaderProjects() != null) {
                 specification = specification.and(buildSpecification(criteria.getShowHeaderProjects(), TenantSettings_.showHeaderProjects));
+            }
+            if (criteria.getShowHeaderFamily() != null) {
+                specification = specification.and(buildSpecification(criteria.getShowHeaderFamily(), TenantSettings_.showHeaderFamily));
             }
             if (criteria.getCreatedAt() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getCreatedAt(), TenantSettings_.createdAt));

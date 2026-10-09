@@ -218,6 +218,8 @@ public class TenantSettingsDTO implements Serializable {
 
     private Boolean showProfileServicesSection;
 
+    private Boolean showProfileFamilySection;
+
     /** Header menu visibility (null = app default: ON for legacy items) */
     private Boolean showHeaderHome;
 
@@ -253,6 +255,9 @@ public class TenantSettingsDTO implements Serializable {
 
     /** Header menu: Projects (null = OFF) */
     private Boolean showHeaderProjects;
+
+    /** Header menu: Family (null = OFF) */
+    private Boolean showHeaderFamily;
 
     private Boolean enableGasStationModule;
 
@@ -804,6 +809,14 @@ public class TenantSettingsDTO implements Serializable {
         this.showProfileServicesSection = showProfileServicesSection;
     }
 
+    public Boolean getShowProfileFamilySection() {
+        return showProfileFamilySection;
+    }
+
+    public void setShowProfileFamilySection(Boolean showProfileFamilySection) {
+        this.showProfileFamilySection = showProfileFamilySection;
+    }
+
     public Boolean getShowHeaderHome() {
         return showHeaderHome;
     }
@@ -914,6 +927,14 @@ public class TenantSettingsDTO implements Serializable {
 
     public void setShowHeaderProjects(Boolean showHeaderProjects) {
         this.showHeaderProjects = showHeaderProjects;
+    }
+
+    public Boolean getShowHeaderFamily() {
+        return showHeaderFamily;
+    }
+
+    public void setShowHeaderFamily(Boolean showHeaderFamily) {
+        this.showHeaderFamily = showHeaderFamily;
     }
 
     public Boolean getEnableGasStationModule() {
@@ -1079,6 +1100,7 @@ public class TenantSettingsDTO implements Serializable {
                 ", showHeaderAchievements='" + getShowHeaderAchievements() + "'" +
                 ", showHeaderAffiliations='" + getShowHeaderAffiliations() + "'" +
                 ", showHeaderProjects='" + getShowHeaderProjects() + "'" +
+                ", showHeaderFamily='" + getShowHeaderFamily() + "'" +
                 ", defaultHeroImageUrls=" + getDefaultHeroImageUrls() +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +

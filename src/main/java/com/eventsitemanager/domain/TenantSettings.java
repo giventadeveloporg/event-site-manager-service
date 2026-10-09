@@ -237,6 +237,9 @@ public class TenantSettings implements Serializable {
     @Column(name = "show_profile_services_section")
     private Boolean showProfileServicesSection;
 
+    @Column(name = "show_profile_family_section")
+    private Boolean showProfileFamilySection;
+
     /** Header menu visibility (null = app default: ON for legacy items) */
     @Column(name = "show_header_home")
     private Boolean showHeaderHome;
@@ -286,6 +289,10 @@ public class TenantSettings implements Serializable {
     /** Header menu: Projects (null = OFF) */
     @Column(name = "show_header_projects")
     private Boolean showHeaderProjects;
+
+    /** Header menu: Family (null = OFF) */
+    @Column(name = "show_header_family")
+    private Boolean showHeaderFamily;
 
     @Column(name = "enable_gas_station_module")
     private Boolean enableGasStationModule;
@@ -684,6 +691,19 @@ public class TenantSettings implements Serializable {
         this.showProfileServicesSection = showProfileServicesSection;
     }
 
+    public Boolean getShowProfileFamilySection() {
+        return this.showProfileFamilySection;
+    }
+
+    public TenantSettings showProfileFamilySection(Boolean showProfileFamilySection) {
+        this.setShowProfileFamilySection(showProfileFamilySection);
+        return this;
+    }
+
+    public void setShowProfileFamilySection(Boolean showProfileFamilySection) {
+        this.showProfileFamilySection = showProfileFamilySection;
+    }
+
     public Boolean getShowHeaderHome() {
         return this.showHeaderHome;
     }
@@ -864,6 +884,19 @@ public class TenantSettings implements Serializable {
 
     public void setShowHeaderProjects(Boolean showHeaderProjects) {
         this.showHeaderProjects = showHeaderProjects;
+    }
+
+    public Boolean getShowHeaderFamily() {
+        return this.showHeaderFamily;
+    }
+
+    public TenantSettings showHeaderFamily(Boolean showHeaderFamily) {
+        this.setShowHeaderFamily(showHeaderFamily);
+        return this;
+    }
+
+    public void setShowHeaderFamily(Boolean showHeaderFamily) {
+        this.showHeaderFamily = showHeaderFamily;
     }
 
     public Boolean getEnableGasStationModule() {
@@ -1477,6 +1510,7 @@ public class TenantSettings implements Serializable {
                 ", showHeaderAchievements='" + getShowHeaderAchievements() + "'" +
                 ", showHeaderAffiliations='" + getShowHeaderAffiliations() + "'" +
                 ", showHeaderProjects='" + getShowHeaderProjects() + "'" +
+                ", showHeaderFamily='" + getShowHeaderFamily() + "'" +
                 ", createdAt='" + getCreatedAt() + "'" +
                 ", updatedAt='" + getUpdatedAt() + "'" +
                 "}";
