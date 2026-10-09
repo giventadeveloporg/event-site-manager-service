@@ -23,7 +23,7 @@ public class ClerkOrganizationRole implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "clerkOrganizationRoleSeq")
-    @SequenceGenerator(name = "clerkOrganizationRoleSeq", sequenceName = "public.communication_campaign_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "clerkOrganizationRoleSeq", sequenceName = "public.clerk_organization_role_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

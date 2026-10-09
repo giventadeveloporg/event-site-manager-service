@@ -28,7 +28,7 @@ public class OfficialDocumentCategory implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "officialDocumentCategorySeq")
-    @SequenceGenerator(name = "officialDocumentCategorySeq", sequenceName = "public.event_sponsors_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "officialDocumentCategorySeq", sequenceName = "public.official_document_category_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

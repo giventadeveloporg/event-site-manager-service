@@ -21,7 +21,7 @@ public class WhatsAppLog implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "whatsappLogSeq")
-    @SequenceGenerator(name = "whatsappLogSeq", sequenceName = "public.user_payment_transaction_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "whatsappLogSeq", sequenceName = "public.whatsapp_log_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

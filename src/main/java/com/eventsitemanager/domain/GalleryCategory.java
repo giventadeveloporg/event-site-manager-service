@@ -23,7 +23,7 @@ public class GalleryCategory implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "galleryCategorySeq")
-    @SequenceGenerator(name = "galleryCategorySeq", sequenceName = "public.event_calendar_entry_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "galleryCategorySeq", sequenceName = "public.gallery_category_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

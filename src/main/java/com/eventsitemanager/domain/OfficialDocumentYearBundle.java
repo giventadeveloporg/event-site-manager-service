@@ -26,7 +26,7 @@ public class OfficialDocumentYearBundle implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "officialDocumentYearBundleSeq")
-    @SequenceGenerator(name = "officialDocumentYearBundleSeq", sequenceName = "public.event_sponsors_join_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "officialDocumentYearBundleSeq", sequenceName = "public.official_document_year_bundle_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

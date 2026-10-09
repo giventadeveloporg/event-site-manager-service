@@ -25,7 +25,7 @@ public class ClerkUserTenant implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "clerkUserTenantSeq")
-    @SequenceGenerator(name = "clerkUserTenantSeq", sequenceName = "public.team_members_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "clerkUserTenantSeq", sequenceName = "public.clerk_user_tenant_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 

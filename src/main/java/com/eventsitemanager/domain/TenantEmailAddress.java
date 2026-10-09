@@ -26,7 +26,7 @@ public class TenantEmailAddress implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tenantEmailAddressesSeq")
-    @SequenceGenerator(name = "tenantEmailAddressesSeq", sequenceName = "public.discount_code_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "tenantEmailAddressesSeq", sequenceName = "public.tenant_email_addresses_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 
