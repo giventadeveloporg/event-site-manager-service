@@ -14,4 +14,8 @@ public interface TenantOrganizationRepository
     /** All tenant IDs only — lets the frontend derive the next tenant sequence without paging whole rows. */
     @Query("SELECT t.tenantId FROM TenantOrganization t")
     java.util.List<String> findAllTenantIds();
+
+    boolean existsByTenantId(String tenantId);
+
+    boolean existsByDomainIgnoreCase(String domain);
 }

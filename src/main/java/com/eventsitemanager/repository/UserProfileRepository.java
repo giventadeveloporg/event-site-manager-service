@@ -31,6 +31,8 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long>,
     // New: Find by email and tenantId
     Optional<UserProfile> findByEmailAndTenantId(String email, String tenantId);
 
+    List<UserProfile> findByTenantIdAndUserRoleIn(String tenantId, java.util.Collection<String> userRoles);
+
     // New: Find all subscribed emails for a tenant
     @Query("SELECT u.email FROM UserProfile u WHERE u.tenantId = :tenantId AND u.isEmailSubscribed = true AND u.email IS NOT NULL")
     List<String> findSubscribedEmailsByTenantId(@Param("tenantId") String tenantId);

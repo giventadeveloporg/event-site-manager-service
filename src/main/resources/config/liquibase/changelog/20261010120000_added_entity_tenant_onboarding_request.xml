@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        New Customer Onboarding: platform-level request table (no tenant FK).
+        Mirrored in event-site-manager-database:
+          SQLS/Current_Sqls/Event_Site_Manager_Latest_Schema.sql
+          SQLS/migrations/20261010120000_tenant_onboarding_request.sql
+    -->
+
+    <changeSet id="20261010120000-1" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="tenant_onboarding_request_id_seq"/>
+            </not>
+        </preConditions>
+        <sql><![CDATA[
+            CREATE SEQUENCE IF NOT EXISTS public.tenant_onboarding_request_id_seq
+                INCREMENT BY 1
+                NO MINVALUE
+                NO MAXVALUE
+                START WITH 1
+                CACHE 1;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20261010120000-2" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tenant_onboarding_request"/>
+            </not>
+        </preConditions>
+        <sql splitStatements="false"><![CDATA[
+            CREATE TABLE IF NOT EXISTS public.tenant_onboarding_request (
+                id bigint DEFAULT nextval('public.tenant_onboarding_request_id_seq'::regclass) NOT NULL,
+                request_code character varying(64) NOT NULL,
+                status character varying(30) DEFAULT 'PENDING' NOT NULL,
+                source character varying(32) DEFAULT 'PUBLIC_FORM' NOT NULL,
+                organization_name character varying(255) NOT NULL,
+                site_type character varying(32) DEFAULT 'EVENT_ORG' NOT NULL,
+                description character varying(1000),
+                contact_first_name character varying(255),
+                contact_last_name character varying(255),
+                contact_email character varying(255) NOT NULL,
+                contact_phone character varying(50),
+                address_line_1 character varying(255),
+                address_line_2 character varying(255),
+                city character varying(255),
+                state_province character varying(255),
+                zip_code character varying(20),
+                country character varying(100) DEFAULT 'US',
+                requested_hostname character varying(255) NOT NULL,
+                domain_ownership character varying(32) DEFAULT 'CUSTOMER_REGISTRAR' NOT NULL,
+                primary_color character varying(7),
+                secondary_color character varying(7),
+                logo_url character varying(1024),
+                wants_payments boolean DEFAULT false NOT NULL,
+                customer_notes text,
+                assigned_tenant_id character varying(255),
+                satellite_key character varying(100),
+                noreply_email character varying(255),
+                admin_comments text,
+                reviewed_by_clerk_user_id character varying(255),
+                reviewed_by_email character varying(255),
+                reviewed_at timestamp without time zone,
+                approved_at timestamp without time zone,
+                rejected_at timestamp without time zone,
+                provisioning_result text,
+                submitter_ip character varying(64),
+                user_agent character varying(512),
+                created_at timestamp without time zone DEFAULT now() NOT NULL,
+                updated_at timestamp without time zone DEFAULT now() NOT NULL,
+                CONSTRAINT tenant_onboarding_request_pkey PRIMARY KEY (id),
+                CONSTRAINT ux_tenant_onboarding_request__request_code UNIQUE (request_code),
+                CONSTRAINT ux_tenant_onboarding_request__assigned_tenant_id UNIQUE (assigned_tenant_id),
+                CONSTRAINT chk_tenant_onboarding_request__status CHECK (
+                    status IN ('PENDING', 'APPROVED', 'REJECTED', 'FAILED', 'CANCELLED')
+                ),
+                CONSTRAINT chk_tenant_onboarding_request__source CHECK (
+                    source IN ('PUBLIC_FORM', 'ADMIN_MANUAL')
+                ),
+                CONSTRAINT chk_tenant_onboarding_request__site_type CHECK (
+                    site_type IN ('EVENT_ORG', 'SPORTS_TEAM', 'MUSIC_BAND', 'CHURCH_ORG', 'PERSONAL_PROFILE', 'HYBRID', 'GAS_STATION')
+                ),
+                CONSTRAINT chk_tenant_onboarding_request__domain_ownership CHECK (
+                    domain_ownership IN ('PLATFORM_REGISTERS', 'CUSTOMER_REGISTRAR', 'ALREADY_IN_PLATFORM')
+                )
+            );
+
+            ALTER SEQUENCE public.tenant_onboarding_request_id_seq OWNED BY public.tenant_onboarding_request.id;
+
+            CREATE INDEX IF NOT EXISTS idx_tenant_onboarding_request_status
+                ON public.tenant_onboarding_request (status);
+            CREATE INDEX IF NOT EXISTS idx_tenant_onboarding_request_contact_email
+                ON public.tenant_onboarding_request (lower((contact_email)::text));
+            CREATE INDEX IF NOT EXISTS idx_tenant_onboarding_request_hostname
+                ON public.tenant_onboarding_request (lower((requested_hostname)::text));
+
+            COMMENT ON TABLE public.tenant_onboarding_request IS
+                'Platform-level new customer onboarding requests; SUPER_ADMIN approve provisions the tenant in one transaction';
+            COMMENT ON COLUMN public.tenant_onboarding_request.request_code IS
+                'Public reference shown to the submitter (e.g. ONB-20261010-7K3QX)';
+            COMMENT ON COLUMN public.tenant_onboarding_request.assigned_tenant_id IS
+                'tenant_id chosen by SUPER_ADMIN at approval; becomes tenant_organization.tenant_id';
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="20261010120000-3" author="system" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="tenant_onboarding_request"/>
+            <sqlCheck expectedResult="1">SELECT COUNT(*) FROM pg_proc WHERE proname = 'update_updated_at_column'</sqlCheck>
+        </preConditions>
+        <sql splitStatements="false"><![CDATA[
+            DROP TRIGGER IF EXISTS trg_tenant_onboarding_request_updated_at ON public.tenant_onboarding_request;
+            CREATE TRIGGER trg_tenant_onboarding_request_updated_at
+                BEFORE UPDATE ON public.tenant_onboarding_request
+                FOR EACH ROW
+                EXECUTE FUNCTION public.update_updated_at_column();
+        ]]></sql>
+    </changeSet>
+
+</databaseChangeLog>

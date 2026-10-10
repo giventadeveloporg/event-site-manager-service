@@ -156,5 +156,6 @@
     <include file="config/liquibase/changelog/20260905120000_add_work_photo_event_competition_result.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260928120000_added_entity_homepage_youtube_override.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260929160000_added_entity_gallery_youtube_video.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20261010120000_added_entity_tenant_onboarding_request.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

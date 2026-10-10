@@ -366,3 +366,12 @@ postgresql-cache:
   statistics:
     enabled: true
     log-interval: 60000 # 1 minute
+
+# ===================================================================
+# New customer onboarding (TenantOnboardingRequestResource)
+# ===================================================================
+onboarding:
+  # Tenant whose ADMIN / SUPER_ADMIN user_profile rows are cloned into each newly approved tenant
+  admin-source-tenant-id: ${ONBOARDING_ADMIN_SOURCE_TENANT_ID:mosc_malankara_orthodox_2}
+  # Platform inbox notified when a new request is submitted (empty = no platform notification)
+  notify-email: ${ONBOARDING_NOTIFY_EMAIL:}
